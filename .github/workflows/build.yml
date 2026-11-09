@@ -1,6 +1,9 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build-Linux:
@@ -30,24 +33,40 @@ jobs:
             libmsgpack-dev \
             libnetcdf-dev \
             nlohmann-json3-dev \
-            libpng-dev \
-            libxml2-dev
-
-    - name: Get additional sources
-      run: |
-        git clone --depth 1 https://github.com/rcsb/mmtf-cpp.git
-        cp -R mmtf-cpp/include/* include/
+            libpng-dev
 
     - name: Build
       run: |
         pip install --upgrade pip
-        pip install -v --config-settings testing=True --config-settings json=True '.[dev]'
+        pip wheel -v --no-deps -w dist --config-settings testing=True --config-settings json=True .
+        pip install "$(ls dist/*.whl)[dev]"
       env:
-        DEBUG: 1
+        # the 3.12 job ships the preview artifacts, so it is a release build
+        DEBUG: ${{ matrix.python-version != '3.12' && '1' || '' }}
 
     - name: Test
       run: |
         pymol -ckqy testing/testing.py --run all
+
+    - name: Build standalone bundle
+      if: matrix.python-version == '3.12'
+      run: |
+        pyinstaller --noconfirm packaging/pyinstaller.spec
+
+    - name: Pack bundle
+      if: matrix.python-version == '3.12'
+      run: tar -C dist -czf dist/pymolish-${{ runner.os }}-${{ runner.arch }}.tar.gz pymolish
+
+    - name: Upload preview artifacts
+      if: matrix.python-version == '3.12'
+      uses: actions/upload-artifact@v4
+      with:
+        name: pymolish-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
+        path: |
+          dist/*.whl
+          dist/pymolish-*.tar.gz
+          dist/pymolish-*.zip
+        if-no-files-found: error
 
 
   build-Windows:
@@ -84,29 +103,48 @@ jobs:
             glew `
             glm `
             libpng `
-            libxml2-devel `
             libnetcdf `
             nlohmann_json
 
     - name: Get additional sources
       run: |
         conda activate $env:CONDA_ENV_NAME
-
-        git clone --depth 1 https://github.com/rcsb/mmtf-cpp.git
-        Copy-Item -Recurse -Path mmtf-cpp/include\* -Destination "$env:CONDA_PREFIX\Library\include"
-        git clone --depth 1 --single-branch --branch cpp_master https://github.com/msgpack/msgpack-c.git
+        git clone --depth 1 --branch cpp-7.0.0 https://github.com/msgpack/msgpack-c.git
         Copy-Item -Recurse -Path msgpack-c/include\* -Destination "$env:CONDA_PREFIX\Library\include"
         dir $env:CONDA_PREFIX\Library\include
 
     - name: Build PyMOL
       run: |
         conda activate $env:CONDA_ENV_NAME
-        pip install -v --config-settings testing=True --config-settings json=True .[dev]
+        pip wheel -v --no-deps -w dist --config-settings testing=True --config-settings json=True .
+        $whl = (Get-ChildItem dist\*.whl | Select-Object -First 1).FullName
+        pip install "$whl[dev]"
 
     - name: Test
       run: |
         conda activate $env:CONDA_ENV_NAME
         pymol -ckqy testing\testing.py --run all
+
+    - name: Build standalone bundle
+      if: matrix.python-version == '3.12'
+      run: |
+        conda activate $env:CONDA_ENV_NAME
+        pyinstaller --noconfirm packaging/pyinstaller.spec
+
+    - name: Pack bundle
+      if: matrix.python-version == '3.12'
+      run: Compress-Archive -Path dist\pymolish -DestinationPath dist\pymolish-${{ runner.os }}-${{ runner.arch }}.zip
+
+    - name: Upload preview artifacts
+      if: matrix.python-version == '3.12'
+      uses: actions/upload-artifact@v4
+      with:
+        name: pymolish-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
+        path: |
+          dist/*.whl
+          dist/pymolish-*.tar.gz
+          dist/pymolish-*.zip
+        if-no-files-found: error
 
 
   build-MacOS:
@@ -126,7 +164,7 @@ jobs:
 
     - name: Download Miniforge
       run: |
-        curl -L -o $CONDA_ROOT.sh https://github.com/conda-forge/miniforge/releases/download/24.11.0-0/Miniforge3-MacOSX-x86_64.sh
+        curl -L -o $CONDA_ROOT.sh https://github.com/conda-forge/miniforge/releases/download/24.11.0-0/Miniforge3-MacOSX-arm64.sh
         bash $CONDA_ROOT.sh -b -p $CONDA_ROOT
 
     - name: Add conda to PATH
@@ -143,25 +181,72 @@ jobs:
             glew \
             glm \
             libpng \
-            libxml2-devel \
             libnetcdf \
             nlohmann_json
 
     - name: Get additional sources
       run: |
         source activate $CONDA_ENV_NAME
-        git clone --depth 1 https://github.com/rcsb/mmtf-cpp.git
-        cp -R mmtf-cpp/include/* ${CONDA_PREFIX}/include/
-        git clone --depth 1 --single-branch --branch cpp_master https://github.com/msgpack/msgpack-c.git
+        git clone --depth 1 --branch cpp-7.0.0 https://github.com/msgpack/msgpack-c.git
         cp -R msgpack-c/include/* ${CONDA_PREFIX}/include/
 
     - name: Build PyMOL
       run: |
         source activate $CONDA_ENV_NAME
         export MACOSX_DEPLOYMENT_TARGET=12.0
-        pip install -v --config-settings testing=True --config-settings json=True '.[dev]'
+        pip wheel -v --no-deps -w dist --config-settings testing=True --config-settings json=True .
+        pip install "$(ls dist/*.whl)[dev]"
 
     - name: Test
       run: |
         source activate $CONDA_ENV_NAME
         pymol -ckqy testing/testing.py --run all
+
+    - name: Build standalone bundle
+      if: matrix.python-version == '3.12'
+      run: |
+        source activate $CONDA_ENV_NAME
+        pyinstaller --noconfirm packaging/pyinstaller.spec
+
+    - name: Pack bundle
+      if: matrix.python-version == '3.12'
+      run: tar -C dist -czf dist/pymolish-${{ runner.os }}-${{ runner.arch }}.tar.gz pymolish
+
+    - name: Upload preview artifacts
+      if: matrix.python-version == '3.12'
+      uses: actions/upload-artifact@v4
+      with:
+        name: pymolish-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
+        path: |
+          dist/*.whl
+          dist/pymolish-*.tar.gz
+          dist/pymolish-*.zip
+        if-no-files-found: error
+
+
+  release:
+    # publish the three bundles when master changes; re-pushes with the same
+    # version replace the files on the existing release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs: [build-Linux, build-Windows, build-MacOS]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: pymolish-*
+        path: dist
+        merge-multiple: true
+
+    - name: Publish release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        tag=v$(sed -n 's/^#define _PyMOL_VERSION "\(.*\)"/\1/p' layer0/Version.h)
+        gh release view "$tag" >/dev/null 2>&1 \
+          || gh release create "$tag" --prerelease --title "pymolish-studio $tag" --notes "Automated build of ${{ github.sha }}. Unsigned; see docs/plans/05-builds-binaries.md."
+        gh release upload "$tag" --clobber dist/pymolish-*.tar.gz dist/pymolish-*.zip dist/*.whl

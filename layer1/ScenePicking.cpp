@@ -128,15 +128,6 @@ static std::vector<unsigned> SceneGetPickIndices(PyMOLGlobals* G,
       }
     }
 
-#ifndef _PYMOL_NO_MAIN
-    const auto debug_pick = SettingGet<int>(G, cSetting_debug_pick);
-    if(debug_pick) {
-      PyMOL_SwapBuffers(G->PyMOL);
-      PSleep(G, 1000000 * debug_pick / 4);
-      PyMOL_SwapBuffers(G->PyMOL);
-    }
-#endif
-
 #ifndef PURE_OPENGL_ES_2
     if (!hasFrameBufferBinding()) {
       glReadBuffer(gl_buffer);
@@ -310,11 +301,6 @@ void SceneRenderPicking(PyMOLGlobals* G, int stereo_mode, ClickSide click_side,
   case cStereo_sidebyside:
     ScenePrepareMatrix(G, click_side == ClickSide::Left ? 1 : 2);
     break;
-#ifdef _PYMOL_OPENVR
-  case cStereo_openvr:
-    ScenePrepareMatrix(G, 0, cStereo_openvr);
-    break;
-#endif
   }
   G->ShaderMgr->SetIsPicking(true);
   if(pick) {

@@ -2124,14 +2124,6 @@ void PInit(PyMOLGlobals * G, int global_instance)
   }
   }
 
-#ifdef _PYMOL_NO_MSGPACKC
-  // fallback MMTF support
-  PyRun_SimpleString(
-      "import pymol.importing;"
-      "pymol.importing.loadable.mmtf = None;"
-      "pymol.importing.loadfunctions.setdefault('mmtf',"
-      "pymol.importing.load_mmtf)");
-#endif
 }
 
 int PPovrayRender(PyMOLGlobals * G, const char *header, const char *inp, const char *file, int width,
@@ -2174,13 +2166,10 @@ void PExit(PyMOLGlobals * G, int code)
   PyMOL_Stop(G->PyMOL);
   PyMOL_PopValidContext(G->PyMOL);
 
-#ifndef _PYMOL_NO_MAIN
-  if(G->Main) {
-    MainFree();
-  }
-#endif
-
   PyMOL_Free(G->PyMOL);
+
+  // exit() skips Python finalization, which would otherwise flush these
+  PyRun_SimpleString("import sys; sys.stdout.flush(); sys.stderr.flush()");
 
 #if 1
   /* we're having trouble with threading errors after calling Py_Exit,

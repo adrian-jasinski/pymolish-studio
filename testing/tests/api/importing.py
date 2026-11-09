@@ -311,25 +311,10 @@ class TestImporting(testing.PyMOLTestCase):
         cmd.load_raw(open(self.datafile("sampletrajectory.pdb")).read(), "pdb")
         self.assertEqual(115, cmd.count_atoms())
 
-    @testing.requires_version('2.3.3')
-    def testLoadRawMMTF(self):
-        import gzip
-        with gzip.open(self.datafile("3njw.mmtf.gz")) as handle:
-            cmd.load_raw(handle.read(), "mmtf")
-        self.assertEqual(169, cmd.count_atoms())
-
     @testing.requires_version('2.5')
     def testLoadRawGRO(self):
         cmd.load_raw(open(self.datafile("sampletrajectory.gro")).read(), "gro")
         self.assertEqual(115, cmd.count_atoms())
-
-    @testing.requires_version('2.4')
-    def testLoadMMTFStr(self):
-        # deprecated
-        import gzip
-        with gzip.open(self.datafile("3njw.mmtf.gz")) as handle:
-            cmd.load(handle.read(), "m1", format="mmtfstr")
-        self.assertEqual(169, cmd.count_atoms())
 
     @testing.foreach(
             ['.pdb', '.dcd'],
@@ -545,52 +530,6 @@ class TestImporting(testing.PyMOLTestCase):
         e = cmd.get_extent('test_PHE_pentamer')
         self.assertArrayEqual(e, [[-3.141,-3.036,-2.809], [15.920, 10.425, 8.680]], delta=1e-3)
 
-    @testing.requires_version('1.8.4')
-    def testLoadMMTF(self):
-        cmd.load(self.datafile("3njw.mmtf.gz"))
-        self.assertEqual(169, cmd.count_atoms())
-        self.assertEqual(36, cmd.count_atoms('ss S'))
-        self.assertEqual(25, cmd.count_atoms('solvent'))
-        self.assertEqual(25, cmd.count_atoms('not polymer'))
-        symmetry = cmd.get_symmetry()
-        self.assertArrayEqual(symmetry[:6], [19.465, 21.432, 29.523, 90.0, 90.0, 90.0], delta=1e-4)
-        self.assertEqual(symmetry[6], 'P 21 21 21')
-
-    @testing.requires_version('2.6')
-    def testLoadMMTF_polymer(self):
-        cmd.load(self.datafile("1x8x.mmtf.gz"))
-        self.assertEqual(2780, cmd.count_atoms())
-        self.assertEqual(2544, cmd.count_atoms('polymer'))
-        self.assertEqual(218, cmd.count_atoms('solvent'))
-        self.assertEqual(13, cmd.count_atoms('organic'))
-        self.assertEqual(5, cmd.count_atoms('inorganic'))
-
-    @testing.requires_version('1.8.4')
-    def testLoadMMTFEmpty(self):
-        cmd.load(self.datafile("mmtf/empty-all0.mmtf"))
-        self.assertEqual(cmd.count_states(), 0)
-        cmd.delete('*')
-
-        cmd.load(self.datafile("mmtf/empty-numModels1.mmtf.gz"))
-        self.assertEqual(cmd.count_atoms(), 0)
-        self.assertEqual(cmd.get_names(), ["empty-numModels1"])
-        cmd.delete('*')
-
-        cmd.load(self.datafile("mmtf/empty-numChains1.mmtf.gz"))
-        self.assertEqual(cmd.count_atoms(), 0)
-        self.assertEqual(cmd.get_names(), ["empty-numChains1"])
-        cmd.delete('*')
-
-        cmd.load(self.datafile("mmtf/empty-mmtfVersion99999999.mmtf"))
-        self.assertEqual(cmd.get_names(), [])
-        cmd.delete('*')
-
-    @testing.requires_version('2.3.3')
-    def testLoadMMTFMissingOptionalGroupTypeFields(self):
-        cmd.load(self.datafile("mmtf/missing-optional-grouptype-fields.mmtf.gz"))
-        self.assertEqual(cmd.count_atoms(), 17)
-        self.assertEqual(len(cmd.get_bonds()), 7)
-
     @testing.foreach(
             ['', '*',                   True],
             ['', 'pdb_header',          True],
@@ -608,46 +547,6 @@ class TestImporting(testing.PyMOLTestCase):
         cmd.set('load_object_props_default', load_object_props_default)
         cmd.load(self.datafile('1rx1.pdb'), 'm1', object_props=object_props)
         self.assertEqual(truth, 'pdb_header' in (cmd.get_property_list('m1') or ()))
-
-    @testing.requires_version('2.4')
-    @testing.requires(
-        'network'
-    )  # doesn't use external network, but is very slow while being connected to VPN
-    def testLoadPWG(self):
-        content_index = b"Hello World\n"
-        port = _get_free_port()
-        base_url = f"http://localhost:{port}"
-
-        with TemporaryDirectory() as root_dir:
-            root_dir = Path(root_dir)
-            index_file = root_dir / "index.html"
-            start_pwg_file = root_dir / "start.pwg"
-
-            index_file.write_bytes(content_index)
-
-            pwg_content = (
-                f"root {root_dir}\n"
-                f"port {port}\n"
-                "header add Test-Key Test-Value\n"
-            )
-
-            start_pwg_file.write_text(pwg_content)
-            cmd.load(str(start_pwg_file))
-
-            response = requests.get(url=base_url, timeout=5)
-            response.raise_for_status()
-
-            self.assertEqual(response.headers["Test-Key"], "Test-Value")
-            self.assertEqual(response.content, content_index)
-
-            # Warning: can't call locking functions here, will dead-lock
-            # get_version is non-locking since 1.7.4
-
-            response = requests.get(f"{base_url}/apply/pymol.cmd.get_version", timeout=5)
-            response.raise_for_status()
-
-            content = response.content.decode("ascii", errors="ignore")
-            self.assertTrue(content, cmd.get_version()[0] in content)
 
     @testing.requires_version('2.1')
     def testChemCompCartnUse(self):

@@ -67,9 +67,6 @@
 #include "CGORenderer.h"
 #include "GFXManager.h"
 
-#ifdef _PYMOL_OPENVR
-#include "OpenVRMode.h"
-#endif
 
 #include "Property.h"
 
@@ -1511,7 +1508,6 @@ struct {
   {"pdb",           cLoadTypePDBStr,    cLoadTypePDB},
   {"vdb",           cLoadTypeVDBStr,    cLoadTypeUnknown},
   {"cif",           cLoadTypeCIFStr,    cLoadTypeCIF},
-  {"mmtf",          cLoadTypeMMTFStr,   cLoadTypeMMTF},
   {"mae",           cLoadTypeMAEStr,    cLoadTypeMAE},
   {"sdf",           cLoadTypeSDF2Str,   cLoadTypeSDF2},
   {"mol",           cLoadTypeMOLStr,    cLoadTypeMOL},
@@ -2036,9 +2032,6 @@ void PyMOL_Stop(CPyMOL * I)
   SceneFree(G);
   MovieScenesFree(G);
   OrthoFree(G);
-#ifdef _PYMOL_OPENVR
-  OpenVRFree(G);
-#endif
   DeleteP(G->GFXMgr);
   DeleteP(G->ShaderMgr);
   SettingFreeGlobal(G);

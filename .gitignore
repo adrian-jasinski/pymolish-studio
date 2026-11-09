@@ -3,3 +3,8 @@
 generated
 build
 .vscode
+*.egg-info/
+testing/timings.tab
+*.so
+dist/
+*.spec.bak

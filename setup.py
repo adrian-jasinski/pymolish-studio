@@ -193,21 +193,14 @@ def str2bool(v: str) -> bool:
 class options:
     osx_frameworks = True
     jobs = int(os.getenv("JOBS", 0))
-    libxml = True
     json = False
-    glut = False
     use_msgpackc = "guess"
     testing = False
-    openvr = False
     use_openmp = "no" if MAC else "yes"
-    use_vtkm = "no"
     vmd_plugins = True
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--glut", dest="glut", type=str2bool, help="link with GLUT (legacy GUI)"
-)
 parser.add_argument(
     "--osx-frameworks",
     dest="osx_frameworks",
@@ -221,29 +214,18 @@ parser.add_argument(
     help="for parallel builds " "(defaults to number of processors)",
 )
 parser.add_argument(
-    "--libxml",
-    type=str2bool,
-    help="skip libxml2 dependency, disables COLLADA export",
-)
-parser.add_argument(
     "--json",
     type=str2bool,
     help="add nlohmann-json dependency, enables glTF 2.0 and GLB export",
 )
 parser.add_argument("--use-openmp", type=str2bool, help="Use OpenMP")
 parser.add_argument(
-    "--use-vtkm",
-    choices=("2.0", "2.1", "2.2", "2.3", "no"),
-    help="Use VTK-m for isosurface generation",
-)
-parser.add_argument(
     "--use-msgpackc",
     choices=("c++11", "c", "guess", "no"),
     help="c++11: use msgpack-c header-only library; c: link against "
-    "shared library; no: disable fast MMTF load support",
+    "shared library; no: disable BinaryCIF support",
 )
 parser.add_argument("--testing", type=str2bool, help="Build C-level tests")
-parser.add_argument("--openvr", dest="openvr", type=str2bool)
 parser.add_argument(
     "--vmd-plugins",
     dest="vmd_plugins",
@@ -401,8 +383,7 @@ class build_ext_pymol(build_ext):
         # example of build args
         build_args = ["--config", config]
         if not WIN:  # Win /MP flag on compilation level
-            cpu_count = os.cpu_count() or 1
-            build_args += [f"-j{cpu_count}"]
+            build_args += [f"-j{options.jobs or os.cpu_count() or 1}"]
 
         os.chdir(str(build_temp))
         self.spawn(["cmake", str(cwd)] + cmake_args)
@@ -429,12 +410,10 @@ class build_py_pymol(build_py):
 
 class install_pymol(install):
     pymol_path = None
-    bundled_pmw = False
     no_launcher = False
 
     user_options = install.user_options + [
         ("pymol-path=", None, "PYMOL_PATH"),
-        ("bundled-pmw", None, "install bundled Pmw module"),
         ("no-launcher", None, "skip installation of the pymol launcher"),
     ]
 
@@ -456,12 +435,6 @@ class install_pymol(install):
 
         if not self.no_launcher:
             self.make_launch_script()
-
-        if self.bundled_pmw:
-            raise Exception(
-                "--bundled-pmw has been removed, please install Pmw from "
-                "https://github.com/schrodinger/pmw-patched"
-            )
 
     def unchroot(self, name):
         if self.root is not None and name.startswith(self.root):
@@ -490,11 +463,6 @@ class install_pymol(install):
             "examples",
         ]:
             self.copy(name, os.path.join(base_path, name))
-
-        if options.openvr:
-            self.copy(
-                "contrib/vr/README.md", os.path.join(base_path, "README-VR.txt")
-            )
 
     def make_launch_script(self):
         if sys.platform.startswith("win"):
@@ -634,11 +602,6 @@ if options.vmd_plugins:
         ("_PYMOL_VMD_PLUGINS", None),
     ]
 
-if options.libxml:
-    # COLLADA support
-    def_macros += [("_HAVE_LIBXML", None)]
-    libs += ["xml2"]
-
 if options.json:
     # native glTF 2.0 / GLB support (header-only dependency)
     for prefix in prefix_path:
@@ -660,28 +623,14 @@ if options.use_msgpackc == "no":
 else:
     if options.use_msgpackc == "c++11":
         def_macros += [
-            ("MMTF_MSGPACK_USE_CPP11", None),
             ("MSGPACK_NO_BOOST", None),
         ]
     else:
         libs += ["msgpackc"]
 
-    pymol_src_dirs += ["contrib/mmtf-c"]
-
-if not options.glut:
-    def_macros += [
-        ("_PYMOL_NO_MAIN", None),
-    ]
-
 if options.testing:
     pymol_src_dirs += ["layerCTest"]
     def_macros += [("_PYMOL_CTEST", None)]
-
-if options.openvr:
-    def_macros += [("_PYMOL_OPENVR", None)]
-    pymol_src_dirs += [
-        "contrib/vr",
-    ]
 
 inc_dirs += pymol_src_dirs
 
@@ -695,8 +644,6 @@ if MAC:
     if options.osx_frameworks:
         ext_link_args += [
             "-framework OpenGL",
-        ] + (options.glut) * [
-            "-framework GLUT",
         ]
         def_macros += [
             ("_PYMOL_OSX", None),
@@ -704,8 +651,6 @@ if MAC:
     else:
         libs += [
             "GL",
-        ] + (options.glut) * [
-            "glut",
         ]
 
 if WIN:
@@ -727,14 +672,6 @@ if WIN:
             "freetype",
             "libpng",
         ]
-        + (options.glut)
-        * [
-            "freeglut",
-        ]
-        + (options.libxml)
-        * [
-            "libxml2",
-        ]
     )
 
     if DEBUG:
@@ -755,41 +692,12 @@ if not (MAC or WIN):
     libs += [
         "GL",
         "GLEW",
-    ] + (options.glut) * [
-        "glut",
     ]
 
-if options.use_vtkm != "no":
-    for prefix in prefix_path:
-        vtkm_inc_dir = os.path.join(prefix, "include", f"vtkm-{options.use_vtkm}")
-        if os.path.exists(vtkm_inc_dir):
-            break
-    else:
-        raise LookupError(
-            "VTK-m headers not found." f' PREFIX_PATH={":".join(prefix_path)}'
-        )
-    def_macros += [
-        ("_PYMOL_VTKM", None),
-    ]
-    inc_dirs += [
-        vtkm_inc_dir,
-        vtkm_inc_dir + "/vtkm/thirdparty/diy/vtkmdiy/include",
-        vtkm_inc_dir + "/vtkm/thirdparty/lcl/vtkmlcl",
-    ]
-    libs += [
-        f"vtkm_cont-{options.use_vtkm}",
-        f"vtkm_filter_contour-{options.use_vtkm}",
-        f"vtkm_filter_core-{options.use_vtkm}",
-    ]
 
 if options.vmd_plugins:
     libs += [
         "netcdf",
-    ]
-
-if options.openvr:
-    libs += [
-        "openvr_api",
     ]
 
 inc_dirs += [
@@ -806,8 +714,6 @@ for prefix in prefix_path:
             [
                 ("include",),
                 ("include", "freetype2"),
-                ("include", "libxml2"),
-                ("include", "openvr"),
             ],
         ],
         [lib_dirs, [("lib64",), ("lib",)]],

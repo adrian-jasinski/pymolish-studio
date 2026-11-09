@@ -19,7 +19,6 @@ class PyMOLDesktopGUI(object):
     file_save_aln = None
     file_save_png = None
     file_save_wrl = None
-    file_save_dae = None
     file_save_pov = None
     file_save_mpeg = None
     file_save_mov = None
@@ -100,7 +99,6 @@ class PyMOLDesktopGUI(object):
                     ('command', 'PNG...',           self.file_save_png),
                     ('separator',),
                     ('command', 'VRML 2...',        self.file_save_wrl),
-                    ('command', 'COLLADA...',       self.file_save_dae),
                     ('command', 'GLB...',           self.file_save_glb),
                     ('command', 'GLTF...',          self.file_save_gltf),
                     ('command', 'POV-Ray...',       self.file_save_pov),
@@ -430,7 +428,6 @@ class PyMOLDesktopGUI(object):
                     ('command', 'Wall-Eye Stereo', 'stereo walleye'),
                     ('command', 'Quad-Buffered Stereo', 'stereo quadbuffer'),
                     ('command', 'Zalman Stereo', 'stereo byrow'),
-                    ('command', 'OpenVR', 'stereo openvr'),
                     ('separator',),
                     ('command', 'Swap Sides', 'stereo swap'),
                     ('separator',),

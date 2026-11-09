@@ -86,10 +86,6 @@ Z* -------------------------------------------------------------------
 
 static int flush_count = 0;
 
-#ifndef _PYMOL_NO_MAIN
-static int run_only_once = true;
-#endif
-
 #define API_SETUP_PYMOL_GLOBALS \
   G = _api_get_pymol_globals(self)
 
@@ -1670,17 +1666,9 @@ static PyObject* CmdGetCapabilities(PyObject*, PyObject*)
 
   if (!caps) {
     caps = PySet_New(nullptr);
-#ifndef _PYMOL_NO_MAIN
-    // compiled with --glut
-    PySet_Add(caps, PConvToPyObject("glut"));
-#endif
 #ifndef _PYMOL_NO_MSGPACKC
-    // fast MMTF import and export
-    PySet_Add(caps, PConvToPyObject("mmtf"));
-#endif
-#ifdef _HAVE_LIBXML
-    // COLLADA export
-    PySet_Add(caps, PConvToPyObject("collada"));
+    // BinaryCIF import and export
+    PySet_Add(caps, PConvToPyObject("bcif"));
 #endif
 #ifdef _HAVE_JSON
     // native glTF 2.0 and GLB export
@@ -1689,10 +1677,6 @@ static PyObject* CmdGetCapabilities(PyObject*, PyObject*)
 #ifdef _PYMOL_CTEST
     // compiled with --testing
     PySet_Add(caps, PConvToPyObject("testing"));
-#endif
-#ifdef _PYMOL_OPENVR
-    // openvr stereo support (compiled with --openvr)
-    PySet_Add(caps, PConvToPyObject("openvr"));
 #endif
 #ifdef _PYMOL_VMD_PLUGINS
     // VMD molfile plugins
@@ -2694,32 +2678,6 @@ static PyObject *CmdGetVRML(PyObject * self, PyObject * args)
     VLAFreeP(vla);
   }
   return (APIAutoNone(result));
-}
-
-/**
- * Return a COLLADA string or None on failure
- */
-static PyObject *CmdGetCOLLADA(PyObject * self, PyObject * args)
-{
-  PyMOLGlobals *G = nullptr;
-  PyObject *result = nullptr;
-  int ver;
-  char *vla = nullptr;
-
-  API_SETUP_ARGS(G, self, args, "Oi", &self, &ver);
-  API_ASSERT(APIEnterNotModal(G));
-
-  SceneRay(G, 0, 0, 8,     /* mode 8 = COLLADA */
-      nullptr, &vla, 0.0F, 0.0F, false, nullptr, false, -1);
-  APIExit(G);
-
-  if (vla && vla[0]) {
-    result = Py_BuildValue("s", vla);
-  }
-
-  VLAFreeP(vla);
-
-  return APIAutoNone(result);
 }
 
 /**
@@ -3745,26 +3703,9 @@ static PyObject *Cmd_Sdof(PyObject * self, PyObject * args)
 
 static PyObject *CmdRunPyMOL(PyObject * self, PyObject * args)
 {
-#ifdef _PYMOL_NO_MAIN
-  PyErr_SetString(PyExc_NotImplementedError, "compile with --glut");
+  PyErr_SetString(PyExc_NotImplementedError,
+      "the GLUT GUI was removed, use the Qt GUI");
   return nullptr;
-#else
-
-  if(run_only_once) {
-    run_only_once = false;
-
-    // _PYMOL_MODULE stuff
-    {
-      int block_input_hook = false;
-      if(!PyArg_ParseTuple(args, "Oi", &self, &block_input_hook))
-        block_input_hook = false;
-
-      main_shared(block_input_hook);
-    }
-  }
-#endif
-
-  return APISuccess();
 }
 
 static PyObject *CmdCountStates(PyObject * self, PyObject * args)
@@ -4807,11 +4748,6 @@ static PyObject *CmdRefreshNow(PyObject * self, PyObject * args)
     PyMOL_PushValidContext(G->PyMOL);   /* we're trusting the caller on this... */
     SceneInvalidateCopy(G, false);
     ExecutiveDrawNow(G);        /* TODO STATUS */
-#ifndef _PYMOL_NO_MAIN
-    if(G->Main) {
-      MainRefreshNow();
-    }
-#endif
     PyMOL_PopValidContext(G->PyMOL);
     APIExit(G);
   }
@@ -5019,12 +4955,6 @@ static PyObject *CmdViewport(PyObject * self, PyObject * args)
         h = 0;
       }
 
-#ifndef _PYMOL_NO_MAIN
-        if(G->Main) {
-          MainDoReshape(w, h);    /* should be moved into Executive */
-        }
-      else
-#endif
       {
         PyMOL_NeedReshape(G->PyMOL, 2, 0, 0, w, h);
       }
@@ -6084,44 +6014,6 @@ static PyObject *CmdWindow(PyObject * self, PyObject * args)
   API_ASSERT(G->HaveGUI);
   API_ASSERT(APIEnterNotModal(G));
   {
-#ifndef _PYMOL_NO_MAIN
-    switch (int1) {
-    case 0:
-    case 1:
-      if(G->Main)
-        MainSetWindowVisibility(int1);
-      break;
-    case 2:                    /* position */
-      if(G->Main)
-        MainSetWindowPosition(G, x, y);
-      break;
-    case 3:                    /* size */
-      if((width == 0) && (height == 0) && (x != 0) && (y != 0)) {
-        width = x;
-        height = y;
-      }
-      if(G->Main)
-        MainSetWindowSize(G, width, height);
-      break;
-    case 4:                    /* position and size */
-      if(G->Main) {
-        MainSetWindowPosition(G, x, y);
-        MainSetWindowSize(G, width, height);
-      }
-      break;
-    case 5:                    /* maximize -- 
-                                   should use the window manager, 
-                                   but GLUT doesn't provide for that */
-      if(G->Main)
-        MainMaximizeWindow(G);
-      break;
-    case 6:
-      if(G->Main)
-        MainCheckWindowFit(G);
-      break;
-    }
-#endif
-
     APIExit(G);
   }
   return APISuccess();
@@ -6511,7 +6403,6 @@ static PyMethodDef Cmd_methods[] = {
   {"get_chains", CmdGetChains, METH_VARARGS},
   {"get_click_string", CmdGetClickString, METH_VARARGS},
   {"get_clip", CmdGetClip, METH_VARARGS},
-  {"get_collada", CmdGetCOLLADA, METH_VARARGS},
   {"get_color", CmdGetColor, METH_VARARGS},
 #ifdef _HAVE_JSON
   {"get_glb", CmdGetGLB, METH_VARARGS},

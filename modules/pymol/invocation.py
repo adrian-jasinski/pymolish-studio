@@ -64,7 +64,7 @@ Options
   -m        INTERNAL - do not use (mac external GUI)
   -M        force mono
   -n        INTERNAL - do not use (incentive_product=1)
-  -N name   UNSUPPORTED - external gui type (pmg_qt or pmg_tk) (same as -w)
+  -N name   UNSUPPORTED - external gui type (pmg_qt) (same as -w)
   -o        disable security protections
   -O N      sphere_mode=N
   -p        read commands from STDIN
@@ -72,16 +72,14 @@ Options
   -q        supress startup message
   -Q        quiet, suppress all text output
   -r file   run python script
-  -R        launch RPC Server
   -s file   log to file
   -S        force stereo
   -t N      stereo_mode=N
   -T name   UNSUPPORTED - Tcl/Tk GUI skin
   -u file   resume log file (execute existing content and append new log output)
   -U        UNSUPPORTED reuse the helper application
-  -v        use openvr stub instead of a real hardware
   -V N      external GUI window height in pixels
-  -w name   UNSUPPORTED - external gui type (pmg_qt or pmg_tk) (same as -N)
+  -w name   UNSUPPORTED - external gui type (pmg_qt) (same as -N)
   -W N      window width in pixels
   -x        no external gui
   -X N      window x position on screen
@@ -100,7 +98,6 @@ File Extensions
 
   p5m             implies -A5 (PDB File)
   psw             implies -A6 (PyMOL Show File)
-  pwg             PyMOL web GUI
 
 Active "pymolrc" Files
 '''
@@ -181,21 +178,11 @@ if True:
     options.blue_line = 0
 
     # Greg Landrum
-    options.rpcServer = 0
     # end
     options.security = 1
 
     script_re = re.compile(r"pymolrc$|\.pml$|\.PML$|\.p1m$|\.P1M$")
     py_re = re.compile(r"\.py$|\.pym$|\.PY$|\.PYM$")
-
-    def get_pwg_options(filename):
-        for line in open(filename, 'r'):
-            a = line.split()
-            if not a or a[0].startswith('#'):
-                continue
-            if a[0].lower() == 'options':
-                return a[1:]
-        return []
 
     def get_personal_folder():
         if sys.platform.startswith('win'):
@@ -372,8 +359,6 @@ if True:
                     options.win_py = int(av.pop())
                 if "D" in a:
                     options.defer_builds_mode = int(av.pop())
-                if "v" in a:
-                    options.openvr_stub = True
                 if "V" in a:
                     options.ext_y = int(av.pop())
                 if "N" in a: # external gui name...
@@ -449,8 +434,6 @@ if True:
                         options.deferred.append("_do_log_open %s"%av.pop())
                     if ("o" in a):
                         options.security = 0
-                    if ("R" in a):
-                        options.rpcServer = 1
                     if ("g" in a):
                         filename = av.pop()
                         if '.png' in filename:
@@ -505,21 +488,12 @@ if True:
                     av.append("-A6")
                 elif suffix in [ 'pym' ,'py', 'pyc' ]:
                     python_script = a
-                elif suffix in [ 'pwg' ]:
-                    try:
-                        pwg_options = get_pwg_options(a)
-                        if pwg_options:
-                            parse_args(['pymol'] + pwg_options, _pymol, options, 1)
-                    except:
-                        traceback.print_exc()
                 options.deferred.append(a)
                 loaded_something = 1
         if pymolrc is not None:
             options.deferred = [('_do__ @' + a) if script_re.search(a) else a
                     for a in pymolrc] + options.deferred
             options.pymolrc = pymolrc
-        if options.rpcServer:
-            options.deferred.append('_do__ /import pymol.rpc;pymol.rpc.launch_XMLRPC()')
         if options.plugins == 1:
             # Load plugins independent of PMGApp (will not add menu items)
             options.deferred.append('_do__ /import pymol.plugins;pymol.plugins.initialize(-1)')

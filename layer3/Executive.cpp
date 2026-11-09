@@ -107,9 +107,6 @@
 
 #include "Property.h"
 
-#ifdef _PYMOL_OPENVR
-#include "OpenVRMode.h"
-#endif
 
 #ifndef _PYMOL_NOPY
 #include "ce_types.h"
@@ -3745,7 +3742,6 @@ pymol::Result<ExecutiveLoadArgs> ExecutiveLoadPrepareArgs(PyMOLGlobals* G,
   case cLoadTypePDBStr:
   case cLoadTypeVDBStr:
   case cLoadTypeCIFStr:
-  case cLoadTypeMMTFStr:
   case cLoadTypeMAEStr:
   case cLoadTypeXPLORStr:
   case cLoadTypeCCP4Str:
@@ -3768,7 +3764,6 @@ pymol::Result<ExecutiveLoadArgs> ExecutiveLoadPrepareArgs(PyMOLGlobals* G,
   case cLoadTypePDBQT:
   case cLoadTypePDB:
   case cLoadTypeCIF:
-  case cLoadTypeMMTF:
   case cLoadTypeMAE:
   case cLoadTypeXPLORMap:
   case cLoadTypeCCP4Map:
@@ -3953,11 +3948,6 @@ pymol::Result<> ExecutiveLoad(PyMOLGlobals* G, ExecutiveLoadArgs const& args)
     p_return_if_error(res);
     obj = res.result();
   } break;
-  case cLoadTypeMMTF:
-  case cLoadTypeMMTFStr:
-    obj = ObjectMoleculeReadMmtfStr(G, (ObjectMolecule*) origObj, content, size,
-        state, discrete, quiet, multiplex, zoom);
-    break;
   case cLoadTypeMAE:
   case cLoadTypeMAEStr:
 #ifndef _PYMOL_IP_EXTRAS
@@ -4161,8 +4151,6 @@ pymol::CObject* ExecutiveGetExistingCompatible(
     case cLoadTypeVDBStr:
     case cLoadTypeCIF:
     case cLoadTypeCIFStr:
-    case cLoadTypeMMTF:
-    case cLoadTypeMMTFStr:
     case cLoadTypeXYZ:
     case cLoadTypeXYZStr:
     case cLoadTypeMOL:
@@ -9540,13 +9528,8 @@ pymol::Result<> ExecutiveStereo(PyMOLGlobals* G, int flag)
     }
 
     if (flag == cStereo_openvr) {
-#ifdef _PYMOL_OPENVR
-      OpenVRInit(G);
-      OpenVRFeedback(G);
-#else
       return pymol::make_error(
           "'openvr' stereo mode not available in this build");
-#endif
     }
 
     if (flag > 0) {
@@ -11544,30 +11527,6 @@ void ExecutiveDrawNow(PyMOLGlobals* G, ExecutiveDrawInfo execDrawInfo)
         OrthoDoDraw(G, drawInfo);
         SceneSetViewport(G, 0, 0, width, height);
       } break;
-#ifdef _PYMOL_OPENVR
-      case cStereo_openvr: {
-        Block* scene_block = SceneGetBlock(G);
-        int scene_width = scene_block->rect.right - scene_block->rect.left;
-        int scene_height = scene_block->rect.top - scene_block->rect.bottom;
-        OpenVRFrameStart(G);
-        float matrix[16];
-        SceneGetModel2WorldMatrix(G, matrix);
-        OpenVRHandleInput(G, scene_block->rect.left, scene_block->rect.bottom,
-            scene_width, scene_height, matrix);
-        drawInfo.renderMode = OrthoRenderMode::VR;
-        OrthoDoDraw(G, drawInfo);
-        if (SettingGetGlobal_b(G, cSetting_openvr_cut_laser) &&
-            OpenVRIsScenePickerActive(G)) {
-          int x = scene_block->rect.left + scene_width / 2;
-          int y = scene_block->rect.bottom + scene_height / 2;
-          float atomWorldPos[3];
-          ScenePickAtomInWorld(G, x, y, atomWorldPos);
-          OpenVRUpdateScenePickerLength(G, atomWorldPos);
-        }
-        OpenVRFrameFinish(G);
-        PyMOL_NeedRedisplay(G->PyMOL);
-      } break;
-#endif
       default:
         drawInfo.renderMode = OrthoRenderMode::Main;
         OrthoDoDraw(G, drawInfo);
@@ -13717,10 +13676,6 @@ bool ExecutiveIsFullScreen(PyMOLGlobals* G)
 
   int flag = -1;
 
-#if defined(GLUT_FULL_SCREEN)
-  flag = glutGet(GLUT_FULL_SCREEN);
-#endif
-
   PRINTFD(G, FB_Executive)
   " %s: flag=%d fallback=%d.\n", __func__, flag, _is_full_screen ENDFD;
 
@@ -13742,37 +13697,6 @@ void ExecutiveFullScreen(PyMOLGlobals* G, int flag)
   }
 
   _is_full_screen = (flag != 0);
-
-#ifndef _PYMOL_NO_GLUT
-  if (G->HaveGUI && G->ValidContext) {
-    if (flag) {
-#ifndef GLUT_FULL_SCREEN
-      if (wm_flag < 1) {
-        CExecutive* I = G->Executive;
-        I->oldPX = p_glutGet(P_GLUT_WINDOW_X);
-        I->oldPY = p_glutGet(P_GLUT_WINDOW_Y);
-        I->oldWidth = p_glutGet(P_GLUT_WINDOW_WIDTH);
-        I->oldHeight = p_glutGet(P_GLUT_WINDOW_HEIGHT);
-      }
-#endif
-
-      p_glutFullScreen();
-    } else {
-#ifndef GLUT_FULL_SCREEN
-      // freeglut < 2.6
-      CExecutive* I = G->Executive;
-      p_glutReshapeWindow(I->oldWidth, I->oldHeight);
-      p_glutPositionWindow(I->oldPX, I->oldPY);
-#elif !defined(GLUT_HAS_MULTI)
-      // freeglut < 2.8
-      if (wm_flag)
-        glutFullScreenToggle();
-#else
-      glutLeaveFullScreen();
-#endif
-    }
-  }
-#endif
 
   PyMOL_NeedReshape(G->PyMOL, flag, 0, 0, 0, 0);
   SceneChanged(G);
@@ -16678,11 +16602,6 @@ int ExecutiveInit(PyMOLGlobals* G)
     I->all_sel_list_id = TrackerNewList(I->Tracker, nullptr);
     I->active = true;
     OrthoAttach(G, I, cOrthoTool);
-#ifndef GLUT_FULL_SCREEN
-    I->oldWidth = 640;
-    I->oldHeight = 480;
-#endif
-
     I->Lex = OVLexicon_New(G->Context->heap);
 
     /* create "all" entry */

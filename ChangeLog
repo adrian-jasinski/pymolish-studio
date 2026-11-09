@@ -2,6 +2,158 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-08 pymolish-studio
+
+	* 4.5.2
+
+	* Theme
+	  - Dark theme for all Qt panels (Fusion style + dark palette), on by
+	    default so the panels match the viewport. Display > Dark Theme
+	    toggles it live; the choice is remembered in QSettings.
+
+
+2026-11-08 pymolish-studio
+
+	* 4.5.1
+
+	* Builds
+	  - CI packs the Linux and macOS bundles as .tar.gz and the Windows
+	    bundle as .zip; a push to master publishes them, plus the wheels,
+	    on a GitHub pre-release tagged with the version (v4.X.Y). The
+	    workflow can also be started by hand (workflow_dispatch).
+
+
+2026-11-08 pymolish-studio
+
+	* 4.5.0
+
+	* Panels
+	  - Objects panel (dock): one row per object with name, type, shown,
+	    atoms, states; sort, filter, Zoom/Orient/Show/Hide, copy rows,
+	    double-click to zoom. Polls the object list once a second.
+	  - Window layout (geometry, docks) is saved on exit and restored on
+	    start; Display > Panels toggles panels and offers Reset Layout.
+	  - The external GUI dock is titled "Command Line".
+
+
+2026-11-08 pymolish-studio
+
+	* 4.4.8
+
+	* Developer & Infrastructure
+	  - Removed unused testing/make_test_stubs.py and plot_timings.py.
+	  - Exact dev pins: biopython==1.88, ruff==0.17.4.
+	  - CI clones msgpack-c at tag cpp-7.0.0 instead of a moving branch.
+	  - docs/baseline.md records sizes before and after the cleanup.
+
+
+2026-11-08 pymolish-studio
+
+	* 4.4.7
+
+	* Removed\n	  - MMTF import/export (format deprecated by RCSB), contrib/mmtf-c,\n	    chempy.mmtf and the mmtf-cpp build requirement. msgpack-c stays for\n	    BinaryCIF; cmd.get_capabilities() reports 'bcif' instead of 'mmtf'.
+
+2026-11-08 pymolish-studio
+
+	* 4.4.6
+
+	* Removed\n	  - COLLADA (.dae) export and import and the libxml2 dependency\n	    (--libxml option). glTF export is native only (--json=true);\n	    the collada2gltf fallback is gone. collada_* settings keep their\n	    indices as unused slots.
+
+2026-11-08 pymolish-studio
+
+	* 4.4.5
+
+	* Removed
+	  - OpenVR support: --openvr build option, contrib/vr, data/openvr, the
+	    openvr wizard, the -v stub flag, openvr_* settings (indices kept as
+	    unused slots) and 'stereo openvr' (now reports not available).
+
+
+2026-11-08 pymolish-studio
+
+	* 4.4.4
+
+	* Removed\n	  - XML-RPC server (-R), the built-in HTTP server (pymolhttpd), the\n	    modules/web examples and the .pwg web-GUI launch file.
+
+2026-11-08 pymolish-studio
+
+	* 4.4.3
+
+	* Removed\n	  - mpeg_encode movie encoder (external legacy binary). movie.produce and\n	    the export dialog keep ffmpeg and convert.
+
+2026-11-08 pymolish-studio
+
+	* 4.4.2
+
+	* Removed\n	  - VTK-m isosurface backend and the --use-vtkm build option.\n	    isosurface_algorithm=0 now behaves like 1 (internal marching cubes)\n	    without the per-call warning.
+
+2026-11-08 pymolish-studio
+
+	* 4.4.1
+
+	* Removed\n	  - chempy.fast: unused since the Numeric era (imported the removed Numeric module).
+
+2026-11-08 pymolish-studio
+
+	* 4.4.0
+
+	* Developer & Infrastructure
+	  - packaging/pymolish.spec: PyInstaller one-folder bundle (Linux 290 MB
+	    unpacked, 115 MB tar.gz); CI uploads wheel + bundle artifacts for
+	    Linux, Windows and macOS from the Python 3.12 job.
+	  - CI builds a wheel first and installs it; macOS job uses arm64 Miniforge.
+	  - pyinstaller==6.22.3 added to dev extras.
+	  - fix: Python stdout/stderr are flushed before process exit, so piped
+	    headless output is no longer lost on quit.
+
+
+2026-11-08 pymolish-studio
+
+	* 4.3.1
+
+	* Removed
+	  - GLUT GUI: --glut build option, layer5/main.cpp main loop,
+	    os_gl_glut_real.h and all _PYMOL_NO_MAIN / GLUT_FULL_SCREEN
+	    branches. "glut" is no longer in cmd.get_capabilities().
+	  - fix: volume_panel error without the Qt GUI raised NameError.
+
+
+2026-11-08 pymolish-studio
+
+	* 4.3.0
+
+	* Removed
+	  - Tk external GUI (pmg_tk), Pmw support and the Tk plugin manager.
+	    Plugins that build Tk windows (app.root) no longer work; plugins
+	    that only use cmd, pymol.Qt, or tkinter message/file dialogs
+	    (redirected to Qt) keep working.
+	  - Plugin modules are now imported as pymol.plugins.startup.<name>
+	    instead of pmg_tk.startup.<name>.
+	  - volume_panel requires the Qt GUI; the _noqt argument is gone.
+	  - Builder bitmaps moved to data/pmg_qt/bitmaps/builder.
+
+
+2026-11-08 pymolish-studio
+
+	* 4.2.0
+
+	* Developer & Infrastructure
+	  - --jobs / JOBS build option is honored on Linux and macOS
+	  - Editable install documented as the development loop (INSTALL)
+	  - testing/bench.py headless performance baseline; numbers in docs/baseline.md
+	  - _PyMOL_VERSION_int follows the 4.x version string
+
+
+2026-11-08 pymolish-studio
+
+	* 4.1.0
+
+	* Developer & Infrastructure
+	  - Qt GUI requires PySide6; PyQt5, PyQt6 and PySide2 support removed
+	    (the QT_API environment variable is no longer consulted)
+	  - Python 3.11 or newer required
+
+
 2025-01-24 Jarrett Johnson, Thomas Stewart
 
     * 3.1.0

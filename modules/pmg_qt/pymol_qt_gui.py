@@ -20,6 +20,7 @@ from pymol.Qt.utils import (getSaveFileNameWithExt, UpdateLock, WidgetMenu,
 
 from .pymol_gl_widget import PyMOLGLWidget
 from . import keymapping
+from . import theme
 
 from pmg_qt import properties_dialog, file_dialogs
 
@@ -54,6 +55,7 @@ class PyMOLQtGUI(QtWidgets.QMainWindow, pymol._gui.PyMOLDesktopGUI):
             self.pymolwidget.pymol.button(*args)
 
     def closeEvent(self, event):
+        self.save_layout()
         self.cmd.quit()
 
     # for thread-safe viewport command
@@ -183,7 +185,8 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         self.ext_window = \
             dockWidget = QtWidgets.QDockWidget(self)
-        dockWidget.setWindowTitle("External GUI")
+        dockWidget.setWindowTitle("Command Line")
+        dockWidget.setObjectName("dock_command")
         dockWidget.setWidget(dockWidgetContents)
         if options.external_gui:
             dockWidget.setTitleBarWidget(QtWidgets.QWidget())
@@ -208,6 +211,11 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.setCentralWidget(self.pymolwidget)
 
         cmd = self.cmd = self.pymolwidget.cmd
+
+        # object table
+        from .object_table import ObjectTableDock
+        self.object_table = ObjectTableDock(self)
+        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.object_table)
 
         '''
         # command completion
@@ -397,6 +405,19 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.menudict['Plugin'].addAction(
             'Initialize Plugin System', self.initializePlugins)
 
+        # Display -> Panels
+        panels = self.menudict['Display'].addMenu('Panels')
+        panels.addAction(self.ext_window.toggleViewAction())
+        panels.addAction(self.object_table.toggleViewAction())
+        panels.addAction('Builder', self.open_builder_panel)
+        panels.addSeparator()
+        panels.addAction('Reset Layout', self.reset_layout)
+        self._default_state = self.saveState()
+        act = self.menudict['Display'].addAction('Dark Theme')
+        act.setCheckable(True)
+        act.setChecked(theme.is_dark())
+        act.toggled.connect(theme.set_dark)
+
         # focus in command line
         if options.external_gui:
             self.lineedit.setFocus()
@@ -453,6 +474,29 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
                 self.keyPressEvent(event)
                 return True
         return False
+
+    def save_layout(self):
+        settings = QtCore.QSettings('pymolish', 'pymolish-studio')
+        settings.setValue('mainwindow/geometry', self.saveGeometry())
+        settings.setValue('mainwindow/state', self.saveState())
+
+    def restore_layout(self):
+        settings = QtCore.QSettings('pymolish', 'pymolish-studio')
+        geometry = settings.value('mainwindow/geometry')
+        state = settings.value('mainwindow/state')
+        if geometry:
+            self.restoreGeometry(geometry)
+        if state:
+            self.restoreState(state)
+        # the saved position may be on a monitor that is gone
+        app = QtWidgets.QApplication
+        if not any(s.availableGeometry().intersects(self.frameGeometry()) for s in app.screens()):
+            self.move(app.primaryScreen().availableGeometry().topLeft())
+
+    def reset_layout(self):
+        self.restoreState(self._default_state)
+        self.ext_window.show()
+        self.object_table.show()
 
     def toggle_ext_window_dockable(self, neverfloat=False):
         '''
@@ -617,6 +661,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         app = plugins.get_pmgapp()
         if not self.builder:
             self.builder = BuilderPanelDocked(self, app)
+            self.builder.setObjectName('dock_builder')
             self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self.builder)
 
         self.builder.show()
@@ -801,9 +846,6 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
     def file_save_wrl(self):
         self._file_save('VRML 2 WRL File (*.wrl)', 'wrl')
-
-    def file_save_dae(self):
-        self._file_save('COLLADA File (*.dae)', 'dae')
 
     def file_save_pov(self):
         self._file_save('POV File (*.pov)', 'pov')
@@ -1228,9 +1270,11 @@ def execapp():
 
     app = PyMOLApplication(['PyMOL'])
     app.setWindowIcon(make_pymol_qicon())
+    theme.apply(app, theme.is_dark())
 
     window = PyMOLQtGUI()
     window.setWindowTitle("PyMOL")
+    window.restore_layout()
 
     # fix gnome/wayland dash icon/missing wmclass
     app.setDesktopFileName("org.pymol.PyMOL")

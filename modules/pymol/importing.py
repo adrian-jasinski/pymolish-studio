@@ -513,107 +513,6 @@ SEE ALSO
                 continue
             _self.fab(raw_seq, key, quiet=quiet)
 
-    def _processPWG(fname, *, _self=cmd):
-        r = DEFAULT_ERROR
-
-        import urllib.request as urllib
-
-        import shlex
-
-        try:
-            from .pymolhttpd import PymolHttpd
-            browser_flag = 0
-            launch_flag = 0
-            report_url = None
-            logging = 1
-            root = None
-            port = 0
-            wrap_native = 0
-            headers = []
-            if '://' in fname:
-                lines = urllib.urlopen(fname).readlines()
-            else:
-                lines = open(fname).readlines()
-            for line in lines:
-                line = line.strip()
-                if len(line) and line[0:1] != '#':
-                    input = line.split(None,1)
-                    if len(input) and input[0]!='#':
-                        keyword = input[0].lower()
-                        if keyword == 'port': # will be assigned dynamically if not specified
-                            if len(input)>1:
-                                port = int(input[1].strip())
-                                launch_flag = 1
-                        elif keyword == 'header':
-                            a = shlex.split(input[1])
-                            if len(a) != 3 or a[0] != 'add' or a[1].endswith(':'):
-                                raise ValueError('header command must be: header add Some-Key "some value"')
-                            headers.append(a[1:])
-                        elif keyword == 'logging':
-                            if len(input)>1:
-                                logging = int(input[1].strip())
-                        elif keyword == 'root': # must encode a valid filesystem path to local content
-                            if len(input)>1:
-                                root = input[1].strip()
-                                root = _self.exp_path(root) # allow for env var substitution
-                                if os.path.exists(root):
-                                    launch_flag = 1
-                                else:
-                                    print("Error: requested path '%s' does not exist."%root)
-                            else:
-                                print("Error: missing path to root content")
-                        elif keyword == 'browser':
-                            # could perhaps interpret a browser name here
-                            browser_flag = 1
-                        elif keyword == 'launch': # launch the module named in the file (must exist!)
-                            if len(input)>1:
-                                mod_name = input[1]
-                                try:
-                                    __import__(mod_name)
-                                    mod = sys.modules[mod_name]
-                                    if hasattr(mod,'__launch__'):
-                                        mod.__launch__(_self)
-                                        r = DEFAULT_SUCCESS
-                                except:
-                                    colorprinting.print_exc()
-                                    print("Error: unable to launch web application'%s'."%mode_name)
-                        elif keyword == 'report':
-                            if len(input)>1:
-                                report_url = input[1]
-                        elif keyword == 'delete':
-                            os.unlink(fname)
-                        elif keyword == 'options':
-                            # parsed during invocation
-                            pass
-                        elif keyword == 'wrap_native_return_types':
-                            wrap_native = 1
-                        else:
-                            print("Error: unrecognized input:  %s"%str(input))
-            if launch_flag:
-                server = PymolHttpd(port,root,logging,wrap_native,headers=headers)
-                if port == 0:
-                    port = server.port # get the dynamically assigned port number
-                server.start()
-                if browser_flag: # fire up a local browser
-                    import webbrowser
-                    webbrowser.open("http://localhost:%d"%port,new=1)
-                    r = DEFAULT_SUCCESS
-                else:
-                    r = DEFAULT_SUCCESS
-                if report_url is not None: # report port back to server url (is this secure?)
-                    try:
-                        report_url = report_url + str(port)
-                        print(" Reporting back pymol port via: '%s'"%report_url)
-                        urllib.urlretrieve(report_url)
-                    except:
-                        print(" Report attempt may have failed.")
-        except ImportError:
-            colorprinting.print_exc()
-
-        if is_error(r):
-            print("Error: unable to handle PWG file")
-        return r
-
     def _magic_check_cor_charmm(filename):
         # http://www.ks.uiuc.edu/Research/vmd/plugins/molfile/corplugin.html
         # assume at least 2 title/comment lines, starting with *
@@ -904,15 +803,14 @@ DESCRIPTION
 
 EXAMPLE
 
-    contents = open('example.mmtf', 'rb').read()
-    cmd.load_raw(contents, 'mmtf')
+    contents = open('example.bcif', 'rb').read()
+    cmd.load_raw(contents, 'bcif')
         '''
         if multiplex is None:
             multiplex=-2
         ftype = getattr(loadable, format, None)
         if ftype is None:
             assert format not in ('cif', 'pdb', 'dx')
-            assert format not in ('mmtf', ) or format in loadfunctions
 
             if not isinstance(content, bytes):
                 content = content.encode("utf-8")
@@ -1122,7 +1020,6 @@ PYMOL API
     }
 
     hostPaths = {
-        "mmtf" : "https://mmtf.rcsb.org/v1.0/full/{code}.mmtf.gz",
         "bio"  : [
             "https://files.rcsb.org/download/{code}.{type}.gz",
             "/data/biounit/coordinates/divided/{mid}/{code}.{type}.gz",
@@ -1188,8 +1085,6 @@ PYMOL API
         elif type == 'cif':
             pass
         elif type == 'bcif':
-            pass
-        elif type == 'mmtf':
             pass
         elif type == 'cc':
             nameFmt = '{code}.cif'
@@ -1261,9 +1156,6 @@ PYMOL API
         elif contents and bioType in ('cif', 'cc'):
             r = _self.load_raw(contents, 'cif', name, state,
                     finish, discrete, quiet, multiplex, zoom)
-        elif contents and bioType in ('mmtf',):
-            r = _self.load_raw(contents, 'mmtf', name, state,
-                    finish, discrete, quiet, multiplex, zoom)
 
         if not _self.is_error(r):
             return name
@@ -1307,7 +1199,7 @@ PYMOL API
                     obj_name = 'emd_' + obj_code
 
             chain = None
-            if (len(obj_code) > 4 and type in ('pdb', 'cif', 'mmtf', 'bcif') and
+            if (len(obj_code) > 4 and type in ('pdb', 'cif', 'bcif') and
                     # "Extended PDB accession codes" have 8 characters,
                     # try to distinguish by leading non-zero digit
                     '1' <= obj_code[0] <= '9'):
@@ -1542,64 +1434,6 @@ EXAMPLE
             _self.group(group, ' '.join(members))
 
 
-    def load_mmtf(filename, object='', discrete=0, multiplex=0, zoom=-1, quiet=1, *, _self=cmd):
-        '''
-DESCRIPTION
-
-    Load an MMTF file or URL.
-        '''
-        from chempy.mmtf import MmtfReader
-
-        if not object:
-            object = _self.filename_to_objectname(filename)
-
-        data = MmtfReader.from_url(filename)
-        models = data.to_chempy(_self.get_setting_int('cif_use_auth'))
-
-        if len(models) == 1:
-            _self.load_model(models[0], object, discrete=discrete, zoom=zoom, quiet=quiet)
-
-            assembly = _self.get('assembly').encode()
-            if not assembly:
-                return
-
-            try:
-                transformList = next((a[b'transformList']
-                    for a in data.get(b'bioAssemblyList', ())
-                    if a[b'name'] == assembly))
-            except StopIteration:
-                raise pymol.CmdException('No such assembly: "%s"' % (assembly))
-
-            chainIdList = data.get(b'chainIdList')
-
-            tmp = _self.get_unused_name('_asu')
-            _self.set_name(object, tmp)
-
-            for state, trans in enumerate(transformList, 1):
-                chains = [chainIdList[i] for i in trans[b'chainIndexList']]
-                _self.create(object,
-                        'model %s and segi %s' % (tmp, '+'.join(chains)),
-                        1, state, zoom=0, discrete=discrete)
-                _self.transform_object(object, trans[b'matrix'], state=state)
-
-            _self.delete(tmp)
-            _self.set('all_states', 1, object)
-
-            if int(zoom):
-                _self.zoom(object)
-
-            return
-
-        tmp = _self.get_unused_name('_model')
-
-        for i, model in enumerate(models):
-            _self.load_model(model, tmp, 1, zoom=0)
-            if multiplex > 0:
-                _self.set_name(tmp, '%s_%04d' % object)
-            else:
-                _self.create(object, tmp, 1, -1, discrete=discrete, zoom=zoom)
-                _self.delete(tmp)
-
     def load_ply(filename, object, state=0, zoom=-1, *, _self=cmd):
         from . import cgo
         obj = cgo.from_plystr(_self.file_read(filename))
@@ -1623,7 +1457,6 @@ DESCRIPTION
         'mtz': load_mtz,
         'py': lambda filename, _self: _self.do("_ run %s" % filename),
         'pml': lambda filename, _self: _self.do("_ @%s" % filename),
-        'pwg': _processPWG,
         'aln': 'pymol.seqalign:load_aln_multi',
         'fasta': _processFASTA,
         'png': 'pymol.viewing:load_png',
@@ -1635,7 +1468,6 @@ DESCRIPTION
         'cc1': load_cc1,
         'pdb': read_pdbstr,
         'stl': 'pymol.lazyio:read_stlstr',
-        'dae': 'pymol.lazyio:read_collada',
 
         # Incentive
         'vis': incentive_format_not_available_func,
