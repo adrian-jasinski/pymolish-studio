@@ -42,9 +42,9 @@ dev = [
 [project.urls]
 Homepage = "https://pymol.org"
 Documentation = "https://pymol.org/dokuwiki"
-Repository = "https://github.com/schrodinger/pymol-open-source"
-"Bug Tracker" = "https://github.com/schrodinger/pymol-open-source/issues"
-Changelog = "https://github.com/schrodinger/pymol-open-source/blob/master/ChangeLog"
+Repository = "https://github.com/adrian-jasinski/pymolish-studio"
+"Bug Tracker" = "https://github.com/adrian-jasinski/pymolish-studio/issues"
+Changelog = "https://github.com/adrian-jasinski/pymolish-studio/blob/master/ChangeLog"
 
 [project.scripts]
 pymol = "pymol:launch"
