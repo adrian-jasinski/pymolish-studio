@@ -14,6 +14,8 @@ deliverables. Build speed, launch speed and download size also need separate dat
 
 4.5.1: bundles are archived (`.tar.gz` Linux/macOS, `.zip` Windows) and a push to `master` publishes them with the wheels on a GitHub pre-release tagged `v<version>`; the workflow also runs on `workflow_dispatch`. Downloads: the repository's Releases page.
 
+4.5.3: CI runs only for pushes/PRs to `master`, on Python 3.13 and 3.14. Windows and macOS get their native libraries through pixi (`pixi.toml`, conda-forge only; the upstream `schrodinger` channel and the msgpack-c git clone are gone; catch2 is `2.13.*` because 2.13.3 has no osx-arm64 build). Linux keeps apt. Releases carry a `SHA256SUMS` file. Note: this fork has recorded zero Actions runs so far; Actions must be enabled once in the repository's Actions tab before any of this executes.
+
 ## Current state and risks to verify
 
 - [Build backend](../../_custom_build/backend.py) supports wheels and editable

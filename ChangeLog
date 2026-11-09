@@ -2,6 +2,19 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-09 pymolish-studio
+
+	* 4.5.3
+
+	* Builds
+	  - CI runs on pushes and pull requests to master only, on Python 3.13
+	    and 3.14; the 3.13 job ships the bundles.
+	  - Windows and macOS runners take their native libraries from pixi
+	    (pixi.toml, conda-forge) instead of Miniforge plus the schrodinger
+	    channel; msgpack headers come from msgpack-cxx, no git clone.
+	  - Releases include a SHA256SUMS file; README links the Releases page.
+
+
 2026-11-08 pymolish-studio
 
 	* 4.5.2

@@ -83,7 +83,7 @@ clang-format -i <changed .cpp/.h>
 ruff format <the .py files you changed>
 ```
 
-CI (`.github/workflows/build.yml`) builds Linux / Windows / macOS on Python 3.13–3.14 and runs the suite. A PR that breaks CI is not done.
+CI (`.github/workflows/build.yml`) builds Linux (apt) / Windows / macOS (native deps from `pixi.toml`, conda-forge) on Python 3.13–3.14 and runs the suite; a push to `master` publishes bundles on GitHub Releases. A PR that breaks CI is not done.
 
 ## 5. Change rules
 

@@ -77,68 +77,36 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.13", "3.14"]
-
-    env:
-      CONDA_ENV_NAME: "testing_env"
+        python: [py313, py314]
 
     steps:
     - uses: actions/checkout@v6
 
-    - name: Install Miniforge
-      run: |
-        choco install miniforge3
-
-    - name: Add conda to PATH
-      run: |
-        echo "$env:CONDA" | Out-File -Append -FilePath $env:GITHUB_PATH
-        echo "$env:CONDA\Scripts" | Out-File -Append -FilePath $env:GITHUB_PATH
-
-    - name: Set up Miniforge
-      run: |
-        conda init powershell
-        conda create --name $env:CONDA_ENV_NAME -c conda-forge -c schrodinger --override-channels `
-            python=${{ matrix.python-version }} `
-            pip `
-            catch2=2.13.3 `
-            freetype `
-            glew `
-            glm `
-            libpng `
-            libnetcdf `
-            nlohmann_json
-
-    - name: Get additional sources
-      run: |
-        conda activate $env:CONDA_ENV_NAME
-        git clone --depth 1 --branch cpp-7.0.0 https://github.com/msgpack/msgpack-c.git
-        Copy-Item -Recurse -Path msgpack-c/include\* -Destination "$env:CONDA_PREFIX\Library\include"
-        dir $env:CONDA_PREFIX\Library\include
+    - uses: prefix-dev/setup-pixi@v0.11.3
+      with:
+        environments: ${{ matrix.python }}
+        locked: false
+        cache: false
 
     - name: Build PyMOL
       run: |
-        conda activate $env:CONDA_ENV_NAME
-        pip wheel -v --no-deps -w dist --config-settings testing=True --config-settings json=True .
+        pixi run -e ${{ matrix.python }} pip wheel -v --no-deps -w dist --config-settings testing=True --config-settings json=True .
         $whl = (Get-ChildItem dist\*.whl | Select-Object -First 1).FullName
-        pip install "$whl[dev]"
+        pixi run -e ${{ matrix.python }} pip install "$whl[dev]"
 
     - name: Test
-      run: |
-        conda activate $env:CONDA_ENV_NAME
-        pymol -ckqy testing\testing.py --run all
+      run: pixi run -e ${{ matrix.python }} pymol -ckqy testing\testing.py --run all
 
     - name: Build standalone bundle
-      if: matrix.python-version == '3.13'
-      run: |
-        conda activate $env:CONDA_ENV_NAME
-        pyinstaller --noconfirm packaging/pyinstaller.spec
+      if: matrix.python == 'py313'
+      run: pixi run -e ${{ matrix.python }} pyinstaller --noconfirm packaging/pyinstaller.spec
 
     - name: Pack bundle
-      if: matrix.python-version == '3.13'
+      if: matrix.python == 'py313'
       run: Compress-Archive -Path dist\pymolish -DestinationPath dist\pymolish-${{ runner.os }}-${{ runner.arch }}.zip
 
     - name: Upload preview artifacts
-      if: matrix.python-version == '3.13'
+      if: matrix.python == 'py313'
       uses: actions/upload-artifact@v4
       with:
         name: pymolish-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
@@ -155,67 +123,38 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.13", "3.14"]
+        python: [py313, py314]
 
     env:
-      CONDA_ROOT: "/tmp/miniforge"
-      CONDA_ENV_NAME: "testing_env"
+      MACOSX_DEPLOYMENT_TARGET: "12.0"
 
     steps:
     - uses: actions/checkout@v6
 
-    - name: Download Miniforge
-      run: |
-        curl -L -o $CONDA_ROOT.sh https://github.com/conda-forge/miniforge/releases/download/24.11.0-0/Miniforge3-MacOSX-arm64.sh
-        bash $CONDA_ROOT.sh -b -p $CONDA_ROOT
-
-    - name: Add conda to PATH
-      run: |
-        echo "${CONDA_ROOT}/bin" >> "$GITHUB_PATH"
-
-    - name: Set up Miniforge
-      run: |
-        conda create --name $CONDA_ENV_NAME -c conda-forge -c schrodinger --override-channels \
-            python=${{ matrix.python-version }} \
-            pip \
-            catch2=2.13.3 \
-            freetype \
-            glew \
-            glm \
-            libpng \
-            libnetcdf \
-            nlohmann_json
-
-    - name: Get additional sources
-      run: |
-        source activate $CONDA_ENV_NAME
-        git clone --depth 1 --branch cpp-7.0.0 https://github.com/msgpack/msgpack-c.git
-        cp -R msgpack-c/include/* ${CONDA_PREFIX}/include/
+    - uses: prefix-dev/setup-pixi@v0.11.3
+      with:
+        environments: ${{ matrix.python }}
+        locked: false
+        cache: false
 
     - name: Build PyMOL
       run: |
-        source activate $CONDA_ENV_NAME
-        export MACOSX_DEPLOYMENT_TARGET=12.0
-        pip wheel -v --no-deps -w dist --config-settings testing=True --config-settings json=True .
-        pip install "$(ls dist/*.whl)[dev]"
+        pixi run -e ${{ matrix.python }} pip wheel -v --no-deps -w dist --config-settings testing=True --config-settings json=True .
+        pixi run -e ${{ matrix.python }} pip install "$(ls dist/*.whl)[dev]"
 
     - name: Test
-      run: |
-        source activate $CONDA_ENV_NAME
-        pymol -ckqy testing/testing.py --run all
+      run: pixi run -e ${{ matrix.python }} pymol -ckqy testing/testing.py --run all
 
     - name: Build standalone bundle
-      if: matrix.python-version == '3.13'
-      run: |
-        source activate $CONDA_ENV_NAME
-        pyinstaller --noconfirm packaging/pyinstaller.spec
+      if: matrix.python == 'py313'
+      run: pixi run -e ${{ matrix.python }} pyinstaller --noconfirm packaging/pyinstaller.spec
 
     - name: Pack bundle
-      if: matrix.python-version == '3.13'
+      if: matrix.python == 'py313'
       run: tar -C dist -czf dist/pymolish-${{ runner.os }}-${{ runner.arch }}.tar.gz pymolish
 
     - name: Upload preview artifacts
-      if: matrix.python-version == '3.13'
+      if: matrix.python == 'py313'
       uses: actions/upload-artifact@v4
       with:
         name: pymolish-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
@@ -251,4 +190,5 @@ jobs:
         tag=v$(sed -n 's/^#define _PyMOL_VERSION "\(.*\)"/\1/p' layer0/Version.h)
         gh release view "$tag" >/dev/null 2>&1 \
           || gh release create "$tag" --prerelease --title "pymolish-studio $tag" --notes "Automated build of ${{ github.sha }}. Unsigned; see docs/plans/05-builds-binaries.md."
-        gh release upload "$tag" --clobber dist/pymolish-*.tar.gz dist/pymolish-*.zip dist/*.whl
+        (cd dist && sha256sum pymolish-*.tar.gz pymolish-*.zip *.whl > SHA256SUMS)
+        gh release upload "$tag" --clobber dist/pymolish-*.tar.gz dist/pymolish-*.zip dist/*.whl dist/SHA256SUMS
