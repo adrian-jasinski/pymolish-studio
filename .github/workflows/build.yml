@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.13", "3.14"]
 
     steps:
     - uses: actions/checkout@v6
@@ -43,24 +43,24 @@ jobs:
         pip wheel -v --no-deps -w dist --config-settings testing=True --config-settings json=True .
         pip install "$(ls dist/*.whl)[dev]"
       env:
-        # the 3.12 job ships the preview artifacts, so it is a release build
-        DEBUG: ${{ matrix.python-version != '3.12' && '1' || '' }}
+        # the 3.13 job ships the preview artifacts, so it is a release build
+        DEBUG: ${{ matrix.python-version != '3.13' && '1' || '' }}
 
     - name: Test
       run: |
         pymol -ckqy testing/testing.py --run all
 
     - name: Build standalone bundle
-      if: matrix.python-version == '3.12'
+      if: matrix.python-version == '3.13'
       run: |
         pyinstaller --noconfirm packaging/pyinstaller.spec
 
     - name: Pack bundle
-      if: matrix.python-version == '3.12'
+      if: matrix.python-version == '3.13'
       run: tar -C dist -czf dist/pymolish-${{ runner.os }}-${{ runner.arch }}.tar.gz pymolish
 
     - name: Upload preview artifacts
-      if: matrix.python-version == '3.12'
+      if: matrix.python-version == '3.13'
       uses: actions/upload-artifact@v4
       with:
         name: pymolish-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
@@ -77,7 +77,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.13", "3.14"]
 
     env:
       CONDA_ENV_NAME: "testing_env"
@@ -128,17 +128,17 @@ jobs:
         pymol -ckqy testing\testing.py --run all
 
     - name: Build standalone bundle
-      if: matrix.python-version == '3.12'
+      if: matrix.python-version == '3.13'
       run: |
         conda activate $env:CONDA_ENV_NAME
         pyinstaller --noconfirm packaging/pyinstaller.spec
 
     - name: Pack bundle
-      if: matrix.python-version == '3.12'
+      if: matrix.python-version == '3.13'
       run: Compress-Archive -Path dist\pymolish -DestinationPath dist\pymolish-${{ runner.os }}-${{ runner.arch }}.zip
 
     - name: Upload preview artifacts
-      if: matrix.python-version == '3.12'
+      if: matrix.python-version == '3.13'
       uses: actions/upload-artifact@v4
       with:
         name: pymolish-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
@@ -155,7 +155,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.13", "3.14"]
 
     env:
       CONDA_ROOT: "/tmp/miniforge"
@@ -205,17 +205,17 @@ jobs:
         pymol -ckqy testing/testing.py --run all
 
     - name: Build standalone bundle
-      if: matrix.python-version == '3.12'
+      if: matrix.python-version == '3.13'
       run: |
         source activate $CONDA_ENV_NAME
         pyinstaller --noconfirm packaging/pyinstaller.spec
 
     - name: Pack bundle
-      if: matrix.python-version == '3.12'
+      if: matrix.python-version == '3.13'
       run: tar -C dist -czf dist/pymolish-${{ runner.os }}-${{ runner.arch }}.tar.gz pymolish
 
     - name: Upload preview artifacts
-      if: matrix.python-version == '3.12'
+      if: matrix.python-version == '3.13'
       uses: actions/upload-artifact@v4
       with:
         name: pymolish-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
