@@ -22,6 +22,8 @@ class TestTheme(testing.PyMOLTestCase):
             self.assertGreater(fg - bg, 60)
         theme.apply(app, True)
         self.assertLess(app.palette().window().color().lightness(), 100)
+        menu = QtWidgets.QMenu()
+        self.assertLess(menu.palette().window().color().lightness(), 100)
         theme.apply(app, False)
         self.assertGreater(app.palette().window().color().lightness(), 150)
         self.assertEqual(app.style().objectName(), "fusion")

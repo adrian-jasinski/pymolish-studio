@@ -2,6 +2,15 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-11 pymolish-studio
+
+	* 4.5.4
+
+	* Theme
+	  - Dark theme also reaches OS-drawn menus and title bars (macOS menu
+	    bar, Windows) via the Qt color scheme hint.
+
+
 2026-11-09 pymolish-studio
 
 	* 4.5.3

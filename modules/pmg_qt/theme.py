@@ -43,8 +43,11 @@ def is_dark():
 
 
 def apply(app, dark):
-    # ponytail: Fusion + palette works on every platform; Qt's
-    # QStyleHints.setColorScheme is a no-op on Linux (checked with 6.12)
+    # Fusion + palette darkens every Qt-drawn menu and widget. The color
+    # scheme hint darkens what the OS draws (macOS menu bar, Windows title
+    # bars and system menus); it is a no-op on Linux (checked with 6.12).
+    scheme = QtCore.Qt.ColorScheme
+    app.styleHints().setColorScheme(scheme.Dark if dark else scheme.Light)
     app.setStyle("Fusion")
     app.setPalette(dark_palette() if dark else app.style().standardPalette())
 
