@@ -76,7 +76,7 @@ pip install --verbose --no-build-isolation --config-settings testing=True '.[dev
 pymolish -ckqy testing/testing.py --run all
 
 # run one test file
-pymolish -ckqy testing/testing.py testing/tests/api/<file>.py
+pymolish -ckqy testing/testing.py --run testing/tests/api/<file>.py
 
 # format
 clang-format -i <changed .cpp/.h>
