@@ -4,6 +4,22 @@ CHANGE LOG
 
 2026-11-12 pymolish-studio
 
+	* 4.5.11
+
+	* Objects panel
+	  - New Qt panel on the right: objects, selections and groups with a
+	    visibility checkbox and the A/S/H/L/C menus, the buttons of the
+	    active wizard, and a status line (mouse mode, selection mode,
+	    state). Text follows Display > UI Scale; resize by dragging the
+	    panel edge. It replaces the Objects table added in 4.5.0.
+	  - The viewport's internal GUI is off by default in the GUI. Bring it
+	    back with Display > Internal GUI or "set internal_gui" in pymolrc.
+	    Its left edge can now be dragged to resize it.
+	  - Saved window layouts from earlier versions are reset once.
+
+
+2026-11-12 pymolish-studio
+
 	* 4.5.10
 
 	* Performance

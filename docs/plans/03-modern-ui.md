@@ -10,6 +10,8 @@ internal control. Preserve command-line workflows and existing `.ui` dialogs.
 
 Slices 1 to 3 shipped in 4.5.0: `modules/pmg_qt/object_table.py` (model + dock, headless test in `testing/tests/api/object_table.py`), named docks (`dock_command`, `dock_objects`, `dock_builder`), `QSettings` layout save/restore with off-screen recovery, Display > Panels with Reset Layout. Viewport-to-table synchronization, object controls migration (slice 4), menu cleanup (6) is open. Slice 5 started in 4.5.2: `modules/pmg_qt/theme.py` (Fusion + dark palette, default on, Display > Dark Theme, persisted); spacing/labels not touched yet. Slice 5 continued in 4.5.7: Display > UI Scale and the dark-theme color audit, see [Display scale, typography and color](#display-scale-typography-and-color).
 
+Slice 4 shipped in 4.5.11: `modules/pmg_qt/object_panel.py` replaces the 4.5.0 object table and the object list of the viewport's internal GUI, see [Objects panel](#objects-panel). Open: menu cleanup (6), the items listed in that section, spacing audit of the remaining dialogs.
+
 ## Reference products and current constraints
 
 Use commercial PyMOL for familiar molecular workflows and Maestro for its
@@ -72,6 +74,40 @@ Qt supports movable, floatable and closable docks directly.
    shows a discovery problem; reuse registered `QAction`s rather than treating
    every `cmd` keyword as an executable UI action with no arguments.
 
+## Objects panel
+
+Detail for slice 4. Request 2026-11-12: the right panel (object names with the
+action, show, hide, label and color buttons) could not be resized with the
+mouse in any discoverable way, and its letters only grow in whole steps through
+`display_scale_factor`.
+
+**Why a rebuild.** The old panel is drawn by the C++ core with 8x13 bitmap
+glyphs; its layout is hard-coded in multiples of 8 pixels across Executive,
+ButMode, Control, Wizard and PopUp. A fractional size there means rewriting the
+text path of all five. Its menus, though, are plain data from
+`modules/pymol/menu.py`, so a Qt panel shows the same menus with native text.
+
+| Part | Decision | State |
+| --- | --- | --- |
+| Object list | `QTreeWidget` in the `dock_objects` dock, right side. One row per object or selection, group members nested, "all" first. Checkbox toggles visibility, double click zooms. | Done 4.5.11 |
+| A / S / H / L / C | Same menu functions per object type as `CExecutive::click`, table `MENUS`; submenus are filled when first opened; color markup in labels becomes a swatch. Right click or the Menu key opens the five menus for the row. | Done 4.5.11 |
+| Text size | Qt text: follows the application font and Display > UI Scale at any step, including 125 %. | Done 4.5.11 |
+| Resize | Drag the dock edge. The dock also floats, tabs and closes (Display > Panels). | Done 4.5.11 |
+| Wizards | Title, buttons and popups of the active wizard (`get_panel`, `get_menu`) under the list; the dock reopens when a wizard starts. | Done 4.5.11 |
+| Mouse mode, selection mode, state | One status line under the list. | Done 4.5.11 |
+| Old internal GUI | Off by default in the GUI; Display > Internal GUI or `set internal_gui` in pymolrc brings it back. Its left edge can now be dragged, with a resize cursor. Not deleted: remove the C++ panel in its own PR after the Qt panel has been used for a release. | Kept on purpose |
+| Updates | Polled from the window's 0.5 s timer: names, types, visibility. Counts are looked up for tooltips and copied rows only. Marked `ponytail:`; upgrade path is a change notification from the executive. | Done 4.5.11 |
+| Reorder and regroup by dragging rows | Use `order` and `group` meanwhile. | Open |
+| Group open/closed shared with the core | Expansion is view state of the tree for now. | Open |
+| Picking an atom selects its row | Viewport-to-panel synchronization. | Open |
+| Viewport popup menus, sequence viewer, scene buttons | Still drawn by the core in whole scale steps. | Open |
+| Per-object motion menu (movie column) | Only shown by the old panel when a movie exists. | Open |
+
+Checks: `testing/tests/api/object_panel.py` (rows and nesting, every name in
+`MENUS` exists in `pymol.menu`, menu building, toggle, filter, delete, status
+line, wizard buttons). Real GUI on WSLg at 150 %: panel, color menu,
+measurement wizard, edge drag of the old panel (400 to 460).
+
 ## Display scale, typography and color
 
 Detail for slice 5. Problem reported 2026-11-12 on a 2560x1600 laptop panel
@@ -90,7 +126,7 @@ made up (650 mm for a laptop panel), so the size cannot be detected.
 | Viewport menus, object panel, labels | Drawn by the C++ core with the integer `display_scale_factor`. Now rounded from the window scale, not truncated: 150 % gives 2, was 1. | Done 4.5.7 |
 | Text colors | No hard-coded foreground color in Qt code, forms or bundled plugins: bold or the palette instead. Text on a hard-coded light background sets its own dark color. Links use the palette link color. | Done 4.5.7: Lighting Settings, APBS, PNG dialog, Fetch, Plugin Manager, script editor syntax colors |
 | First start on an unscaled high-resolution screen | Offer 150 % once when the OS reports scale 1 and the screen is 2560 px wide or more. Offer, do not guess: a 27" monitor at that width is fine at 100 %. Either answer is saved, so it is asked once. | Done 4.5.8 |
-| 125 % in the viewport | `display_scale_factor` is an integer, so 125 % still draws viewport text at 1x. Needs a fractional factor in `layer1` text and Ortho layout. | Open, only if reported |
+| 125 % in the viewport | `display_scale_factor` is an integer, so 125 % still draws viewport text at 1x. The object list no longer depends on it (Objects panel, 4.5.11); what remains is the viewport popup menus and the sequence viewer. | Open, only if reported |
 | Live rescale without restart | Qt reads the factor once. Skip unless restarts prove painful. | Skipped |
 | Separate font-size setting | A second knob next to UI Scale. Skip unless the scale alone is not enough. | Skipped |
 | Fixed point sizes in rich text | `help_shortcut.ui` (13 pt) and `pluginmanager.ui` (9 pt) carry a designer font in their HTML; they scale with UI Scale but ignore the app font. Strip when those forms are next edited. | Open |

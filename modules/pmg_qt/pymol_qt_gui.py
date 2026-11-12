@@ -95,7 +95,7 @@ class PyMOLQtGUI(QtWidgets.QMainWindow, pymol._gui.PyMOLDesktopGUI):
         # resize Window before it is shown
         options = pymol.invocation.options
         self.resize(
-            options.win_x + (220 if options.internal_gui else 0),
+            options.win_x + 260,  # viewport + Objects panel
             options.win_y + (246 if options.external_gui else 18))
 
         # for thread-safe viewport command
@@ -212,10 +212,11 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         cmd = self.cmd = self.pymolwidget.cmd
 
-        # object table
-        from .object_table import ObjectTableDock
-        self.object_table = ObjectTableDock(self)
-        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.object_table)
+        # objects and wizard panel (replaces the viewport's internal GUI)
+        from .object_panel import ObjectPanel
+        self.object_panel = ObjectPanel(cmd, self)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.object_panel)
+        self.resizeDocks([self.object_panel], [260], Qt.Orientation.Horizontal)
 
         '''
         # command completion
@@ -408,11 +409,11 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         # Display -> Panels
         panels = self.menudict['Display'].addMenu('Panels')
         panels.addAction(self.ext_window.toggleViewAction())
-        panels.addAction(self.object_table.toggleViewAction())
+        panels.addAction(self.object_panel.toggleViewAction())
         panels.addAction('Builder', self.open_builder_panel)
         panels.addSeparator()
         panels.addAction('Reset Layout', self.reset_layout)
-        self._default_state = self.saveState()
+        self._default_state = self.saveState(LAYOUT_VERSION)
         act = self.menudict['Display'].addAction('Dark Theme')
         act.setCheckable(True)
         act.setChecked(theme.is_dark())
@@ -491,7 +492,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
     def save_layout(self):
         settings = QtCore.QSettings('pymolish', 'pymolish-studio')
         settings.setValue('mainwindow/geometry', self.saveGeometry())
-        settings.setValue('mainwindow/state', self.saveState())
+        settings.setValue('mainwindow/state', self.saveState(LAYOUT_VERSION))
 
     def restore_layout(self):
         settings = QtCore.QSettings('pymolish', 'pymolish-studio')
@@ -500,16 +501,16 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         if geometry:
             self.restoreGeometry(geometry)
         if state:
-            self.restoreState(state)
+            self.restoreState(state, LAYOUT_VERSION)  # refuses older layouts
         # the saved position may be on a monitor that is gone
         app = QtWidgets.QApplication
         if not any(s.availableGeometry().intersects(self.frameGeometry()) for s in app.screens()):
             self.move(app.primaryScreen().availableGeometry().topLeft())
 
     def reset_layout(self):
-        self.restoreState(self._default_state)
+        self.restoreState(self._default_state, LAYOUT_VERSION)
         self.ext_window.show()
-        self.object_table.show()
+        self.object_panel.show()
 
     def toggle_ext_window_dockable(self, neverfloat=False):
         '''
@@ -1007,6 +1008,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
                     callback(current_value)
 
         self.feedback_timer.start(500)
+        self.object_panel.poll()
 
     def doPrompt(self):
         self.doTypedCommand(self.command_get())
@@ -1236,6 +1238,11 @@ def _copy_image(_self=pymol.cmd, quiet=1, dpi=-1):
         print(" Image copied to clipboard")
 
 
+# Saved dock layouts from an older arrangement are ignored once.
+# 1: Objects panel moved from the bottom to the right (4.5.11)
+LAYOUT_VERSION = 1
+
+
 def make_pymol_qicon():
     icons_dir = os.path.expandvars('$PYMOL_DATA/pymol/icons')
     return QtGui.QIcon(os.path.join(icons_dir, 'icon2.svg'))
@@ -1264,6 +1271,10 @@ def execapp():
         import ctypes
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
                 u'com.schrodinger.pymol')
+
+    # The Qt Objects panel replaces the viewport's internal GUI. To get the
+    # old panel back: Display > Internal GUI, or "set internal_gui" in pymolrc.
+    pymol.invocation.options.internal_gui = 0
 
     app = PyMOLApplication(['PyMOL'])
     app.setWindowIcon(make_pymol_qicon())
