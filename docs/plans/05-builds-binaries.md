@@ -47,7 +47,7 @@ deliverables. Build speed, launch speed and download size also need separate dat
 
    ```sh
    python -m pip install --verbose --no-build-isolation --config-settings testing=True --editable '.[dev]'
-   pymol -ckqy testing/testing.py --run all
+   pymolish -ckqy testing/testing.py --run all
    ```
 
    Confirm the custom backend's editable behavior before adopting this as the

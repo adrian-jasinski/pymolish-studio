@@ -2,6 +2,17 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-12 pymolish-studio
+
+	* 4.5.5
+
+	* Builds
+	  - Package and launcher renamed from pymol to pymolish
+	    (`pymolish -ckqy testing/testing.py --run all`). The Python module
+	    is still `import pymol`. Both names install the same files: run
+	    `pip uninstall pymol` before installing pymolish.
+
+
 2026-11-11 pymolish-studio
 
 	* 4.5.4

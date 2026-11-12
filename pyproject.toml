@@ -1,5 +1,5 @@
 [project]
-name = "pymol"
+name = "pymolish"
 readme = "README.md"
 requires-python = ">=3.11"
 dynamic=["version"]
@@ -47,7 +47,7 @@ Repository = "https://github.com/adrian-jasinski/pymolish-studio"
 Changelog = "https://github.com/adrian-jasinski/pymolish-studio/blob/master/ChangeLog"
 
 [project.scripts]
-pymol = "pymol:launch"
+pymolish = "pymol:launch"
 
 [tool.setuptools.packages.find]
 where = ["modules"]

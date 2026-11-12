@@ -466,9 +466,9 @@ class install_pymol(install):
 
     def make_launch_script(self):
         if sys.platform.startswith("win"):
-            launch_script = "pymol.bat"
+            launch_script = "pymolish.bat"
         else:
-            launch_script = "pymol"
+            launch_script = "pymolish"
 
         self.mkpath(self.install_scripts)
         launch_script = os.path.join(self.install_scripts, launch_script)

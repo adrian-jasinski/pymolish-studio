@@ -73,10 +73,10 @@ Note: `layer1/FontTTF.h` and `FontTTF2.h` are embedded font data, not code.
 pip install --verbose --no-build-isolation --config-settings testing=True '.[dev]'
 
 # run the whole Python suite (headless)
-pymol -ckqy testing/testing.py --run all
+pymolish -ckqy testing/testing.py --run all
 
 # run one test file
-pymol -ckqy testing/testing.py testing/tests/api/<file>.py
+pymolish -ckqy testing/testing.py testing/tests/api/<file>.py
 
 # format
 clang-format -i <changed .cpp/.h>

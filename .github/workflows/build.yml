@@ -48,7 +48,7 @@ jobs:
 
     - name: Test
       run: |
-        pymol -ckqy testing/testing.py --run all
+        pymolish -ckqy testing/testing.py --run all
 
     - name: Build standalone bundle
       if: matrix.python-version == '3.13'
@@ -95,7 +95,7 @@ jobs:
         pixi run -e ${{ matrix.python }} pip install "$whl[dev]"
 
     - name: Test
-      run: pixi run -e ${{ matrix.python }} pymol -ckqy testing\testing.py --run all
+      run: pixi run -e ${{ matrix.python }} pymolish -ckqy testing\testing.py --run all
 
     - name: Build standalone bundle
       if: matrix.python == 'py313'
@@ -143,7 +143,7 @@ jobs:
         pixi run -e ${{ matrix.python }} pip install "$(ls dist/*.whl)[dev]"
 
     - name: Test
-      run: pixi run -e ${{ matrix.python }} pymol -ckqy testing/testing.py --run all
+      run: pixi run -e ${{ matrix.python }} pymolish -ckqy testing/testing.py --run all
 
     - name: Build standalone bundle
       if: matrix.python == 'py313'

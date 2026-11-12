@@ -4,14 +4,14 @@ PyMOL Testing Framework
 This is a python unittest based testing framework for PyMOL.
 
 *Notice: "gui" tests currently don't work with PyMOL 2.x, tests should be
-run with "pymol -c ...".*
+run with "pymolish -c ...".*
 
 How to Run Tests
 ----------------
 
 From the system command line:
 
-    pymol -cq /path/to/pymol-testing/runall.pml
+    pymolish -cq /path/to/pymol-testing/runall.pml
 
 From the pymol command line:
 

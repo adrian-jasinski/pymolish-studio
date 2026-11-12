@@ -2,8 +2,8 @@
 Infrastructure for PyMOL testing
 
 Usage:
-    pymol testing.py --run all             Run all tests
-    pymol testing.py --run some/file.py    Run tests from given files
+    pymolish testing.py --run all             Run all tests
+    pymolish testing.py --run some/file.py    Run tests from given files
 
 PyMOL test cases should subclass pymol.testing.PyMOLTestCase and provide
 either one "runTest" method or at least one "test*" method.
@@ -98,8 +98,8 @@ else:
     PYMOL_EDU = 'Edu' in PYMOL_VERSION[0]
     is_win64bit = "Windows" in platform.system() and sys.maxsize > 2**32
 
-    usage = 'pymol [pymol options] %s [test options]' % (os.path.basename(__file__))
-    parser = argparse.ArgumentParser("pymol", usage=usage)
+    usage = 'pymolish [pymol options] %s [test options]' % (os.path.basename(__file__))
+    parser = argparse.ArgumentParser("pymolish", usage=usage)
     parser.add_argument('--xml', action='store_true')
     parser.add_argument('filenames', nargs='*', default=[])
     parser.add_argument('--out', default=sys.stdout)
