@@ -74,6 +74,47 @@ Qt supports movable, floatable and closable docks directly.
    shows a discovery problem; reuse registered `QAction`s rather than treating
    every `cmd` keyword as an executable UI action with no arguments.
 
+## Workspace layout
+
+Request 2026-11-12, with two screenshots of commercial PyMOL 3 as the
+reference: an action toolbar on top, the content panel on the right with a
+toggle bar under it, the log and command line at the bottom. We take the
+arrangement and the kind of control in each place; no icons, artwork or
+product text are copied, and features we do not have (timeline, license
+banner) are not imitated.
+
+```
++---------------------------------------------------------------------+
+| File  Edit  Build  Movie  Display  Setting  Scene  Mouse  Wizard ... |
+| [Residues v] Undo Redo | Zoom v  Orient  Rock  Presets v            |
+|                               (movie)   Builder  Scenes  Draw/Ray v  More v |
++------------------------------------------------+--------------------+
+|                                                | o all      A S H L C|
+|                 viewport                       | o 1abc     A S H L C|
+|                                                |   (sele)   A S H L C|
+|                                                | [wizard buttons]    |
+|                                                | Mouse v Wizard v SEQ >_  State 1/1 |
++------------------------------------------------+--------------------+
+| log                                                                 |
+| PyMOL> [ command line                              ] [progress] [Abort] |
++---------------------------------------------------------------------+
+```
+
+| Step | What | Where | State |
+| --- | --- | --- | --- |
+| 1 | **Action toolbar** on top: selection mode (what a click selects), Undo, Redo, Zoom (menu: all, selection, center, reset), Orient, Rock (shows its state), Presets (same list as A > preset for all). Right side: Builder, Scenes, Draw/Ray (the existing render popup), More (Unpick, Deselect, Get View, Rebuild, Properties, Reset, movie commands). Movie buttons appear in the toolbar only while there is more than one state or frame. | New `modules/pmg_qt/action_toolbar.py`, a `QToolBar` | Done 4.5.14 |
+| 2 | **Command area at the bottom**: log and command line move from the top dock to the bottom; progress bar and Abort sit at the end of the command line. The grid of 18 quick buttons is deleted: every one of them is in the toolbar or its More menu. | `pymol_qt_gui.py` | Done 4.5.14 |
+| 3 | **Content panel look**: no header row, visibility shown as a dot, A/S/H/L/C as rounded chips (accent colors on the "all" row, neutral on the others), taller rows. Still the same checkable tree, so the keyboard works as before. | `object_panel.py` | Done 4.5.14 |
+| 4 | **Toggle bar** under the content panel: mouse mode (the Mouse menu), Wizard (the Wizard menu), SEQ (sequence viewer), `>_` (show or hide the command area), state counter. | `object_panel.py` footer, filled by the window | Done 4.5.14 |
+| 5 | Saved layouts are versioned again (2) so the command area starts at the bottom. `pymolish -x` (no external GUI) hides the toolbar and the command area as before. | `pymol_qt_gui.py` | Done 4.5.14 |
+| 6 | Scenes as a docked panel with thumbnails, like the reference's left panel. Today "Scenes" opens the existing dialog. | | Open |
+| 7 | Icons for the toolbar (Qt standard or own SVG). Text labels for now: no icon pack is bundled and none is copied. | | Open |
+| 8 | Timeline. Not planned: no timeline feature exists in this code base. | | Skipped |
+
+Checks: `testing/tests/api/action_toolbar.py` (selection mode, rock state,
+presets menu, zoom, movie visibility), `object_panel.py` tests extended for the
+footer. Real GUI on WSLg at 100 % and 150 %.
+
 ## Objects panel
 
 Detail for slice 4. Request 2026-11-12: the right panel (object names with the
