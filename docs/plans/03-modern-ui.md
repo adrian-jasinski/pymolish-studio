@@ -145,6 +145,19 @@ text path of all five. Its menus, though, are plain data from
 | Viewport popup menus, sequence viewer, scene buttons | Still drawn by the core in whole scale steps. | Open |
 | Per-object motion menu (movie column) | Only shown by the old panel when a movie exists. | Open |
 
+### Row state and colors
+
+Request 2026-11-12: a shown object should look like the "all" row, a hidden
+one should recede, and one click on the row should switch between the two.
+
+| Step | What | State |
+| --- | --- | --- |
+| 1 | **Chip colors:** A, S and H in three blues (dark to light), L violet, C stays green. One table, `ACCENTS`. | Planned 4.5.15 |
+| 2 | **Shown rows** use those colors on every row, not only on "all", next to the green dot. The neutral grey chips are deleted. | Planned 4.5.15 |
+| 3 | **Hidden rows** draw the same chips and the name darker; the row returns to full color while the mouse is over it. "all" never dims. | Planned 4.5.15 |
+| 4 | **Click toggles:** a click on the dot or the name shows or hides the object in the viewport (`enable` / `disable`) and the row follows at once. Space does the same for the current row. Ctrl or Shift click still only selects rows for copying. | Planned 4.5.15 |
+| 5 | **Double click** shows the object and zooms on it, since its first click already toggled the row. | Planned 4.5.15 |
+
 Checks: `testing/tests/api/object_panel.py` (rows and nesting, every name in
 `MENUS` exists in `pymol.menu`, menu building, toggle, filter, delete, status
 line, wizard buttons). Real GUI on WSLg at 150 %: panel, color menu,
