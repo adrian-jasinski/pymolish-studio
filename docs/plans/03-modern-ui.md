@@ -104,7 +104,7 @@ banner) are not imitated.
 | --- | --- | --- | --- |
 | 1 | **Action toolbar** on top: selection mode (what a click selects), Undo, Redo, Zoom (menu: all, selection, center, reset), Orient, Rock (shows its state), Presets (same list as A > preset for all). Right side: Builder, Scenes, Draw/Ray (the existing render popup), More (Unpick, Deselect, Get View, Rebuild, Properties, Reset, movie commands). Previous, Stop, Play and Next appear in the toolbar only while there is more than one state or frame; first and last frame are in More. | New `modules/pmg_qt/action_toolbar.py`, a `QToolBar` | Done 4.5.14 |
 | 2 | **Command area at the bottom**: log and command line move from the top dock to the bottom; progress bar and Abort sit at the end of the command line. The grid of 18 quick buttons is deleted: every one of them is in the toolbar or its More menu. | `pymol_qt_gui.py` | Done 4.5.14 |
-| 3 | **Content panel look**: no header row, visibility shown as a dot, A/S/H/L/C as rounded chips (accent colors on the "all" row, neutral on the others), taller rows. Still the same checkable tree, so the keyboard works as before. | `object_panel.py` | Done 4.5.14 |
+| 3 | **Content panel look**: no header row, visibility shown as a dot, A/S/H/L/C as rounded chips (accent colors on the "all" row, neutral on the others; since 4.5.15 every shown row, see Row state and colors), taller rows. Still the same checkable tree, so the keyboard works as before. | `object_panel.py` | Done 4.5.14 |
 | 4 | **Toggle bar** under the content panel: mouse mode (the Mouse menu), Wizard (the Wizard menu), SEQ (sequence viewer), `>_` (show or hide the command area). The state counter sits above it and shows only with more than one state. | `object_panel.py` footer, filled by the window | Done 4.5.14 |
 | 5 | Saved layouts are versioned again (2) so the command area starts at the bottom. `pymolish -x` (no external GUI) hides the toolbar and the command area as before. | `pymol_qt_gui.py` | Done 4.5.14 |
 | 6 | Scenes as a docked panel with thumbnails, like the reference's left panel. Today "Scenes" opens the existing dialog. | | Open |
@@ -131,7 +131,7 @@ text path of all five. Its menus, though, are plain data from
 
 | Part | Decision | State |
 | --- | --- | --- |
-| Object list | `QTreeWidget` in the `dock_objects` dock, right side. One row per object or selection, group members nested, "all" first. Checkbox toggles visibility, double click zooms. | Done 4.5.11 |
+| Object list | `QTreeWidget` in the `dock_objects` dock, right side. One row per object or selection, group members nested, "all" first. Checkbox toggles visibility, double click zooms (changed in 4.5.15, see Row state and colors). | Done 4.5.11 |
 | A / S / H / L / C | Same menu functions per object type as `CExecutive::click`, table `MENUS`; submenus are filled when first opened; color markup in labels becomes a swatch. Right click or the Menu key opens the five menus for the row. | Done 4.5.11 |
 | Text size | Qt text: follows the application font and Display > UI Scale at any step, including 125 %. | Done 4.5.11 |
 | Resize | Drag the dock edge. The dock also floats, tabs and closes (Display > Panels). | Done 4.5.11 |
@@ -152,15 +152,15 @@ one should recede, and one click on the row should switch between the two.
 
 | Step | What | State |
 | --- | --- | --- |
-| 1 | **Chip colors:** A, S and H in three blues (dark to light), L violet, C stays green. One table, `ACCENTS`. | Planned 4.5.15 |
-| 2 | **Shown rows** use those colors on every row, not only on "all", next to the green dot. The neutral grey chips are deleted. | Planned 4.5.15 |
-| 3 | **Hidden rows** draw the same chips and the name darker; the row returns to full color while the mouse is over it. "all" never dims. | Planned 4.5.15 |
-| 4 | **Click toggles:** a click on the dot or the name shows or hides the object in the viewport (`enable` / `disable`) and the row follows at once. Space does the same for the current row. Ctrl or Shift click still only selects rows for copying. | Planned 4.5.15 |
-| 5 | **Double click** shows the object and zooms on it, since its first click already toggled the row. | Planned 4.5.15 |
+| 1 | **Chip colors:** A, S and H in three blues (dark to light), L violet, C stays green. One table, `ACCENTS`. | Done 4.5.15 |
+| 2 | **Shown rows** use those colors on every row, not only on "all", next to the green dot. The neutral grey chips are deleted. | Done 4.5.15 |
+| 3 | **Hidden rows** draw the same chips and the name darker; the row returns to full color while the mouse is over it. "all" never dims. | Done 4.5.15 |
+| 4 | **Click toggles:** a click on the dot or the name shows or hides the object in the viewport (`enable` / `disable`) and the row follows at once. Space does the same for the current row. Ctrl or Shift click still only selects rows for copying. | Done 4.5.15 |
+| 5 | **Double click** shows the object and zooms on it, since its first click already toggled the row. | Done 4.5.15 |
 
 Checks: `testing/tests/api/object_panel.py` (rows and nesting, every name in
 `MENUS` exists in `pymol.menu`, menu building, toggle, filter, delete, status
-line, wizard buttons). Real GUI on WSLg at 150 %: panel, color menu,
+line, wizard buttons, click and double click on a row). Real GUI on WSLg at 150 %: panel, color menu,
 measurement wizard, edge drag of the old panel (400 to 460).
 
 ## Display scale, typography and color

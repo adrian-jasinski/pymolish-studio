@@ -1,7 +1,8 @@
 """
 Objects panel: the Qt replacement for the object list and the wizard buttons
 of the viewport's internal GUI. One row per object or selection (group members
-nested) with a visibility checkbox and the A/S/H/L/C menus from pymol.menu.
+nested) with a visibility dot and the A/S/H/L/C menus from pymol.menu; a click
+on the row shows or hides the object.
 Everything is Qt text, so it follows the application font, the theme and
 Display > UI Scale, and the dock is resized by dragging its edge.
 """
@@ -171,40 +172,38 @@ def fill_menu(menu, entries, cmd):
             action.setIcon(_swatch(color))
 
 
-# chip colors of the "all" row, A S H L C; the other rows are neutral
-ACCENTS = ("#7e57c2", "#8f6bd1", "#9c82d6", "#6f86d6", "#4caf50")
+# chip colors A S H L C: three blues, violet, green
+ACCENTS = ("#1e4fb8", "#2a73d9", "#3f93e6", "#8e5bd6", "#4caf50")
 
 
 class ChipDelegate(QtWidgets.QStyledItemDelegate):
-    """Paints the A/S/H/L/C letters as rounded chips."""
+    """Paints the A/S/H/L/C letters as rounded chips. The chips of a hidden
+    object are dimmed until the mouse is over its row."""
 
     def paint(self, painter, option, index):
         letter = index.data()
         if not letter:
             return
-        name, kind = index.siblingAtColumn(0).data(UserRole)
-        shown = index.siblingAtColumn(0).data(Qt.ItemDataRole.CheckStateRole)
-        if kind == "all":
-            fill, text = QtGui.QColor(ACCENTS[index.column() - 1]), Qt.GlobalColor.white
-        else:
-            fill, text = (
-                option.palette.mid().color(),
-                option.palette.buttonText().color(),
-            )
+        first = index.siblingAtColumn(0)
+        # the role comes back as a plain int, not as the enum
+        hidden = (
+            Qt.CheckState(first.data(Qt.ItemDataRole.CheckStateRole)) != Checked
+            and first.data(UserRole)[1] != "all"
+        )
         painter.save()
         painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
-        if shown != Checked and kind != "all":
-            painter.setOpacity(0.45)  # hidden objects recede
+        if hidden and not option.state & QtWidgets.QStyle.StateFlag.State_MouseOver:
+            painter.setOpacity(0.4)
         side = min(option.rect.width(), option.rect.height()) - 4
         chip = QtCore.QRect(0, 0, side, side)
         chip.moveCenter(option.rect.center())
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(fill)
+        painter.setBrush(QtGui.QColor(ACCENTS[index.column() - 1]))
         painter.drawRoundedRect(chip, 4, 4)
         font = QtGui.QFont(option.font)
         font.setBold(True)
         painter.setFont(font)
-        painter.setPen(text)
+        painter.setPen(Qt.GlobalColor.white)
         painter.drawText(chip, Qt.AlignmentFlag.AlignCenter, letter)
         painter.restore()
 
@@ -277,7 +276,10 @@ class ObjectPanel(QtWidgets.QDockWidget):
             "QTreeView::indicator { width: 10px; height: 10px; border: none;"
             " border-radius: 5px; margin: 0 4px; background-color: palette(mid); }"
             "QTreeView::indicator:checked { background-color: #3ddc5a; }"
+            # the dimmed name of a hidden object lights up under the mouse
+            "QTreeView::item:hover { color: palette(text); }"
         )
+        tree.viewport().setAttribute(Qt.WidgetAttribute.WA_Hover)
         tree.setExpandsOnDoubleClick(False)
         tree.setSelectionMode(
             QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection
@@ -291,7 +293,6 @@ class ObjectPanel(QtWidgets.QDockWidget):
                 column, QtWidgets.QHeaderView.ResizeMode.ResizeToContents
             )
             tree.setItemDelegateForColumn(column, ChipDelegate(tree))
-        tree.itemChanged.connect(self._toggled)
         tree.itemClicked.connect(self._clicked)
         tree.itemDoubleClicked.connect(self._double_clicked)
         tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -301,6 +302,11 @@ class ObjectPanel(QtWidgets.QDockWidget):
         copy = QtGui.QShortcut(QtGui.QKeySequence.StandardKey.Copy, tree)
         copy.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
         copy.activated.connect(self.copy_selected)
+        space = QtGui.QShortcut(Qt.Key.Key_Space, tree)
+        space.setContext(Qt.ShortcutContext.WidgetShortcut)
+        space.activated.connect(
+            lambda: tree.currentItem() and self._toggle(tree.currentItem())
+        )
 
         self.filter = QtWidgets.QLineEdit()
         self.filter.setPlaceholderText("Filter by name")
@@ -350,16 +356,15 @@ class ObjectPanel(QtWidgets.QDockWidget):
             (r[0], r[1], r[3]) for r in self.rows
         ]
         self.rows = rows
-        with QtCore.QSignalBlocker(self.tree):
-            if rebuilt:
-                self._rebuild(rows)
-            dim = self.palette().brush(
-                QtGui.QPalette.ColorGroup.Disabled, QtGui.QPalette.ColorRole.Text
-            )
-            for name, _, enabled, _ in rows:
-                item = self.items[name]
-                item.setCheckState(0, Checked if enabled else Unchecked)
-                item.setForeground(0, QtGui.QBrush() if enabled else dim)
+        if rebuilt:
+            self._rebuild(rows)
+        dim = self.palette().brush(
+            QtGui.QPalette.ColorGroup.Disabled, QtGui.QPalette.ColorRole.Text
+        )
+        for name, _, enabled, _ in rows:
+            item = self.items[name]
+            item.setCheckState(0, Checked if enabled else Unchecked)
+            item.setForeground(0, QtGui.QBrush() if enabled else dim)
         self.tree.viewport().update()  # chips follow the visibility
         if rebuilt:
             self._apply_filter()
@@ -377,6 +382,8 @@ class ObjectPanel(QtWidgets.QDockWidget):
                 ["(%s)" % name if kind == "selection" else name]
             )
             item.setData(0, UserRole, (name, kind))
+            # the whole row toggles in _clicked, not only the dot
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
             for column, function in enumerate(MENUS.get(kind, MENUS["object:"]), 1):
                 if function:
                     letter, tip = BUTTONS[column - 1]
@@ -404,13 +411,14 @@ class ObjectPanel(QtWidgets.QDockWidget):
         for i in range(self.tree.topLevelItemCount()):
             show(self.tree.topLevelItem(i))
 
-    def _toggled(self, item, column):
+    def _toggle(self, item):
+        """Show or hide the object of this row in the viewport."""
         name = item.data(0, UserRole)[0]
         if item.checkState(0) == Checked:
-            self.cmd.enable(name)
-        else:
             self.cmd.disable(name)
-        self.refresh_soon()
+        else:
+            self.cmd.enable(name)
+        self.refresh()
 
     def _clicked(self, item, column):
         if column:
@@ -418,10 +426,17 @@ class ObjectPanel(QtWidgets.QDockWidget):
             self._popup(
                 item, column - 1, self.tree.viewport().mapToGlobal(rect.bottomLeft())
             )
+        # Ctrl or Shift click only selects rows, for copying
+        elif not QtWidgets.QApplication.keyboardModifiers():
+            self.tree.clearSelection()
+            self._toggle(item)
 
     def _double_clicked(self, item, column):
-        if column == 0:
-            self.cmd.zoom(item.data(0, UserRole)[0], animate=-1)
+        if column == 0:  # its first click toggled the row: show it, then zoom
+            name = item.data(0, UserRole)[0]
+            self.cmd.enable(name)
+            self.cmd.zoom(name, animate=-1)
+            self.refresh()
 
     def _popup(self, item, button, position):
         entries = menu_entries(self.cmd, *item.data(0, UserRole), button)

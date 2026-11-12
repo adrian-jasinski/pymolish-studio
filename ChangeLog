@@ -4,6 +4,20 @@ CHANGE LOG
 
 2026-11-12 pymolish-studio
 
+	* 4.5.15
+
+	* Objects panel
+	  - A click on a row (dot or name) shows or hides the object; before,
+	    only the dot did. Space toggles the current row. Ctrl or Shift
+	    click selects rows for copying without toggling.
+	  - A double click shows the object and zooms on it.
+	  - Chip colors: A, S and H in three blues, L violet, C green. Every
+	    shown row uses them; hidden rows are dimmed until the mouse is
+	    over them.
+
+
+2026-11-12 pymolish-studio
+
 	* 4.5.14
 
 	* Workspace layout

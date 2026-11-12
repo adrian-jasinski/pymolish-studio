@@ -68,7 +68,7 @@ class TestObjectPanel(testing.PyMOLTestCase):
         self.assertEqual([a.text() for a in more.menu().actions()], ["hide"])
 
     def test_panel(self):
-        from pmg_qt.object_panel import ObjectPanel, Unchecked
+        from pmg_qt.object_panel import Checked, ObjectPanel, Unchecked
 
         cmd.fragment("gly", "g1")
         cmd.fragment("ala", "a2")
@@ -80,8 +80,17 @@ class TestObjectPanel(testing.PyMOLTestCase):
             [panel.items["g1"].text(c) for c in range(1, 6)], list("ASHLC")
         )
 
-        panel.items["g1"].setCheckState(0, Unchecked)  # what a click does
+        # a click on the name hides the object, the next one shows it again
+        panel._clicked(panel.items["g1"], 0)
         self.assertNotIn("g1", cmd.get_names("objects", enabled_only=1))
+        self.assertEqual(panel.items["g1"].checkState(0), Unchecked)
+        panel._clicked(panel.items["g1"], 0)
+        self.assertIn("g1", cmd.get_names("objects", enabled_only=1))
+        self.assertEqual(panel.items["g1"].checkState(0), Checked)
+        # a double click arrives after a click hid the row: shown again
+        panel._clicked(panel.items["g1"], 0)
+        panel._double_clicked(panel.items["g1"], 0)
+        self.assertIn("g1", cmd.get_names("objects", enabled_only=1))
 
         panel.filter.setText("a2")
         self.assertTrue(panel.items["g1"].isHidden())
