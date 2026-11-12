@@ -115,7 +115,7 @@
            </font>
           </property>
           <property name="styleSheet">
-           <string notr="true">background: #f66; padding: 5;</string>
+           <string notr="true">background: #f66; color: black; padding: 5;</string>
           </property>
           <property name="text">
            <string notr="true">Selection has ...</string>

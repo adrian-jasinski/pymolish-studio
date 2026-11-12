@@ -4,6 +4,25 @@ CHANGE LOG
 
 2026-11-12 pymolish-studio
 
+	* 4.5.7
+
+	* High-resolution screens
+	  - Display > UI Scale (100 to 300 %) enlarges all text, menus, panels,
+	    plugins and the viewport's own menus. Saved per user, applies on the
+	    next start, multiplies the scale the OS reports. Needed where the OS
+	    reports none (WSLg, bare X11). An exported QT_SCALE_FACTOR wins.
+	  - Viewport menus and labels follow fractional window scales: 150 %
+	    now sets display_scale_factor to 2, was 1.
+
+	* Theme
+	  - Text that was hard-coded blue, red or black is readable on the dark
+	    theme: Lighting Settings headers, links in Fetch and Plugin Manager,
+	    script editor syntax colors, notes on colored backgrounds in APBS
+	    and the PNG dialog.
+
+
+2026-11-12 pymolish-studio
+
 	* 4.5.5
 
 	* Builds

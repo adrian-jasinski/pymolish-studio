@@ -179,7 +179,7 @@ class PyMOLGLWidget(QtWidgets.QOpenGLWidget):
         '''
         self.fb_scale = context.devicePixelRatio()
         try:
-            self.cmd.set('display_scale_factor', int(self.fb_scale))
+            self.cmd.set('display_scale_factor', max(1, round(self.fb_scale)))
         except BaseException as e:
             # fails with modal draw (mpng ..., modal=1)
             print(e)

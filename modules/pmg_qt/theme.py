@@ -3,6 +3,8 @@ Dark/light palette for the Qt GUI. The 3D viewport and its internal menu are
 drawn by PyMOL itself and are dark already; this makes the Qt panels match.
 """
 
+import os
+
 from pymol.Qt import QtCore, QtGui, QtWidgets
 
 Role = QtGui.QPalette.ColorRole
@@ -37,9 +39,38 @@ def dark_palette():
     return p
 
 
+def _settings():
+    return QtCore.QSettings("pymolish", "pymolish-studio")
+
+
 def is_dark():
-    v = QtCore.QSettings("pymolish", "pymolish-studio").value("theme/dark", True)
-    return v in (True, "true", 1, "1")
+    return _settings().value("theme/dark", True) in (True, "true", 1, "1")
+
+
+# Multiplies whatever scale the OS reports. Needed where the OS reports none
+# (WSLg, bare X11: a 2560x1600 laptop panel shows up as 96 dpi, scale 1).
+SCALES = (1, 1.25, 1.5, 1.75, 2, 2.5, 3)
+
+
+def ui_scale():
+    try:
+        return float(_settings().value("ui/scale", 1))
+    except (TypeError, ValueError):
+        return 1.0
+
+
+def set_ui_scale(scale):
+    _settings().setValue("ui/scale", float(scale))
+
+
+def apply_ui_scale(environ=os.environ):
+    """Call before QApplication exists: Qt reads the factor once, at startup.
+    A factor the user exported wins over the saved one."""
+    scale = ui_scale()
+    if scale != 1 and not any(
+        v in environ for v in ("QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS")
+    ):
+        environ["QT_SCALE_FACTOR"] = "%g" % scale
 
 
 def apply(app, dark):
@@ -53,7 +84,7 @@ def apply(app, dark):
 
 
 def set_dark(dark):
-    QtCore.QSettings("pymolish", "pymolish-studio").setValue("theme/dark", bool(dark))
+    _settings().setValue("theme/dark", bool(dark))
     app = QtWidgets.QApplication.instance()
     apply(app, dark)
     for w in (
