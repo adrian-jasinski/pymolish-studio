@@ -554,8 +554,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
     ##################
 
     def load_form(self, name, dialog=None):
-        '''Load a form from pmg_qt/forms/{name}.py'''
-        import importlib
+        '''Load a form from pmg_qt/forms/{name}.ui'''
         if dialog is None:
             dialog = QtWidgets.QDialog(self)
             widget = dialog
@@ -564,20 +563,8 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         else:
             widget = dialog
 
-        try:
-            m = importlib.import_module('.forms.' + name, 'pmg_qt')
-        except ImportError as e:
-            if pymol.Qt.DEBUG:
-                print('load_form import failed (%s)' % (e,))
-            uifile = os.path.join(os.path.dirname(__file__), 'forms', '%s.ui' % name)
-            form = pymol.Qt.utils.loadUi(uifile, widget)
-        else:
-            if hasattr(m, 'Ui_Form'):
-                form = m.Ui_Form()
-            else:
-                form = m.Ui_Dialog()
-
-            form.setupUi(widget)
+        uifile = os.path.join(os.path.dirname(__file__), 'forms', '%s.ui' % name)
+        form = pymol.Qt.utils.loadUi(uifile, widget)
 
         if dialog == 'floating':
             dialog = QtWidgets.QDockWidget(widget.windowTitle(), self)
