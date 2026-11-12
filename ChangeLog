@@ -4,6 +4,16 @@ CHANGE LOG
 
 2026-11-12 pymolish-studio
 
+	* 4.5.12
+
+	* Performance
+	  - Building a molecular surface is 1.24x faster on a 58870-atom
+	    complex (11.97 s to 9.66 s including a small ray): one of its four
+	    passes now uses all cores. The surface is identical.
+
+
+2026-11-12 pymolish-studio
+
 	* 4.5.11
 
 	* Objects panel

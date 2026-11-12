@@ -60,6 +60,11 @@ bench('ray 800x600, cartoon (1aon)',
       lambda: (load_1aon(), cmd.hide('everything'), cmd.show('cartoon')),
       lambda: cmd.ray(800, 600))
 
+# headless PyMOL builds the surface lazily; a tiny ray forces it
+bench('surface build (1aon, +ray 16x16)',
+      lambda: (load_1aon(), cmd.hide('everything'), cmd.show('surface')),
+      lambda: cmd.ray(16, 16))
+
 bench('ray 800x600, surface (1aon)',
       lambda: (load_1aon(), cmd.hide('everything'), cmd.show('surface')),
       lambda: cmd.ray(800, 600))

@@ -95,7 +95,8 @@ Commit a3105772, PyMOL 4.1.0, Python 3.12.4, Linux x86_64, 32 CPUs, PSE 16.8 MB
 
 Observations worth a profile later, in order of size:
 - Isosurface at 1σ on this map takes 10.7 s and 9 GB peak RSS (one-off probe,
-  not in the table). 2σ is 1.4 s. Mesh memory, not marching cubes, is the issue.
+  not in the table). 2σ is 1.4 s. Corrected in 1b below: the cost is the ray
+  tracer's setup for 3.2 M triangles, not the mesh.
 - CPU ray of a 58 k-atom surface: 15 s at 800x600. Cartoon: 4.3 s. Both at
   2.4 to 2.7 GB peak RSS.
 - Loading the PSE (17 MB) takes 6x longer than parsing the gzipped PDB it was
@@ -126,3 +127,49 @@ Python 3.13.12, same machine as above. The 4.1.0 table above has 1.020 s.
 Not faster: sessions saved by Python 2 builds or with `pse_export_version`
 below 1.9, and the bundled `.pkl` data files (Python 2 pickles, 0.1 s for the
 largest). The remaining 0.14 s is the C++ `set_session`.
+
+### Surface build (4.5.12)
+
+Where "ray 800x600, surface (1aon)" goes, from the ray tracer's own feedback
+(`feedback enable, ray, blather`) and temporary timers in `SurfaceJobRun`:
+
+| Part | Time |
+| --- | --- |
+| Building the surface (58870 atoms, 452340 points, 905126 triangles) | 9.5 s |
+| ... solvent dots (`SolventDotNew`) | 1.5 s |
+| ... dots to surface points | 2.7 s |
+| ... refine and eliminate | 1.9 s |
+| ... triangulation (`TrianglePointsToSurface`) | 3.5 s |
+| Ray tracing the finished surface at 800x600 | 5.7 s (voxel table 1.2 s) |
+
+All four build parts ran on one thread, and the build also blocks the GUI on
+`show surface`. The "dots to surface points" loop tests every solvent dot
+independently, so it now runs in fixed chunks under OpenMP and appends the
+chunks in order.
+
+| Workload | 4.5.11 | 4.5.12 |
+| --- | --- | --- |
+| surface build (1aon, +ray 16x16), three runs | 11.90, 11.97, 12.09 s | 9.48, 9.66, 9.66 s |
+
+Same output: the POV-Ray export of the surface (every triangle) has the same
+MD5 as the 4.5.11 build for seven cases (whole complex, chain A at
+`surface_quality` 1, `surface_solvent`, `surface_type` 2 and 4,
+`surface_cavity_mode` 1, partial selection) and for 1, 5 and 32 threads.
+Check: `testing/tests/api/surface_threads.py`. Ray-traced PNGs are not a usable
+comparison: their hashes differ between two runs of the same build.
+
+Left serial: triangulation and refinement are advancing-front algorithms, and
+`SolventDotNew` shares its counters across atoms. They are the next 6.9 s.
+
+### Isosurface at 1σ: not the mesh
+
+`isosurface` of `emd_1155.ccp4` at 1σ plus `ray 64, 64`: 10.8 s and 7.7 GB
+peak, 0.7 GB afterwards. Building the object takes 0.00 s; a second `ray`
+with the mesh already built takes 8 s again. Ray feedback: 3 221 521
+triangles, 2.5 s converting them to primitives, 6.7 s filling the ray
+tracer's voxel table (`MapSetupExpressPerp` lists every vertex in up to 27
+neighbor cells, about 62 M rows for the 0.9 M-triangle protein surface). So
+the cost belongs to CPU ray tracing of multi-million-triangle scenes, not to
+marching cubes or mesh storage, and the OpenGL display path does not pay it.
+Not optimized: a 1σ contour of a whole EM map is noise, 2σ takes 1.3 s.
+

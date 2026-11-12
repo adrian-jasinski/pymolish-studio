@@ -42,6 +42,9 @@ Z* -------------------------------------------------------------------
 #include "Vector.h"
 #include "main.h"
 
+#include <algorithm>
+#include <vector>
+
 #ifdef NT
 #undef NT
 #endif
@@ -3887,7 +3890,6 @@ static int SurfaceJobRun(PyMOLGlobals* G, SurfaceJob* I)
             ok &= !map->EList.empty() && !solv_map->EList.empty();
             if (sol_dot->nDot && ok) {
               Vector3f* dot = pymol::malloc<Vector3f>(sp->nDot);
-              float *v0, *n0;
               CHECKOK(ok, dot);
               if (ok) {
                 int b;
@@ -3895,51 +3897,60 @@ static int SurfaceJobRun(PyMOLGlobals* G, SurfaceJob* I)
                   scale3f(sp->dot[b], probe_radius, dot[b]);
                 }
               }
-              v0 = sol_dot->dot;
-              n0 = sol_dot->dotNormal;
+              const float* v0 = sol_dot->dot;
               if (ok) {
-                int a, b;
-                int sp_nDot = sp->nDot;
-                for (a = 0; ok && a < sol_dot->nDot; a++) {
-                  if (sol_dot->dotCode[a] ||
-                      (surface_type != SurfaceType::SolidEmpirical)) {
-                    OrthoBusyFast(G, a + sol_dot->nDot * 2,
-                        sol_dot->nDot * 5); /* 2/5 to 3/5 */
-                    for (b = 0; ok && b < sp_nDot; b++) {
+                /* Each solvent dot is tested on its own, so fixed-size chunks
+                   run in parallel into their own buffers and are appended in
+                   chunk order: same points, same order, any thread count. */
+                const int nDot = sol_dot->nDot;
+                const int sp_nDot = sp->nDot;
+                const int chunk = 4096;
+                const int nChunk = (nDot + chunk - 1) / chunk;
+                std::vector<std::vector<float>> found(nChunk); /* xyz, normal */
+                OrthoBusyFast(G, 2, 5);
+#pragma omp parallel for schedule(dynamic)
+                for (int c = 0; c < nChunk; c++) {
+                  auto& out = found[c];
+                  const int end = std::min(nDot, (c + 1) * chunk);
+                  for (int a = c * chunk; a < end && !G->Interrupt; a++) {
+                    if (!(sol_dot->dotCode[a] ||
+                            (surface_type != SurfaceType::SolidEmpirical))) {
+                      continue;
+                    }
+                    const float* dot_a = v0 + 3 * a;
+                    for (int b = 0; b < sp_nDot; b++) {
                       float* dot_b = dot[b];
-                      v[0] = v0[0] + dot_b[0];
-                      v[1] = v0[1] + dot_b[1];
-                      v[2] = v0[2] + dot_b[2];
-                      {
-                        int flag = true;
-                        SurfaceJobCheckInteriorSolventSurface(solv_map, v,
-                            sol_dot, probe_rad_less, probe_rad_less2, a, &flag);
-                        /* at this point, we have points on the interior of the
-                           solvent surface, so now we need to further trim that
-                           surface to cover atoms that are present */
-                        if (flag) {
-                          SurfaceJobCheckPresentAndWithin(
-                              map, I, present_vla, v, probe_rad_more, &flag);
-                          if (!flag) { /* compute the normals */
-                            vn[0] = -sp->dot[b][0];
-                            vn[1] = -sp->dot[b][1];
-                            vn[2] = -sp->dot[b][2];
-                            I->N++;
-                            VecCheck(I->V, 3 * (I->N + 1));
-                            VecCheck(I->VN, 3 * (I->N + 1));
-                            CHECKOK(ok, !I->V.empty());
-                            CHECKOK(ok, !I->VN.empty());
-                            v = I->V.data() + I->N * 3;
-                            vn = I->VN.data() + I->N * 3;
-                          }
+                      float p[3] = {dot_a[0] + dot_b[0], dot_a[1] + dot_b[1],
+                          dot_a[2] + dot_b[2]};
+                      int flag = true;
+                      SurfaceJobCheckInteriorSolventSurface(solv_map, p,
+                          sol_dot, probe_rad_less, probe_rad_less2, a, &flag);
+                      /* at this point, we have points on the interior of the
+                         solvent surface, so now we need to further trim that
+                         surface to cover atoms that are present */
+                      if (flag) {
+                        SurfaceJobCheckPresentAndWithin(
+                            map, I, present_vla, p, probe_rad_more, &flag);
+                        if (!flag) { /* keep it; the normal points inward */
+                          const float* n = sp->dot[b];
+                          out.insert(out.end(),
+                              {p[0], p[1], p[2], -n[0], -n[1], -n[2]});
                         }
                       }
-                      ok &= !G->Interrupt;
                     }
                   }
-                  v0 += 3;
-                  n0 += 3;
-                  ok &= !G->Interrupt;
+                }
+                ok &= !G->Interrupt;
+                for (const auto& out : found) {
+                  const int n = out.size() / 6;
+                  VecCheck(I->V, 3 * (I->N + n + 1));
+                  VecCheck(I->VN, 3 * (I->N + n + 1));
+                  for (int i = 0; i < n; i++) {
+                    copy3f(out.data() + 6 * i, I->V.data() + 3 * (I->N + i));
+                    copy3f(out.data() + 6 * i + 3,
+                        I->VN.data() + 3 * (I->N + i));
+                  }
+                  I->N += n;
                 }
               }
               FreeP(dot);
