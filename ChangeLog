@@ -4,6 +4,15 @@ CHANGE LOG
 
 2026-11-12 pymolish-studio
 
+	* 4.5.13
+
+	* Theme
+	  - The shortcut help and the Plugin Manager notes use the application
+	    font instead of a fixed 13 pt macOS and 9 pt Ubuntu font.
+
+
+2026-11-12 pymolish-studio
+
 	* 4.5.12
 
 	* Performance

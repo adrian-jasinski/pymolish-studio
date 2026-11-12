@@ -129,7 +129,7 @@ made up (650 mm for a laptop panel), so the size cannot be detected.
 | 125 % in the viewport | `display_scale_factor` is an integer, so 125 % still draws viewport text at 1x. The object list no longer depends on it (Objects panel, 4.5.11); what remains is the viewport popup menus and the sequence viewer. | Open, only if reported |
 | Live rescale without restart | Qt reads the factor once. Skip unless restarts prove painful. | Skipped |
 | Separate font-size setting | A second knob next to UI Scale. Skip unless the scale alone is not enough. | Skipped |
-| Fixed point sizes in rich text | `help_shortcut.ui` (13 pt) and `pluginmanager.ui` (9 pt) carry a designer font in their HTML; they scale with UI Scale but ignore the app font. Strip when those forms are next edited. | Open |
+| Fixed point sizes in rich text | `help_shortcut.ui` (13 pt, a macOS font) and `pluginmanager.ui` (9 pt, Ubuntu) carried a designer font in their HTML. Removed, so both use the application font. | Done 4.5.13 |
 | Spacing and labels | Hand-built dialogs with zero margins (Lighting Settings fixed); remaining dialogs audited one at a time. | Open |
 
 Rule for plugins (in [docs/plugins.md](../plugins.md)): do not set text colors

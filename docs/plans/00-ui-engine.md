@@ -6,10 +6,9 @@
 existing application incrementally. This retains the native molecular renderer
 and forms; it does not accelerate ray tracing or loading by itself.
 
-## Status — implemented 2026-11-08 (uncommitted)
+## Status — implemented 2026-11-08
 
-Done in the working tree, pending review and commit as
-`remove(gui): standardize on PySide6`:
+Committed as `a3105772 remove(gui): standardize on PySide6` (4.1.0):
 
 - `modules/pymol/Qt/__init__.py` imports PySide6 only. Kept for plugins:
   `PYQT_NAME`, `QT_API=pyside6`, the `QtWidgets.QAction/QActionGroup/QShortcut/
@@ -40,6 +39,7 @@ Qt 6.12.0, OpenGL 4.5 / GLSL 4.50 via WSLg):
   Behavior identical with the original shim and GL widget swapped back in:
   framebuffer `png ray=0` from a startup script is blank in both, and both
   segfault on `quit` under WSLg/xcb. Neither is a regression of this change.
+  The quit crash was fixed in 4.5.9; the blank `png ray=0` is still open.
   `png ray=1` in the same scenario produces a real image (5445 distinct colors).
 
 Not verified here: Windows, macOS, stereo, high-DPI picking, plugin dialogs.
