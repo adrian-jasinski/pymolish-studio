@@ -4,6 +4,15 @@ CHANGE LOG
 
 2026-11-12 pymolish-studio
 
+	* 4.5.9
+
+	* Fixes
+	  - Quitting the GUI (quit command or closing the window) no longer
+	    ends in a segmentation fault (exit code 139) on Linux.
+
+
+2026-11-12 pymolish-studio
+
 	* 4.5.8
 
 	* High-resolution screens

@@ -65,6 +65,7 @@ the initialization functions for these libraries on startup.
 
 #include"Property.h"
 
+#include <cstdlib>
 #include <memory>
 
 /**
@@ -2159,6 +2160,7 @@ void PExit(PyMOLGlobals * G, int code)
 {
   assert(!PyGILState_Check());
 
+  const bool gui = G->HaveGUI;
   ExecutiveDelete(G, "all");
   PBlock(G);
 
@@ -2176,6 +2178,12 @@ void PExit(PyMOLGlobals * G, int code)
      so for the time being, let's just take the process down at this
      point, instead of allowing PyExit to be called. */
 
+  // exit() runs static destructors under the still-live Qt widgets and
+  // segfaults (Qt 6.12, Linux); with a GUI, leave without them.
+  if (gui) {
+    fflush(nullptr);
+    std::_Exit(code);
+  }
   exit(code);
 #else
 
