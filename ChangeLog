@@ -4,6 +4,16 @@ CHANGE LOG
 
 2026-11-12 pymolish-studio
 
+	* 4.5.10
+
+	* Performance
+	  - Loading a session (.pse) written by a Python 3 build is 6.6x faster
+	    (17 MB session: 0.92 s to 0.14 s). Sessions from Python 2 builds
+	    load as before.
+
+
+2026-11-12 pymolish-studio
+
 	* 4.5.9
 
 	* Fixes

@@ -8,7 +8,7 @@ are different workloads and need separate measurements.
 
 ## Status 2026-11-08
 
-1a done: headless baseline in `testing/bench.py`, numbers and first observations in [docs/baseline.md](../baseline.md). GUI frame latency not measured. 1b not started.
+1a done: headless baseline in `testing/bench.py`, numbers and first observations in [docs/baseline.md](../baseline.md). GUI frame latency not measured. 1b first change in 4.5.10: session load 0.92 s to 0.14 s (C unpickler with exact fallback), numbers in the baseline. Next candidates, by size: isosurface mesh memory (9 GB at 1 sigma), CPU ray of surfaces (15 s).
 
 ## Evidence and corrections
 

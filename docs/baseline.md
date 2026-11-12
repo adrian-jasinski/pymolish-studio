@@ -99,8 +99,30 @@ Observations worth a profile later, in order of size:
 - CPU ray of a 58 k-atom surface: 15 s at 800x600. Cartoon: 4.3 s. Both at
   2.4 to 2.7 GB peak RSS.
 - Loading the PSE (17 MB) takes 6x longer than parsing the gzipped PDB it was
-  made from.
+  made from. Fixed in 4.5.10, see below.
 - Startup is 80 ms headless, not a target.
 
 Not measured: GUI frame latency and GPU time (needs a real GL context, see
 `testing/tests/performance/shaders.py`), Windows, macOS.
+
+## 1b results
+
+### Session load (4.5.10)
+
+Profile (`cProfile` around `cmd.load('bench.pse')`): all of the time was in
+Python's pure-Python unpickler (`pickle._loads`, 30.9 M Python calls), used
+since the Python 3 port so that Python 2 strings decode as text or bytes.
+`chempy.pkl` now tries the C unpickler with the `undefined` codec, which
+raises on the first Python 2 string, and falls back to the old path. Sessions
+written by Python 3 hold no such strings and get the same objects back.
+Check: `testing/tests/api/pkl.py`.
+
+| Workload (`pymolish -ckqy testing/bench.py`) | 4.5.9 | 4.5.10 |
+| --- | --- | --- |
+| load PSE (1aon, cartoon, 16.8 MB) | 0.92 s (two runs: 0.88, 0.95) | 0.139 s (0.138..0.177) |
+| load 1aon.pdb.gz, for scale | 0.161 s | 0.161 s |
+
+Python 3.13.12, same machine as above. The 4.1.0 table above has 1.020 s.
+Not faster: sessions saved by Python 2 builds or with `pse_export_version`
+below 1.9, and the bundled `.pkl` data files (Python 2 pickles, 0.1 s for the
+largest). The remaining 0.14 s is the C++ `set_session`.
