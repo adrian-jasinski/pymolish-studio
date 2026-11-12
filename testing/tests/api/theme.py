@@ -45,6 +45,19 @@ class TestTheme(testing.PyMOLTestCase):
             theme.apply_ui_scale(env)
             self.assertEqual(env, {})
 
+    def test_prefer_x11_on_wsl(self):
+        from pmg_qt import theme
+
+        env = {"WSL_DISTRO_NAME": "Ubuntu", "DISPLAY": ":0"}
+        theme.prefer_x11_on_wsl(env)
+        self.assertEqual(env["QT_QPA_PLATFORM"], "xcb;wayland")
+        env = {"WSL_DISTRO_NAME": "Ubuntu", "DISPLAY": ":0", "QT_QPA_PLATFORM": "w"}
+        theme.prefer_x11_on_wsl(env)
+        self.assertEqual(env["QT_QPA_PLATFORM"], "w")  # the user's choice wins
+        for env in ({"DISPLAY": ":0"}, {"WSL_DISTRO_NAME": "Ubuntu"}):
+            theme.prefer_x11_on_wsl(env)
+            self.assertNotIn("QT_QPA_PLATFORM", env)
+
     def test_syntax_colors_readable_on_dark(self):
         from pmg_qt.syntax import readable
 

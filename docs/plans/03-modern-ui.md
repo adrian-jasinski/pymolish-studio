@@ -110,6 +110,7 @@ banner) are not imitated.
 | 6 | Scenes as a docked panel with thumbnails, like the reference's left panel. Today "Scenes" opens the existing dialog. | | Open |
 | 7 | Icons for the toolbar (Qt standard or own SVG). Text labels for now: no icon pack is bundled and none is copied. | | Open |
 | 8 | Timeline. Not planned: no timeline feature exists in this code base. | | Skipped |
+| 10 | **Menus stay on the screen under WSLg.** Reported 2026-11-12: with the window maximized, the Color menu of the Objects panel opened its submenu to the right, off the screen. Cause: under Wayland the compositor places popups, and WSLg's does not flip or slide them. On WSL the GUI now starts through X11 (`QT_QPA_PLATFORM=xcb;wayland` unless the user set one), where Qt places menus itself. Checked maximized at 150 %: menu inside the screen, submenu to its left. | `theme.py` `prefer_x11_on_wsl` | Done 4.5.17 |
 | 9 | The viewport no longer draws its own `PyMOL>` prompt and feedback line (`internal_feedback` 0 when the command area exists; `pymolish -x` keeps it). Text typed while the viewport has focus goes to the command line, which is shown and focused; Ctrl and Alt combinations and the special keys stay viewport shortcuts. `set internal_feedback, 1` in pymolrc restores the old prompt and key handling. | `pymol_qt_gui.py` | Done 4.5.16 |
 
 Checks: `testing/tests/api/action_toolbar.py` (selection mode, rock state,

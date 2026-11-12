@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-12 pymolish-studio
 
+	* 4.5.17
+
+	* Menus
+	  - Under WSL the GUI starts through X11 instead of Wayland, so menus
+	    at the window edge stay on the screen and their submenus open to
+	    the left when there is no room on the right. Set QT_QPA_PLATFORM
+	    to choose the platform yourself.
+
+
+2026-11-12 pymolish-studio
+
 	* 4.5.16
 
 	* Workspace layout

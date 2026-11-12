@@ -1251,6 +1251,7 @@ def execapp():
 
     # Qt 6 always follows the OS scale; this adds the user's Display > UI Scale
     theme.apply_ui_scale()
+    theme.prefer_x11_on_wsl()
 
     # fix Windows taskbar icon
     if pymol.IS_WINDOWS:

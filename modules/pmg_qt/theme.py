@@ -96,6 +96,15 @@ def apply_ui_scale(environ=os.environ):
         environ["QT_SCALE_FACTOR"] = "%g" % scale
 
 
+def prefer_x11_on_wsl(environ=os.environ):
+    """Call before QApplication exists. WSLg's Wayland compositor does not
+    keep popups on the screen, so a menu at the window edge runs off it and
+    its submenus cannot be reached. Through X11 Qt places menus itself: they
+    stay inside the screen and submenus open to the left when they must."""
+    if "WSL_DISTRO_NAME" in environ and environ.get("DISPLAY"):
+        environ.setdefault("QT_QPA_PLATFORM", "xcb;wayland")
+
+
 def apply(app, dark):
     # Fusion + palette darkens every Qt-drawn menu and widget. The color
     # scheme hint darkens what the OS draws (macOS menu bar, Windows title
