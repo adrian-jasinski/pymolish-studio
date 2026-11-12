@@ -96,7 +96,7 @@ made up (650 mm for a laptop panel), so the size cannot be detected.
 | Fixed point sizes in rich text | `help_shortcut.ui` (13 pt) and `pluginmanager.ui` (9 pt) carry a designer font in their HTML; they scale with UI Scale but ignore the app font. Strip when those forms are next edited. | Open |
 | Spacing and labels | Hand-built dialogs with zero margins (Lighting Settings fixed); remaining dialogs audited one at a time. | Open |
 
-Rule for plugins (goes into the step 4 plugin contract): do not set text colors
+Rule for plugins (in [docs/plugins.md](../plugins.md)): do not set text colors
 or pixel font sizes; use the palette, `<b>`, and layouts with default spacing.
 
 Checks: `testing/tests/api/theme.py` (saved scale reaches Qt, exported value
