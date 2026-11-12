@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-12 pymolish-studio
 
+	* 4.5.16
+
+	* Workspace layout
+	  - The viewport no longer draws its own "PyMOL>" prompt line above
+	    the command area (internal_feedback is 0 in the GUI; unchanged
+	    with -x). Text typed while the viewport has focus goes to the
+	    command line. "set internal_feedback, 1" restores the old prompt.
+
+
+2026-11-12 pymolish-studio
+
 	* 4.5.15
 
 	* Objects panel

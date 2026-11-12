@@ -49,6 +49,17 @@ class PyMOLQtGUI(QtWidgets.QMainWindow, pymol._gui.PyMOLDesktopGUI):
     _initialdir = ''
 
     def keyPressEvent(self, ev):
+        # without the prompt in the viewport, text typed over it goes to
+        # the command line; Ctrl and Alt combinations stay PyMOL shortcuts
+        text = ev.text()
+        if (text and text.isprintable()
+                and not keymapping.get_modifiers(ev) & 0x6
+                and not self.cmd.get_setting_int('internal_feedback')):
+            self.ext_window.show()
+            self.lineedit.setFocus()
+            self.lineedit.insert(text)
+            return
+
         args = keymapping.keyPressEventToPyMOLButtonArgs(ev)
 
         if args is not None:
@@ -1250,6 +1261,11 @@ def execapp():
     # The Qt Objects panel replaces the viewport's internal GUI. To get the
     # old panel back: Display > Internal GUI, or "set internal_gui" in pymolrc.
     pymol.invocation.options.internal_gui = 0
+
+    # The command area has the prompt; the viewport does not draw a second
+    # one. "set internal_feedback, 1" in pymolrc brings it back.
+    if pymol.invocation.options.external_gui:
+        pymol.invocation.options.internal_feedback = 0
 
     app = PyMOLApplication(['PyMOL'])
     app.setWindowIcon(make_pymol_qicon())
