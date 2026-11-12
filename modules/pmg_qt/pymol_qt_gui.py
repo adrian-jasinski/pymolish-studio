@@ -1268,6 +1268,7 @@ def execapp():
     app = PyMOLApplication(['PyMOL'])
     app.setWindowIcon(make_pymol_qicon())
     theme.apply(app, theme.is_dark())
+    theme.offer_ui_scale(app)
 
     window = PyMOLQtGUI()
     window.setWindowTitle("PyMOL")

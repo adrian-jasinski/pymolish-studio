@@ -4,6 +4,15 @@ CHANGE LOG
 
 2026-11-12 pymolish-studio
 
+	* 4.5.8
+
+	* High-resolution screens
+	  - First start on a screen 2560 pixels wide or more that the system
+	    reports as unscaled asks once whether to enlarge the UI to 150 %.
+
+
+2026-11-12 pymolish-studio
+
 	* 4.5.7
 
 	* High-resolution screens
