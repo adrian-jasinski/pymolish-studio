@@ -4,6 +4,24 @@ CHANGE LOG
 
 2026-11-12 pymolish-studio
 
+	* 4.5.14
+
+	* Workspace layout
+	  - Action toolbar above the viewport: selection mode, Undo, Redo,
+	    Zoom (with a menu), Orient, Rock, Presets; on the right Builder,
+	    Scenes, Draw/Ray and More. Frame buttons appear while there is
+	    more than one state or frame.
+	  - The log and command line moved from the top to the bottom of the
+	    window. The grid of quick buttons is gone: all of them are in the
+	    toolbar or its More menu.
+	  - Objects panel: visibility dots, A/S/H/L/C as chips, no header row;
+	    under it a toggle bar with mouse mode, Wizard, SEQ and the command
+	    area switch.
+	  - Saved window layouts from earlier versions are reset once.
+
+
+2026-11-12 pymolish-studio
+
 	* 4.5.13
 
 	* Theme

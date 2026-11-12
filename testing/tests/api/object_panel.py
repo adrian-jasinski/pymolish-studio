@@ -95,9 +95,7 @@ class TestObjectPanel(testing.PyMOLTestCase):
         from pmg_qt.object_panel import status_text
 
         cmd.fragment("ala")
-        cmd.set("mouse_selection_mode", 2)
-        self.assertIn("Selecting Chains", status_text(cmd))
-        self.assertIn("State 1/1", status_text(cmd))
+        self.assertEqual(status_text(cmd), "State 1/1")
 
     def test_wizard(self):
         from pmg_qt.object_panel import ObjectPanel

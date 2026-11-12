@@ -118,14 +118,8 @@ SELECTING = (
 
 
 def status_text(cmd):
-    """What the internal GUI shows under its object list: mouse mode, what a
-    click selects, and the current state."""
-    return "%s \N{MIDDLE DOT} Selecting %s \N{MIDDLE DOT} State %d/%d" % (
-        cmd.get("button_mode_name"),
-        SELECTING[cmd.get_setting_int("mouse_selection_mode")],
-        cmd.get_state(),
-        cmd.count_states(),
-    )
+    """The state counter, as the internal GUI shows it under its list."""
+    return "State %d/%d" % (cmd.get_state(), cmd.count_states())
 
 
 _COLOR_CODE = re.compile(r"\\(\d{3}|---)")
@@ -175,6 +169,48 @@ def fill_menu(menu, entries, cmd):
             action = sub.menuAction()
         if color:
             action.setIcon(_swatch(color))
+
+
+# chip colors of the "all" row, A S H L C; the other rows are neutral
+ACCENTS = ("#7e57c2", "#8f6bd1", "#9c82d6", "#6f86d6", "#4caf50")
+
+
+class ChipDelegate(QtWidgets.QStyledItemDelegate):
+    """Paints the A/S/H/L/C letters as rounded chips."""
+
+    def paint(self, painter, option, index):
+        letter = index.data()
+        if not letter:
+            return
+        name, kind = index.siblingAtColumn(0).data(UserRole)
+        shown = index.siblingAtColumn(0).data(Qt.ItemDataRole.CheckStateRole)
+        if kind == "all":
+            fill, text = QtGui.QColor(ACCENTS[index.column() - 1]), Qt.GlobalColor.white
+        else:
+            fill, text = (
+                option.palette.mid().color(),
+                option.palette.buttonText().color(),
+            )
+        painter.save()
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+        if shown != Checked and kind != "all":
+            painter.setOpacity(0.45)  # hidden objects recede
+        side = min(option.rect.width(), option.rect.height()) - 4
+        chip = QtCore.QRect(0, 0, side, side)
+        chip.moveCenter(option.rect.center())
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(fill)
+        painter.drawRoundedRect(chip, 4, 4)
+        font = QtGui.QFont(option.font)
+        font.setBold(True)
+        painter.setFont(font)
+        painter.setPen(text)
+        painter.drawText(chip, Qt.AlignmentFlag.AlignCenter, letter)
+        painter.restore()
+
+    def sizeHint(self, option, index):
+        side = option.fontMetrics.height() + 10
+        return QtCore.QSize(side, side)
 
 
 class WizardPanel(QtWidgets.QGroupBox):
@@ -234,7 +270,14 @@ class ObjectPanel(QtWidgets.QDockWidget):
         self.tree = tree = QtWidgets.QTreeWidget()
         tree.setHeaderLabels(["Name"] + [letter for letter, _ in BUTTONS])
         tree.setUniformRowHeights(True)
-        tree.setStyleSheet("QTreeView::item { padding: 2px 0; }")
+        tree.setHeaderHidden(True)
+        # visibility is a dot, lit when the object is shown
+        tree.setStyleSheet(
+            "QTreeView::item { padding: 4px 0; }"
+            "QTreeView::indicator { width: 10px; height: 10px; border: none;"
+            " border-radius: 5px; margin: 0 4px; background-color: palette(mid); }"
+            "QTreeView::indicator:checked { background-color: #3ddc5a; }"
+        )
         tree.setExpandsOnDoubleClick(False)
         tree.setSelectionMode(
             QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection
@@ -243,12 +286,11 @@ class ObjectPanel(QtWidgets.QDockWidget):
         header.setStretchLastSection(False)
         header.setMinimumSectionSize(tree.fontMetrics().height() * 3 // 2)
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
-        for column, (_, tip) in enumerate(BUTTONS, 1):
+        for column in range(1, len(BUTTONS) + 1):
             header.setSectionResizeMode(
                 column, QtWidgets.QHeaderView.ResizeMode.ResizeToContents
             )
-            tree.headerItem().setToolTip(column, tip)
-            tree.headerItem().setTextAlignment(column, Qt.AlignmentFlag.AlignCenter)
+            tree.setItemDelegateForColumn(column, ChipDelegate(tree))
         tree.itemChanged.connect(self._toggled)
         tree.itemClicked.connect(self._clicked)
         tree.itemDoubleClicked.connect(self._double_clicked)
@@ -265,8 +307,13 @@ class ObjectPanel(QtWidgets.QDockWidget):
         self.filter.setClearButtonEnabled(True)
         self.filter.textChanged.connect(self._apply_filter)
 
+        # state counter, shown only when there is more than one state
         self.status = QtWidgets.QLabel()
-        self.status.setWordWrap(True)
+        self.status.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.status.hide()
+        # toggle bar: the window fills it with its buttons
+        self.footer = QtWidgets.QHBoxLayout()
+        self.footer.setSpacing(2)
         self.wizard = WizardPanel(cmd)
         self.wizard.changed.connect(self.refresh_soon)
 
@@ -277,6 +324,7 @@ class ObjectPanel(QtWidgets.QDockWidget):
         layout.addWidget(tree, 1)
         layout.addWidget(self.wizard)
         layout.addWidget(self.status)
+        layout.addLayout(self.footer)
         self.setWidget(body)
 
     # ponytail: polled from the main window's 0.5 s timer (names, types and
@@ -289,11 +337,7 @@ class ObjectPanel(QtWidgets.QDockWidget):
         if self.isVisible():
             self.refresh()
             self.status.setText(status_text(self.cmd))
-
-    def changeEvent(self, event):
-        if event.type() == QtCore.QEvent.Type.PaletteChange:
-            self.rows = []  # theme toggled: rebuild with the new chip color
-        super().changeEvent(event)
+            self.status.setVisible(self.cmd.count_states() > 1)
 
     def refresh_soon(self):
         QtCore.QTimer.singleShot(0, self.poll)
@@ -309,8 +353,14 @@ class ObjectPanel(QtWidgets.QDockWidget):
         with QtCore.QSignalBlocker(self.tree):
             if rebuilt:
                 self._rebuild(rows)
+            dim = self.palette().brush(
+                QtGui.QPalette.ColorGroup.Disabled, QtGui.QPalette.ColorRole.Text
+            )
             for name, _, enabled, _ in rows:
-                self.items[name].setCheckState(0, Checked if enabled else Unchecked)
+                item = self.items[name]
+                item.setCheckState(0, Checked if enabled else Unchecked)
+                item.setForeground(0, QtGui.QBrush() if enabled else dim)
+        self.tree.viewport().update()  # chips follow the visibility
         if rebuilt:
             self._apply_filter()
 
@@ -322,7 +372,6 @@ class ObjectPanel(QtWidgets.QDockWidget):
         selected = {n for n, i in self.items.items() if i.isSelected()}
         self.tree.clear()
         self.items = {}
-        chip = self.palette().button()  # makes the letters read as buttons
         for name, kind, _, _ in rows:
             item = QtWidgets.QTreeWidgetItem(
                 ["(%s)" % name if kind == "selection" else name]
@@ -333,7 +382,6 @@ class ObjectPanel(QtWidgets.QDockWidget):
                     letter, tip = BUTTONS[column - 1]
                     item.setText(column, letter)
                     item.setToolTip(column, tip)
-                    item.setBackground(column, chip)
                     item.setTextAlignment(column, Qt.AlignmentFlag.AlignCenter)
             self.items[name] = item
         root = self.tree.invisibleRootItem()

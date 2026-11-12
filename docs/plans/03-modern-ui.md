@@ -102,14 +102,15 @@ banner) are not imitated.
 
 | Step | What | Where | State |
 | --- | --- | --- | --- |
-| 1 | **Action toolbar** on top: selection mode (what a click selects), Undo, Redo, Zoom (menu: all, selection, center, reset), Orient, Rock (shows its state), Presets (same list as A > preset for all). Right side: Builder, Scenes, Draw/Ray (the existing render popup), More (Unpick, Deselect, Get View, Rebuild, Properties, Reset, movie commands). Movie buttons appear in the toolbar only while there is more than one state or frame. | New `modules/pmg_qt/action_toolbar.py`, a `QToolBar` | Done 4.5.14 |
+| 1 | **Action toolbar** on top: selection mode (what a click selects), Undo, Redo, Zoom (menu: all, selection, center, reset), Orient, Rock (shows its state), Presets (same list as A > preset for all). Right side: Builder, Scenes, Draw/Ray (the existing render popup), More (Unpick, Deselect, Get View, Rebuild, Properties, Reset, movie commands). Previous, Stop, Play and Next appear in the toolbar only while there is more than one state or frame; first and last frame are in More. | New `modules/pmg_qt/action_toolbar.py`, a `QToolBar` | Done 4.5.14 |
 | 2 | **Command area at the bottom**: log and command line move from the top dock to the bottom; progress bar and Abort sit at the end of the command line. The grid of 18 quick buttons is deleted: every one of them is in the toolbar or its More menu. | `pymol_qt_gui.py` | Done 4.5.14 |
 | 3 | **Content panel look**: no header row, visibility shown as a dot, A/S/H/L/C as rounded chips (accent colors on the "all" row, neutral on the others), taller rows. Still the same checkable tree, so the keyboard works as before. | `object_panel.py` | Done 4.5.14 |
-| 4 | **Toggle bar** under the content panel: mouse mode (the Mouse menu), Wizard (the Wizard menu), SEQ (sequence viewer), `>_` (show or hide the command area), state counter. | `object_panel.py` footer, filled by the window | Done 4.5.14 |
+| 4 | **Toggle bar** under the content panel: mouse mode (the Mouse menu), Wizard (the Wizard menu), SEQ (sequence viewer), `>_` (show or hide the command area). The state counter sits above it and shows only with more than one state. | `object_panel.py` footer, filled by the window | Done 4.5.14 |
 | 5 | Saved layouts are versioned again (2) so the command area starts at the bottom. `pymolish -x` (no external GUI) hides the toolbar and the command area as before. | `pymol_qt_gui.py` | Done 4.5.14 |
 | 6 | Scenes as a docked panel with thumbnails, like the reference's left panel. Today "Scenes" opens the existing dialog. | | Open |
 | 7 | Icons for the toolbar (Qt standard or own SVG). Text labels for now: no icon pack is bundled and none is copied. | | Open |
 | 8 | Timeline. Not planned: no timeline feature exists in this code base. | | Skipped |
+| 9 | The viewport still draws its own `PyMOL>` prompt and feedback line above the command area. Hiding them changes where typed keys show up while the viewport has focus; decide separately. | | Open |
 
 Checks: `testing/tests/api/action_toolbar.py` (selection mode, rock state,
 presets menu, zoom, movie visibility), `object_panel.py` tests extended for the

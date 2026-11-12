@@ -95,7 +95,8 @@ class PyMOLQtGUI(QtWidgets.QMainWindow, pymol._gui.PyMOLDesktopGUI):
         # resize Window before it is shown
         options = pymol.invocation.options
         self.resize(
-            options.win_x + 260,  # viewport + Objects panel
+            options.win_x + 300,  # viewport + Objects panel
+            # toolbar, log and command line
             options.win_y + (246 if options.external_gui else 18))
 
         # for thread-safe viewport command
@@ -158,17 +159,18 @@ Get autocompletion for many arguments by hitting <TAB>
 PyMOL> color ye<TAB>    (will autocomplete "yellow")
 ''')
 
-        layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.browser)
-        layout.addLayout(lineeditlayout)
+        # progress bar and abort, at the end of the command line
+        self.progressbar = QtWidgets.QProgressBar()
+        self.progressbar.setMaximumWidth(160)
+        lineeditlayout.addWidget(self.progressbar)
+        self.abortbutton = QtWidgets.QPushButton('Abort')
+        self.abortbutton.setStyleSheet("background: #FF0000; color: #FFFFFF")
+        lineeditlayout.addWidget(self.abortbutton)
 
-        quickbuttonslayout = QtWidgets.QVBoxLayout()
-        quickbuttonslayout.setSpacing(2)
-
-        extguilayout = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.Direction.LeftToRight)
+        extguilayout = QtWidgets.QVBoxLayout()
         extguilayout.setContentsMargins(2, 2, 2, 2)
-        extguilayout.addLayout(layout)
-        extguilayout.addLayout(quickbuttonslayout)
+        extguilayout.addWidget(self.browser)
+        extguilayout.addLayout(lineeditlayout)
 
         class ExtGuiFrame(QtWidgets.QFrame):
             def mouseDoubleClickEvent(_, event):
@@ -193,18 +195,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         else:
             dockWidget.hide()
 
-        self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, dockWidget)
-
-        # rearrange vertically if docking left or right
-        @dockWidget.dockLocationChanged.connect
-        def _(area):
-            if area == Qt.DockWidgetArea.LeftDockWidgetArea or area == Qt.DockWidgetArea.RightDockWidgetArea:
-                extguilayout.setDirection(QtWidgets.QBoxLayout.Direction.BottomToTop)
-                quickbuttonslayout.takeAt(quickbuttons_stretch_index)
-            else:
-                extguilayout.setDirection(QtWidgets.QBoxLayout.Direction.LeftToRight)
-                if quickbuttons_stretch_index >= quickbuttonslayout.count():
-                    quickbuttonslayout.addStretch()
+        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, dockWidget)
 
         # OpenGL Widget
         self.pymolwidget = PyMOLGLWidget(self)
@@ -216,7 +207,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         from .object_panel import ObjectPanel
         self.object_panel = ObjectPanel(cmd, self)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.object_panel)
-        self.resizeDocks([self.object_panel], [260], Qt.Orientation.Horizontal)
+        self.resizeDocks([self.object_panel], [300], Qt.Orientation.Horizontal)
 
         '''
         # command completion
@@ -228,72 +219,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.lineedit.installEventFilter(self)
         self.pymolwidget.installEventFilter(self)
 
-        # Quick Buttons
-        for row in [
-            [
-                ('Reset', cmd.reset),
-                ('Zoom', lambda: cmd.zoom(animate=1.0)),
-                ('Orient', lambda: cmd.orient(animate=1.0)),
-
-                # render dialog will be constructed when the menu is shown
-                # for the first time. This way it's populated with the current
-                # viewport and settings. Also defers parsing of the ui file.
-                ('Draw/Ray', WidgetMenu(self).setSetupUi(self.render_dialog)),
-            ],
-            [
-                ('Unpick', cmd.unpick),
-                ('Deselect', cmd.deselect),
-                ('Rock', cmd.rock),
-                ('Get View', self.get_view),
-            ],
-            [
-                ('|<', cmd.rewind),
-                ('<', cmd.backward),
-                ('Stop', cmd.mstop),
-                ('Play', cmd.mplay),
-                ('>', cmd.forward),
-                ('>|', cmd.ending),
-                ('MClear', cmd.mclear),
-            ],
-            [
-                ('Builder', self.open_builder_panel),
-                ('Properties', self.open_props_dialog),
-                ('Rebuild', cmd.rebuild),
-            ],
-        ]:
-            hbox = QtWidgets.QHBoxLayout()
-            hbox.setSpacing(2)
-
-            for name, callback in row:
-                btn = QtWidgets.QPushButton(name)
-                btn.setProperty("quickbutton", True)
-                btn.setAttribute(Qt.WidgetAttribute.WA_LayoutUsesWidgetRect) # OS X workaround
-                hbox.addWidget(btn)
-
-                if callback is None:
-                    btn.setEnabled(False)
-                elif isinstance(callback, QtWidgets.QMenu):
-                    btn.setMenu(callback)
-                else:
-                    btn.released.connect(callback)
-
-            quickbuttonslayout.addLayout(hbox)
-
-        # progress bar
-        hbox = QtWidgets.QHBoxLayout()
-        self.progressbar = QtWidgets.QProgressBar()
-        self.progressbar.setSizePolicy(
-                QtWidgets.QSizePolicy.Policy.Minimum,
-                QtWidgets.QSizePolicy.Policy.Minimum)
-        hbox.addWidget(self.progressbar)
-        self.abortbutton = QtWidgets.QPushButton('Abort')
-        self.abortbutton.setStyleSheet("background: #FF0000; color: #FFFFFF")
         self.abortbutton.released.connect(cmd.interrupt)
-        hbox.addWidget(self.abortbutton)
-        quickbuttonslayout.addLayout(hbox)
-
-        quickbuttonslayout.addStretch()
-        quickbuttons_stretch_index = quickbuttonslayout.count() - 1
 
         # menu top level
         self.menubar = menubar = self.menuBar()
@@ -391,6 +317,52 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         ext_vis_action = self.ext_window.toggleViewAction()
         ext_vis_action.setText('Visible')
         menu.addAction(ext_vis_action)
+
+        # action toolbar
+        from .action_toolbar import ActionToolbar
+        self.action_toolbar = ActionToolbar(
+            cmd,
+            self.setting_callbacks,
+            panels=[
+                ('Builder', self.open_builder_panel),
+                ('Scenes', self.scene_panel_menu_dialog),
+                # the render dialog is built when the menu is first shown, so
+                # it starts with the current viewport and settings
+                ('Draw/Ray', WidgetMenu(self).setSetupUi(self.render_dialog)),
+            ],
+            more=[
+                ('Get View', self.get_view),
+                ('Properties', self.open_props_dialog),
+            ])
+        self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.action_toolbar)
+        self.action_toolbar.setVisible(bool(options.external_gui))
+
+        # toggle bar under the object list
+        mouse = QtWidgets.QToolButton()
+        mouse.setToolTip('Mouse mode')
+        mouse.setMenu(self.menudict['Mouse'])
+        self.setting_callbacks[cmd.setting._get_index('button_mode_name')].append(
+            mouse.setText)
+        mouse.setText(cmd.get('button_mode_name'))
+        wizard = QtWidgets.QToolButton()
+        wizard.setText('Wizard')
+        wizard.setMenu(self.menudict['Wizard'])
+        seq = QtWidgets.QToolButton()
+        seq.setDefaultAction(SettingAction(self, cmd, 'seq_view', 'SEQ'))
+        seq.setToolTip('Sequence viewer')
+        command = QtWidgets.QToolButton()
+        command.setText('>_')
+        command.setToolTip('Command line and log')
+        command.setCheckable(True)
+        command.setChecked(bool(options.external_gui))
+        command.clicked.connect(lambda on: self.ext_window.setVisible(on))
+        self.ext_window.toggleViewAction().toggled.connect(command.setChecked)
+        for button in (mouse, wizard, seq, command):
+            button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
+            # the mouse mode name is long: it takes the spare width
+            self.object_panel.footer.addWidget(button, button is mouse)
+        mouse.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
+                            QtWidgets.QSizePolicy.Policy.Fixed)
 
         # extra key mappings (MacPyMOL compatible)
         QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+O'), self).activated.connect(self.file_open)
@@ -1009,6 +981,8 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         self.feedback_timer.start(500)
         self.object_panel.poll()
+        self.action_toolbar.set_movie_visible(
+            self.cmd.count_frames() > 1 or self.cmd.count_states() > 1)
 
     def doPrompt(self):
         self.doTypedCommand(self.command_get())
@@ -1240,7 +1214,8 @@ def _copy_image(_self=pymol.cmd, quiet=1, dpi=-1):
 
 # Saved dock layouts from an older arrangement are ignored once.
 # 1: Objects panel moved from the bottom to the right (4.5.11)
-LAYOUT_VERSION = 1
+# 2: command area moved from the top to the bottom (4.5.14)
+LAYOUT_VERSION = 2
 
 
 def make_pymol_qicon():
