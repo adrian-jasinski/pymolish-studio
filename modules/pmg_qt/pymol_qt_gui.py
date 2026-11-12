@@ -215,8 +215,12 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         cmd = self.cmd = self.pymolwidget.cmd
 
         # objects and wizard panel (replaces the viewport's internal GUI)
-        from .object_panel import ObjectPanel
+        from .object_panel import ObjectPanel, popup_at_cursor
         self.object_panel = ObjectPanel(cmd, self)
+
+        # menus the core opens (right click in the viewport, sequence
+        # viewer, scene buttons) are Qt menus; object_panel imported pymol.menu
+        pymol.menu.popup = lambda entries: popup_at_cursor(self, entries, cmd)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.object_panel)
         self.resizeDocks([self.object_panel], [300], Qt.Orientation.Horizontal)
 
@@ -240,7 +244,6 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         def _addmenu(data, menu):
             '''Fill a menu from "data"'''
-            menu.setTearOffEnabled(True)
             menu.setWindowTitle(menu.title())  # needed for Windows
             for item in data:
                 if item[0] == 'separator':
@@ -1019,7 +1022,6 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         # Redirect to Legacy submenu
         self.menudict['PluginQt'] = self.menudict['Plugin']
         self.menudict['Plugin'] = self.menudict['PluginQt'].addMenu('Legacy Plugins')
-        self.menudict['Plugin'].setTearOffEnabled(True)
         self.menudict['PluginQt'].addSeparator()
 
         plugins.HAVE_QT = True
@@ -1272,6 +1274,7 @@ def execapp():
     app.setWindowIcon(make_pymol_qicon())
     theme.apply(app, theme.is_dark())
     theme.offer_ui_scale(app)
+    theme.round_menus(app)
 
     window = PyMOLQtGUI()
     window.setWindowTitle("PyMOL")

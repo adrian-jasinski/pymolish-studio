@@ -15,6 +15,51 @@
     font-weight:    600;
 }
 
+/* the corners are see-through: theme.round_menus */
+QMenu
+{
+    padding:        6px;
+    border:         1px solid rgba(128, 128, 128, 0.45);
+    border-radius:  10px;
+    background-color: palette(window);
+}
+
+QMenu::item
+{
+    padding:        6px 28px 6px 12px;
+    border-radius:  6px;
+}
+
+QMenu::item:selected
+{
+    background:     rgba(128, 128, 128, 0.28);
+    color:          palette(text);
+}
+
+QMenu::item:disabled
+{
+    color:          palette(mid);
+}
+
+QMenu::icon
+{
+    padding-left:   10px;
+}
+
+QMenu::separator
+{
+    height:         1px;
+    margin:         5px 4px;
+    background:     rgba(128, 128, 128, 0.35);
+}
+
+QLabel#menu_title
+{
+    padding:        4px 12px 6px 8px;
+    font-weight:    600;
+    color:          rgb(128, 128, 128);
+}
+
 QMainWindow::separator
 {
     width:          5px;

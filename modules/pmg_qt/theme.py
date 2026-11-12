@@ -105,6 +105,32 @@ def prefer_x11_on_wsl(environ=os.environ):
         environ.setdefault("QT_QPA_PLATFORM", "xcb;wayland")
 
 
+class _RoundMenus(QtCore.QObject):
+    def eventFilter(self, watched, event):
+        if (
+            event.type() == QtCore.QEvent.Type.Polish
+            and isinstance(watched, QtWidgets.QMenu)
+            and not watched.testAttribute(_TRANSLUCENT)
+        ):
+            watched.setAttribute(_TRANSLUCENT)
+            watched.setWindowFlags(
+                watched.windowFlags()
+                | QtCore.Qt.WindowType.FramelessWindowHint
+                | QtCore.Qt.WindowType.NoDropShadowWindowHint
+            )
+        return False
+
+
+_TRANSLUCENT = QtCore.Qt.WidgetAttribute.WA_TranslucentBackground
+
+
+def round_menus(app):
+    """The stylesheet rounds the corners of every menu; this makes the
+    window behind those corners see-through, for each menu before it is
+    first shown, wherever it was created."""
+    app.installEventFilter(_RoundMenus(app))
+
+
 def apply(app, dark):
     # Fusion + palette darkens every Qt-drawn menu and widget. The color
     # scheme hint darkens what the OS draws (macOS menu bar, Windows title

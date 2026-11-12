@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-12 pymolish-studio
 
+	* 4.5.18
+
+	* Menus
+	  - The right-click menu of the viewport (and the other menus the
+	    core opens: sequence residues, scene buttons, timeline) is a Qt
+	    menu at the mouse pointer instead of one drawn in the viewport.
+	    A GUI takes these menus by setting pymol.menu.popup.
+	  - New menu style for the whole window: rounded corners, more room
+	    per row, thin-line icons next to known commands (Lucide icons,
+	    ISC license, data/pmg_qt/icons/lucide), muted titles.
+	  - Menus can no longer be torn off into their own window.
+
+
+2026-11-12 pymolish-studio
+
 	* 4.5.17
 
 	* Menus

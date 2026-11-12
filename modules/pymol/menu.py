@@ -17,6 +17,10 @@
 # shared main chain/side chain atoms
 sele_ms_shared = '(n. CA|n. N&r. PRO)'
 
+# A GUI with menus of its own sets this to a callable taking a menu list; it
+# returns true when it shows the menu, so the viewport does not draw it.
+popup = None
+
 # text colors for delete and remove items
 del_col = r'\933'
 rem_col = r'\933'

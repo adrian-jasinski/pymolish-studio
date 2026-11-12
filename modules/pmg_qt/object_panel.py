@@ -13,6 +13,8 @@ from pymol import CmdException, _cmd
 from pymol import menu as menus
 from pymol.Qt import QtCore, QtGui, QtWidgets
 
+from .icons import menu_icon
+
 Qt = QtCore.Qt
 Checked, Unchecked = Qt.CheckState.Checked, Qt.CheckState.Unchecked
 UserRole = Qt.ItemDataRole.UserRole
@@ -158,8 +160,11 @@ def fill_menu(menu, entries, cmd):
             continue
         text, color = plain_label(entry[1])
         command = entry[2] if len(entry) > 2 else ""
-        if kind == 2:
-            menu.addSection(text)
+        if kind == 2:  # a caption: not selectable, drawn muted
+            title = QtWidgets.QWidgetAction(menu)
+            title.setDefaultWidget(QtWidgets.QLabel(text, objectName="menu_title"))
+            title.setEnabled(False)
+            menu.addAction(title)
             continue
         if isinstance(command, str):
             action = menu.addAction(text)
@@ -168,8 +173,24 @@ def fill_menu(menu, entries, cmd):
             sub = menu.addMenu(text)
             sub.aboutToShow.connect(lambda s=sub, c=command: fill_once(s, c))
             action = sub.menuAction()
-        if color:
-            action.setIcon(_swatch(color))
+        icon = menu_icon(text, color or menu.palette().text().color())
+        if icon or color:
+            action.setIcon(icon or _swatch(color))
+
+
+def popup_at_cursor(parent, entries, cmd):
+    """Show a pymol.menu list as a context menu at the mouse pointer, once
+    the caller has returned to the event loop. The core calls this through
+    pymol.menu.popup in the middle of handling a click."""
+
+    def show():
+        menu = QtWidgets.QMenu(parent)
+        menu.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        fill_menu(menu, entries, cmd)
+        menu.popup(QtGui.QCursor.pos())
+
+    QtCore.QTimer.singleShot(0, show)
+    return True
 
 
 # chip colors A S H L C: three blues, violet, green

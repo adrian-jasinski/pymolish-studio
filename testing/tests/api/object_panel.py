@@ -56,7 +56,13 @@ class TestObjectPanel(testing.PyMOLTestCase):
             [0, "", ""],
             [1, "more", lambda: [[1, "hide", 'cmd.disable("ala")']]],
         ]
+        entries.append([1, r"\933delete", 'cmd.delete("none")'])
         fill_menu(popup, entries, cmd)
+        title = popup.actions()[0]  # a caption, skipped by the keyboard
+        self.assertEqual(title.defaultWidget().text(), "Color:")
+        self.assertFalse(title.isEnabled())
+        delete = popup.actions()[-1]  # a known command gets its line icon
+        self.assertFalse(delete.icon().isNull())
         red, more = (a for a in popup.actions() if a.text() in ("red", "more"))
         self.assertFalse(red.icon().isNull())  # swatch from the \900 markup
         red.trigger()
@@ -66,6 +72,28 @@ class TestObjectPanel(testing.PyMOLTestCase):
         self.assertTrue(more.menu().isEmpty())  # filled when first opened
         more.menu().aboutToShow.emit()
         self.assertEqual([a.text() for a in more.menu().actions()], ["hide"])
+
+    def test_icons(self):
+        from pymol.Qt import QtGui
+        from pmg_qt import icons
+
+        white = QtGui.QColor("white")
+        for label in icons.LABELS:
+            image = icons.menu_icon(label, white).pixmap(16, 16).toImage()
+            # drawn in the color asked for, on a clear background
+            drawn = [
+                image.pixelColor(x, y)
+                for x in range(image.width())
+                for y in range(image.height())
+                if image.pixelColor(x, y).alpha() > 100
+            ]
+            self.assertTrue(drawn, label)
+            self.assertTrue(all(c.lightness() > 240 for c in drawn), label)
+        self.assertIsNone(icons.menu_icon("no such command", white))
+        # every top-level command of the viewport's menu has an icon
+        for entry in menu.main_menu(cmd, (0, 0, 0), (0, 0)):
+            if entry[0] == 1:
+                self.assertIn(entry[1].replace(r"\933", ""), icons.LABELS)
 
     def test_panel(self):
         from pmg_qt.object_panel import Checked, ObjectPanel, Unchecked
