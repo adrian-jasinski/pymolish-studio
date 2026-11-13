@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-13 pymolish-studio
 
+	* 4.7.2
+
+	* Core
+	  - Three bugs found by running the test suite under the address
+	    and undefined-behavior sanitizers are fixed: an object made
+	    with new was released with free() when a PyMOL instance was
+	    destroyed, the sculpting neighbor hash shifted negative
+	    numbers, and four flags of a CGO object state were read before
+	    they were set. No visible change.
+	  - CI runs the test suite under both sanitizers.
+	  - No cmd.* change.
+
+
+2026-11-13 pymolish-studio
+
 	* 4.7.1
 
 	* Windows

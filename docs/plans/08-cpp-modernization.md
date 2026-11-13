@@ -104,4 +104,52 @@ save round trip. `layer1/` changes: real GUI.
 
 ## Status
 
-Draft. Not started.
+**8a done 2026-11-13 in 4.7.2.**
+
+- CI job `sanitize-Linux` builds with
+  `-fsanitize=address,undefined -fno-sanitize-recover=undefined` and runs the
+  Python suite; any report fails the job. Run it locally with the same
+  `CXXFLAGS` / `CFLAGS` / `LDFLAGS` and
+  `LD_PRELOAD=$(gcc -print-file-name=libasan.so) ASAN_OPTIONS=detect_leaks=0`.
+- The first run found three bugs, fixed in `c2de3087`: `free()` of an object
+  made with `new` (`PyMOL_Free`), left shifts of negative ints in the sculpting
+  hash, and four uninitialized `bool` in `ObjectCGOState`.
+- Left open on purpose: the alignment check is off. CGO keeps structs that
+  hold pointers inside its `float` buffer, so every access is misaligned.
+  Harmless on x86-64 and arm64; fixing it is a CGO storage change, not a
+  sweep. Leak detection is off because Python does not free everything at
+  exit.
+- Coverage of the headless suite (`--coverage` build, `gcov`): **about half of
+  the core**, 96,000 of 191,600 executable lines (68,400 of them are the
+  stroke-font table in `VFont.cpp`).
+
+  | Never entered by the suite | Lines |
+  | --- | --- |
+  | `layer1/CGOGL.cpp`, `SceneRender.cpp`, `ScenePicking.cpp`, `Picking.cpp` (OpenGL drawing and picking) | 2,682 |
+  | `layer1/SceneMouse.cpp`, `layer3/Interactions.cpp`, `layer1/ScrollBar.cpp` (mouse) | 2,130 |
+  | `layer4/PopUp.cpp`, `Menu.cpp` (viewport menus) | 696 |
+  | `layer0/GenericBuffer.cpp`, `ShaderPrg.cpp`, `PostProcess.cpp`, `layerGraphics/gl/GLVertexBuffer.cpp` (GPU buffers, shaders) | 890 |
+  | `layer2/ObjectCurve.cpp`, `RepSphereImmediate.cpp`, `RepSphereGenerate.cpp` | 520 |
+  | `ov/src/OVOneToAny.cpp`, `OVRandom.cpp` | 300 |
+
+  | Large and under 25 % | Covered |
+  | --- | --- |
+  | `layer1/CGO.cpp` (6,343 lines) | 17 % |
+  | `layer5/PyMOL.cpp` (1,481) | 24 % |
+  | `layer2/RepLabel.cpp` (1,296) | 15 % |
+  | `layer3/Seeker.cpp` (1,181) | 7 % |
+  | `layer0/ShaderMgr.cpp` (988) | 6 % |
+  | `layer2/ObjectSlice.cpp` (752) | 10 % |
+  | `layer1/Control.cpp`, `Seq.cpp`, `ButMode.cpp` (1,544) | 9 to 21 % |
+
+  For scale: `Executive.cpp` 55 %, `ObjectMolecule.cpp` 70 %, `Selector.cpp`
+  80 %, `Ray.cpp` 59 %, `Cmd.cpp` 76 %, `Scene.cpp` 29 %, `RepSurface.cpp` 32 %.
+
+  Rule that follows: in the files above only compiler-checked mechanical
+  changes are allowed without a new test or a real GUI check. Hand-written
+  changes there wait for one.
+- Not done: the Catch2 tests are compiled in CI but no step runs them
+  (`pymolish --testing`); Catch2 is not installed on the development machine,
+  so adding the step could not be tried.
+
+**8b in progress.** See the slices below as they land.
