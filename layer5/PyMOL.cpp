@@ -2070,7 +2070,7 @@ void PyMOL_Free(CPyMOL * I)
 #endif
 
   FreeP(I->G);
-  FreeP(I);
+  delete I; // allocated with new in PyMOL_NewWithOptions
   return;
 #if !defined(_PYMOL_ACTIVEX) && !defined(_MACPYMOL_XCODE)
   PYMOL_API_UNLOCK;

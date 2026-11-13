@@ -40,24 +40,25 @@ Z* -------------------------------------------------------------------
 #define NB_HASH_SIZE 262144
 #define EX_HASH_SIZE 65536
 
+/* shifts are done unsigned: a left shift of a negative int is undefined */
 #define nb_hash(v) \
 (((((int)*(v  ))>> 2)&0x0003F)|\
- ((((int)*(v+1))<< 4)&0x00FC0)|\
- ((((int)*(v+2))<<10)&0x3F000))
+ (((unsigned)(int)*(v+1)<< 4)&0x00FC0)|\
+ (((unsigned)(int)*(v+2)<<10)&0x3F000))
 
 #define nb_hash_off_i0(v0i,d) \
   ((((d)+v0i)>> 2)&0x0003F)
 
 #define nb_hash_off_i1(v1i,e) \
- ((((e)+v1i)<< 4)&0x00FC0)
+ (((unsigned)((e)+v1i)<< 4)&0x00FC0)
 
 #define nb_hash_off_i2(v2i,f) \
- ((((f)+v2i)<<10)&0x3F000)
+ (((unsigned)((f)+v2i)<<10)&0x3F000)
 
 #define nb_hash_off(v,d,e,f) \
 (((((d)+(int)*(v  ))>> 2)&0x0003F)|\
- ((((e)+(int)*(v+1))<< 4)&0x00FC0)|\
- ((((f)+(int)*(v+2))<<10)&0x3F000))
+ (((unsigned)((e)+(int)*(v+1))<< 4)&0x00FC0)|\
+ (((unsigned)((f)+(int)*(v+2))<<10)&0x3F000))
 
 
 /* below are empirically optimized */
