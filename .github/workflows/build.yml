@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-22.04
 
     strategy:
+      # one failing Python must not hide the result of the other
+      fail-fast: false
       matrix:
         python-version: ["3.13", "3.14"]
 
@@ -76,6 +78,8 @@ jobs:
     runs-on: windows-latest
 
     strategy:
+      # one failing Python must not hide the result of the other
+      fail-fast: false
       matrix:
         python: [py313, py314]
 
@@ -122,6 +126,8 @@ jobs:
     runs-on: macos-latest
 
     strategy:
+      # one failing Python must not hide the result of the other
+      fail-fast: false
       matrix:
         python: [py313, py314]
 

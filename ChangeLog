@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-13 pymolish-studio
 
+	* 4.7.1
+
+	* Windows
+	  - The Qt GUI starts from a conda environment that has the "icu"
+	    package (libxml2, libnetcdf and many others pull it in). Before,
+	    PySide6 failed with "DLL load failed while importing QtCore: The
+	    specified procedure could not be found".
+
+
+2026-11-13 pymolish-studio
+
 	* 4.7.0
 
 	* Action toolbar
