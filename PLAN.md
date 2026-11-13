@@ -9,7 +9,7 @@ modernize the existing window, and deliver downloadable builds early.** Changing
 bindings does not move molecular computation to the GPU. Follow
 [AGENTS.md](AGENTS.md): smaller, faster, simpler, prettier.
 
-## Plans for all six steps
+## Plans for all steps
 
 | Step | Detailed plan | Recommendation |
 | --- | --- | --- |
@@ -19,6 +19,7 @@ bindings does not move molecular computation to the GPU. Follow
 | 3 | [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Improve the existing window; ship docks and an object metadata table first. |
 | 4 | [Features and external libraries](docs/plans/04-extensibility.md) | Preserve `cmd` and the existing loader; document small integration patterns. |
 | 5 | [Builds and test binaries](docs/plans/05-builds-binaries.md) | Improve incremental builds and deliver test artifacts before large changes. |
+| 6 | [States panel](docs/plans/06-states-panel.md) | First, previous, play/stop, next, last, jump and speed in the Objects dock; replaces the state label and the toolbar's movie buttons. |
 
 ## Validation of the original draft
 
@@ -60,6 +61,7 @@ milestones in the detailed plans, not new topics.
 | 4 | **5b — downloadable application**, alongside **2b — independent removals** | Tester launches without installing Python; each removal passes its own checks. | 5b done 2026-11-08 (4.4.0, Linux verified locally, CI artifacts for 3 OS; 4.5.1 publishes archives on a GitHub pre-release per push to master); 2b done 2026-11-08 (4.4.1 to 4.4.8): chempy.fast, VTK-m, mpeg_encode, RPC/HTTP/web, OpenVR, COLLADA+libxml2, MMTF, dev utilities. Kept: VMD plugins/netcdf, xwin paste, POV-Ray renderer |
 | 5 | **1b — measured optimization** and **3 — workspace increments** | Performance changes have before/after evidence; docks and table ship in reviewable test builds. | 3 slices 1-3 done 2026-11-08 (4.5.0: objects dock, layout persistence, Panels menu); slice 4 done (4.5.11 Qt Objects panel replaces the viewport's object list; 4.5.14 workspace layout: action toolbar on top, command area at the bottom, toggle bar); slice 5 partly done (4.5.2 dark theme, 4.5.7 UI Scale for high-resolution screens and dark-theme color audit); 1b started (4.5.10 session load 6.6x faster, 4.5.12 surface build 1.24x); rest of the surface build, GUI frame latency and slice 6 open |
 | 6 | **4b — extension examples and proven helpers** | Command/menu integration documented; any dock helper has real consumers. | Done 2026-11-12: [docs/plugins.md](docs/plugins.md); no dock helper, no two consumers yet |
+| 7 | **6 — states panel** | States of a trajectory and frames of a movie are stepped, played and timed from one panel. | Planned 2026-11-13: [docs/plans/06-states-panel.md](docs/plans/06-states-panel.md) |
 
 Cleanup precedes speculative optimization. Recording a baseline is preparation.
 UI work needs the binding decision and a usable test build, not completion of
