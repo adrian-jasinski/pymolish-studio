@@ -2,6 +2,16 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-14 pymolish-studio
+
+	* 4.7.5
+
+	* Core
+	  - 22 strcat() calls into fixed-size buffers now append at most
+	    what fits (UtilNConcat). No visible change for text that fits.
+	  - No cmd.* change.
+
+
 2026-11-13 pymolish-studio
 
 	* 4.7.4

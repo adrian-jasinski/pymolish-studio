@@ -1485,7 +1485,7 @@ void RayRenderVRML2(CRay * I, int width, int height,
                     "   }\n"
                     "  }\n", prim->l1 / 2, prim->r1, prim->c1[0], prim->c1[1], prim->c1[2]
               );
-            strcat(geometry, geom_add);
+            UtilNConcat(geometry, geom_add, std::size(geometry));
             /* WLD: format string split to comply with ISO C89 standards */
             snprintf(geom_add, std::size(geom_add),
                     "  Transform {\n"
@@ -1500,7 +1500,7 @@ void RayRenderVRML2(CRay * I, int width, int height,
                     "   }\n"
                     "  }\n",
                     -prim->l1 / 2, prim->r1, prim->c2[0], prim->c2[1], prim->c2[2]);
-            strcat(geometry, geom_add);
+            UtilNConcat(geometry, geom_add, std::size(geometry));
           } else {
             snprintf(geometry, std::size(geometry),
                     "  Shape {\n"

@@ -2649,13 +2649,13 @@ char *PyMOL_GetClickString(CPyMOL * I, int reset)
 
       WordType modstr = "";
       if(cOrthoCTRL & I->ClickedModifiers) {
-        strcat(modstr, " ctrl");
+        UtilNConcat(modstr, " ctrl", std::size(modstr));
       }
       if(cOrthoALT & I->ClickedModifiers) {
-        strcat(modstr, " alt");
+        UtilNConcat(modstr, " alt", std::size(modstr));
       }
       if(cOrthoSHIFT & I->ClickedModifiers) {
-        strcat(modstr, " shift");
+        UtilNConcat(modstr, " shift", std::size(modstr));
       }
 
       result[0] = 0;

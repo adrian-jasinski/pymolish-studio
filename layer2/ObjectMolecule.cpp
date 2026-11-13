@@ -1431,7 +1431,7 @@ static const char *findflag(PyMOLGlobals * G, const char *p, const char *flag, c
   PRINTFD(G, FB_ObjectMolecule)
     " findflag: flag %s format %s\n", flag, format ENDFD;
 
-  strcat(pat, flag);
+  UtilNConcat(pat, flag, std::size(pat));
   l = strlen(pat);
   while(*p) {
     p = ncopy(cc, p, l);
@@ -1448,8 +1448,8 @@ static const char *findflag(PyMOLGlobals * G, const char *p, const char *flag, c
   }
 
   UtilNCopy(pat, "%FORMAT(", std::size(pat));
-  strcat(pat, format);
-  strcat(pat, ")");
+  UtilNConcat(pat, format, std::size(pat));
+  UtilNConcat(pat, ")", std::size(pat));
   l = strlen(pat);
   while(*p) {
     p = ncopy(cc, p, l);
@@ -6356,9 +6356,9 @@ int ObjectMoleculeTransformSelection(ObjectMolecule * I, int state,
     WordType sele_str = ",'";
     logging = SettingGetGlobal_i(G, cSetting_logging);
     if(sele >= 0) {
-      strcat(sele_str, sname);
+      UtilNConcat(sele_str, sname, std::size(sele_str));
     }
-    strcat(sele_str, "'");
+    UtilNConcat(sele_str, "'", std::size(sele_str));
     switch (logging) {
     case cPLog_pml:
       snprintf(line, std::size(line),

@@ -333,7 +333,7 @@ void OrthoSpecial(PyMOLGlobals* G, int k, int x, int y, int mod)
     UtilNCopy(I->Line[curLine], I->Prompt, std::size(I->Line[curLine]));
     I->PromptChar = strlen(I->Prompt);
     if (I->History[I->HistoryView][0]) {
-      strcat(I->Line[curLine], I->History[I->HistoryView]);
+      UtilNConcat(I->Line[curLine], I->History[I->HistoryView], std::size(I->Line[curLine]));
       I->CurChar = strlen(I->Line[curLine]);
     } else {
       I->CurChar = I->PromptChar;
@@ -350,7 +350,7 @@ void OrthoSpecial(PyMOLGlobals* G, int k, int x, int y, int mod)
     UtilNCopy(I->Line[curLine], I->Prompt, std::size(I->Line[curLine]));
     I->PromptChar = strlen(I->Prompt);
     if (I->History[I->HistoryView][0]) {
-      strcat(I->Line[curLine], I->History[I->HistoryView]);
+      UtilNConcat(I->Line[curLine], I->History[I->HistoryView], std::size(I->Line[curLine]));
       I->CurChar = strlen(I->Line[curLine]);
     } else {
       I->CurChar = I->PromptChar;
@@ -2833,7 +2833,7 @@ void OrthoPasteIn(PyMOLGlobals* G, const char* buffer)
         I->CurChar = strlen(I->Line[curLine]);
       }
     } else {
-      strcat(I->Line[curLine], buffer);
+      UtilNConcat(I->Line[curLine], buffer, std::size(I->Line[curLine]));
       I->CurChar = strlen(I->Line[curLine]);
       while ((I->Line[curLine][I->CurChar - 1] == 10) ||
              (I->Line[curLine][I->CurChar - 1] == 13)) {

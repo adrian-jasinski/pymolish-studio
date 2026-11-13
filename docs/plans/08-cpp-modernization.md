@@ -162,3 +162,9 @@ save round trip. `layer1/` changes: real GUI.
 - 4.7.4: 159 of 197 `strcpy` are `UtilNCopy(dst, src, std::size(dst))`, the
   bounded copy the tree already had. Left for a hand pass: 28 with a pointer
   destination and 10 with a computed one.
+- 4.7.5: 22 of 27 `strcat` are `UtilNConcat(dst, src, std::size(dst))`. Left:
+  5 with a pointer destination.
+- Open in 8b: the hand pass over the 67 calls the sweeps left (50 write
+  through a pointer whose size the callee does not know, so the fix is in the
+  signature: pass the size or return `std::string`), the 23 `strncpy`, and the
+  fixed buffer types themselves (`OrthoLineType`, `WordType`, ...).

@@ -399,7 +399,7 @@ bool SceneRay(PyMOLGlobals * G,
 #ifndef _PYMOL_NOPY
           if(PPovrayRender(G, headerVLA, charVLA, prefix, ray_width,
                            ray_height, antialias)) {
-            strcat(prefix, ".png");
+            UtilNConcat(prefix, ".png", std::size(prefix));
             SceneLoadPNG(G, prefix, false, 0, false);
             I->DirtyFlag = false;
           }

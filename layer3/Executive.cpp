@@ -11364,16 +11364,16 @@ float ExecutiveRMSPairs(
     sele1 = sele[c].getIndex();
     if (sele1 >= 0)
       ExecutiveObjMolSeleOp(G, sele1, &op1);
-    strcat(combi, sele[c].getName());
+    UtilNConcat(combi, sele[c].getName(), std::size(combi));
     if (a < (pairs - 1))
-      strcat(combi, " or ");
+      UtilNConcat(combi, " or ", std::size(combi));
     c++;
     sele2 = sele[c].getIndex();
     if (sele2 >= 0)
       ExecutiveObjMolSeleOp(G, sele2, &op2);
     c++;
   }
-  strcat(combi, ")");
+  UtilNConcat(combi, ")", std::size(combi));
   for (a = 0; a < op1.nvv1; a++) {
     inv = (float) op1.vc1[a];
     if (inv) {
@@ -14732,7 +14732,7 @@ void ExecutiveManageObject(
       PRINTFB(G, FB_Executive, FB_Warnings)
       " Executive: object name \"%s\" is illegal -- renamed to 'all_'.\n",
           obj->Name ENDFB(G);
-      strcat(obj->Name, "_"); /* don't allow object named "all" */
+      UtilNConcat(obj->Name, "_", std::size(obj->Name)); /* don't allow object named "all" */
     } else if (SelectorNameIsKeyword(G, obj->Name)) {
       PRINTFB(G, FB_Executive, FB_Warnings)
       " Executive-Warning: name \"%s\" collides with a selection language "

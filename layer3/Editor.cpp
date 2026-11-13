@@ -712,7 +712,7 @@ pymol::Result<> EditorTorsion(PyMOLGlobals* G, float angle)
       sele1 = SelectorIndexByName(G, cEditorSele2);
       obj1 = SelectorGetFastSingleAtomObjectIndex(G, sele1, &i1);
       UtilNCopy(sele, cEditorFragPref, std::size(sele));
-      strcat(sele, "1");
+      UtilNConcat(sele, "1", std::size(sele));
       sele2 = SelectorIndexByName(G, sele);
       obj2 = SelectorGetFastSingleObjectMolecule(G, sele2);
       if (!((sele0 >= 0) && (sele1 >= 0) && (sele2 >= 0) && (obj0 == obj1))) {

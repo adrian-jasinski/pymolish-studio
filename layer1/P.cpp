@@ -2250,7 +2250,7 @@ void PLog(PyMOLGlobals * G, pymol::zstring_view str_view, int format)
           case cPLog_pml:
           case cPLog_pym:
             UtilNCopy(buffer, str, std::size(buffer));
-            strcat(buffer, "\n");
+            UtilNConcat(buffer, "\n", std::size(buffer));
             break;
           }
           break;
@@ -2264,7 +2264,7 @@ void PLog(PyMOLGlobals * G, pymol::zstring_view str_view, int format)
           case cPLog_pml:
             if (str[0] == '/') {
               strncat(buffer, str + 1, a - 1);
-              strcat(buffer, "\n");
+              UtilNConcat(buffer, "\n", std::size(buffer));
             } else {
               UtilNCopy(buffer, "cmd.do('''", std::size(buffer));
               char * b = buffer + strlen(buffer);
@@ -2279,7 +2279,7 @@ void PLog(PyMOLGlobals * G, pymol::zstring_view str_view, int format)
             break;
           case cPLog_pym:
             UtilNCopy(buffer, str, std::size(buffer));
-            strcat(buffer, "\n");
+            UtilNConcat(buffer, "\n", std::size(buffer));
             break;
           }
         }
