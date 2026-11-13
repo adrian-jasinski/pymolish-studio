@@ -65,31 +65,14 @@ class TestTheme(testing.PyMOLTestCase):
             self.assertGreaterEqual(readable(name, True).lightness(), 170)
             self.assertLess(readable(name, False).lightness(), 170)
 
-    def test_offer_ui_scale(self):
+    def test_default_ui_scale(self):
         from unittest import mock
         from pmg_qt import theme
 
-        def offer(width, ratio, saved=False):
-            screen = mock.Mock()
-            screen.devicePixelRatio.return_value = ratio
-            screen.geometry.return_value.width.return_value = width
-            app = mock.Mock()
-            app.primaryScreen.return_value = screen
-            Yes = theme.QtWidgets.QMessageBox.StandardButton.Yes
-            with (
-                mock.patch.object(theme, "_settings") as settings,
-                mock.patch.object(theme, "set_ui_scale") as save,
-                mock.patch.object(
-                    theme.QtWidgets.QMessageBox, "question", return_value=Yes
-                ),
-                mock.patch.dict(os.environ),
-            ):
-                os.environ.pop("QT_SCALE_FACTOR", None)
-                settings.return_value.contains.return_value = saved
-                theme.offer_ui_scale(app)
-                return save.call_args
-
-        self.assertEqual(offer(2560, 1), mock.call(1.5))
-        self.assertIsNone(offer(1920, 1))  # ordinary screen
-        self.assertIsNone(offer(2560, 2))  # OS already scales
-        self.assertIsNone(offer(2560, 1, saved=True))  # asked before
+        with mock.patch.object(theme, "_settings") as settings:
+            settings.return_value.value.side_effect = lambda key, default: default
+            self.assertEqual(theme.ui_scale(), 1.5)
+            settings.return_value.value.side_effect = lambda key, default: "bad"
+            self.assertEqual(theme.ui_scale(), 1.5)
+            settings.return_value.value.side_effect = lambda key, default: "1.2"
+            self.assertEqual(theme.ui_scale(), 1.2)

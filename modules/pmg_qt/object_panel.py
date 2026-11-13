@@ -5,7 +5,7 @@ nested) with a visibility dot and the A/S/H/L/C menus from pymol.menu; a click
 on the row shows or hides the object. Under the list: the states panel (step,
 play, speed) while there is more than one state or frame.
 Everything is Qt text, so it follows the application font, the theme and
-Display > UI Scale, and the dock is resized by dragging its edge.
+the toolbar's UI scale, and the dock is resized by dragging its edge.
 """
 
 import re

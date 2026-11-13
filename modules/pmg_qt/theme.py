@@ -49,41 +49,19 @@ def is_dark():
 
 # Multiplies whatever scale the OS reports. Needed where the OS reports none
 # (WSLg, bare X11: a 2560x1600 laptop panel shows up as 96 dpi, scale 1).
-SCALES = (1, 1.25, 1.5, 1.75, 2, 2.5, 3)
+SCALES = (1, 1.2, 1.5, 1.8, 2)
+DEFAULT_SCALE = 1.5
 
 
 def ui_scale():
     try:
-        return float(_settings().value("ui/scale", 1))
+        return float(_settings().value("ui/scale", DEFAULT_SCALE))
     except (TypeError, ValueError):
-        return 1.0
+        return DEFAULT_SCALE
 
 
 def set_ui_scale(scale):
     _settings().setValue("ui/scale", float(scale))
-
-
-def offer_ui_scale(app):
-    """Ask once on a wide screen that the OS reports as unscaled: likely a
-    high-resolution panel. Offer, not guess: a 27" monitor is fine at 100 %."""
-    screen = app.primaryScreen()
-    if (
-        _settings().contains("ui/scale")
-        or "QT_SCALE_FACTOR" in os.environ
-        or screen.devicePixelRatio() != 1
-        or screen.geometry().width() < 2560
-    ):
-        return
-    Button = QtWidgets.QMessageBox.StandardButton
-    answer = QtWidgets.QMessageBox.question(
-        None,
-        "UI Scale",
-        "This screen is %d pixels wide and the system reports no scaling, "
-        "so text may look small.\n\nEnlarge text and controls to 150 %%?\n"
-        "It applies the next time pymolish starts. Change it any time in "
-        "Display > UI Scale." % screen.geometry().width(),
-    )
-    set_ui_scale(1.5 if answer == Button.Yes else 1)
 
 
 def apply_ui_scale(environ=os.environ):

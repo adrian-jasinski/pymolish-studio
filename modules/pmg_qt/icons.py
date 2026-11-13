@@ -1,5 +1,5 @@
 """
-Thin-line icons for menu entries. The drawings are Lucide icons (ISC license,
+Thin-line icons for menu entries and toolbar buttons. The drawings are Lucide icons (ISC license,
 data/pmg_qt/icons/lucide/LICENSE), tinted with the color of the text they sit
 next to.
 """
@@ -74,6 +74,16 @@ LABELS = {
     "previous": "rewind",
     "forward": "fast-forward",
     "last": "skip-forward",
+    # action toolbar
+    "undo": "undo-2",
+    "redo": "redo-2",
+    "rock": "rotate-3d",
+    "presets": "sliders-horizontal",
+    "builder": "hammer",
+    "scenes": "image",
+    "draw/ray": "aperture",
+    "ui scale": "scaling",
+    "more actions": "ellipsis",
 }
 
 

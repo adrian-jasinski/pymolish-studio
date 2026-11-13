@@ -404,14 +404,6 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         act.setCheckable(True)
         act.setChecked(theme.is_dark())
         act.toggled.connect(theme.set_dark)
-        scales = self.menudict['Display'].addMenu('UI Scale')
-        group = QtWidgets.QActionGroup(scales)
-        for scale in theme.SCALES:
-            act = group.addAction(scales.addAction('%d%%' % (scale * 100)))
-            act.setCheckable(True)
-            act.setChecked(scale == theme.ui_scale())
-            act.setData(scale)
-        group.triggered.connect(self.set_ui_scale)
 
         # focus in command line
         if options.external_gui:
@@ -433,11 +425,6 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         # Load saved shortcuts on launch
         self.saved_shortcuts = pymol.save_shortcut.load_and_set(self.cmd)
-
-    def set_ui_scale(self, action):
-        theme.set_ui_scale(action.data())
-        QtWidgets.QMessageBox.information(
-            self, 'UI Scale', 'The new scale applies the next time pymolish starts.')
 
     def lineeditKeyPressEventFilter(self, watched, event):
         key = event.key()
@@ -1249,7 +1236,7 @@ def execapp():
     if hasattr(Qt, 'AA_UseDesktopOpenGL') and pymol.IS_WINDOWS:
         QtCore.QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_UseDesktopOpenGL)
 
-    # Qt 6 always follows the OS scale; this adds the user's Display > UI Scale
+    # Qt 6 always follows the OS scale; this adds the user's UI scale (toolbar)
     theme.apply_ui_scale()
     theme.prefer_x11_on_wsl()
 
@@ -1271,7 +1258,6 @@ def execapp():
     app = PyMOLApplication(['PyMOL'])
     app.setWindowIcon(make_pymol_qicon())
     theme.apply(app, theme.is_dark())
-    theme.offer_ui_scale(app)
     theme.round_menus(app)
 
     window = PyMOLQtGUI()

@@ -180,10 +180,10 @@ made up (650 mm for a laptop panel), so the size cannot be detected.
 
 | Item | Decision | State |
 | --- | --- | --- |
-| Text, widgets, icons, spacing | One knob: Display > UI Scale (100 to 300 %), saved in `QSettings` `ui/scale`, handed to Qt as `QT_SCALE_FACTOR` before the application object exists. It multiplies the OS scale. An exported `QT_SCALE_FACTOR` wins. Applies on next start. | Done 4.5.7 |
+| Text, widgets, icons, spacing | One knob: Display > UI Scale (100 to 300 %), saved in `QSettings` `ui/scale`, handed to Qt as `QT_SCALE_FACTOR` before the application object exists. It multiplies the OS scale. An exported `QT_SCALE_FACTOR` wins. Applies on next start. | Done 4.5.7; since 4.7.0 picked from a toolbar button, 100 to 200 %, default 150 % ([step 7](07-toolbar-icons-scale.md)) |
 | Viewport menus, object panel, labels | Drawn by the C++ core with the integer `display_scale_factor`. Now rounded from the window scale, not truncated: 150 % gives 2, was 1. | Done 4.5.7 |
 | Text colors | No hard-coded foreground color in Qt code, forms or bundled plugins: bold or the palette instead. Text on a hard-coded light background sets its own dark color. Links use the palette link color. | Done 4.5.7: Lighting Settings, APBS, PNG dialog, Fetch, Plugin Manager, script editor syntax colors |
-| First start on an unscaled high-resolution screen | Offer 150 % once when the OS reports scale 1 and the screen is 2560 px wide or more. Offer, do not guess: a 27" monitor at that width is fine at 100 %. Either answer is saved, so it is asked once. | Done 4.5.8 |
+| First start on an unscaled high-resolution screen | Offer 150 % once when the OS reports scale 1 and the screen is 2560 px wide or more. Offer, do not guess: a 27" monitor at that width is fine at 100 %. Either answer is saved, so it is asked once. | Done 4.5.8; removed in 4.7.0, 150 % is the default |
 | 125 % in the viewport | `display_scale_factor` is an integer, so 125 % still draws viewport text at 1x. The object list no longer depends on it (Objects panel, 4.5.11); what remains is the viewport popup menus and the sequence viewer. | Open, only if reported |
 | Live rescale without restart | Qt reads the factor once. Skip unless restarts prove painful. | Skipped |
 | Separate font-size setting | A second knob next to UI Scale. Skip unless the scale alone is not enough. | Skipped |

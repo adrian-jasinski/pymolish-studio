@@ -4,6 +4,22 @@ CHANGE LOG
 
 2026-11-13 pymolish-studio
 
+	* 4.7.0
+
+	* Action toolbar
+	  - Every button has a line icon. Undo, Redo and More show only the
+	    icon; the name is the tooltip.
+	  - New scale button (100, 120, 150, 180, 200 %) for the size of
+	    text and controls; it shows the running scale. A pick applies
+	    the next time pymolish starts. It replaces Display > UI Scale.
+	  - The interface starts at 150 % when no scale was saved (was
+	    100 %). The one-time question that offered 150 % on wide
+	    screens is gone. A saved scale and QT_SCALE_FACTOR still win.
+	  - No cmd.* change.
+
+
+2026-11-13 pymolish-studio
+
 	* 4.6.1
 
 	* Start screen

@@ -21,7 +21,7 @@ button in the toolbar.**
 
 ```
  [i Residues v] | [undo] [redo] | [i Zoom v] [i Orient] [i Rock] [i Presets v]
-                      ... [i Builder] [i Scenes] [i Draw/Ray v] [i 150% v] [i More v]
+                      ... [i Builder] [i Scenes] [i Draw/Ray v] [i 150% v] [... v]
 ```
 
 | Button | Icon (Lucide) | Change |
@@ -30,13 +30,18 @@ button in the toolbar.**
 | Undo, Redo | undo-2, redo-2 (new files) | icon only; the name shows as tooltip on hover and stays the accessible name |
 | Zoom, Orient, Presets | zoom-in, compass, sliders-horizontal | icon added |
 | Rock | rotate-3d (new file) | icon added, still shows its on/off state |
-| Builder, Scenes, Draw/Ray, More | hammer, image, aperture, ellipsis (hammer and ellipsis new) | icon added, so the bar is one style |
+| Builder, Scenes, Draw/Ray | hammer (new file), image, aperture | icon added, so the bar is one style |
+| More | ellipsis (new file) | icon only, tooltip "More view actions" |
 | Scale, new | scaling (new file) | shows the running scale; menu 100, 120, 150, 180, 200 % |
 
 ## Decisions
 
 - **All buttons get an icon, not only the five named.** A bar with icons on the
   left and bare text on the right reads as two styles.
+- **The bar must fit the default window (940 px wide) at 150 %.** With text
+  on every button it needed 1002 px and More fell into Qt's overflow arrow.
+  More is therefore icon-only and the button padding went from 5 to 3 px:
+  907 px.
 - **Icons are tinted and rebuilt on a palette change**, as in the states panel,
   so they follow Display > Dark Theme.
 - **150 % is the default scale** (`ui/scale` unset). A saved value and an
@@ -76,4 +81,6 @@ default scale is 150 %. Real GUI on WSLg in the dark and the light theme.
 
 ## Status
 
-Planned 2026-11-13.
+Done 2026-11-13 in 4.7.0. Real GUI checked on WSLg with fresh settings: starts
+at 150 %, the bar fits the default window, icons follow the dark and the light
+theme, all twelve buttons take Tab focus in order.
