@@ -1334,7 +1334,7 @@ ObjectSlice* ObjectSliceFromMap(
     memcpy(oss->Corner.data(), oms->Corner, 24 * sizeof(float));
   }
 
-  strcpy(oss->MapName, map->Name);
+  UtilNCopy(oss->MapName, map->Name, std::size(oss->MapName));
   oss->ExtentFlag = true;
 
   /* set the origin of the slice to the center of the map */

@@ -4,6 +4,18 @@ CHANGE LOG
 
 2026-11-13 pymolish-studio
 
+	* 4.7.4
+
+	* Core
+	  - 159 strcpy() calls into fixed-size buffers now copy at most
+	    the size of the buffer (UtilNCopy): a name that does not fit is
+	    cut instead of written past the end. No visible change for
+	    text that fits.
+	  - No cmd.* change.
+
+
+2026-11-13 pymolish-studio
+
 	* 4.7.3
 
 	* Core

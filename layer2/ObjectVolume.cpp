@@ -331,7 +331,7 @@ int ObjectVolumeInvalidateMapName(
     if (vs->Active) {
       if (strcmp(vs->MapName, name) == 0) {
         if (new_name)
-          strcpy(vs->MapName, new_name);
+          UtilNCopy(vs->MapName, new_name, std::size(vs->MapName));
         I->invalidate(cRepAll, cRepInvAll, a);
         result = true;
       }
@@ -1136,7 +1136,7 @@ ObjectVolume* ObjectVolumeFromXtalSym(PyMOLGlobals* G, ObjectVolume* obj,
   }
   vs = &I->State[state];
 
-  strcpy(vs->MapName, map->Name);
+  UtilNCopy(vs->MapName, map->Name, std::size(vs->MapName));
   vs->MapState = map_state;
   oms = ObjectMapGetState(map, map_state);
 

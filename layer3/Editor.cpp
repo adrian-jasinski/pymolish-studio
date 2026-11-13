@@ -711,7 +711,7 @@ pymol::Result<> EditorTorsion(PyMOLGlobals* G, float angle)
       obj0 = SelectorGetFastSingleAtomObjectIndex(G, sele0, &i0);
       sele1 = SelectorIndexByName(G, cEditorSele2);
       obj1 = SelectorGetFastSingleAtomObjectIndex(G, sele1, &i1);
-      strcpy(sele, cEditorFragPref);
+      UtilNCopy(sele, cEditorFragPref, std::size(sele));
       strcat(sele, "1");
       sele2 = SelectorIndexByName(G, sele);
       obj2 = SelectorGetFastSingleObjectMolecule(G, sele2);
@@ -1896,7 +1896,7 @@ void EditorPrepareDrag(PyMOLGlobals* G, pymol::CObject* obj, int sele,
     if (sele >= 0) {
       auto sele_name = SelectorGetNameFromIndex(G, sele);
       if (sele_name) {
-        strcpy(I->DragSeleName, sele_name);
+        UtilNCopy(I->DragSeleName, sele_name, std::size(I->DragSeleName));
         if (SettingGetGlobal_b(G, cSetting_editor_auto_origin)) {
           if (I->FavorOrigin) {
             I->DragHaveBase = true;
@@ -1935,7 +1935,7 @@ void EditorPrepareDrag(PyMOLGlobals* G, pymol::CObject* obj, int sele,
         seleFlag = SelectorIsMember(G, s, drag_sele);
       }
       if (seleFlag) {
-        strcpy(I->DragSeleName, name);
+        UtilNCopy(I->DragSeleName, name, std::size(I->DragSeleName));
         break;
       }
     }
@@ -2093,7 +2093,7 @@ void EditorPrepareDrag(PyMOLGlobals* G, pymol::CObject* obj, int sele,
       " Editor: grabbing all fragments." ENDFB(G);
       I->DragIndex = index;
       I->DragSelection = SelectorIndexByName(G, cEditorComp);
-      strcpy(I->DragSeleName, cEditorComp);
+      UtilNCopy(I->DragSeleName, cEditorComp, std::size(I->DragSeleName));
       I->DragObject = obj;
       I->DragHaveAxis = false;
       I->DragHaveBase = false;

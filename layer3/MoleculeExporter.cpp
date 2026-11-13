@@ -1318,7 +1318,7 @@ struct MoleculeExporterMAE : public MoleculeExporter {
 
     char inscode[3] = { ai->inscode, 0 };
     if (!inscode[0]) {
-      strcpy(inscode, "<>");
+      UtilNCopy(inscode, "<>", std::size(inscode));
     }
 
     ResName resn = "";

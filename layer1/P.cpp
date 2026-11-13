@@ -245,7 +245,7 @@ int PLabelAtomAlt(PyMOLGlobals * G, AtomInfoType * at, const char *model, const 
             if(at->flags) {
               snprintf(buffer, std::size(buffer), "%X", at->flags);
             } else {
-              strcpy(buffer, "0");
+              UtilNCopy(buffer, "0", std::size(buffer));
             }
           } else if(!strcmp(tok, "q")) {
             snprintf(buffer, std::size(buffer), "%1.2f", at->q);
@@ -255,14 +255,14 @@ int PLabelAtomAlt(PyMOLGlobals * G, AtomInfoType * at, const char *model, const 
             if(at->customType != cAtomInfoNoType)
               snprintf(buffer, std::size(buffer), "%d", at->customType);
             else {
-              strcpy(buffer, "?");
+              UtilNCopy(buffer, "?", std::size(buffer));
             }
           } else if(!strcmp(tok, "partial_charge")) {
             snprintf(buffer, std::size(buffer), "%1.3f", at->partialCharge);
           } else if(!strcmp(tok, "formal_charge")) {
             snprintf(buffer, std::size(buffer), "%d", at->formalCharge);
           } else if(!strcmp(tok, "stereo")) {
-            strcpy(buffer, AtomInfoGetStereoAsStr(at));
+            UtilNCopy(buffer, AtomInfoGetStereoAsStr(at), std::size(buffer));
           } else if(!strcmp(tok, "color")) {
             snprintf(buffer, std::size(buffer), "%d", at->color);
           } else if(!strcmp(tok, "cartoon")) {
@@ -2245,11 +2245,11 @@ void PLog(PyMOLGlobals * G, pymol::zstring_view str_view, int format)
         case cPLog_pml:        /* .pml file */
           switch (format) {
           case cPLog_pml_lf:
-            strcpy(buffer, str);
+            UtilNCopy(buffer, str, std::size(buffer));
             break;
           case cPLog_pml:
           case cPLog_pym:
-            strcpy(buffer, str);
+            UtilNCopy(buffer, str, std::size(buffer));
             strcat(buffer, "\n");
             break;
           }
@@ -2266,7 +2266,7 @@ void PLog(PyMOLGlobals * G, pymol::zstring_view str_view, int format)
               strncat(buffer, str + 1, a - 1);
               strcat(buffer, "\n");
             } else {
-              strcpy(buffer, "cmd.do('''");
+              UtilNCopy(buffer, "cmd.do('''", std::size(buffer));
               char * b = buffer + strlen(buffer);
               for (; a && *str; --a) {
                 if (*str == '\\' || *str == '\'') {
@@ -2278,7 +2278,7 @@ void PLog(PyMOLGlobals * G, pymol::zstring_view str_view, int format)
             }
             break;
           case cPLog_pym:
-            strcpy(buffer, str);
+            UtilNCopy(buffer, str, std::size(buffer));
             strcat(buffer, "\n");
             break;
           }

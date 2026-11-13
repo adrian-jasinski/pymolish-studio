@@ -1148,7 +1148,7 @@ void RayRenderVRML1(CRay * I, int width, int height,
   RayExpandPrimitives(I);
   RayTransformFirst(I, 0, false);
 
-  strcpy(buffer, "#VRML V1.0 ascii\n\n");
+  UtilNCopy(buffer, "#VRML V1.0 ascii\n\n", std::size(buffer));
   UtilConcatVLA(&vla, &cc, buffer);
 
   UtilConcatVLA(&vla, &cc, "MaterialBinding { value OVERALL }\n");

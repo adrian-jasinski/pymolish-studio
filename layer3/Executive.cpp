@@ -2256,7 +2256,7 @@ int ExecutiveGroup(PyMOLGlobals* G, pymol::zstring_view nameView,
                 while (ListIterate(I->Spec, rec2, next)) {
                   if ((rec2->group == rec) ||
                       WordMatch(G, rec->name, rec2->group_name, ignore_case)) {
-                    strcpy(rec2->group_name, rec->group_name);
+                    UtilNCopy(rec2->group_name, rec->group_name, std::size(rec2->group_name));
                     rec2->group = rec->group;
                   }
                 }
@@ -3551,7 +3551,7 @@ std::string ExecutiveGetUnusedName(
 {
 
   OrthoLineType unused_name;
-  strcpy(unused_name, prefix);
+  UtilNCopy(unused_name, prefix, std::size(unused_name));
 
   ObjectMakeValidName(G, unused_name);
 
@@ -4296,9 +4296,9 @@ int ExecutiveProcessPDBFile(PyMOLGlobals* G, pymol::CObject* origObj,
           } else if (multiplex > 0) {
             if (pdb_info->multi_object_status ==
                 1) { /* this is a multi-object PDB file */
-              strcpy(cur_name, pdb_name);
+              UtilNCopy(cur_name, pdb_name, std::size(cur_name));
             } else if (cur_name[0] == 0) {
-              strcpy(cur_name, oname);
+              UtilNCopy(cur_name, oname, std::size(cur_name));
             }
             if (model_number > 0) {
               snprintf(pdb_name, std::size(pdb_name), "%s_%04d", cur_name, model_number);
@@ -4319,9 +4319,9 @@ int ExecutiveProcessPDBFile(PyMOLGlobals* G, pymol::CObject* origObj,
             } else if (multiplex > 0) {
               if (pdb_info->multi_object_status ==
                   1) { /* this is a multi-object PDB file */
-                strcpy(cur_name, pdb_name);
+                UtilNCopy(cur_name, pdb_name, std::size(cur_name));
               } else if (cur_name[0] == 0) {
-                strcpy(cur_name, oname);
+                UtilNCopy(cur_name, oname, std::size(cur_name));
               }
               if (model_number > 0) {
                 snprintf(pdb_name, std::size(pdb_name), "%s_%04d", cur_name, model_number);
@@ -5249,8 +5249,8 @@ static int ExecutiveSetNamedEntries(
       if (ok && !skip) {
         if (part_rest && ExecutiveProcessObjectName(G, rec->name, new_name)) {
           // rename duplicates
-          strcpy(rec->obj->Name, new_name);
-          strcpy(rec->name, new_name);
+          UtilNCopy(rec->obj->Name, new_name, std::size(rec->obj->Name));
+          UtilNCopy(rec->name, new_name, std::size(rec->name));
         }
 
         // replace existing object (unless auto_rename_duplicate_objects=1)
@@ -9957,7 +9957,7 @@ pymol::Result<> ExecutiveCopy(
     return pymol::make_error("Failed to create copy");
   }
 
-  strcpy(oDst->Name, dst);
+  UtilNCopy(oDst->Name, dst, std::size(oDst->Name));
   ExecutiveManageObject(G, oDst, zoom, false);
 
   PRINTFB(G, FB_Executive, FB_Actions)
@@ -11357,7 +11357,7 @@ float ExecutiveRMSPairs(
   op2.vv1 = (float*) VLAMalloc(1000, sizeof(float), 5, 1); /* auto-zero */
   op2.code = OMOP_AVRT;
 
-  strcpy(combi, "(");
+  UtilNCopy(combi, "(", std::size(combi));
   c = 0;
   auto pairs = sele.size() / 2;
   for (a = 0; a < pairs; a++) {
@@ -14668,7 +14668,7 @@ static void ExecutiveDoAutoGroup(PyMOLGlobals* G, SpecRec* rec)
               if (WordMatchExact(
                       G, group_rec->name, seek_group_name, ignore_case)) {
                 found_group = group_rec;
-                strcpy(rec->group_name, seek_group_name);
+                UtilNCopy(rec->group_name, seek_group_name, std::size(rec->group_name));
                 break;
               }
             }
@@ -14679,7 +14679,7 @@ static void ExecutiveDoAutoGroup(PyMOLGlobals* G, SpecRec* rec)
           auto obj = new ObjectGroup(G);
           if (obj) {
             ObjectSetName(obj, seek_group_name);
-            strcpy(rec->group_name, obj->Name);
+            UtilNCopy(rec->group_name, obj->Name, std::size(rec->group_name));
             ExecutiveManageObject(G, obj, false, true);
             ExecutiveInvalidateGroups(G, false);
             break;
@@ -14762,7 +14762,7 @@ void ExecutiveManageObject(
     if (!rec)
       ListElemCalloc(G, rec, SpecRec);
 
-    strcpy(rec->name, obj->Name);
+    UtilNCopy(rec->name, obj->Name, std::size(rec->name));
     rec->type = cExecObject;
     rec->obj = obj;
     previousVisible = rec->visible;
@@ -14847,7 +14847,7 @@ void ExecutiveManageSelection(PyMOLGlobals* G, const char* name)
 
   if (!rec) {
     ListElemCalloc(G, rec, SpecRec);
-    strcpy(rec->name, name);
+    UtilNCopy(rec->name, name, std::size(rec->name));
     rec->type = cExecSelection;
     rec->next = nullptr;
     rec->sele_color = -1;
@@ -15725,7 +15725,7 @@ int CExecutive::drag(int x, int y, int mod)
                 first = mov_rec->group->name;
                 second = mov_rec->name;
                 order_flag = true;
-                strcpy(mov_rec->group_name, mov_rec->group->group_name);
+                UtilNCopy(mov_rec->group_name, mov_rec->group->group_name, std::size(mov_rec->group_name));
                 group_flag = true;
               } else if (mov_rec && new_rec) {
                 if (new_rec->isChildOf(mov_rec)) {
@@ -15751,7 +15751,7 @@ int CExecutive::drag(int x, int y, int mod)
                       ObjectGroup* group = (ObjectGroup*) new_rec->obj;
                       if (group->OpenOrClosed && !is_child) {
                         /* put inside an open group */
-                        strcpy(mov_rec->group_name, new_rec->name);
+                        UtilNCopy(mov_rec->group_name, new_rec->name, std::size(mov_rec->group_name));
                         order_flag = false;
                         group_flag = true;
                       }
@@ -15764,9 +15764,9 @@ int CExecutive::drag(int x, int y, int mod)
                       ObjectGroup* group = (ObjectGroup*) new_rec->obj;
                       if (group->OpenOrClosed && !is_child) {
                         /* put inside group */
-                        strcpy(mov_rec->group_name, new_rec->name);
+                        UtilNCopy(mov_rec->group_name, new_rec->name, std::size(mov_rec->group_name));
                       } else {
-                        strcpy(mov_rec->group_name, new_rec->group_name);
+                        UtilNCopy(mov_rec->group_name, new_rec->group_name, std::size(mov_rec->group_name));
                       }
 
                       /* WLD TEST */
@@ -15784,7 +15784,7 @@ int CExecutive::drag(int x, int y, int mod)
                       /* WLD END */
 
                     } else
-                      strcpy(mov_rec->group_name, new_rec->group_name);
+                      UtilNCopy(mov_rec->group_name, new_rec->group_name, std::size(mov_rec->group_name));
                     group_flag = true;
                   }
                 }
@@ -16608,7 +16608,7 @@ int ExecutiveInit(PyMOLGlobals* G)
 
     ListElemCalloc(G, rec, SpecRec);
 
-    strcpy(rec->name, cKeywordAll);
+    UtilNCopy(rec->name, cKeywordAll, std::size(rec->name));
     rec->type = cExecAll;
     rec->visible = true;
     rec->next = nullptr;

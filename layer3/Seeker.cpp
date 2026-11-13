@@ -85,7 +85,7 @@ static void SeekerSelectionToggleRange(PyMOLGlobals * G, std::vector<CSeqRow>& r
 
     ObjectMolecule *obj;
     if(logging == cPLog_pml)
-      strcpy(prefix, "_ ");
+      UtilNCopy(prefix, "_ ", std::size(prefix));
     auto row = &rowVLA[row_num];
     if((obj = ExecutiveFindObjectMoleculeByName(G, row->name))) {
       atom_vla = VLAlloc(int, obj->NAtom / 10);
@@ -177,7 +177,7 @@ static void SeekerSelectionToggle(PyMOLGlobals * G, std::vector<CSeqRow>& rowVLA
     int logging = SettingGetGlobal_i(G, cSetting_logging);
 
     if(logging == cPLog_pml)
-      strcpy(prefix, "_ ");
+      UtilNCopy(prefix, "_ ", std::size(prefix));
     auto row = &rowVLA[row_num];
     auto col = &row->col[col_num];
     if(!col->spacer)
@@ -277,7 +277,7 @@ void SeekerSelectionCenter(PyMOLGlobals * G, int action)
   char prefix[3] = "";
   int logging = SettingGetGlobal_i(G, cSetting_logging);
   if(logging == cPLog_pml)
-    strcpy(prefix, "_ ");
+    UtilNCopy(prefix, "_ ", std::size(prefix));
 
   switch (action) {
   case 0:                      /* center cumulative */
@@ -369,7 +369,7 @@ static CSeqRow *SeekerClick(PyMOLGlobals * G, std::vector<CSeqRow>& rowVLA, int 
             int logging = SettingGetGlobal_i(G, cSetting_logging);
 
             if(logging == cPLog_pml)
-              strcpy(prefix, "_ ");
+              UtilNCopy(prefix, "_ ", std::size(prefix));
 
             if(ExecutiveFindObjectByName(G, row->name)) {
               atom_list = row->atom_lists + col->atom_at;
@@ -1046,7 +1046,7 @@ void SeekerUpdate(PyMOLGlobals * G)
       row->atom_lists[0] = -1;  /* terminate the blank listQ (IMPORTANT!) */
       row->char2col = pymol::vla<int>(est_char);
       row->obj = obj;
-      strcpy(row->name, obj->Name);
+      UtilNCopy(row->name, obj->Name, std::size(row->name));
       row->color = obj->Color;
       ai = obj->AtomInfo;
 

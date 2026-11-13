@@ -159,3 +159,6 @@ save round trip. `layer1/` changes: real GUI.
   destination is an array. Left for a hand pass: 17 calls whose destination is
   a pointer parameter (the callee does not know the size) and 7 that write at
   an offset into a larger buffer.
+- 4.7.4: 159 of 197 `strcpy` are `UtilNCopy(dst, src, std::size(dst))`, the
+  bounded copy the tree already had. Left for a hand pass: 28 with a pointer
+  destination and 10 with a computed one.

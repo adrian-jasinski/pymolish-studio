@@ -2597,7 +2597,7 @@ void PyMOL_SetClickReady(CPyMOL * I, const char *name, int index, int button, in
   I->ClickedY = y;
   I->ClickedPosState = state;
 
-  strcpy(I->ClickedObject, name ? name : "");
+  UtilNCopy(I->ClickedObject, name ? name : "", std::size(I->ClickedObject));
 
   if ((I->ClickedHavePos = bool(pos))) {
     copy3f(pos, I->ClickedPos);

@@ -1447,7 +1447,7 @@ static const char *findflag(PyMOLGlobals * G, const char *p, const char *flag, c
     }
   }
 
-  strcpy(pat, "%FORMAT(");
+  UtilNCopy(pat, "%FORMAT(", std::size(pat));
   strcat(pat, format);
   strcat(pat, ")");
   l = strlen(pat);
@@ -3050,7 +3050,7 @@ static CoordSet *ObjectMoleculeXYZStr2CoordSet(PyMOLGlobals * G, const char *buf
   cset->Coord = pymol::vla_take_ownership(coord);
   cset->TmpBond = pymol::vla_take_ownership(bond);
   cset->NTmpBond = nBond;
-  strcpy(cset->Name, tmp_name);
+  UtilNCopy(cset->Name, tmp_name, std::size(cset->Name));
   if(atInfoPtr)
     *atInfoPtr = atInfo;
   return (cset);
@@ -4119,7 +4119,7 @@ int ObjectMoleculePrepareAtom(ObjectMolecule * I, int index, AtomInfoType * ai,
     ai->discrete_state = ai0->discrete_state;
     ai->q = ai0->q;
     ai->b = ai0->b;
-    strcpy(ai->alt, ai0->alt);
+    UtilNCopy(ai->alt, ai0->alt, std::size(ai->alt));
     ai->inscode = ai0->inscode;
     LexAssign(I->G, ai->segi, ai0->segi);
     LexAssign(I->G, ai->chain, ai0->chain);
@@ -7882,7 +7882,7 @@ static CoordSet *ObjectMoleculeMOLStr2CoordSet(PyMOLGlobals * G, const char *buf
     cset->Coord = pymol::vla_take_ownership(coord);
     cset->NTmpBond = nBond;
     cset->TmpBond = pymol::vla_take_ownership(bond);
-    strcpy(cset->Name, nameTmp);
+    UtilNCopy(cset->Name, nameTmp, std::size(cset->Name));
     p = nextline(p);
     // Need to read in the properties
     {
@@ -8697,7 +8697,7 @@ static CoordSet *ObjectMoleculeMOL2Str2CoordSet(PyMOLGlobals * G,
     cset->Coord = pymol::vla_take_ownership(coord);
     cset->NTmpBond = nBond;
     cset->TmpBond = pymol::vla_take_ownership(bond);
-    strcpy(cset->Name, nameTmp);
+    UtilNCopy(cset->Name, nameTmp, std::size(cset->Name));
   } else {
     VLAFreeP(bond);
     VLAFreeP(coord);
@@ -9328,7 +9328,7 @@ bool ObjectMoleculeSeleOp(ObjectMolecule * I, int sele, ObjectMoleculeOpRec * op
             ai->hetatm = ai0->hetatm;
             ai->flags = ai0->flags;
             LexAssign(G, ai->chain, ai0->chain);
-            strcpy(ai->alt, ai0->alt);
+            UtilNCopy(ai->alt, ai0->alt, std::size(ai->alt));
             LexAssign(G, ai->segi, ai0->segi);
           }
           if(op->i1 == 1) {     /* mode 1, merge residue information */
@@ -11727,35 +11727,35 @@ CoordSet *ObjectMoleculeMMDStr2CoordSet(PyMOLGlobals * G, const char *buffer,
       }
       if(ok) {
         if(ai->customType <= 14)
-          strcpy(ai->elem, "C");
+          UtilNCopy(ai->elem, "C", std::size(ai->elem));
         else if(ai->customType <= 23)
-          strcpy(ai->elem, "O");
+          UtilNCopy(ai->elem, "O", std::size(ai->elem));
         else if(ai->customType <= 40)
-          strcpy(ai->elem, "N");
+          UtilNCopy(ai->elem, "N", std::size(ai->elem));
         else if(ai->customType <= 48)
-          strcpy(ai->elem, "H");
+          UtilNCopy(ai->elem, "H", std::size(ai->elem));
         else if(ai->customType <= 52)
-          strcpy(ai->elem, "S");
+          UtilNCopy(ai->elem, "S", std::size(ai->elem));
         else if(ai->customType <= 53)
-          strcpy(ai->elem, "P");
+          UtilNCopy(ai->elem, "P", std::size(ai->elem));
         else if(ai->customType <= 55)
-          strcpy(ai->elem, "B");
+          UtilNCopy(ai->elem, "B", std::size(ai->elem));
         else if(ai->customType <= 56)
-          strcpy(ai->elem, "F");
+          UtilNCopy(ai->elem, "F", std::size(ai->elem));
         else if(ai->customType <= 57)
-          strcpy(ai->elem, "Cl");
+          UtilNCopy(ai->elem, "Cl", std::size(ai->elem));
         else if(ai->customType <= 58)
-          strcpy(ai->elem, "Br");
+          UtilNCopy(ai->elem, "Br", std::size(ai->elem));
         else if(ai->customType <= 59)
-          strcpy(ai->elem, "I");
+          UtilNCopy(ai->elem, "I", std::size(ai->elem));
         else if(ai->customType <= 60)
-          strcpy(ai->elem, "Si");
+          UtilNCopy(ai->elem, "Si", std::size(ai->elem));
         else if(ai->customType <= 61)
-          strcpy(ai->elem, "Du");
+          UtilNCopy(ai->elem, "Du", std::size(ai->elem));
         else if(ai->customType <= 62)
-          strcpy(ai->elem, "Z0");
+          UtilNCopy(ai->elem, "Z0", std::size(ai->elem));
         else if(ai->customType <= 63)
-          strcpy(ai->elem, "Lp");
+          UtilNCopy(ai->elem, "Lp", std::size(ai->elem));
         else
           ai->elem[0] = 0;
         /* else strcpy(ai->elem,"?"); WLD 090305 -- guess instead. */
@@ -11847,7 +11847,7 @@ CoordSet *ObjectMoleculeMMDStr2CoordSet(PyMOLGlobals * G, const char *buffer,
     cset->Coord = pymol::vla_take_ownership(coord);
     cset->NTmpBond = nBond;
     cset->TmpBond = pymol::vla_take_ownership(bond);
-    strcpy(cset->Name, title);
+    UtilNCopy(cset->Name, title, std::size(cset->Name));
   } else {
     VLAFreeP(bond);
     VLAFreeP(coord);
