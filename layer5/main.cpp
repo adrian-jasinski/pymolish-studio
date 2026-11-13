@@ -102,7 +102,7 @@ int MainFromPyList(PyMOLGlobals *G, PyObject * list)
       /* BlockGetSize(SceneGetBlock(G),&win_x,&win_y); * so how did this get into 0.98beta29?  */
       if(ok) {
 
-        sprintf(buffer, "viewport %d, %d", win_x, win_y);
+        snprintf(buffer, std::size(buffer), "viewport %d, %d", win_x, win_y);
         PParse(G, buffer);
       }
     }

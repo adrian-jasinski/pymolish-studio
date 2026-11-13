@@ -1247,11 +1247,11 @@ int AtomInfoUniquefyNames(PyMOLGlobals * G, const AtomInfoType * atInfo0, int n0
     if(matchFlag && ((!flag1) || flag1[ai1 - atInfo1])) {
       if(c < 100) {
         if((c < 10) && ai1->elem[1])    /* try to keep halogens 3 or under */
-          sprintf(name, "%2s%1d", ai1->elem, c);
+          snprintf(name, std::size(name), "%2s%1d", ai1->elem, c);
         else
-          sprintf(name, "%1s%02d", ai1->elem, c);
+          snprintf(name, std::size(name), "%1s%02d", ai1->elem, c);
       } else {
-        sprintf(name, "%1d%1s%02d", c / 100, ai1->elem, c % 100);
+        snprintf(name, std::size(name), "%1d%1s%02d", c / 100, ai1->elem, c % 100);
       }
       LexAssign(G, ai1->name, name);
       result++;
@@ -2825,7 +2825,7 @@ void AtomInfoGetAlignedPDBResidueName(PyMOLGlobals * G,
     const AtomInfoType * ai,
     ResName & resn)
 {
-  sprintf(resn, "%3.4s", LexStr(G, ai->resn));
+  snprintf(resn, std::size(resn), "%3.4s", LexStr(G, ai->resn));
   if(SettingGetGlobal_b(G, cSetting_pdb_truncate_residue_name)) {
     resn[3] = 0;                /* enforce 3-letter residue name in PDB files */
   }
@@ -2856,9 +2856,9 @@ void AtomInfoGetAlignedPDBAtomName(PyMOLGlobals * G,
 
   if(!ai->name) {
     if(!ai->elem[1])
-      sprintf(name, " %s", ai->elem);
+      snprintf(name, std::size(name), " %s", ai->elem);
     else
-      sprintf(name, "%s", ai->elem);
+      snprintf(name, std::size(name), "%s", ai->elem);
   } else if(!literal) {
     if(ai_name_len < 4) {  /* atom name less than length 4 */
       if(!isdigit(name[0])) {     /* doesn't start with a number */

@@ -4237,7 +4237,7 @@ void ObjectMoleculeSaveUndo(ObjectMolecule * I, int state, int log)
   if(log) {
     OrthoLineType line;
     if(SettingGetGlobal_i(I->G, cSetting_logging)) {
-      sprintf(line, "cmd.push_undo(\"%s\",%d)\n", I->Name, state + 1);
+      snprintf(line, std::size(line), "cmd.push_undo(\"%s\",%d)\n", I->Name, state + 1);
       PLog(G, line, cPLog_no_flush);
     }
   }
@@ -6361,7 +6361,7 @@ int ObjectMoleculeTransformSelection(ObjectMolecule * I, int state,
     strcat(sele_str, "'");
     switch (logging) {
     case cPLog_pml:
-      sprintf(line,
+      snprintf(line, std::size(line),
               "_ cmd.transform_object('%s',[\\\n_ %15.9f,%15.9f,%15.9f,%15.9f,\\\n_ %15.9f,%15.9f,%15.9f,%15.9f,\\\n_ %15.9f,%15.9f,%15.9f,%15.9f,\\\n_ %15.9f,%15.9f,%15.9f,%15.9f\\\n_     ],%d,%d%s,%d)\n",
               I->Name,
               matrix[0], matrix[1], matrix[2], matrix[3],
@@ -6373,7 +6373,7 @@ int ObjectMoleculeTransformSelection(ObjectMolecule * I, int state,
       break;
     case cPLog_pym:
 
-      sprintf(line,
+      snprintf(line, std::size(line),
               "cmd.transform_object('%s',[\n%15.9f,%15.9f,%15.9f,%15.9f,\n%15.9f,%15.9f,%15.9f,%15.9f,\n%15.9f,%15.9f,%15.9f,%15.9f,\n%15.9f,%15.9f,%15.9f,%15.9f\n],%d,%d%s,%d)\n",
               I->Name,
               matrix[0], matrix[1], matrix[2], matrix[3],
@@ -7006,7 +7006,7 @@ static CoordSet *ObjectMoleculeChemPyModel2CoordSet(PyMOLGlobals * G,
             ErrMessage(G, __func__, "bad cartoon color info");
           else {
             char color_name[24];
-            sprintf(color_name, "0x%08x", trgb);
+            snprintf(color_name, std::size(color_name), "0x%08x", trgb);
             SettingSet(G, cSetting_cartoon_color, ColorGetIndex(G, color_name), ai);
           }
         }
@@ -7021,7 +7021,7 @@ static CoordSet *ObjectMoleculeChemPyModel2CoordSet(PyMOLGlobals * G,
             ErrMessage(G, __func__, "bad label color info");
           else {
             char color_name[24];
-            sprintf(color_name, "0x%08x", trgb);
+            snprintf(color_name, std::size(color_name), "0x%08x", trgb);
             SettingSet(G, cSetting_label_color, ColorGetIndex(G, color_name), ai);
           }
         }
@@ -7050,7 +7050,7 @@ static CoordSet *ObjectMoleculeChemPyModel2CoordSet(PyMOLGlobals * G,
             ErrMessage(G, __func__, "bad cartoon color info");
           else {
             char color_name[24];
-            sprintf(color_name, "0x%08x", trgb);
+            snprintf(color_name, std::size(color_name), "0x%08x", trgb);
             SettingSet(G, cSetting_ribbon_color, ColorGetIndex(G, color_name), ai);
           }
         }
@@ -7092,7 +7092,7 @@ static CoordSet *ObjectMoleculeChemPyModel2CoordSet(PyMOLGlobals * G,
             ErrMessage(G, __func__, "bad color info");
           else {
             char color_name[24];
-            sprintf(color_name, "0x%08x", trgb);
+            snprintf(color_name, std::size(color_name), "0x%08x", trgb);
 	    atInfo[a].color = ColorGetIndex(G, color_name);
           }
           Py_DECREF(tmp);
@@ -10966,7 +10966,7 @@ int ObjectMoleculeMoveAtom(ObjectMolecule * I, int state, int index, const float
     OrthoLineType line, buffer;
     if(SettingGetGlobal_i(G, cSetting_logging)) {
       ObjectMoleculeGetAtomSele(I, index, buffer);
-      sprintf(line, "cmd.translate_atom(\"%s\",%15.9f,%15.9f,%15.9f,%d,%d,%d)\n",
+      snprintf(line, std::size(line), "cmd.translate_atom(\"%s\",%15.9f,%15.9f,%15.9f,%d,%d,%d)\n",
               buffer, v[0], v[1], v[2], state + 1, mode, 0);
       PLog(G, line, cPLog_no_flush);
     }
@@ -11824,7 +11824,7 @@ CoordSet *ObjectMoleculeMMDStr2CoordSet(PyMOLGlobals * G, const char *buffer,
         p = nskip(p, 2);
         p = ntrim(cc, p, 4);
         if(!cc[0]) {
-          sprintf(cc, "%s%02d", ai->elem, a + 1);
+          snprintf(cc, std::size(cc), "%s%02d", ai->elem, a + 1);
         }
         ai->name = LexIdx(G, cc);
 

@@ -342,11 +342,11 @@ void EditorDefineExtraPks(PyMOLGlobals* G)
   WordType buffer;
 
   if (EditorGetSinglePicked(G, name)) {
-    sprintf(buffer, "(byres %s)", name);
+    snprintf(buffer, std::size(buffer), "(byres %s)", name);
     SelectorCreate(G, cEditorRes, buffer, nullptr, true, nullptr);
-    sprintf(buffer, "(bychain %s)", name);
+    snprintf(buffer, std::size(buffer), "(bychain %s)", name);
     SelectorCreate(G, cEditorChain, buffer, nullptr, true, nullptr);
-    sprintf(buffer, "(byobject %s)", name);
+    snprintf(buffer, std::size(buffer), "(byobject %s)", name);
     SelectorCreate(G, cEditorObject, buffer, nullptr, true, nullptr);
 
     if (SettingGetGlobal_b(G, cSetting_auto_hide_selections))
@@ -594,7 +594,7 @@ int EditorLogState(PyMOLGlobals* G, int pkresi)
         }
       }
 
-      sprintf(buffer, "cmd.edit(%s,%s,%s,%s,pkresi=%d,pkbond=%d)", buf1, buf2,
+      snprintf(buffer, std::size(buffer), "cmd.edit(%s,%s,%s,%s,pkresi=%d,pkbond=%d)", buf1, buf2,
           buf3, buf4, pkresi ? 1 : 0, pkbond ? 1 : 0);
 
       PLog(G, buffer, cPLog_pym);
@@ -657,7 +657,7 @@ pymol::Result<> EditorInvert(PyMOLGlobals* G, int quiet)
 
         get_rotation_about3f3fTTTf((float) cPI, n0, v, m);
         for (frg = 1; frg <= I->NFrag; frg++) {
-          sprintf(name, "%s%1d", cEditorFragPref, frg);
+          snprintf(name, std::size(name), "%s%1d", cEditorFragPref, frg);
           sele2 = SelectorIndexByName(G, name);
 
           if (ObjectMoleculeIsAtomBondedToSele(obj0, i0, sele2) &&
@@ -1928,7 +1928,7 @@ void EditorPrepareDrag(PyMOLGlobals* G, pymol::CObject* obj, int sele,
 
     /* anchored / fragment dragging  */
     for (frg = 1; frg <= I->NFrag; frg++) {
-      sprintf(name, "%s%1d", cEditorFragPref, frg);
+      snprintf(name, std::size(name), "%s%1d", cEditorFragPref, frg);
       drag_sele = SelectorIndexByName(G, name);
       if (drag_sele >= 0) {
         s = objMol->AtomInfo[index].selEntry;
@@ -1952,7 +1952,7 @@ void EditorPrepareDrag(PyMOLGlobals* G, pymol::CObject* obj, int sele,
       I->DragBondFlag = false;
       I->DragSlowFlag = false;
 
-      sprintf(name, "%s%1d", cEditorBasePref,
+      snprintf(name, std::size(name), "%s%1d", cEditorBasePref,
           frg); /* get relevant base vertex of bond */
       sele1 = SelectorIndexByName(G, name);
       if (sele1 >= 0) {

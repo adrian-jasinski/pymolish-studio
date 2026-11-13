@@ -4,6 +4,18 @@ CHANGE LOG
 
 2026-11-13 pymolish-studio
 
+	* 4.7.3
+
+	* Core
+	  - 227 sprintf() calls that wrote into fixed-size buffers are
+	    now snprintf() with the size of the buffer: text that does not
+	    fit is cut instead of written past the end. No visible change
+	    for text that fits.
+	  - No cmd.* change.
+
+
+2026-11-13 pymolish-studio
+
 	* 4.7.2
 
 	* Core

@@ -152,4 +152,10 @@ save round trip. `layer1/` changes: real GUI.
   (`pymolish --testing`); Catch2 is not installed on the development machine,
   so adding the step could not be tried.
 
-**8b in progress.** See the slices below as they land.
+**8b in progress.**
+
+- 4.7.3: 227 of 251 `sprintf` are `snprintf(buf, std::size(buf), ...)`.
+  `std::size` does not compile on a pointer, so the compiler proved every
+  destination is an array. Left for a hand pass: 17 calls whose destination is
+  a pointer parameter (the callee does not know the size) and 7 that write at
+  an offset into a larger buffer.

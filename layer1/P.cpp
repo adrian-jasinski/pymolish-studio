@@ -201,7 +201,7 @@ int PLabelAtomAlt(PyMOLGlobals * G, AtomInfoType * at, const char *model, const 
           if(!strcmp(tok, "model")) {
             label_len = label_copy_text(label, model, label_len, label_max);
           } else if(!strcmp(tok, "index")) {
-            sprintf(buffer, "%d", index + 1);
+            snprintf(buffer, std::size(buffer), "%d", index + 1);
           } else if(!strcmp(tok, "type")) {
             if(at->hetatm)
               label_len = label_copy_text(label, "HETATM", label_len, label_max);
@@ -212,9 +212,9 @@ int PLabelAtomAlt(PyMOLGlobals * G, AtomInfoType * at, const char *model, const 
           } else if(!strcmp(tok, "resn")) {
             label_len = label_copy_text(label, LexStr(G, at->resn), label_len, label_max);
           } else if(!strcmp(tok, "resi")) {
-            sprintf(buffer, "%d%c", at->resv, at->inscode);
+            snprintf(buffer, std::size(buffer), "%d%c", at->resv, at->inscode);
           } else if(!strcmp(tok, "resv")) {
-            sprintf(buffer, "%d", at->resv);
+            snprintf(buffer, std::size(buffer), "%d", at->resv);
           } else if(!strcmp(tok, "chain")) {
             label_len = label_copy_text(label, LexStr(G, at->chain), label_len, label_max);
           } else if(!strcmp(tok, "alt")) {
@@ -224,9 +224,9 @@ int PLabelAtomAlt(PyMOLGlobals * G, AtomInfoType * at, const char *model, const 
           } else if(!strcmp(tok, "ss")) {
             label_len = label_copy_text(label, at->ssType, label_len, label_max);
           } else if(!strcmp(tok, "vdw")) {
-            sprintf(buffer, "%1.2f", at->vdw);
+            snprintf(buffer, std::size(buffer), "%1.2f", at->vdw);
           } else if(!strcmp(tok, "elec_radius")) {
-            sprintf(buffer, "%1.2f", at->elec_radius);
+            snprintf(buffer, std::size(buffer), "%1.2f", at->elec_radius);
           } else if(!strcmp(tok, "text_type")) {
             const char *st = LexStr(G, at->textType);
             label_len = label_copy_text(label, st, label_len, label_max);
@@ -236,39 +236,39 @@ int PLabelAtomAlt(PyMOLGlobals * G, AtomInfoType * at, const char *model, const 
           } else if(!strcmp(tok, "elem")) {
             label_len = label_copy_text(label, at->elem, label_len, label_max);
           } else if(!strcmp(tok, "geom")) {
-            sprintf(buffer, "%d", at->geom);
+            snprintf(buffer, std::size(buffer), "%d", at->geom);
           } else if(!strcmp(tok, "valence")) {
-            sprintf(buffer, "%d", at->valence);
+            snprintf(buffer, std::size(buffer), "%d", at->valence);
           } else if(!strcmp(tok, "rank")) {
-            sprintf(buffer, "%d", at->rank);
+            snprintf(buffer, std::size(buffer), "%d", at->rank);
           } else if(!strcmp(tok, "flags")) {
             if(at->flags) {
-              sprintf(buffer, "%X", at->flags);
+              snprintf(buffer, std::size(buffer), "%X", at->flags);
             } else {
               strcpy(buffer, "0");
             }
           } else if(!strcmp(tok, "q")) {
-            sprintf(buffer, "%1.2f", at->q);
+            snprintf(buffer, std::size(buffer), "%1.2f", at->q);
           } else if(!strcmp(tok, "b")) {
-            sprintf(buffer, "%1.2f", at->b);
+            snprintf(buffer, std::size(buffer), "%1.2f", at->b);
           } else if(!strcmp(tok, "numeric_type")) {
             if(at->customType != cAtomInfoNoType)
-              sprintf(buffer, "%d", at->customType);
+              snprintf(buffer, std::size(buffer), "%d", at->customType);
             else {
               strcpy(buffer, "?");
             }
           } else if(!strcmp(tok, "partial_charge")) {
-            sprintf(buffer, "%1.3f", at->partialCharge);
+            snprintf(buffer, std::size(buffer), "%1.3f", at->partialCharge);
           } else if(!strcmp(tok, "formal_charge")) {
-            sprintf(buffer, "%d", at->formalCharge);
+            snprintf(buffer, std::size(buffer), "%d", at->formalCharge);
           } else if(!strcmp(tok, "stereo")) {
             strcpy(buffer, AtomInfoGetStereoAsStr(at));
           } else if(!strcmp(tok, "color")) {
-            sprintf(buffer, "%d", at->color);
+            snprintf(buffer, std::size(buffer), "%d", at->color);
           } else if(!strcmp(tok, "cartoon")) {
-            sprintf(buffer, "%d", at->cartoon);
+            snprintf(buffer, std::size(buffer), "%d", at->cartoon);
           } else if(!strcmp(tok, "ID")) {
-            sprintf(buffer, "%d", at->id);
+            snprintf(buffer, std::size(buffer), "%d", at->id);
           } else if(!strcmp(tok, "str")) {
             /* nop */
           } else {
@@ -2606,7 +2606,7 @@ void PDefineFloat(PyMOLGlobals * G, const char *name, float value)
   assert(!PyGILState_Check());
 
   char buffer[OrthoLineLength];
-  sprintf(buffer, "%s = %f\n", name, value);
+  snprintf(buffer, std::size(buffer), "%s = %f\n", name, value);
   PBlock(G);
   PRunStringModule(G, buffer);
   PUnblock(G);

@@ -755,7 +755,7 @@ static void OrthoKeyControl(PyMOLGlobals* G, unsigned char k)
 
   /* safer... */
 
-  sprintf(buffer, "cmd._ctrl(chr(%d))", k);
+  snprintf(buffer, std::size(buffer), "cmd._ctrl(chr(%d))", k);
   /* sprintf(buffer,"_ctrl %c",k); */
   PLog(G, buffer, cPLog_pym);
   PParse(G, buffer);
@@ -769,7 +769,7 @@ static void OrthoKeyCmmd(PyMOLGlobals* G, unsigned char k)
 
   /* safer... */
 
-  sprintf(buffer, "cmd._cmmd(chr(%d))", k);
+  snprintf(buffer, std::size(buffer), "cmd._cmmd(chr(%d))", k);
   /* sprintf(buffer,"_ctrl %c",k); */
   PLog(G, buffer, cPLog_pym);
   PParse(G, buffer);
@@ -783,7 +783,7 @@ static void OrthoKeyCtSh(PyMOLGlobals* G, unsigned char k)
 
   /* safer... */
 
-  sprintf(buffer, "cmd._ctsh(chr(%d))", k);
+  snprintf(buffer, std::size(buffer), "cmd._ctsh(chr(%d))", k);
   /* sprintf(buffer,"_ctrl %c",k); */
   PLog(G, buffer, cPLog_pym);
   PParse(G, buffer);
@@ -802,7 +802,7 @@ static void OrthoKeyAlt(PyMOLGlobals* G, unsigned char k)
        ignore the modifier */
     OrthoKey(G, k, 0, 0, 0);
   } else {
-    sprintf(buffer, "cmd._alt(chr(%d))", k);
+    snprintf(buffer, std::size(buffer), "cmd._alt(chr(%d))", k);
     /* sprintf(buffer,"_alt %c",k); */
     PLog(G, buffer, cPLog_pym);
     PParse(G, buffer);

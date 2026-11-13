@@ -455,10 +455,10 @@ static bool ButModeDrawFastImpl(Block * block, short definitely , CGO *orthoCGO)
       TextDrawStrAt(G, "State ", x, y, orthoCGO);
     }
     TextSetColor(G, textColor2);
-    sprintf(rateStr, "%4d/%4d ", SceneGetFrame(G) + 1, nf);
+    snprintf(rateStr, std::size(rateStr), "%4d/%4d ", SceneGetFrame(G) + 1, nf);
     TextDrawStrAt(G, rateStr, x + DIP2PIXEL(48), y, orthoCGO);
     if(frame_rate) {
-      sprintf(rateStr,"%5.1f",I->RateShown);
+      snprintf(rateStr, std::size(rateStr),"%5.1f",I->RateShown);
       TextDrawStrAt(G, rateStr, x + DIP2PIXEL(144), y, orthoCGO);
       TextSetColor(G, textColor);
       TextDrawStrAt(G, "Hz ", x + DIP2PIXEL(192), y, orthoCGO);
@@ -467,7 +467,7 @@ static bool ButModeDrawFastImpl(Block * block, short definitely , CGO *orthoCGO)
       TextSetColor(G, textColor);
       TextDrawStrAt(G, "State ", x + DIP2PIXEL(128), y, orthoCGO);
       TextSetColor(G, textColor2);
-      sprintf(rateStr," %4d",SceneGetState(G)+1);
+      snprintf(rateStr, std::size(rateStr)," %4d",SceneGetState(G)+1);
       TextDrawStrAt(G, rateStr, x + DIP2PIXEL(168), y, orthoCGO);
     } else if(frame_rate) {
     }

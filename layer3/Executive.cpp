@@ -740,7 +740,7 @@ void ExecutiveMotionMenuActivate(PyMOLGlobals* G, BlockRect* rect, int expected,
       int frame = MovieXtoFrame(G, &draw_rect, n_frame, x, false);
       WordType frame_str = "0";
       if ((frame >= 0) && (frame < n_frame)) {
-        sprintf(frame_str, "%d", frame + 1);
+        snprintf(frame_str, std::size(frame_str), "%d", frame + 1);
       }
       MenuActivate2Arg(
           G, x, y, x, y, passive, "obj_motion", cKeywordSame, frame_str);
@@ -757,7 +757,7 @@ void ExecutiveMotionMenuActivate(PyMOLGlobals* G, BlockRect* rect, int expected,
             int frame = MovieXtoFrame(G, &draw_rect, n_frame, x, false);
             WordType frame_str = "0";
             if ((frame >= 0) && (frame < n_frame)) {
-              sprintf(frame_str, "%d", frame + 1);
+              snprintf(frame_str, std::size(frame_str), "%d", frame + 1);
             }
             MenuActivate1Arg(
                 G, x, y, x, y, passive, "camera_motion", frame_str);
@@ -775,7 +775,7 @@ void ExecutiveMotionMenuActivate(PyMOLGlobals* G, BlockRect* rect, int expected,
             int frame = MovieXtoFrame(G, &draw_rect, n_frame, x, false);
             WordType frame_str = "0";
             if ((frame >= 0) && (frame < n_frame)) {
-              sprintf(frame_str, "%d", frame + 1);
+              snprintf(frame_str, std::size(frame_str), "%d", frame + 1);
             }
             MenuActivate2Arg(G, x, y, x, y, passive, "obj_motion",
                 rec->obj->Name, frame_str);
@@ -3440,7 +3440,7 @@ int ExecutiveGetActiveSeleName(
       if (log) {
         if (SettingGetGlobal_i(G, cSetting_logging)) {
           OrthoLineType buf2;
-          sprintf(buf2, "cmd.select('%s','none')\n", name);
+          snprintf(buf2, std::size(buf2), "cmd.select('%s','none')\n", name);
           PLog(G, buf2, cPLog_no_flush);
         }
       }
@@ -3449,7 +3449,7 @@ int ExecutiveGetActiveSeleName(
       SelectorCreateEmpty(G, name, -1);
       if (log) {
         OrthoLineType buf2;
-        sprintf(buf2, "cmd.select('%s','none')\n", name);
+        snprintf(buf2, std::size(buf2), "cmd.select('%s','none')\n", name);
         PLog(G, buf2, cPLog_no_flush);
       }
     }
@@ -4098,16 +4098,16 @@ pymol::Result<> ExecutiveLoad(PyMOLGlobals* G, ExecutiveLoadArgs const& args)
       ExecutiveUpdateObjectSelection(G, origObj);
 
     if (fname)
-      sprintf(buf, " CmdLoad: \"%s\" appended into object \"%s\", state %d.\n",
+      snprintf(buf, std::size(buf), " CmdLoad: \"%s\" appended into object \"%s\", state %d.\n",
           fname, object_name, state + 1);
   } else if (obj) {
     ObjectSetName(obj, object_name);
     ExecutiveManageObject(G, obj, zoom, true);
 
     if (fname)
-      sprintf(buf, " CmdLoad: \"%s\" loaded as \"%s\".\n", fname, obj->Name);
+      snprintf(buf, std::size(buf), " CmdLoad: \"%s\" loaded as \"%s\".\n", fname, obj->Name);
     else
-      sprintf(buf, " CmdLoad: loaded as \"%s\".\n", obj->Name);
+      snprintf(buf, std::size(buf), " CmdLoad: loaded as \"%s\".\n", obj->Name);
   }
 
   if (!quiet && buf[0]) {
@@ -4289,9 +4289,9 @@ int ExecutiveProcessPDBFile(PyMOLGlobals* G, pymol::CObject* origObj,
         if (next_pdb) {
           if (pdb_name[0] == 0) {
             if (cur_name[0]) {
-              sprintf(pdb_name, "%s_%04d", cur_name, n_processed + 1);
+              snprintf(pdb_name, std::size(pdb_name), "%s_%04d", cur_name, n_processed + 1);
             } else {
-              sprintf(pdb_name, "%s_%04d", oname, n_processed + 1);
+              snprintf(pdb_name, std::size(pdb_name), "%s_%04d", oname, n_processed + 1);
             }
           } else if (multiplex > 0) {
             if (pdb_info->multi_object_status ==
@@ -4301,9 +4301,9 @@ int ExecutiveProcessPDBFile(PyMOLGlobals* G, pymol::CObject* origObj,
               strcpy(cur_name, oname);
             }
             if (model_number > 0) {
-              sprintf(pdb_name, "%s_%04d", cur_name, model_number);
+              snprintf(pdb_name, std::size(pdb_name), "%s_%04d", cur_name, model_number);
             } else {
-              sprintf(pdb_name, "%s_%04d", cur_name, n_processed + 1);
+              snprintf(pdb_name, std::size(pdb_name), "%s_%04d", cur_name, n_processed + 1);
             }
           }
           ObjectSetName(obj, pdb_name);
@@ -4312,9 +4312,9 @@ int ExecutiveProcessPDBFile(PyMOLGlobals* G, pymol::CObject* origObj,
           if (is_repeat_pass) {
             if (pdb_name[0] == 0) {
               if (cur_name[0]) {
-                sprintf(pdb_name, "%s_%04d", cur_name, n_processed + 1);
+                snprintf(pdb_name, std::size(pdb_name), "%s_%04d", cur_name, n_processed + 1);
               } else {
-                sprintf(pdb_name, "%s_%04d", oname, n_processed + 1);
+                snprintf(pdb_name, std::size(pdb_name), "%s_%04d", oname, n_processed + 1);
               }
             } else if (multiplex > 0) {
               if (pdb_info->multi_object_status ==
@@ -4324,9 +4324,9 @@ int ExecutiveProcessPDBFile(PyMOLGlobals* G, pymol::CObject* origObj,
                 strcpy(cur_name, oname);
               }
               if (model_number > 0) {
-                sprintf(pdb_name, "%s_%04d", cur_name, model_number);
+                snprintf(pdb_name, std::size(pdb_name), "%s_%04d", cur_name, model_number);
               } else {
-                sprintf(pdb_name, "%s_%04d", cur_name, n_processed + 1);
+                snprintf(pdb_name, std::size(pdb_name), "%s_%04d", cur_name, n_processed + 1);
               }
             }
             ObjectSetName(obj, pdb_name);  /* from PDB */
@@ -10867,7 +10867,7 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
         FreeP(idx1);
         FreeP(idx2);
       } else if (op1.nvv1 != op2.nvv1) {
-        sprintf(buffer, "Atom counts between selections don't match (%d vs %d)",
+        snprintf(buffer, std::size(buffer), "Atom counts between selections don't match (%d vs %d)",
             op1.nvv1, op2.nvv1);
         ErrMessage(G, "ExecutiveRMS", buffer);
         n_pair = 0;
@@ -11396,7 +11396,7 @@ float ExecutiveRMSPairs(
   }
   if (op1.vv1 && op2.vv1) {
     if (op1.nvv1 != op2.nvv1) {
-      sprintf(buffer,
+      snprintf(buffer, std::size(buffer),
           "Atom counts between selection sets don't match (%d != %d).",
           op1.nvv1, op2.nvv1);
       ErrMessage(G, __func__, buffer);
@@ -15311,7 +15311,7 @@ static void ExecutiveSpecEnable(
 {
   if (log && SettingGetGlobal_b(G, cSetting_logging)) {
     OrthoLineType buffer = "";
-    sprintf(buffer, "cmd.enable('%s',%d)", rec->obj->Name, parents);
+    snprintf(buffer, std::size(buffer), "cmd.enable('%s',%d)", rec->obj->Name, parents);
     PLog(G, buffer, cPLog_pym);
   }
 
@@ -15503,7 +15503,7 @@ int CExecutive::release(int button, int x, int y, int mod)
               if (rec->hilight == 2) {
                 ObjectGroup* obj = (ObjectGroup*) rec->obj;
                 OrthoLineType buf2;
-                sprintf(buf2, "cmd.group(\"%s\",action='%s')\n", rec->obj->Name,
+                snprintf(buf2, std::size(buf2), "cmd.group(\"%s\",action='%s')\n", rec->obj->Name,
                     obj->OpenOrClosed ? "close" : "open");
                 PLog(G, buf2, cPLog_no_flush);
                 ExecutiveGroup(G, rec->obj->Name, "", 5, 1);
@@ -15793,10 +15793,10 @@ int CExecutive::drag(int x, int y, int mod)
               if (group_flag) {
                 OrthoLineType buf;
                 if (mov_rec->group_name[0]) {
-                  sprintf(buf, "group %s, %s\n", mov_rec->group_name,
+                  snprintf(buf, std::size(buf), "group %s, %s\n", mov_rec->group_name,
                       mov_rec->name);
                 } else {
-                  sprintf(buf, "ungroup %s\n", mov_rec->name);
+                  snprintf(buf, std::size(buf), "ungroup %s\n", mov_rec->name);
                 }
                 PLog(G, buf, cPLog_no_flush);
                 ExecutiveInvalidateGroups(G, false);
@@ -15805,9 +15805,9 @@ int CExecutive::drag(int x, int y, int mod)
               }
               if (order_flag && first && second) {
                 OrthoLineType order_input;
-                sprintf(order_input, "%s %s", first, second);
+                snprintf(order_input, std::size(order_input), "%s %s", first, second);
                 ExecutiveOrder(G, order_input, false, location);
-                sprintf(I->ReorderLog, "cmd.order(\"%s\",location=\"%s\")\n",
+                snprintf(I->ReorderLog, std::size(I->ReorderLog), "cmd.order(\"%s\",location=\"%s\")\n",
                     order_input, (location == -2) ? "upper" : "current");
                 PLog(G, I->ReorderLog, cPLog_no_flush);
                 I->RecoverPressed = mov_rec;

@@ -938,7 +938,7 @@ int WordMatchCommaExact(PyMOLGlobals * G, const char *p, const char *q, int ignC
 int WordMatchCommaInt(PyMOLGlobals * G, const char *p, int number)
 {
   WordType buffer;
-  sprintf(buffer, "%d", number);
+  snprintf(buffer, std::size(buffer), "%d", number);
   return (WordMatchComma(G, p, buffer, 1));
 }
 

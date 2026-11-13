@@ -958,9 +958,9 @@ void CoordSetAtomToPDBStrVLA(PyMOLGlobals * G, char **charVLA, int *c,
   formalCharge[0] = 0;
   if (SettingGet<bool>(G, cSetting_pdb_formal_charges)) {
     if((ai->formalCharge > 0) && (ai->formalCharge < 10)) {
-      sprintf(formalCharge, "%d+", ai->formalCharge);
+      snprintf(formalCharge, std::size(formalCharge), "%d+", ai->formalCharge);
     } else if((ai->formalCharge < 0) && (ai->formalCharge > -10)) {
-      sprintf(formalCharge, "%d-", -ai->formalCharge);
+      snprintf(formalCharge, std::size(formalCharge), "%d-", -ai->formalCharge);
     }
   }
 
@@ -981,11 +981,11 @@ void CoordSetAtomToPDBStrVLA(PyMOLGlobals * G, char **charVLA, int *c,
 
   if((!pdb_info) || (!pdb_info->is_pqr_file())) { /* relying upon short-circuit */
     short linelen;
-    sprintf(x, "%8.3f", v[0]);
+    snprintf(x, std::size(x), "%8.3f", v[0]);
     x[8] = 0;
-    sprintf(y, "%8.3f", v[1]);
+    snprintf(y, std::size(y), "%8.3f", v[1]);
     y[8] = 0;
-    sprintf(z, "%8.3f", v[2]);
+    snprintf(z, std::size(z), "%8.3f", v[2]);
     z[8] = 0;
     linelen =
       sprintf((*charVLA) + (*c),
@@ -1031,18 +1031,18 @@ void CoordSetAtomToPDBStrVLA(PyMOLGlobals * G, char **charVLA, int *c,
       assert(resn[0] == ' ');
       resn[0] = '.';
     }
-    sprintf(x, "%8.3f", v[0]);
+    snprintf(x, std::size(x), "%8.3f", v[0]);
     if(x[0] != 32)
-      sprintf(x, " %7.2f", v[0]);
+      snprintf(x, std::size(x), " %7.2f", v[0]);
     x[8] = 0;
-    sprintf(y, "%8.3f", v[1]);
+    snprintf(y, std::size(y), "%8.3f", v[1]);
     y[8] = 0;
     if(y[0] != 32)
-      sprintf(y, " %7.2f", v[1]);
+      snprintf(y, std::size(y), " %7.2f", v[1]);
     y[8] = 0;
-    sprintf(z, "%8.3f", v[2]);
+    snprintf(z, std::size(z), "%8.3f", v[2]);
     if(z[0] != 32)
-      sprintf(z, " %7.2f", v[2]);
+      snprintf(z, std::size(z), " %7.2f", v[2]);
     z[8] = 0;
 
     (*c) += sprintf((*charVLA) + (*c), "%6s%5i %-4s%1s%-4s%1.1s%4i%c   %s%s%s %11.8f %7.3f\n",

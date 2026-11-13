@@ -2379,7 +2379,7 @@ void PyMOL_Special(CPyMOL * I, int k, int x, int y, int modifiers)
 
 #ifndef _PYMOL_NOPY
   if(!grabbed) {
-    sprintf(buffer, "_special %d,%d,%d,%d", k, x, y, modifiers);
+    snprintf(buffer, std::size(buffer), "_special %d,%d,%d,%d", k, x, y, modifiers);
     PLog(G, buffer, cPLog_pml);
     PParse(G, buffer);
     PFlush(G);
