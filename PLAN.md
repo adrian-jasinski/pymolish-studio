@@ -9,18 +9,15 @@ modernize the existing window, and deliver downloadable builds early.** Changing
 bindings does not move molecular computation to the GPU. Follow
 [AGENTS.md](AGENTS.md): smaller, faster, simpler, prettier.
 
-## Plans for all steps
+Finished steps are in [PLAN-DONE.md](PLAN-DONE.md). A step moves there when its
+last milestone ships; its detailed plan stays in `docs/plans/`.
+
+## Open steps
 
 | Step | Detailed plan | Recommendation |
 | --- | --- | --- |
-| 0 | [UI engine research](docs/plans/00-ui-engine.md) | PySide6 + Qt Widgets; preserve the renderer while simplifying bindings. |
 | 1 | [Performance and GPU](docs/plans/01-performance-gpu.md) | Baseline first; optimize measured CPU, rendering, and interaction bottlenecks. |
-| 2 | [Code and dependencies](docs/plans/02-cleanup-dependencies.md) | One feature removal per PR; trace dependencies before deleting. |
 | 3 | [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Improve the existing window; ship docks and an object metadata table first. |
-| 4 | [Features and external libraries](docs/plans/04-extensibility.md) | Preserve `cmd` and the existing loader; document small integration patterns. |
-| 5 | [Builds and test binaries](docs/plans/05-builds-binaries.md) | Improve incremental builds and deliver test artifacts before large changes. |
-| 6 | [States panel](docs/plans/06-states-panel.md) | First, previous, play/stop, next, last, jump and speed in the Objects dock; replaces the state label and the toolbar's movie buttons. |
-| 7 | [Toolbar icons and UI scale](docs/plans/07-toolbar-icons-scale.md) | Line icons on every action toolbar button, Undo and Redo icon-only, 150 % default scale, scale button in the toolbar; replaces Display > UI Scale. |
 
 ## Validation of the original draft
 
@@ -49,21 +46,14 @@ bindings does not move molecular computation to the GPU. Follow
 Evidence and implementation boundaries are linked in each step. “Keep” means a
 recommended direction, not a claim that an implementation has passed tests.
 
-## Recommended execution order
+## Open work, in execution order
 
 The topic numbers remain the user's original numbers. The letters identify
 milestones in the detailed plans, not new topics.
 
 | Order | Work | Exit condition | Relative size |
 | --- | --- | --- | --- |
-| 1 | **0 — UI decision** | PySide6/Widgets recommendation, supported platforms and GL smoke checks are explicit. | Small research task; implemented in working tree 2026-11-08, see step 0 Status |
-| 2 | **5a + 1a — feedback and baseline** | Repeatable build/test commands and recorded build/performance timings before removals. | Done 2026-11-08: [docs/baseline.md](docs/baseline.md), `testing/bench.py` |
-| 3 | **2a — binding and legacy GUI cleanup**, with **4a — plugin contract** | Explicit runtime binding; alternative bindings removed in one PR; plugin migration precedes separate Tk and GLUT removals. | Done 2026-11-08: 4.1.0 bindings, 4.3.0 Tk + plugin contract, 4.3.1 GLUT |
-| 4 | **5b — downloadable application**, alongside **2b — independent removals** | Tester launches without installing Python; each removal passes its own checks. | 5b done 2026-11-08 (4.4.0, Linux verified locally, CI artifacts for 3 OS; 4.5.1 publishes archives on a GitHub pre-release per push to master); 2b done 2026-11-08 (4.4.1 to 4.4.8): chempy.fast, VTK-m, mpeg_encode, RPC/HTTP/web, OpenVR, COLLADA+libxml2, MMTF, dev utilities. Kept: VMD plugins/netcdf, xwin paste, POV-Ray renderer |
 | 5 | **1b — measured optimization** and **3 — workspace increments** | Performance changes have before/after evidence; docks and table ship in reviewable test builds. | 3 slices 1-3 done 2026-11-08 (4.5.0: objects dock, layout persistence, Panels menu); slice 4 done (4.5.11 Qt Objects panel replaces the viewport's object list; 4.5.14 workspace layout: action toolbar on top, command area at the bottom, toggle bar); slice 5 partly done (4.5.2 dark theme, 4.5.7 UI Scale for high-resolution screens and dark-theme color audit); 1b started (4.5.10 session load 6.6x faster, 4.5.12 surface build 1.24x); rest of the surface build, GUI frame latency and slice 6 open |
-| 6 | **4b — extension examples and proven helpers** | Command/menu integration documented; any dock helper has real consumers. | Done 2026-11-12: [docs/plugins.md](docs/plugins.md); no dock helper, no two consumers yet |
-| 7 | **6 — states panel** | States of a trajectory and frames of a movie are stepped, played and timed from one panel. | Done 2026-11-13 (4.6.0): [docs/plans/06-states-panel.md](docs/plans/06-states-panel.md) |
-| 8 | **7 — toolbar icons and UI scale** | Every toolbar button has an icon; the interface starts at 150 % and the scale is picked in the toolbar. | Done 2026-11-13 (4.7.0): [docs/plans/07-toolbar-icons-scale.md](docs/plans/07-toolbar-icons-scale.md) |
 
 Cleanup precedes speculative optimization. Recording a baseline is preparation.
 UI work needs the binding decision and a usable test build, not completion of
@@ -71,18 +61,6 @@ every unrelated removal. GPU compute is not on the critical path. Plugin
 compatibility work starts before Tk removal; final extension documentation can
 follow the first UI increments. Artifact work can start after the binding change
 while the remaining legacy cleanup proceeds.
-
-### First concrete changes
-
-1. Record an optimized baseline and current headless/GUI test status. Resolve
-   existing failures before using those results to judge a change.
-2. Promote the tested PySide6 binding to runtime metadata and establish a coherent
-   Python minimum with dependencies and CI. Keep dev pins exact.
-3. PR title `remove: alternative Qt bindings`; commit subject
-   `remove(gui): standardize on PySide6`. Preserve used import aliases; keep Tk,
-   GLUT, and renderer changes separate.
-4. Deliver a first test artifact, then complete the Tk/plugin migration and other
-   removals one at a time. Docks and the object table are the first visible UI work.
 
 ## Shared completion criteria
 

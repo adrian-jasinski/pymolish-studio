@@ -1,0 +1,43 @@
+# pymolish-studio — finished plans
+
+Steps of the [roadmap](PLAN.md) whose last milestone has shipped. Open work
+stays in `PLAN.md`; the detailed plans stay in `docs/plans/`. Step numbers and
+order numbers are the ones the roadmap used.
+
+## Finished steps
+
+| Step | Detailed plan | Recommendation |
+| --- | --- | --- |
+| 0 | [UI engine research](docs/plans/00-ui-engine.md) | PySide6 + Qt Widgets; preserve the renderer while simplifying bindings. |
+| 2 | [Code and dependencies](docs/plans/02-cleanup-dependencies.md) | One feature removal per PR; trace dependencies before deleting. |
+| 4 | [Features and external libraries](docs/plans/04-extensibility.md) | Preserve `cmd` and the existing loader; document small integration patterns. |
+| 5 | [Builds and test binaries](docs/plans/05-builds-binaries.md) | Improve incremental builds and deliver test artifacts before large changes. |
+| 6 | [States panel](docs/plans/06-states-panel.md) | First, previous, play/stop, next, last, jump and speed in the Objects dock; replaces the state label and the toolbar's movie buttons. |
+| 7 | [Toolbar icons and UI scale](docs/plans/07-toolbar-icons-scale.md) | Line icons on every action toolbar button, Undo and Redo icon-only, 150 % default scale, scale button in the toolbar; replaces Display > UI Scale. |
+
+## Finished work, in execution order
+
+The letters identify milestones in the detailed plans. Order 5 (measured
+optimization and workspace increments) is still open and stays in the roadmap.
+
+| Order | Work | Exit condition | Result |
+| --- | --- | --- | --- |
+| 1 | **0 — UI decision** | PySide6/Widgets recommendation, supported platforms and GL smoke checks are explicit. | Small research task; implemented in working tree 2026-11-08, see step 0 Status |
+| 2 | **5a + 1a — feedback and baseline** | Repeatable build/test commands and recorded build/performance timings before removals. | Done 2026-11-08: [docs/baseline.md](docs/baseline.md), `testing/bench.py` |
+| 3 | **2a — binding and legacy GUI cleanup**, with **4a — plugin contract** | Explicit runtime binding; alternative bindings removed in one PR; plugin migration precedes separate Tk and GLUT removals. | Done 2026-11-08: 4.1.0 bindings, 4.3.0 Tk + plugin contract, 4.3.1 GLUT |
+| 4 | **5b — downloadable application**, alongside **2b — independent removals** | Tester launches without installing Python; each removal passes its own checks. | 5b done 2026-11-08 (4.4.0, Linux verified locally, CI artifacts for 3 OS; 4.5.1 publishes archives on a GitHub pre-release per push to master); 2b done 2026-11-08 (4.4.1 to 4.4.8): chempy.fast, VTK-m, mpeg_encode, RPC/HTTP/web, OpenVR, COLLADA+libxml2, MMTF, dev utilities. Kept: VMD plugins/netcdf, xwin paste, POV-Ray renderer |
+| 6 | **4b — extension examples and proven helpers** | Command/menu integration documented; any dock helper has real consumers. | Done 2026-11-12: [docs/plugins.md](docs/plugins.md); no dock helper, no two consumers yet |
+| 7 | **6 — states panel** | States of a trajectory and frames of a movie are stepped, played and timed from one panel. | Done 2026-11-13 (4.6.0): [docs/plans/06-states-panel.md](docs/plans/06-states-panel.md) |
+| 8 | **7 — toolbar icons and UI scale** | Every toolbar button has an icon; the interface starts at 150 % and the scale is picked in the toolbar. | Done 2026-11-13 (4.7.0): [docs/plans/07-toolbar-icons-scale.md](docs/plans/07-toolbar-icons-scale.md) |
+
+## First concrete changes (all done)
+
+1. Record an optimized baseline and current headless/GUI test status. Resolve
+   existing failures before using those results to judge a change.
+2. Promote the tested PySide6 binding to runtime metadata and establish a coherent
+   Python minimum with dependencies and CI. Keep dev pins exact.
+3. PR title `remove: alternative Qt bindings`; commit subject
+   `remove(gui): standardize on PySide6`. Preserve used import aliases; keep Tk,
+   GLUT, and renderer changes separate.
+4. Deliver a first test artifact, then complete the Tk/plugin migration and other
+   removals one at a time. Docks and the object table are the first visible UI work.
