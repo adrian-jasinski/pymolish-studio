@@ -58,18 +58,6 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.presets = self._menu_button("Presets", "Apply a preset to everything")
         self.presets.menu().aboutToShow.connect(self._fill_presets)
 
-        # only shown while there is something to play, see set_movie_visible
-        self.movie = [self.addSeparator()] + [
-            self._tip(self.addAction(label, command), tip)
-            for label, tip, command in (
-                ("<", "Previous frame", cmd.backward),
-                ("Stop", "Stop the movie", cmd.mstop),
-                ("Play", "Play the movie", cmd.mplay),
-                (">", "Next frame", cmd.forward),
-            )
-        ]
-        self.set_movie_visible(False)
-
         spacer = QtWidgets.QWidget()
         spacer.setSizePolicy(
             QtWidgets.QSizePolicy.Policy.Expanding,
@@ -83,14 +71,12 @@ class ActionToolbar(QtWidgets.QToolBar):
             else:
                 self.addAction(label, target)
 
-        self.more = self._menu_button("More", "More view and movie actions")
+        self.more = self._menu_button("More", "More view actions")
         for label, target in (
             ("Unpick", cmd.unpick),
             ("Deselect", cmd.deselect),
             ("Rebuild", cmd.rebuild),
             *more,
-            ("First frame", cmd.rewind),
-            ("Last frame", cmd.ending),
             ("Clear movie", cmd.mclear),
         ):
             self.more.menu().addAction(label, target)
@@ -114,11 +100,6 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.addWidget(button)
         return button
 
-    @staticmethod
-    def _tip(action, tip):
-        action.setToolTip(tip)
-        return action
-
     def _set_selecting(self, value):
         self.cmd.set("mouse_selection_mode", value, quiet=0)
         self._show_selecting(value)
@@ -131,7 +112,3 @@ class ActionToolbar(QtWidgets.QToolBar):
         menu = self.presets.menu()
         menu.clear()
         fill_menu(menu, menus.presets(self.cmd, "all"), self.cmd)
-
-    def set_movie_visible(self, visible):
-        for action in self.movie:
-            action.setVisible(visible)

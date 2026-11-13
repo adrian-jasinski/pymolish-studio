@@ -61,7 +61,3 @@ class TestActionToolbar(testing.PyMOLTestCase):
         more = {a.text(): a for a in bar.more.menu().actions()}
         more["Get View"].trigger()
         self.assertEqual(hits, ["builder", "view"])
-
-        self.assertFalse(texts["Play"].isVisible())
-        bar.set_movie_visible(True)
-        self.assertTrue(texts["Play"].isVisible())

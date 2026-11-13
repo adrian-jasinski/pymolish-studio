@@ -2,6 +2,21 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-13 pymolish-studio
+
+	* 4.6.0
+
+	* States panel
+	  - New panel in the Objects dock, above the toggle bar, shown while
+	    there is more than one state or movie frame: first, previous,
+	    play/stop, next, last, a counter (type a number to jump there)
+	    and a speed button that sets movie_fps (1 to 60 fps).
+	  - It replaces the "State n/m" label and the Previous, Stop, Play
+	    and Next buttons of the action toolbar; "First frame" and "Last
+	    frame" left the toolbar's More menu.
+	  - No cmd.* change.
+
+
 2026-11-12 pymolish-studio
 
 	* 4.5.18

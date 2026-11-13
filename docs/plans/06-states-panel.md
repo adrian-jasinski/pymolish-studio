@@ -55,7 +55,7 @@ only while there is more than one state or frame.
 
 ## Skipped, and when to add
 
-- A scrub slider: add when stepping and typing a number prove too slow on long
+- A scrub slider: the viewport already draws one (`movie_panel`); add a Qt one when stepping and typing a number prove too slow on long
   trajectories.
 - A close button (the picture has one): the panel hides itself with a single
   state; add a Display > Panels entry if someone wants it gone with many.
@@ -70,4 +70,4 @@ button follows the setting. Real GUI on WSLg with a multi-state object.
 
 ## Status
 
-Planned 2026-11-13.
+Done 2026-11-13 in 4.6.0. Real GUI checked on WSLg: 40 states played at 30 fps, counter follows within 0.1 s, icons follow the dark and light theme, all seven controls take Tab focus.

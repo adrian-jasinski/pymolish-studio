@@ -995,8 +995,6 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         self.feedback_timer.start(500)
         self.object_panel.poll()
-        self.action_toolbar.set_movie_visible(
-            self.cmd.count_frames() > 1 or self.cmd.count_states() > 1)
 
     def doPrompt(self):
         self.doTypedCommand(self.command_get())

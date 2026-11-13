@@ -1,7 +1,7 @@
 """
 Objects panel: rows and group nesting, the menu table against pymol.menu,
-menu building, visibility toggle, filter, refresh after delete and the
-wizard buttons. Headless (offscreen QApplication).
+menu building, visibility toggle, filter, refresh after delete, the states
+panel and the wizard buttons. Headless (offscreen QApplication).
 """
 
 import os
@@ -128,11 +128,60 @@ class TestObjectPanel(testing.PyMOLTestCase):
         panel.refresh()
         self.assertNotIn("g1", panel.items)
 
-    def test_status(self):
-        from pmg_qt.object_panel import status_text
+    def test_states(self):
+        from pmg_qt.object_panel import StatesPanel
 
+        panel = StatesPanel(cmd)
         cmd.fragment("ala")
-        self.assertEqual(status_text(cmd), "State 1/1")
+        panel.refresh()
+        self.assertTrue(panel.isHidden())  # nothing to step through
+
+        for state in (2, 3, 4):
+            cmd.create("ala", "ala", 1, state)
+        panel.refresh()
+        self.assertFalse(panel.isHidden())
+        self.assertEqual(panel.title.text(), "States")
+        self.assertEqual(panel.counter.text(), "1/4")
+        self.assertEqual(panel.counter.maximum(), 4)
+
+        for button, frame in (("last", 4), ("first", 1), ("forward", 2)):
+            panel.buttons[button].click()
+            self.assertEqual(cmd.get_frame(), frame)
+            self.assertEqual(panel.counter.value(), frame)
+        panel.buttons["previous"].click()
+        self.assertEqual(cmd.get_frame(), 1)
+        panel.counter.setValue(3)  # typed or stepped by the user
+        self.assertEqual(cmd.get_state(), 3)
+        cmd.frame(2)  # changed by command: the next poll shows it
+        panel.refresh()
+        self.assertEqual(panel.counter.text(), "2/4")
+
+        play = panel.buttons["play"]
+        play.click()
+        self.assertTrue(cmd.get_movie_playing())
+        self.assertEqual(play.toolTip(), "Stop")
+        play.click()
+        self.assertFalse(cmd.get_movie_playing())
+        self.assertEqual(play.toolTip(), "Play")
+
+        speeds = {a.text(): a for a in panel.speed.menu().actions()}
+        speeds["5 fps"].trigger()
+        self.assertEqual(cmd.get_setting_float("movie_fps"), 5)
+        self.assertEqual(panel.speed.text(), "5 fps")
+        cmd.set("movie_fps", 0.3)
+        panel.refresh()
+        self.assertEqual(panel.speed.text(), "0.3 fps")
+
+        cmd.mset("1 x8")  # a movie: frames, not states
+        panel.refresh()
+        self.assertEqual(panel.title.text(), "Frames")
+        self.assertEqual(panel.counter.maximum(), 8)
+
+        cmd.delete("ala")
+        cmd.mclear()
+        cmd.mset()
+        panel.refresh()
+        self.assertTrue(panel.isHidden())
 
     def test_wizard(self):
         from pmg_qt.object_panel import ObjectPanel

@@ -67,8 +67,13 @@ LABELS = {
     "clear": "eraser",
     "play": "play",
     "stop": "square",
-    "rewind": "rewind",
+    "rewind": "skip-back",
     "next": "skip-forward",
+    # states panel
+    "first": "skip-back",
+    "previous": "rewind",
+    "forward": "fast-forward",
+    "last": "skip-forward",
 }
 
 
