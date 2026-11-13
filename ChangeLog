@@ -4,6 +4,19 @@ CHANGE LOG
 
 2026-11-13 pymolish-studio
 
+	* 4.6.1
+
+	* Start screen
+	  - The viewport starts empty: the "Open-Source PyMOL by
+	    Schrodinger" image (data/pymol/splash.png) is gone, and the
+	    startup notice no longer covers the viewport. The copyright
+	    notice is still printed to the log, and LICENSE is unchanged.
+	  - cmd.splash(1) no longer loads an image; like cmd.splash() it
+	    prints the notice.
+
+
+2026-11-13 pymolish-studio
+
 	* 4.6.0
 
 	* States panel

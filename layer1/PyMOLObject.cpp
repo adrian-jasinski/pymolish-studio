@@ -1203,7 +1203,6 @@ void pymol::CObject::render(RenderInfo * info)
 /*========================================================================*/
 pymol::CObject::CObject(PyMOLGlobals * G) : G(G)
 {
-  OrthoRemoveSplash(G);         /* HMM... this seems like an inappropriate sideeffect */
   visRep = cRepBitmask & ~(cRepCellBit | cRepExtentBit);
 }
 

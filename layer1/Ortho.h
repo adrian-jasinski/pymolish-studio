@@ -119,7 +119,6 @@ void OrthoSetWizardPrompt(PyMOLGlobals * G, char *vla);
 int OrthoGetOverlayStatus(PyMOLGlobals * G);
 void OrthoPasteIn(PyMOLGlobals * G, const char *buffer);
 
-void OrthoRemoveSplash(PyMOLGlobals * G);
 void OrthoRemoveAutoOverlay(PyMOLGlobals * G);
 
 void OrthoSplash(PyMOLGlobals * G);

@@ -91,7 +91,6 @@ public:
   int BusyStatus[4]{};
   char BusyMessage[255]{};
   char* WizardPromptVLA{};
-  int SplashFlag{};
   int HaveSeqViewer{};
   BlockRect LoopRect{};
   int LoopFlag{};
@@ -424,13 +423,6 @@ void OrthoRemoveAutoOverlay(PyMOLGlobals* G)
 {
   COrtho* I = G->Ortho;
   I->AutoOverlayStopLine = I->CurLine;
-}
-
-/*========================================================================*/
-void OrthoRemoveSplash(PyMOLGlobals* G)
-{
-  COrtho* I = G->Ortho;
-  I->SplashFlag = false;
 }
 
 /*========================================================================*/
@@ -963,16 +955,12 @@ void OrthoKey(PyMOLGlobals* G, unsigned char k, int x, int y, int mod)
           !(mod & (cOrthoCTRL | cOrthoSHIFT))) {
         PParse(G, "_quit");
       } else {
-        if (I->SplashFlag) {
-          OrthoRemoveSplash(G);
-        } else {
-          if (mod & cOrthoSHIFT)
-            SettingSetGlobal_i(G, cSetting_overlay,
-                !(SettingGetGlobal_i(G, cSetting_overlay)));
-          else
-            SettingSetGlobal_b(
-                G, cSetting_text, !(SettingGetGlobal_b(G, cSetting_text)));
-        }
+        if (mod & cOrthoSHIFT)
+          SettingSetGlobal_i(G, cSetting_overlay,
+              !(SettingGetGlobal_i(G, cSetting_overlay)));
+        else
+          SettingSetGlobal_b(
+              G, cSetting_text, !(SettingGetGlobal_b(G, cSetting_text)));
       }
       break;
     case 13: /* CTRL M -- carriage return */
@@ -1634,7 +1622,7 @@ static void OrthoDrawText(PyMOLGlobals* G, CGO* orthoCGO, bool draw_text,
   auto y = cOrthoBottomMargin + MovieGetPanelHeight(G);
 
   int showLines{};
-  if (draw_text || I->SplashFlag)
+  if (draw_text)
     showLines = I->ShowLines;
   else {
     showLines = internal_feedback + numOverlayLines;
@@ -1991,7 +1979,7 @@ void OrthoDoDraw(PyMOLGlobals* G, const OrthoDrawInfo& drawInfo)
 
       OrthoDrawWizardPrompt(G, orthoCGO);
 
-      if (draw_text || I->SplashFlag) {
+      if (draw_text) {
         Block* block;
         int active_tmp;
         block = SeqGetBlock(G);
@@ -2475,7 +2463,6 @@ int OrthoButton(PyMOLGlobals* G, int button, int state, int x, int y, int mod)
     I->WrapClickSide = ClickSide::None;
   }
 
-  OrthoRemoveSplash(G);
   OrthoRemoveAutoOverlay(G);
   I->X = x;
   I->Y = y;
@@ -2670,7 +2657,6 @@ int OrthoInit(PyMOLGlobals* G, int showSplash)
     I->HistoryView = 0;
     I->Line[I->CurLine & OrthoSaveLines][I->CurChar] = 0;
     I->WizardPromptVLA = nullptr;
-    I->SplashFlag = false;
     I->ShowLines = 1;
     I->Saved[0] = 0;
     I->DirtyFlag = true;
@@ -2683,7 +2669,6 @@ int OrthoInit(PyMOLGlobals* G, int showSplash)
 
     if (showSplash) {
       OrthoSplash(G);
-      I->SplashFlag = true;
     }
     /*  OrthoFeedbackIn(G," "); */
     I->CurLine++;

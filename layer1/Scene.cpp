@@ -2545,7 +2545,6 @@ int SceneLoadPNG(PyMOLGlobals * G, const char *fname, int movie_flag, int stereo
 
     I->CopyType = true;
     I->CopyForced = true;
-    OrthoRemoveSplash(G);
     SettingSetGlobal_b(G, cSetting_text, 0);
     if(movie_flag &&
        I->Image && !I->Image->empty()) {
