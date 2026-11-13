@@ -176,7 +176,7 @@ int PLabelAtomAlt(PyMOLGlobals * G, AtomInfoType * at, const char *model, const 
   int result = false;
   OrthoLineType label;
   int label_len = 0;
-  int label_max = sizeof(OrthoLineType);
+  int label_max = sizeof(OrthoLineType) - 1; // room for the terminator
   OrthoLineType buffer;
   char ch, quote = 0;
   int escaped = false;
@@ -319,7 +319,7 @@ int PLabelAtomAlt(PyMOLGlobals * G, AtomInfoType * at, const char *model, const 
 
   if (!result && !label[0]){
     // if label is not set, just use expression as a string for label
-    strncpy(label, origexpr, OrthoLineLength);
+    UtilNCopy(label, origexpr, sizeof(label));
     result = true;
   }
 

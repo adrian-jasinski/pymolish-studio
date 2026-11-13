@@ -4266,11 +4266,11 @@ int ExecutiveProcessPDBFile(PyMOLGlobals* G, pymol::CObject* origObj,
         eff_frame = ((ObjectMolecule*) origObj)->NCSet - 1;
       if (buf) {
         if (fname)
-          sprintf(buf,
+          snprintf(buf, sizeof(OrthoLineType),
               " CmdLoad: \"%s\" appended into object \"%s\", state %d.\n",
               fname, oname, eff_frame + 1);
         else
-          sprintf(buf,
+          snprintf(buf, sizeof(OrthoLineType),
               " CmdLoad: PDB-string appended into object \"%s\", state %d.\n",
               oname, eff_frame + 1);
       }
@@ -4348,19 +4348,18 @@ int ExecutiveProcessPDBFile(PyMOLGlobals* G, pymol::CObject* origObj,
           if (buf) {
             if (n_processed < 1) {
               if (fname)
-                sprintf(
-                    buf, " CmdLoad: \"%s\" loaded as \"%s\".\n", fname, oname);
+                snprintf(buf, sizeof(OrthoLineType), " CmdLoad: \"%s\" loaded as \"%s\".\n", fname, oname);
               else
-                sprintf(buf,
+                snprintf(buf, sizeof(OrthoLineType),
                     " CmdLoad: PDB-string loaded into object \"%s\", state "
                     "%d.\n",
                     oname, eff_frame + 1);
             } else {
               if (fname) {
-                sprintf(buf, " CmdLoad: loaded %d objects from \"%s\".\n",
+                snprintf(buf, sizeof(OrthoLineType), " CmdLoad: loaded %d objects from \"%s\".\n",
                     n_processed + 1, fname);
               } else {
-                sprintf(buf, " CmdLoad: loaded %d objects from string.\n",
+                snprintf(buf, sizeof(OrthoLineType), " CmdLoad: loaded %d objects from string.\n",
                     n_processed + 1);
               }
             }

@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-14 pymolish-studio
 
+	* 4.7.6
+
+	* Core
+	  - "set" with a text value of 1024 characters or more read past
+	    a buffer when it printed "Setting: ... set to ...". The echo is
+	    now cut at 1023 characters; the stored value is complete.
+	  - cmd.label2 wrote one byte past a buffer for a label of 1024
+	    characters or more. Such labels are now cut at 1023 characters.
+	  - The "CmdLoad: ... loaded as ..." message of the PDB reader can
+	    no longer overflow with a very long file name (only reachable
+	    through the C API).
+
+
+2026-11-14 pymolish-studio
+
 	* 4.7.5
 
 	* Core
