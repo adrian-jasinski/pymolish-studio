@@ -4,6 +4,27 @@ CHANGE LOG
 
 2026-11-14 pymolish-studio
 
+	* 4.10.0
+
+	* Object color palettes
+	  - New command "palette [name [, recolor]]" (cmd.palette): sets the
+	    colors that new objects cycle through. Names: default (the PyMOL
+	    order), vivid, deep, pastel, soft, colorblind. Without arguments
+	    it lists them. recolor=1 also colors the carbons of the loaded
+	    objects. The colors are named colors, <palette>_01 and up, and
+	    are saved in sessions. The palette stays after "reinitialize"
+	    and after a session is loaded.
+	  - Toolbar: palette button after Presets with the six choices and
+	    "Recolor objects now". The choice is remembered and applied at
+	    the next start, before pymolrc; not with -k and not with -c.
+	  - util.color_objs follows the active palette and leaves
+	    auto_color_next after the last object (it used a fixed list and
+	    did not touch the setting). util.cbc is unchanged.
+	  - New cmd.* API: cmd.palette. No other cmd.* change.
+
+
+2026-11-14 pymolish-studio
+
 	* 4.9.1
 
 	* Documentation

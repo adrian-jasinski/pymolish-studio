@@ -23,6 +23,24 @@ Numbers in brackets are pymolish-studio versions; the
 | States panel | First, previous, play, next, last, jump to a state, speed. Appears when there is more than one state or movie frame (4.6.0). |
 | Menus | The right-click menu opens at the pointer as a normal menu, with icons (4.5.18). |
 | Name | Title, About box and icon say pymolish-studio (4.8.0). |
+| Object colors | The palette button in the toolbar picks the colors that new objects get. The choice is remembered (4.10.0). |
+
+### Object color palettes
+
+Each new object takes the next color of the palette for its carbons. Pick one
+in the toolbar or type `palette vivid`; `palette soft, 1` also recolors what is
+loaded. `palette default` is the PyMOL order.
+
+| Palette | Made for | Colors |
+| --- | --- | --- |
+| `vivid` | dark background | ![vivid](img/palette-vivid.png) |
+| `deep` | white background, print | ![deep](img/palette-deep.png) |
+| `pastel` | dark background | ![pastel](img/palette-pastel.png) |
+| `soft` | white background | ![soft](img/palette-soft.png) |
+| `colorblind` | any background | ![colorblind](img/palette-colorblind.png) |
+
+`colorblind` is Okabe-Ito followed by Paul Tol's bright and muted sets, with
+the published values. Only the first seven colors are designed as one set.
 
 ## Speed
 
