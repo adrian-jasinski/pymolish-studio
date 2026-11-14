@@ -37,9 +37,12 @@ proteins (OpenMM). Each layer ships alone.**
   add one short `resn` list if users ask.
 - **Never overwrite.** Fix and optimize write `<object>_fixed` / `<object>_min`;
   the original stays. Removal edits in place and is undoable like `remove`.
-- **Dependencies are an extra, `fix`,** imported lazily; without it the command
-  raises `CmdException` naming the extra. Bundles include it if the size
-  measurement is acceptable. **Needs the user's yes** before 13c.
+- **PDBFixer and OpenMM: approved by the user on 2026-11-14**, recorded in
+  `AGENTS.md` §2.2. Extra `fix`, imported lazily; without it the command raises
+  `CmdException` naming the extra. Release bundles include both; record the
+  bundle size before and after in `docs/baseline.md`.
+- **CPU platform only** in bundles: no CUDA, OpenCL or HIP packages
+  (`AGENTS.md` §2.3).
 - **Long work off the GUI thread** (`AGENTS.md` §2.3): 13b to 13d run through
   the existing `async_` path; the busy indicator shows; no cancel button.
 

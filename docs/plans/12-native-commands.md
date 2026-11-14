@@ -57,14 +57,14 @@ and its meta commands behind: 58 commands become about 17.**
 | PyQt5 | plugin GUI | not added; PySide6 through `pymol.Qt` |
 | rdkit | `load_smiles` (SMILES to 3D needs a real embedder) and ligand clean in step 13 | **add**: BSD-3, 30 MB wheel, pulls Pillow |
 
-**rdkit packaging, needs the user's yes** (`AGENTS.md` §6: ask before adding a
-dependency):
+**rdkit: approved by the user on 2026-11-14**, recorded in `AGENTS.md` §2.2.
 
 - Release bundles include it: that is the build users download.
 - For `pip install` it is the extra `chem`, imported lazily; without it the
   command raises `CmdException` naming the extra.
-- Making it a hard dependency instead costs every install 30 MB and breaks on
-  a Python version rdkit has no wheel for. Check 3.14 wheels first.
+- Not a hard dependency: that would cost every install 30 MB and break on a
+  Python version rdkit has no wheel for. Check 3.14 wheels first; a missing
+  wheel drops rdkit from that Python's bundle, it does not block the release.
 - Record bundle size before and after in `docs/baseline.md`.
 
 ### GUI

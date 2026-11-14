@@ -32,7 +32,7 @@ from calling itself PyMOL. Blocked on two files from the user.**
 | Permission to "modify, distribute, and distribute modified versions" | Replacing images is allowed. |
 | "don't change or remove any of the Copyright notices" | An icon is not a notice. The copyright lines in the About box and the splash text stay word for word. |
 | Derivative software "must be plainly distinguished from any and all PyMOL products distributed by Schrodinger" | The license asks for this change. The PyMOL logo, the title `PyMOL` and the Schrodinger sales address are what break it today. |
-| Only four slogans may use the mark without written permission | About box uses one of them: "Based on PyMOL(TM) technology." with the footnote "PyMOL is a trademark of Schrodinger, LLC." |
+| Only four slogans may use the mark without written permission | About box uses "Based on PyMOL(TM) technology.", the not-affiliated line and the footnote "PyMOL is a trademark of Schrodinger, LLC."; exact texts in [step 10, Wording](10-readme-license.md#wording). |
 
 Open risk, user's call: the product name "pymolish" contains the mark. The
 license does not cover product names. This plan does not rename anything.

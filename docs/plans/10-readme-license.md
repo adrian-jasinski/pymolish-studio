@@ -31,7 +31,36 @@ images when [step 9](09-icons-logo.md) delivers them (10b).**
 
 The PyMOL license is permissive and compatible with MIT for added code.
 
+## Wording
+
+The license **requires** the notices and the distinction. It **permits**, and
+does not require, four slogans; whoever uses one must add the footnote. Texts
+are copied from `LICENSE` and used exactly, including "(TM)" and the spelling
+"Schrodinger".
+
+| Text | Status | Goes where |
+| --- | --- | --- |
+| Upstream copyright and permission notice | required | `LICENSE` (repository, wheel, bundle) |
+| "pymolish-studio is an independent fork. It is not a Schrodinger product and is not affiliated with or endorsed by Schrodinger, LLC." | required in substance (wording ours) | README line 2, About box, `docs/licenses.md`, release notes |
+| "Based on PyMOL(TM) technology." | allowed slogan, used | README under the title, About box, release notes |
+| "Contains PyMOL(TM) source code." | allowed slogan, used | README license section, `docs/licenses.md`, `pyproject.toml` description |
+| "PyMOL is a trademark of Schrodinger, LLC." | required wherever a slogan appears | last line of README and `docs/licenses.md`, About box, release notes |
+| "Includes PyMOL(TM).", "Built using PyMOL(TM)." | allowed, not used | two slogans are enough |
+
+Outside these lines, "PyMOL" appears only as plain reference ("fork of
+Open-Source PyMOL", file formats, the upstream link), never in the product
+name, a logo or a claim of endorsement.
+
+Places that need the lines and are easy to miss:
+
+- `.github/workflows/build.yml:243`: the `--notes` text of each release.
+- `pyproject.toml:7`: the description still reads "PyMOL is a ...".
+- The About box and splash, handled in [step 9](09-icons-logo.md).
+
 ## Decisions
+
+Approved by the user on 2026-11-14: the license layout below and the
+`AGENTS.md` change (already made, with the dependency decisions).
 
 - **Two license files.**
   - `LICENSE`: a short header (what is under which license, links to both
@@ -42,8 +71,9 @@ The PyMOL license is permissive and compatible with MIT for added code.
   MIT too, but those files still carry the PyMOL notice. A distribution needs
   both files. The header says exactly that. No per-file headers are added;
   existing headers are not touched.
-- **`AGENTS.md` §5** becomes: "Don't touch `AUTHORS`, copyright headers, or the
-  Schrodinger notice inside `LICENSE`."
+- **`AGENTS.md` §5, done:** the Schrodinger notice inside `LICENSE` stays byte
+  for byte; text may be added above it. Adding a header does not change or
+  remove a notice, so the license's own condition holds.
 - **Third-party list:** `docs/licenses.md`, one table: component, license,
   where its text is, link. Read each license from its source, not from memory.
   Rows to cover: PyMOL, new code, Lucide, champ, molfile plugins, pocketfft,
@@ -77,15 +107,16 @@ source: `PLAN-DONE.md` and `ChangeLog`). Steps 11 to 14 each add their section.
 
 ## Steps
 
-- **10a, no images:** `LICENSE` header, `LICENSE-MIT`, `AGENTS.md` line,
-  README, `docs/features.md`, `docs/licenses.md`, move old `README`,
-  `pyproject.toml`, spec.
+- **10a, no images:** `LICENSE` header, `LICENSE-MIT`, README,
+  `docs/features.md`, `docs/licenses.md`, move old `README`, `pyproject.toml`
+  (license files, authors, description), spec, release notes text.
 - **10b, after step 9:** logo at the top of the README (referenced from
   `data/pymol/icons/`, no second copy), one screenshot `docs/img/window.png`
   taken from pymolish itself.
 - **Check:** one test in `testing/tests/system/`: every relative link in
-  `README.md` and `docs/*.md` points at an existing file, and `LICENSE` ends
-  with the upstream text (compare against a stored SHA-256 of that tail).
+  `README.md` and `docs/*.md` points at an existing file, `LICENSE` ends
+  with the upstream text (compare against a stored SHA-256 of that tail), and
+  every file that contains a slogan also contains the trademark footnote.
 - PR diff of `LICENSE` must show zero removed lines.
 
 Commit: `docs(license): new README, MIT for new code, PyMOL notice kept`.

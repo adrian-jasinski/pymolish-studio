@@ -20,10 +20,10 @@ last milestone ships; its detailed plan stays in `docs/plans/`.
 | 3 | [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Improve the existing window; ship docks and an object metadata table first. |
 | 8 | [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. |
 | 9 | [Own icon and logo](docs/plans/09-icons-logo.md) | Allowed and asked for by the license. One master PNG; window title and About box stop saying PyMOL. Blocked on the user's files. |
-| 10 | [README and license files](docs/plans/10-readme-license.md) | New README naming the fork; PyMOL notice kept word for word, new code MIT, third parties listed. |
+| 10 | [README and license files](docs/plans/10-readme-license.md) | New README naming the fork; PyMOL notice kept word for word, new code MIT, third parties listed; two allowed slogans with the trademark footnote. |
 | 11 | [Color palettes](docs/plans/11-color-palettes.md) | Five palettes replace the object color order; toolbar button; remembered in `QSettings`. |
-| 12 | [pymolish plugin commands, native](docs/plans/12-native-commands.md) | Port command bodies, not the framework: 58 commands become about 17, two dialogs, no new top menu. rdkit needs a yes. |
-| 13 | [Clean, fix and optimize structures](docs/plans/13-structure-cleanup.md) | Four layers: remove water and ions, ligand `clean` with rdkit, PDBFixer repair, OpenMM relax. PDBFixer and OpenMM need a yes. |
+| 12 | [pymolish plugin commands, native](docs/plans/12-native-commands.md) | Port command bodies, not the framework: 58 commands become about 17, two dialogs, no new top menu. rdkit approved. |
+| 13 | [Clean, fix and optimize structures](docs/plans/13-structure-cleanup.md) | Four layers: remove water and ions, ligand `clean` with rdkit, PDBFixer repair, OpenMM relax. PDBFixer and OpenMM approved. |
 | 14 | [Action and right-click menus](docs/plans/14-menus.md) | Red squares are a rendering artifact: one-line fix now. Merge duplicated menus after 12 and 13, from a list the user approves. |
 
 ## Validation of the original draft
@@ -64,8 +64,8 @@ milestones in the detailed plans, not new topics.
 | 9 | **10a — README and license text** and **14a — red squares** | The repository presents itself as a fork with both license files; destructive menu rows show a red trash icon. | Small. No inputs, no dependencies: first. |
 | 10 | **9 — icon and logo**, then **10b — images in the README** | Window, bundle and README show the new art; nothing shows the PyMOL logo. | Small. Starts when the user delivers the two PNG files. |
 | 11 | **11 — color palettes** | A palette picked in the toolbar colors new objects and is back after a restart. | Small to medium; touches C++. Before 12: group coloring reuses it. |
-| 12 | **12a to 12e — native commands** | Kept plugin commands work without the plugin, from the command line and from File, Build and the group menu. | Large; five PRs. 12d waits for the rdkit decision. |
-| 13 | **13a to 13d — cleanup** | Water and ions go in one click; `clean` works on ligands; a protein is repaired and relaxed into a new object. | Medium to large. 13a needs nothing; 13b needs 12d; 13c and 13d wait for the PDBFixer and OpenMM decision. |
+| 12 | **12a to 12e — native commands** | Kept plugin commands work without the plugin, from the command line and from File, Build and the group menu. | Large; five PRs. |
+| 13 | **13a to 13d — cleanup** | Water and ions go in one click; `clean` works on ligands; a protein is repaired and relaxed into a new object. | Medium to large. 13a needs nothing; 13b needs 12d. |
 | 14 | **14b, 14c — menu consolidation** | Approved keep, merge, drop list applied; fewer rows and fewer lines in `menu.py`. | Medium. Last, so the rows from 12 and 13 are audited once. |
 
 Orders 9 to 14 were requested on 2026-11-14 and do not block order 5.
@@ -79,8 +79,10 @@ Orders 9 to 14 were requested on 2026-11-14 and do not block order 5.
   a "Deleted" list. Nothing on a "Skipped" list is built without a new request.
 - [caveman](https://github.com/JuliusBrussee/caveman) shortens replies only;
   optional. The larger saving is the narrow slice and a fresh session per slice.
-- Three decisions are the user's and are marked in the plans: rdkit (12d),
-  PDBFixer and OpenMM (13c), the menu list (14b).
+- Decided on 2026-11-14: rdkit, PDBFixer and OpenMM are approved optional
+  dependencies; the palette is remembered in `QSettings`; `LICENSE` gets a
+  header above the unchanged notice. Still the user's: the two image files
+  (9), which dropped plugin commands to keep (12), the menu list (14b).
 
 Cleanup precedes speculative optimization. Recording a baseline is preparation.
 UI work needs the binding decision and a usable test build, not completion of

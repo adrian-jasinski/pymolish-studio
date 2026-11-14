@@ -57,14 +57,19 @@ applied again at start.**
   full at 150 %). Entries: `PyMOL default` and the five, checkable, each with a
   strip of its first six colors as icon; separator; `Recolor objects now`.
   Reachable with Tab like the other buttons.
-- **Remembered in `QSettings`** (`colors/palette`), applied when the window
-  starts, before pymolrc runs, so a `palette ...` line in pymolrc wins.
-  - Why not write into pymolrc: it is the user's hand-written file, there can
-    be several, and theme and scale already live in `QSettings`.
-  - Consequence: `pymolish -c` does not pick the GUI choice up. Scripts stay
-    reproducible; add `palette soft` to the script or pymolrc.
-  - Upgrade path if headless must follow the GUI: write a generated
-    `~/.pymolrc_palette.pml`; the `.pymolrc*` pattern loads it.
+- **Remembered in `QSettings`** (`colors/palette`). Final: the user left the
+  choice to this plan on 2026-11-14.
+  - Applied when the window starts, before pymolrc runs, so a `palette ...`
+    line in pymolrc wins. Not applied with `-k`, which keeps meaning "no user
+    configuration".
+  - Why this and not a line written into pymolrc: theme and UI scale already
+    live there, it is two lines of code, and pymolish never edits a file the
+    user wrote by hand (there can be several pymolrc files).
+  - pymolrc still works for whoever prefers it: `palette soft` typed there
+    applies at every start, with and without the GUI.
+  - Ceiling: `pymolish -c` ignores the toolbar choice, so batch scripts give
+    the same colors on every machine. If that is ever wanted, the upgrade is a
+    generated `~/.pymolrc_palette.pml`.
 
 ## Steps
 
