@@ -4,6 +4,27 @@ CHANGE LOG
 
 2026-11-14 pymolish-studio
 
+	* 4.9.0
+
+	* Documentation and licenses
+	  - New README.md: names the fork, says it is not a Schrodinger
+	    product, shows the icon and a screenshot, links the new
+	    docs/features.md and docs/licenses.md.
+	  - LICENSE has a header above the Open-Source PyMOL notice; the
+	    notice itself is unchanged. New LICENSE-MIT for the code added by
+	    pymolish-studio. docs/licenses.md lists all third-party parts.
+	  - The old README from 2003 moved to docs/README-upstream.txt.
+	  - Package metadata: license "LicenseRef-Open-Source-PyMOL AND MIT"
+	    with both license files, new description, fork maintainer added
+	    to the authors, Homepage is the repository. Building needs
+	    setuptools 77 or newer (was 69.2).
+	  - Bundles carry LICENSE-MIT and the LGPL-3.0 and GPL-3.0 texts for
+	    Qt. Release notes carry the fork line and the trademark footnote.
+	  - No cmd.* change.
+
+
+2026-11-14 pymolish-studio
+
 	* 4.8.0
 
 	* GUI
