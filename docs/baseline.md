@@ -220,6 +220,11 @@ none of the changes touch, moved the most. Load was checked on its own
 because it builds a neighbor table: 20 loads, three runs each, old
 `MapSetupExpress` 216 / 155 / 161 ms, new 225 / 160 / 157 ms.
 
+On one thread (`OMP_NUM_THREADS=1` and `max_threads` 1, which is also what
+a build without OpenMP does, the macOS default): surface build 12.36 s to
+10.60 s, load 150 ms to 137 ms. The changes cost nothing where there are no
+extra cores.
+
 Left: the two advancing-front passes of the triangulation (0.85 s and
 0.82 s), the point elimination passes (order-dependent, serial), the ray
 tracer's own voxel table (1.0 s per ray of this surface).
