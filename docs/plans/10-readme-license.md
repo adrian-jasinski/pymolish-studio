@@ -42,14 +42,35 @@ are copied from `LICENSE` and used exactly, including "(TM)" and the spelling
 | --- | --- | --- |
 | Upstream copyright and permission notice | required | `LICENSE` (repository, wheel, bundle) |
 | "pymolish-studio is an independent fork. It is not a Schrodinger product and is not affiliated with or endorsed by Schrodinger, LLC." | required in substance (wording ours) | README line 2, About box, `docs/licenses.md`, release notes |
-| "Based on PyMOL(TM) technology." | allowed slogan, used | README under the title, About box, release notes |
-| "Contains PyMOL(TM) source code." | allowed slogan, used | README license section, `docs/licenses.md`, `pyproject.toml` description |
+| "pymolish-studio. Based on PyMOL(TM) technology." | allowed slogan, used with the product name | README under the title, About box, release notes |
+| "pymolish-studio. Contains PyMOL(TM) source code." | allowed slogan, used with the product name | README license section, `docs/licenses.md`, `pyproject.toml` description |
 | "PyMOL is a trademark of Schrodinger, LLC." | required wherever a slogan appears | last line of README and `docs/licenses.md`, About box, release notes |
 | "Includes PyMOL(TM).", "Built using PyMOL(TM)." | allowed, not used | two slogans are enough |
 
+**Product name with a slogan.** The product name comes first and ends with a
+period; the slogan follows as its own sentence, unchanged. Not
+"pymolish-studio is based on PyMOL(TM) technology": the license permits the
+four slogans as written, so they are not reworded or built into a sentence.
+
+### Trademarks
+
+| Mark | Owner | Rule in our documents |
+| --- | --- | --- |
+| PyMOL | Schrodinger, LLC | **Required by `LICENSE`.** Written "PyMOL(TM)" in every slogan and at the first mention in each user-facing document (README, `docs/features.md`, `docs/licenses.md`, About box, release notes). The footnote "PyMOL is a trademark of Schrodinger, LLC." ends each of them. |
+| Schrodinger | Schrodinger, LLC | Named only as copyright holder and trademark owner. Never as author of the fork, sponsor or contact. |
+| pymolish-studio, pymolish | none registered | No "(TM)" or "(R)" on our own name. Claiming a mark that contains "PyMOL" would make the name question below worse. |
+| Qt, Python, Windows, macOS, Linux, GitHub, AlphaFold and other third-party names | their owners | No license in this project requires a notice. One line at the end of `docs/licenses.md`: "All other names are trademarks of their respective owners." |
+
 Outside these lines, "PyMOL" appears only as plain reference ("fork of
-Open-Source PyMOL", file formats, the upstream link), never in the product
-name, a logo or a claim of endorsement.
+Open-Source PyMOL", file formats, the upstream link), never in a logo or a
+claim of endorsement.
+
+**What the slogans do not cover.** Putting the product name next to a slogan
+shows the two are different products. It does not grant the right to a
+product name that contains "PyMOL": the license says every other use of the
+mark needs "specific, written prior permission" from Schrodinger. Options,
+user's call: keep the name and accept the risk, ask Schrodinger in writing,
+or rename. This plan keeps the name and changes nothing else.
 
 Places that need the lines and are easy to miss:
 
@@ -89,18 +110,20 @@ Approved by the user on 2026-11-14: the license layout below and the
 
 ## README outline (target: under 80 lines)
 
-1. Logo (10b), name, one line: what it is.
+1. Logo (10b), name, one line: what it is. Directly under the title:
+   "pymolish-studio. Based on PyMOL(TM) technology."
 2. "Fork of [Open-Source PyMOL](https://github.com/schrodinger/pymol-open-source).
-   Independent; not affiliated with or endorsed by Schrödinger. Official
-   PyMOL: pymol.org."
+   Independent; not a Schrodinger product, not affiliated with or endorsed by
+   Schrodinger, LLC. Official PyMOL: pymol.org."
 3. CI badge, one screenshot (10b).
 4. Features: 6 to 8 bullets, each one line, each linking into `docs/`.
 5. Download (Releases), install from source (link `INSTALL`).
 6. Documentation table: `docs/features.md`, `docs/plugins.md`,
    `docs/licenses.md`, `PLAN.md`, `ChangeLog`.
-7. License: PyMOL code → [`LICENSE`](../../LICENSE); new code → `LICENSE-MIT`;
-   third parties → `docs/licenses.md`; upstream repository and its license.
-8. Trademark footnote.
+7. License: "pymolish-studio. Contains PyMOL(TM) source code."; PyMOL code →
+   [`LICENSE`](../../LICENSE); new code → `LICENSE-MIT`; third parties →
+   `docs/licenses.md`; upstream repository and its license.
+8. Last line: "PyMOL is a trademark of Schrodinger, LLC."
 
 New doc: only `docs/features.md` (removed, added, changed versus upstream;
 source: `PLAN-DONE.md` and `ChangeLog`). Steps 11 to 14 each add their section.
@@ -116,7 +139,9 @@ source: `PLAN-DONE.md` and `ChangeLog`). Steps 11 to 14 each add their section.
 - **Check:** one test in `testing/tests/system/`: every relative link in
   `README.md` and `docs/*.md` points at an existing file, `LICENSE` ends
   with the upstream text (compare against a stored SHA-256 of that tail), and
-  every file that contains a slogan also contains the trademark footnote.
+  every file that contains a slogan also contains the trademark footnote and
+  has the product name directly before the slogan; no file writes
+  "pymolish(TM)" or "pymolish-studio(TM)".
 - PR diff of `LICENSE` must show zero removed lines.
 
 Commit: `docs(license): new README, MIT for new code, PyMOL notice kept`.
@@ -127,3 +152,8 @@ Commit: `docs(license): new README, MIT for new code, PyMOL notice kept`.
 - SPDX headers in every file, a `NOTICE` file, REUSE compliance: add if a
   packager asks.
 - A documentation site: Markdown in `docs/` is enough.
+- A list of every third-party trademark: the one general line covers them.
+
+---
+
+PyMOL is a trademark of Schrodinger, LLC.

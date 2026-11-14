@@ -58,10 +58,28 @@ license does not cover product names. This plan does not rename anything.
   from `app.setWindowIcon` at run time. Nothing more to do.
 - **Delete `icon2.svg`** in the same PR (`grep -rn icon2` first). It is a data
   file: this plan is the request to delete it.
-- **Text:** title `pymolish-studio`; About box names the fork, links this
-  repository, keeps "Copyright (C) Schrödinger, LLC." for the PyMOL part, adds
-  the slogan and footnote, drops the sales address. Splash: one added line
-  ("pymolish-studio, an independent fork"); upstream lines unchanged.
+- **Text:** title `pymolish-studio`. Splash: one added line
+  ("pymolish-studio, an independent fork"); upstream lines unchanged. About
+  box, in this order (wording from
+  [step 10, Wording](10-readme-license.md#wording)):
+
+  ```
+  pymolish-studio <version>
+  Based on PyMOL(TM) technology.
+
+  An independent fork of Open-Source PyMOL. Not a Schrodinger product;
+  not affiliated with or endorsed by Schrodinger, LLC.
+
+  Copyright (C) Schrödinger, LLC.          <- existing lines, unchanged
+  All rights reserved.
+  New code: MIT, pymolish-studio contributors.
+  <repository URL>
+
+  PyMOL is a trademark of Schrodinger, LLC.
+  ```
+
+  Dropped: `https://pymol.org` as the product page and `sales@schrodinger.com`.
+  No "(TM)" on our own name.
 - **Rename `make_pymol_qicon`?** No. Plugins may import it.
 
 ## Steps
@@ -71,8 +89,9 @@ license does not cover product names. This plan does not rename anything.
 3. Spec `icon=`; Pillow in the build job.
 4. Delete `icon2.svg`; README image is handled in [step 10](10-readme-license.md).
 5. Check: one test in `testing/tests/system/` loads the PNG with `QImage`
-   (works headless), asserts it is not null and square, and that
-   `cmd.splash` output still contains the Schrodinger copyright line.
+   (works headless), asserts it is not null and square, that `cmd.splash`
+   output still contains the Schrodinger copyright line, and that the About
+   text contains the slogan and the trademark footnote.
 6. Look at it: title bar, task bar, About box on Linux; the Windows artifact.
 
 Commit: `ui(brand): own application icon, logo and window title`.
@@ -83,3 +102,7 @@ Commit: `ui(brand): own application icon, logo and window title`.
 - Splash image, `.desktop` file, installer icons: no installer exists yet.
 - Renaming the `pymol` package, `PYMOL_DATA`, or the product: separate decision.
 - Replacing the Lucide icons.
+
+---
+
+PyMOL is a trademark of Schrodinger, LLC.
