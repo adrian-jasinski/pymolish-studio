@@ -4831,6 +4831,48 @@ static int SolventDotGetDotsAroundVertexInSphere(PyMOLGlobals* G, SolventDot* I,
   return ok;
 }
 
+/* Dots on the expanded sphere of every present atom that no other atom
+   covers. Each atom is tested on its own, so fixed-size chunks of atoms run in
+   parallel into their own buffers and are appended in atom order: same dots,
+   same order, any thread count. */
+static int SolventDotGetDotsAroundAtoms(PyMOLGlobals* G, SolventDot* I,
+    MapType* map, SurfaceJobAtomInfo* atom_info, float* coord, int n_coord,
+    int* present, SphereRec* sp, float radius, float* dotPtr, float* dotNormal,
+    int* nDot)
+{
+  const int chunk = 256;
+  const int nChunk = (n_coord + chunk - 1) / chunk;
+  std::vector<std::vector<float>> dots(nChunk), normals(nChunk);
+#pragma omp parallel for schedule(dynamic)
+  for (int c = 0; c < nChunk; c++) {
+    std::vector<float> dot(3 * (sp->nDot + 1)), normal(dot.size());
+    const int end = std::min(n_coord, (c + 1) * chunk);
+    for (int a = c * chunk; a < end && !G->Interrupt; a++) {
+      int skip_flag = false, n = 0, cnt = 0;
+      if (present && !present[a])
+        continue;
+      SolventDotFilterOutSameXYZ(
+          G, map, atom_info, atom_info + a, coord, a, present, &skip_flag);
+      if (skip_flag)
+        continue;
+      SolventDotGetDotsAroundVertexInSphere(G, I, map, atom_info, atom_info + a,
+          coord, a, present, sp, radius, &cnt, sp->nDot, dot.data(),
+          dotNormal ? normal.data() : nullptr, &n);
+      dots[c].insert(dots[c].end(), dot.begin(), dot.begin() + 3 * n);
+      if (dotNormal)
+        normals[c].insert(
+            normals[c].end(), normal.begin(), normal.begin() + 3 * n);
+    }
+  }
+  for (int c = 0; c < nChunk; c++) {
+    std::copy(dots[c].begin(), dots[c].end(), dotPtr + 3 * *nDot);
+    if (dotNormal)
+      std::copy(normals[c].begin(), normals[c].end(), dotNormal + 3 * *nDot);
+    *nDot += dots[c].size() / 3;
+  }
+  return !G->Interrupt;
+}
+
 static int SolventDotCircumscribeAroundVertex(PyMOLGlobals* G, SolventDot* I,
     MapType* map, float* vdw, float dist, float* v0, float* v2,
     int circumscribe, SurfaceJobAtomInfo* atom_info,
@@ -5067,24 +5109,10 @@ static SolventDot* SolventDotNew(PyMOLGlobals* G, float* coord,
     if (map && ok) {
       ok &= MapSetupExpress(map);
       if (ok) {
-        int a;
-        int skip_flag;
-        SurfaceJobAtomInfo* a_atom_info = atom_info.data();
-        for (a = 0; ok && a < n_coord; a++) {
-          OrthoBusyFast(G, a, n_coord * 5);
-          if ((!present) || (present[a])) {
-            skip_flag = false;
-            ok = SolventDotFilterOutSameXYZ(G, map, atom_info.data(),
-                a_atom_info, coord, a, present, &skip_flag);
-            if (ok && !skip_flag) {
-              ok = SolventDotGetDotsAroundVertexInSphere(G, I, map,
-                  atom_info.data(), a_atom_info, coord, a, present, sp,
-                  probe_radius, &dotCnt, stopDot, I->dot, I->dotNormal,
-                  &I->nDot);
-            }
-          }
-          a_atom_info++;
-        }
+        ok = SolventDotGetDotsAroundAtoms(G, I, map, atom_info.data(), coord,
+            n_coord, present, sp, probe_radius, I->dot, I->dotNormal, &I->nDot);
+        dotCnt = I->nDot;
+        OrthoBusyFast(G, 1, 5);
       }
 
       /* for each pair of proximal atoms, circumscribe a circle for their
@@ -5149,7 +5177,6 @@ static SolventDot* SolventDotNew(PyMOLGlobals* G, float* coord,
 
   if (ok && cavity_mode) {
     int nCavityDot = 0;
-    int dotCnt = 0;
     float* cavityDot = VLAlloc(float, (stopDot + 1) * 3);
     CHECKOK(ok, cavityDot);
     if (cavity_radius < 0.0F) {
@@ -5167,23 +5194,9 @@ static SolventDot* SolventDotNew(PyMOLGlobals* G, float* coord,
       if (ok && map) {
         ok &= MapSetupExpress(map);
         if (ok) {
-          int a;
-          int skip_flag;
-          SurfaceJobAtomInfo* a_atom_info = atom_info.data();
-          for (a = 0; a < n_coord; a++) {
-            if ((!present) || (present[a])) {
-              skip_flag = false;
-              ok = SolventDotFilterOutSameXYZ(G, map, atom_info.data(),
-                  a_atom_info, coord, a, present, &skip_flag);
-              if (ok && !skip_flag) {
-                ok = SolventDotGetDotsAroundVertexInSphere(G, I, map,
-                    atom_info.data(), a_atom_info, coord, a, present, sp,
-                    cavity_radius, &dotCnt, stopDot, cavityDot, nullptr,
-                    &nCavityDot);
-              }
-            }
-            a_atom_info++;
-          }
+          ok = SolventDotGetDotsAroundAtoms(G, I, map, atom_info.data(), coord,
+              n_coord, present, sp, cavity_radius, cavityDot, nullptr,
+              &nCavityDot);
         }
       }
       MapFree(map);
