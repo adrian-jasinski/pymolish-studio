@@ -2576,6 +2576,7 @@ void OrthoSplash(PyMOLGlobals* G)
   /* END PROPRIETARY CODE SEGMENT */
   {
     /* Splash message for unrestricted access open-source versions... */
+    PRINTF " pymolish-studio, an independent fork.\n" ENDF(G);
     PRINTF " PyMOL(TM) Molecular Graphics System, Version " ENDF(G);
     PRINTF _PyMOL_VERSION ENDF(G);
     PRINTF ".\n" ENDF(G);

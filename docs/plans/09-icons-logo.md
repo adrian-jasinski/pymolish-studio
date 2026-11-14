@@ -1,10 +1,10 @@
 # 9 — Own icon and logo
 
-[Roadmap](../../PLAN.md) · Request 2026-11-14 · Draft; source and license text
-were read, nothing was built or changed. Not legal advice.
+[Roadmap](../../PLAN.md) · Request 2026-11-14 · Done in 4.8.0, see
+[Status](#status). Not legal advice.
 
 **Replace the one PyMOL image the application still shows, and stop the window
-from calling itself PyMOL. Blocked on two files from the user.**
+from calling itself PyMOL.**
 
 ## What exists
 
@@ -96,6 +96,32 @@ license does not cover product names. This plan does not rename anything.
 
 Commit: `ui(brand): own application icon, logo and window title`.
 `ChangeLog`: `cmd.splash` prints one more line.
+
+## Status
+
+Done 2026-11-14 in 4.8.0 with the two files the user delivered: icon
+1254 x 1254 (not resized), logo 2172 x 724, both with a transparent
+background. Checked: `testing/tests/system/branding.py`; real GUI on WSLg
+shows the title `pymolish-studio` and the icon, readable at 16 px;
+PyInstaller's own converter turns the PNG into `.ico` and `.icns`.
+
+Differences from the plan above:
+
+- No line in `build.yml`: Pillow was already pinned in the `dev` extra, which
+  the bundle jobs install.
+- `README.md` points at `pymolish.png` so the deleted `icon2.svg` leaves no
+  broken image. The rest of the README is still [step 10](10-readme-license.md).
+- The Help menu row reads "About pymolish-studio".
+
+Open:
+
+- **Rights line** for the two images (who made them, which license): not
+  delivered yet. Goes into `docs/licenses.md` in step 10.
+- **Windows artifact:** icon on `pymolish.exe` not looked at; first CI run.
+- **Logo on dark pages:** `logo.png` has near-black text on a transparent
+  background. Step 10b needs a second file or a light backdrop.
+- **Edge pixels:** both files have a thin halo of faint red pixels left by
+  the background removal. Not visible at icon sizes; clean in the source art.
 
 ## Skipped
 

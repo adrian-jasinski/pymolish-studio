@@ -1,6 +1,6 @@
 [![CI](https://github.com/adrian-jasinski/pymolish-studio/actions/workflows/build.yml/badge.svg)](https://github.com/adrian-jasinski/pymolish-studio/actions)
 
-<img src="./data/pymol/icons/icon2.svg" height="100" align="right" />
+<img src="./data/pymol/icons/pymolish.png" height="100" align="right" />
 
 # Open-Source PyMOL
 

@@ -126,7 +126,7 @@ class PyMOLQtGUI(QtWidgets.QMainWindow, pymol._gui.PyMOLDesktopGUI):
 
         # "session_file" setting in window title
         self.setting_callbacks[440].append(
-            lambda v: self.setWindowTitle("PyMOL (" + os.path.basename(v) + ")")
+            lambda v: self.setWindowTitle("pymolish-studio (" + os.path.basename(v) + ")")
         )
 
         # "External" Command Line and Loggin Widget
@@ -922,23 +922,11 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.scene_panel_dialog.show()
 
     def show_about(self):
-        msg = [
-            'The PyMOL Molecular Graphics System\n',
-            'Version %s' % (self.cmd.get_version()[0]),
-            u'Copyright (C) Schr\xF6dinger, LLC.',
-            'All rights reserved.\n',
-            'License information:',
-        ]
-
-        msg.append('Open-Source Build')
-
-        msg += [
-            '',
-            'For more information:',
-            'https://pymol.org',
-            'sales@schrodinger.com',
-        ]
-        QtWidgets.QMessageBox.about(self, "About PyMOL", '\n'.join(msg))
+        QtWidgets.QMessageBox.about(
+            self,
+            "About pymolish-studio",
+            ABOUT_TEXT % self.cmd.get_version()[0],
+        )
 
     #################
     # GUI callbacks
@@ -1216,9 +1204,27 @@ def _copy_image(_self=pymol.cmd, quiet=1, dpi=-1):
 LAYOUT_VERSION = 2
 
 
+# Slogan, copyright lines and trademark footnote are copied from LICENSE;
+# keep them word for word (docs/plans/10-readme-license.md, Wording).
+ABOUT_TEXT = """pymolish-studio %s
+Based on PyMOL(TM) technology.
+
+An independent fork of Open-Source PyMOL. Not a Schrodinger product;
+not affiliated with or endorsed by Schrodinger, LLC.
+
+Copyright (C) Schr\xf6dinger, LLC.
+All rights reserved.
+New code: MIT, pymolish-studio contributors.
+https://github.com/adrian-jasinski/pymolish-studio
+
+PyMOL is a trademark of Schrodinger, LLC."""
+
+
 def make_pymol_qicon():
+    # ponytail: one 1254 px master, Qt scales it. Blurry at 16 px? Add a
+    # hand-tuned 32 px file with QIcon.addFile.
     icons_dir = os.path.expandvars('$PYMOL_DATA/pymol/icons')
-    return QtGui.QIcon(os.path.join(icons_dir, 'icon2.svg'))
+    return QtGui.QIcon(os.path.join(icons_dir, 'pymolish.png'))
 
 
 def execapp():
@@ -1261,7 +1267,7 @@ def execapp():
     theme.round_menus(app)
 
     window = PyMOLQtGUI()
-    window.setWindowTitle("PyMOL")
+    window.setWindowTitle("pymolish-studio")
     window.restore_layout()
 
     # fix gnome/wayland dash icon/missing wmclass

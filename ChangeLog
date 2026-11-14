@@ -4,6 +4,24 @@ CHANGE LOG
 
 2026-11-14 pymolish-studio
 
+	* 4.8.0
+
+	* GUI
+	  - Own application icon (data/pymol/icons/pymolish.png) and logo
+	    (logo.png). The upstream PyMOL logo icon2.svg is removed.
+	  - The window title is "pymolish-studio". The About box names the
+	    fork, says it is not a Schrodinger product, keeps the copyright
+	    lines and ends with the trademark footnote; pymol.org and the
+	    Schrodinger sales address are gone from it.
+	  - Windows and macOS bundles carry the icon.
+
+	* Core
+	  - cmd.splash prints one more line, first: "pymolish-studio, an
+	    independent fork." The upstream lines are unchanged.
+
+
+2026-11-14 pymolish-studio
+
 	* 4.7.10
 
 	* Core
