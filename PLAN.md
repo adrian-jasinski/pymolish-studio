@@ -54,7 +54,7 @@ milestones in the detailed plans, not new topics.
 
 | Order | Work | Exit condition | Relative size |
 | --- | --- | --- | --- |
-| 5 | **1b — measured optimization** and **3 — workspace increments** | Performance changes have before/after evidence; docks and table ship in reviewable test builds. | 3 slices 1-3 done 2026-11-08 (4.5.0: objects dock, layout persistence, Panels menu); slice 4 done (4.5.11 Qt Objects panel replaces the viewport's object list; 4.5.14 workspace layout: action toolbar on top, command area at the bottom, toggle bar); slice 5 partly done (4.5.2 dark theme, 4.5.7 UI Scale for high-resolution screens and dark-theme color audit); 1b started (4.5.10 session load 6.6x faster, 4.5.12 surface build 1.24x); rest of the surface build, GUI frame latency and slice 6 open |
+| 5 | **1b — measured optimization** and **3 — workspace increments** | Performance changes have before/after evidence; docks and table ship in reviewable test builds. | 3 slices 1-3 done 2026-11-08 (4.5.0: objects dock, layout persistence, Panels menu); slice 4 done (4.5.11 Qt Objects panel replaces the viewport's object list; 4.5.14 workspace layout: action toolbar on top, command area at the bottom, toggle bar); slice 5 partly done (4.5.2 dark theme, 4.5.7 UI Scale for high-resolution screens and dark-theme color audit); 1b started (4.5.10 session load 6.6x faster, 4.5.12 surface build 1.24x, 4.7.7 to 4.7.9 surface build another 1.5x; GUI frame time measured 2026-11-14, software rendering under WSL is the main cost); renderer default on WSL, sticks and surface draw cost, and slice 6 open |
 
 Cleanup precedes speculative optimization. Recording a baseline is preparation.
 UI work needs the binding decision and a usable test build, not completion of
