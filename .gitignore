@@ -8,3 +8,5 @@ testing/timings.tab
 *.so
 dist/
 *.spec.bak
+.pixi/
+pixi.lock

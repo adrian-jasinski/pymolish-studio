@@ -73,17 +73,17 @@ Note: `layer1/FontTTF.h` and `FontTTF2.h` are embedded font data, not code.
 pip install --verbose --no-build-isolation --config-settings testing=True '.[dev]'
 
 # run the whole Python suite (headless)
-pymol -ckqy testing/testing.py --run all
+pymolish -ckqy testing/testing.py --run all
 
 # run one test file
-pymol -ckqy testing/testing.py testing/tests/api/<file>.py
+pymolish -ckqy testing/testing.py --run testing/tests/api/<file>.py
 
 # format
 clang-format -i <changed .cpp/.h>
 ruff format <the .py files you changed>
 ```
 
-CI (`.github/workflows/build.yml`) builds Linux / Windows / macOS on Python 3.11–3.14 and runs the suite. A PR that breaks CI is not done.
+CI (`.github/workflows/build.yml`) builds Linux (apt) / Windows / macOS (native deps from `pixi.toml`, conda-forge) on Python 3.13–3.14 and runs the suite; a push to `master` publishes bundles on GitHub Releases. A PR that breaks CI is not done.
 
 ## 5. Change rules
 

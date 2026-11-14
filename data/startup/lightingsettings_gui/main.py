@@ -191,8 +191,7 @@ def create_dialog():
 
     button_layout = QtWidgets.QHBoxLayout()
     layout.addLayout(button_layout)
-    layout.setContentsMargins(5, 0, 5, 0)
-    button_layout.addWidget(QtWidgets.QLabel("<font color=red>Presets:</font>"))
+    button_layout.addWidget(QtWidgets.QLabel("<b>Presets:</b>"))
 
     presets = [
         ( "Default", preset_default ),
@@ -209,14 +208,12 @@ def create_dialog():
         button_layout.addWidget(btn)
 
     form_layout = QtWidgets.QFormLayout()
-    form_layout.setContentsMargins(0, 0, 0, 0)
-    form_layout.setVerticalSpacing(0)
     form_layout.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
     layout.addLayout(form_layout)
 
     for i, item in enumerate(sliders, 1):
         if isinstance(item, str):
-            label = QtWidgets.QLabel("<font color=blue>"+item+"</font>")
+            label = QtWidgets.QLabel("<b>" + item + "</b>")
             form_layout.addRow(label)
             continue
 

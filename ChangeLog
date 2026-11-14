@@ -2,6 +2,153 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-12 pymolish-studio
+
+	* 4.5.15
+
+	* Objects panel
+	  - A click on a row (dot or name) shows or hides the object; before,
+	    only the dot did. Space toggles the current row. Ctrl or Shift
+	    click selects rows for copying without toggling.
+	  - A double click shows the object and zooms on it.
+	  - Chip colors: A, S and H in three blues, L violet, C green. Every
+	    shown row uses them; hidden rows are dimmed until the mouse is
+	    over them.
+
+
+2026-11-12 pymolish-studio
+
+	* 4.5.14
+
+	* Workspace layout
+	  - Action toolbar above the viewport: selection mode, Undo, Redo,
+	    Zoom (with a menu), Orient, Rock, Presets; on the right Builder,
+	    Scenes, Draw/Ray and More. Frame buttons appear while there is
+	    more than one state or frame.
+	  - The log and command line moved from the top to the bottom of the
+	    window. The grid of quick buttons is gone: all of them are in the
+	    toolbar or its More menu.
+	  - Objects panel: visibility dots, A/S/H/L/C as chips, no header row;
+	    under it a toggle bar with mouse mode, Wizard, SEQ and the command
+	    area switch.
+	  - Saved window layouts from earlier versions are reset once.
+
+
+2026-11-12 pymolish-studio
+
+	* 4.5.13
+
+	* Theme
+	  - The shortcut help and the Plugin Manager notes use the application
+	    font instead of a fixed 13 pt macOS and 9 pt Ubuntu font.
+
+
+2026-11-12 pymolish-studio
+
+	* 4.5.12
+
+	* Performance
+	  - Building a molecular surface is 1.24x faster on a 58870-atom
+	    complex (11.97 s to 9.66 s including a small ray): one of its four
+	    passes now uses all cores. The surface is identical.
+
+
+2026-11-12 pymolish-studio
+
+	* 4.5.11
+
+	* Objects panel
+	  - New Qt panel on the right: objects, selections and groups with a
+	    visibility checkbox and the A/S/H/L/C menus, the buttons of the
+	    active wizard, and a status line (mouse mode, selection mode,
+	    state). Text follows Display > UI Scale; resize by dragging the
+	    panel edge. It replaces the Objects table added in 4.5.0.
+	  - The viewport's internal GUI is off by default in the GUI. Bring it
+	    back with Display > Internal GUI or "set internal_gui" in pymolrc.
+	    Its left edge can now be dragged to resize it.
+	  - Saved window layouts from earlier versions are reset once.
+
+
+2026-11-12 pymolish-studio
+
+	* 4.5.10
+
+	* Performance
+	  - Loading a session (.pse) written by a Python 3 build is 6.6x faster
+	    (17 MB session: 0.92 s to 0.14 s). Sessions from Python 2 builds
+	    load as before.
+
+
+2026-11-12 pymolish-studio
+
+	* 4.5.9
+
+	* Fixes
+	  - Quitting the GUI (quit command or closing the window) no longer
+	    ends in a segmentation fault (exit code 139) on Linux.
+
+
+2026-11-12 pymolish-studio
+
+	* 4.5.8
+
+	* High-resolution screens
+	  - First start on a screen 2560 pixels wide or more that the system
+	    reports as unscaled asks once whether to enlarge the UI to 150 %.
+
+
+2026-11-12 pymolish-studio
+
+	* 4.5.7
+
+	* High-resolution screens
+	  - Display > UI Scale (100 to 300 %) enlarges all text, menus, panels,
+	    plugins and the viewport's own menus. Saved per user, applies on the
+	    next start, multiplies the scale the OS reports. Needed where the OS
+	    reports none (WSLg, bare X11). An exported QT_SCALE_FACTOR wins.
+	  - Viewport menus and labels follow fractional window scales: 150 %
+	    now sets display_scale_factor to 2, was 1.
+
+	* Theme
+	  - Text that was hard-coded blue, red or black is readable on the dark
+	    theme: Lighting Settings headers, links in Fetch and Plugin Manager,
+	    script editor syntax colors, notes on colored backgrounds in APBS
+	    and the PNG dialog.
+
+
+2026-11-12 pymolish-studio
+
+	* 4.5.5
+
+	* Builds
+	  - Package and launcher renamed from pymol to pymolish
+	    (`pymolish -ckqy testing/testing.py --run all`). The Python module
+	    is still `import pymol`. Both names install the same files: run
+	    `pip uninstall pymol` before installing pymolish.
+
+
+2026-11-11 pymolish-studio
+
+	* 4.5.4
+
+	* Theme
+	  - Dark theme also reaches OS-drawn menus and title bars (macOS menu
+	    bar, Windows) via the Qt color scheme hint.
+
+
+2026-11-09 pymolish-studio
+
+	* 4.5.3
+
+	* Builds
+	  - CI runs on pushes and pull requests to master only, on Python 3.13
+	    and 3.14; the 3.13 job ships the bundles.
+	  - Windows and macOS runners take their native libraries from pixi
+	    (pixi.toml, conda-forge) instead of Miniforge plus the schrodinger
+	    channel; msgpack headers come from msgpack-cxx, no git clone.
+	  - Releases include a SHA256SUMS file; README links the Releases page.
+
+
 2026-11-08 pymolish-studio
 
 	* 4.5.2

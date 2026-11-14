@@ -298,7 +298,7 @@ def dialog(_self=None):
 
     # grid auto-value
     form.apbs_grid_userchanged = False
-    form.apbs_grid.setStyleSheet('background: #ff6')
+    form.apbs_grid.setStyleSheet('background: #ff6; color: black')
 
     @form.apbs_grid.editingFinished.connect
     def _():
@@ -339,7 +339,7 @@ def dialog(_self=None):
             color = '#fc6'
 
         form.label_sele_has.setText(label)
-        form.label_sele_has.setStyleSheet('background: %s; padding: 5' % color)
+        form.label_sele_has.setStyleSheet('background: %s; color: black; padding: 5' % color)
 
     check_sele_timer.start(0)
 

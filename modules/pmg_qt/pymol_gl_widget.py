@@ -41,6 +41,8 @@ class PyMOLGLWidget(QtWidgets.QOpenGLWidget):
     def __init__(self, parent):
         self.gui = parent
         self.fb_scale = 1.0
+        self._panel_edge = False  # pointer is on the internal GUI's left edge
+        self._panel_drag = False  # ... and dragging it
 
         # OpenGL context setup
         f = QtGui.QSurfaceFormat()
@@ -142,10 +144,37 @@ class PyMOLGLWidget(QtWidgets.QOpenGLWidget):
             get_modifiers(ev),
         )
 
+    def _panel_width(self):
+        """Width of the internal GUI in widget pixels, 0 when it is off."""
+        get = self.cmd.get_setting_int
+        if not get("internal_gui"):
+            return 0
+        return get("internal_gui_width") * get("display_scale_factor") / self.fb_scale
+
     def mouseMoveEvent(self, ev):
+        x = ev.position().x()
+        if self._panel_drag:
+            dip = (self.width() - x) * self.fb_scale / self.cmd.get_setting_int(
+                "display_scale_factor")
+            self.cmd.set("internal_gui_width", max(100, int(dip)))
+            return
+        if not ev.buttons():
+            # resize cursor on the left edge of the internal GUI
+            width = self._panel_width()
+            on_edge = bool(width) and abs(x - (self.width() - width)) < 4
+            if on_edge != self._panel_edge:
+                self._panel_edge = on_edge
+                if on_edge:
+                    self.setCursor(Qt.CursorShape.SplitHCursor)
+                else:
+                    self.unsetCursor()
         self.pymol.drag(*self._event_x_y_mod(ev))
 
     def mousePressEvent(self, ev, state=0):
+        if ev.button() == Qt.MouseButton.LeftButton and (
+                self._panel_drag or (state == 0 and self._panel_edge)):
+            self._panel_drag = state == 0
+            return
         if ev.button() not in self._buttonMap:
             return
         self.pymol.button(self._buttonMap[ev.button()], state,
@@ -179,7 +208,7 @@ class PyMOLGLWidget(QtWidgets.QOpenGLWidget):
         '''
         self.fb_scale = context.devicePixelRatio()
         try:
-            self.cmd.set('display_scale_factor', int(self.fb_scale))
+            self.cmd.set('display_scale_factor', max(1, round(self.fb_scale)))
         except BaseException as e:
             # fails with modal draw (mpng ..., modal=1)
             print(e)

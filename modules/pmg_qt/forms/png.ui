@@ -31,7 +31,7 @@
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">background-color: #0c0; padding: 20px</string>
+        <string notr="true">background-color: #0c0; color: black; padding: 20px</string>
        </property>
        <property name="text">
         <string notr="true">New in PyMOL 2.0: To render a sized antialiased image, use the Draw/Ray panel in the upper right.</string>

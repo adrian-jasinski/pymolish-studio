@@ -35,7 +35,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string notr="true">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Note: Downloading will save the files in the directory defined by the &amp;quot;&lt;a href=&quot;http://pymolwiki.org/index.php/Fetch_Path&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0057ae;&quot;&gt;fetch_path&lt;/span&gt;&lt;/a&gt;&amp;quot; setting.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string notr="true">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Note: Downloading will save the files in the directory defined by the &amp;quot;&lt;a href=&quot;http://pymolwiki.org/index.php/Fetch_Path&quot;&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;fetch_path&lt;/span&gt;&lt;/a&gt;&amp;quot; setting.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

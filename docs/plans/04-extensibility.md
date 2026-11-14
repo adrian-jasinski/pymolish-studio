@@ -8,7 +8,7 @@ container, plugin marketplace or speculative C++ ABI.
 
 ## Status 2026-11-08
 
-4a done in 4.3.0: `pymol.plugins.startup` namespace, headless no-op app, Qt `PmwMenuBar`, `app.root` raises a clear error, Qt-backed dialog proxies, `testing/tests/api/plugins.py`. 4b examples not started.
+4a done in 4.3.0: `pymol.plugins.startup` namespace, headless no-op app, Qt `PmwMenuBar`, `app.root` raises a clear error, Qt-backed dialog proxies, `testing/tests/api/plugins.py`. 4b documentation done 2026-11-12: [docs/plugins.md](../plugins.md) with a command example and a dock panel example (both run headless and in the GUI on 4.5.10) and the theme/scale rules for plugins. No dock helper added: no two consumers yet.
 
 ## Existing capabilities and corrections
 

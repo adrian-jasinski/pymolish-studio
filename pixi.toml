@@ -1,0 +1,28 @@
+# Native build deps for the Windows and macOS CI runners (Linux uses apt).
+# ponytail: no pixi.lock, each run solves fresh like conda did; commit a lock
+# when a conda-forge update breaks the build.
+[workspace]
+name = "pymolish-studio"
+channels = ["conda-forge"]
+platforms = ["win-64", "osx-arm64", "linux-64"]
+
+[dependencies]
+pip = "*"
+catch2 = "2.13.*"
+freetype = "*"
+glew = "*"
+glm = "*"
+libpng = "*"
+libnetcdf = "*"
+nlohmann_json = "*"
+msgpack-cxx = "7.*"
+
+[feature.py313.dependencies]
+python = "3.13.*"
+
+[feature.py314.dependencies]
+python = "3.14.*"
+
+[environments]
+py313 = ["py313"]
+py314 = ["py314"]

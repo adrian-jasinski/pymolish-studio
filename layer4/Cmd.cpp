@@ -2257,6 +2257,17 @@ static PyObject *CmdGetType(PyObject * self, PyObject * args)
   return APIResult(G, res);
 }
 
+static PyObject* CmdGetGroupMembers(PyObject* self, PyObject* args)
+{
+  PyMOLGlobals* G = nullptr;
+  char* str1;
+  API_SETUP_ARGS(G, self, args, "Os", &self, &str1);
+  APIEnter(G);
+  auto res = ExecutiveGetGroupMemberNames(G, str1);
+  APIExit(G);
+  return PyUnicode_FromString(res.c_str());
+}
+
 static PyObject *CmdGetObjectSettings(PyObject * self, PyObject * args)
 {
   PyMOLGlobals *G = nullptr;
@@ -6416,6 +6427,7 @@ static PyMethodDef Cmd_methods[] = {
   {"get_editor_scheme", CmdGetEditorScheme, METH_VARARGS},
   {"get_frame", CmdGetFrame, METH_VARARGS},
   {"get_feedback", CmdGetFeedback, METH_VARARGS},
+  {"get_group_members", CmdGetGroupMembers, METH_VARARGS},
   {"get_idtf", CmdGetIdtf, METH_VARARGS},
   {"get_legal_name", CmdGetLegalName, METH_VARARGS},
   {"get_m2io_first_block_properties", CmdM2ioFirstBlockProperties, METH_VARARGS},

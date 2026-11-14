@@ -798,15 +798,6 @@ class VolumeEditorWidget(QtWidgets.QWidget):
 
         self.displayTextDialog(''.join(s))
 
-    def windowTopLevelChanged(self, floating):
-        """
-        Update widget colors based on floating state.
-        """
-        if floating:
-            self.update_cb.setStyleSheet("color: black;")
-        else:
-            self.update_cb.setStyleSheet("color: lightgrey;")
-
 
 def VolumePanelDocked(parent, *args, **kwargs):
     widget = QtWidgets.QWidget(parent)
@@ -816,8 +807,6 @@ def VolumePanelDocked(parent, *args, **kwargs):
     parent.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, window)
 
     # disabled: always use default style
-    # window.topLevelChanged.connect(widget.editor.windowTopLevelChanged)
-
     return window
 
 

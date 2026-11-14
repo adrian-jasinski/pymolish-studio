@@ -10,9 +10,11 @@ deliverables. Build speed, launch speed and download size also need separate dat
 
 5a done: build-loop timings, editable install validated, `--jobs` fix. See [docs/baseline.md](../baseline.md).
 
-5b done in 4.4.0: `packaging/pyinstaller.spec` (PyInstaller one-folder, data under `pymol/pymol_path`), wheel + bundle uploaded as CI artifacts from the Python 3.12 job on Linux, Windows and macOS (arm64 Miniforge now). Verified locally on Linux: bundle runs headless and with the GUI from another directory; see baseline for sizes. Windows and macOS bundles are unverified until CI runs; signing and installers not started.
+5b done in 4.4.0: `packaging/pyinstaller.spec` (PyInstaller one-folder, data under `pymol/pymol_path`), wheel + bundle uploaded as CI artifacts from the Python 3.13 job on Linux, Windows and macOS (arm64 Miniforge now). Verified locally on Linux: bundle runs headless and with the GUI from another directory; see baseline for sizes. Windows and macOS bundles are unverified until CI runs; signing and installers not started.
 
 4.5.1: bundles are archived (`.tar.gz` Linux/macOS, `.zip` Windows) and a push to `master` publishes them with the wheels on a GitHub pre-release tagged `v<version>`; the workflow also runs on `workflow_dispatch`. Downloads: the repository's Releases page.
+
+4.5.3: CI runs only for pushes/PRs to `master`, on Python 3.13 and 3.14. Windows and macOS get their native libraries through pixi (`pixi.toml`, conda-forge only; the upstream `schrodinger` channel and the msgpack-c git clone are gone; catch2 is `2.13.*` because 2.13.3 has no osx-arm64 build). Linux keeps apt. Releases carry a `SHA256SUMS` file. Note: this fork has recorded zero Actions runs so far; Actions must be enabled once in the repository's Actions tab before any of this executes.
 
 ## Current state and risks to verify
 
@@ -45,7 +47,7 @@ deliverables. Build speed, launch speed and download size also need separate dat
 
    ```sh
    python -m pip install --verbose --no-build-isolation --config-settings testing=True --editable '.[dev]'
-   pymol -ckqy testing/testing.py --run all
+   pymolish -ckqy testing/testing.py --run all
    ```
 
    Confirm the custom backend's editable behavior before adopting this as the
@@ -114,7 +116,7 @@ rule when implementing. Keep packaging requirements out of core runtime deps.
 
 ## CI and artifact delivery
 
-- Preserve Linux/Windows/macOS and Python 3.11–3.14 tests on source PRs. Add cache
+- Preserve Linux/Windows/macOS and Python 3.13–3.14 tests on source PRs. Add cache
   keys scoped to OS, architecture, compiler, Python ABI and dependency/build
   options; never reuse incompatible objects just to improve a hit rate.
 - Separate fast preview artifacts from full release packaging. Build previews

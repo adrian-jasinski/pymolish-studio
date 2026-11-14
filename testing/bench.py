@@ -1,7 +1,7 @@
 '''
 Headless performance baseline. Run from the repository root:
 
-    pymol -ckqy testing/bench.py
+    pymolish -ckqy testing/bench.py
 
 Prints a markdown table (median and min..max of N repeats, peak RSS so far)
 for load, representation build + CPU ray, isosurface, and PSE round trip.
@@ -60,6 +60,11 @@ bench('ray 800x600, cartoon (1aon)',
       lambda: (load_1aon(), cmd.hide('everything'), cmd.show('cartoon')),
       lambda: cmd.ray(800, 600))
 
+# headless PyMOL builds the surface lazily; a tiny ray forces it
+bench('surface build (1aon, +ray 16x16)',
+      lambda: (load_1aon(), cmd.hide('everything'), cmd.show('surface')),
+      lambda: cmd.ray(16, 16))
+
 bench('ray 800x600, surface (1aon)',
       lambda: (load_1aon(), cmd.hide('everything'), cmd.show('surface')),
       lambda: cmd.ray(800, 600))
@@ -79,13 +84,13 @@ bench('save PSE (1aon, cartoon)',
 bench('load PSE (1aon, cartoon)',
       lambda: None, lambda: cmd.load(pse), check_1aon)
 
-exe = os.path.join(os.path.dirname(sys.executable), 'pymol')
+exe = os.path.join(os.path.dirname(sys.executable), 'pymolish')
 startup = []
 for _ in range(N):
     t0 = time.perf_counter()
     subprocess.run([exe, '-ckq', '-d', 'quit'], check=True, stdout=subprocess.DEVNULL)
     startup.append(time.perf_counter() - t0)
-rows.append(('startup `pymol -ckq -d quit`', statistics.median(startup),
+rows.append(('startup `pymolish -ckq -d quit`', statistics.median(startup),
              min(startup), max(startup), float('nan')))
 
 print(f'\nCommit {subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()}, '
