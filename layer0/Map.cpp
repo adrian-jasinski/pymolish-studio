@@ -455,80 +455,68 @@ int MapSetupExpressPerp(MapType* I, const float* vert, float front,
 int MapSetupExpress(MapType* I)
 { /* setup a list of neighbors for each square */
   PyMOLGlobals* G = I->G;
-  int n = 0;
-  int c, d, e, f, i, cm1, cp2, D1D2 = I->D1D2, D2 = I->Dim[2];
-  int mx2 = I->iMax[2];
-  int* link = I->Link.data();
-  int st, flag;
-  int *i_ptr3, *i_ptr4, *i_ptr5;
-  int mx0 = I->iMax[0], mx1 = I->iMax[1], a, am1, ap2, *i_ptr1, b, bm1, bp2,
-      *i_ptr2;
-  int ok = true;
+  const int D1D2 = I->D1D2, D2 = I->Dim[2];
+  const int mapSize = I->Dim[0] * I->Dim[1] * I->Dim[2];
+  const int* head = I->Head.data();
+  const int* link = I->Link.data();
+  /* starting threads costs more than building a small map */
+  const bool threads = I->Link.size() > 10000;
 
   PRINTFD(G, FB_Map)
   " MapSetupExpress-Debug: entered.\n" ENDFD;
 
-  auto mapSize = I->Dim[0] * I->Dim[1] * I->Dim[2];
+  std::vector<int> count(mapSize, 0); /* points per square */
+#pragma omp parallel for if (threads)
+  for (int x = 0; x < mapSize; x++)
+    for (int i = head[x]; i >= 0; i = link[i])
+      count[x]++;
+
+  /* EHead: first the number of points in the 27 squares around each square,
+     then, in square order, where that square's list starts in EList. Knowing
+     every start up front lets the lists be written in parallel. */
   I->EHead.assign(mapSize, 0);
-  std::vector<int> e_list;
-  e_list.reserve(1000);
-
-  e_list.push_back(0);
-  n = 1;
-  for (a = (I->iMin[0] - 1); ok && a <= mx0; a++) {
-    am1 = a - 1;
-    ap2 = a + 2;
-    i_ptr1 = I->Head.data() + am1 * D1D2;
-    for (b = (I->iMin[1] - 1); ok && b <= mx1; b++) {
-      bm1 = b - 1;
-      bp2 = b + 2;
-      i_ptr2 = i_ptr1 + bm1 * D2;
-      for (c = (I->iMin[2] - 1); ok && c <= mx2; c++) {
-        st = n;
-        cm1 = c - 1;
-        cp2 = c + 2;
-        flag = false;
-        i_ptr5 = (i_ptr4 = (i_ptr3 = i_ptr2 + cm1));
-
-        for (d = am1; ok && d < ap2; d++) {
-          for (e = bm1; ok && e < bp2; e++) {
-            for (f = cm1; ok && f < cp2; f++) {
-              /*i=*MapFirst(I,d,e,f); */
-              if ((i = *(i_ptr5++)) >= 0) {
-                flag = true;
-                do {
-                  e_list.push_back(i);
-                  n++;
-                  /*i=MapNext(I,i); */
-                } while (ok && (i = link[i]) >= 0);
-              }
-              ok &= !G->Interrupt;
-            }
-            if (ok)
-              i_ptr5 = (i_ptr4 += D2);
-          }
-          if (ok)
-            i_ptr5 = (i_ptr4 = (i_ptr3 += D1D2));
-        }
-        if (ok) {
-          if (flag) {
-            *(MapEStart(I, a, b, c)) = st;
-            e_list.push_back(-1);
-            n++;
-          } else {
-            *(MapEStart(I, a, b, c)) = 0;
-          }
-        }
+  int* ehead = I->EHead.data();
+#pragma omp parallel for if (threads)
+  for (int a = I->iMin[0] - 1; a <= I->iMax[0]; a++)
+    for (int b = I->iMin[1] - 1; b <= I->iMax[1]; b++)
+      for (int c = I->iMin[2] - 1; c <= I->iMax[2]; c++) {
+        int n = 0;
+        for (int d = a - 1; d <= a + 1; d++)
+          for (int e = b - 1; e <= b + 1; e++)
+            for (int f = c - 1; f <= c + 1; f++)
+              n += count[d * D1D2 + e * D2 + f];
+        ehead[a * D1D2 + b * D2 + c] = n;
       }
+  int n = 1; /* EList[0] is unused: a start of 0 means "no list" */
+  for (int x = 0; x < mapSize; x++)
+    if (ehead[x]) {
+      const int length = ehead[x] + 1; /* the points and a -1 terminator */
+      ehead[x] = n;
+      n += length;
     }
-  }
-  if (ok) {
-    I->EList = std::move(e_list);
-    I->EList.shrink_to_fit();
-  }
+
+  std::vector<int> e_list(n);
+#pragma omp parallel for schedule(dynamic) if (threads)
+  for (int a = I->iMin[0] - 1; a <= I->iMax[0]; a++)
+    for (int b = I->iMin[1] - 1; b <= I->iMax[1]; b++)
+      for (int c = I->iMin[2] - 1; c <= I->iMax[2]; c++) {
+        const int st = ehead[a * D1D2 + b * D2 + c];
+        if (!st)
+          continue;
+        int* p = e_list.data() + st;
+        for (int d = a - 1; d <= a + 1; d++)
+          for (int e = b - 1; e <= b + 1; e++)
+            for (int f = c - 1; f <= c + 1; f++)
+              for (int i = head[d * D1D2 + e * D2 + f]; i >= 0; i = link[i])
+                *(p++) = i;
+        *p = -1;
+      }
+  if (G->Interrupt)
+    return false;
+  I->EList = std::move(e_list);
   PRINTFD(G, FB_Map)
   " MapSetupExpress-Debug: leaving...n=%d\n", n ENDFD;
-  return ok;
+  return true;
 }
 
 /**

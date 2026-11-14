@@ -4,6 +4,19 @@ CHANGE LOG
 
 2026-11-14 pymolish-studio
 
+	* 4.7.9
+
+	* Core
+	  - The neighbor table behind distance searches (MapSetupExpress)
+	    is built about 3 times faster for more than 10000 points: the
+	    lists are sized first and then filled on all cores (OpenMP
+	    builds). Same table as before. A surface of 1aon (58870 atoms)
+	    builds 10 such tables: 7.31 s to 6.24 s.
+	  - No cmd.* change.
+
+
+2026-11-14 pymolish-studio
+
 	* 4.7.8
 
 	* Core
