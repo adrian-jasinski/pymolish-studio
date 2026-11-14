@@ -1,33 +1,33 @@
-# Features
+# What is different
 
-What pymolish-studio adds, changes and removes compared with Open-Source
-PyMOL(TM), the project it is a fork of. The numbers in brackets are
-pymolish-studio versions; [ChangeLog](../ChangeLog) has the details of each.
+This page is for people who know Open-Source PyMOL(TM) and want to know what
+pymolish-studio changed. New to both? Start with
+[Getting started](getting-started.md).
 
-## Interface
+The short version: the molecular engine, the commands and the file formats are
+the same. The window is new, some slow operations are faster, and old
+interfaces and unused features are removed.
 
-- **One GUI toolkit:** Qt 6 through PySide6 (4.1.0).
-- **Dark theme**, on by default. Display > Dark Theme switches it (4.5.2).
-- **Scale button** in the toolbar, 100 to 200 %, for the size of text and
-  controls. The interface starts at 150 % (4.7.0).
-- **Workspace:** action toolbar with line icons above the viewport, log and
-  command line below it (4.5.14, 4.7.0). The window layout is saved on exit
-  and restored on start (4.5.0).
-- **Objects panel:** objects, selections and groups in a Qt panel. A click
-  on a row shows or hides the object, a double click zooms on it, and each
-  row has the Action, Show, Hide, Label and Color menus (4.5.11, 4.5.15).
-- **States panel:** first, previous, play, next, last, a counter to jump to
-  a state, and a speed button. It appears when there is more than one state
-  or movie frame (4.6.0).
-- **Menus:** the right-click menu of the viewport is a Qt menu at the mouse
-  pointer; all menus have rounded corners and line icons (4.5.18).
-- **Own name and icon:** window title, About box and application icon say
-  pymolish-studio (4.8.0).
+Numbers in brackets are pymolish-studio versions; the
+[ChangeLog](../ChangeLog) has the details.
+
+## The window
+
+| What | How it works now |
+| --- | --- |
+| Toolkit | One GUI, Qt 6 (4.1.0). |
+| Theme | Dark by default; Display > Dark Theme switches it (4.5.2). |
+| Size | The percent button in the toolbar sets the size of text and controls, 100 to 200 %. It starts at 150 % (4.7.0). |
+| Layout | Toolbar with icons on top, viewport in the middle, log and command line at the bottom. The layout is remembered (4.5.0, 4.5.14). |
+| Objects panel | Lists objects, selections and groups. Click a row to show or hide, double-click to zoom; each row has the Action, Show, Hide, Label and Color menus (4.5.11, 4.5.15). |
+| States panel | First, previous, play, next, last, jump to a state, speed. Appears when there is more than one state or movie frame (4.6.0). |
+| Menus | The right-click menu opens at the pointer as a normal menu, with icons (4.5.18). |
+| Name | Title, About box and icon say pymolish-studio (4.8.0). |
 
 ## Speed
 
-Measured on one machine; method and all numbers are in
-[baseline.md](baseline.md).
+Each change was measured before and after on the same machine. Method and all
+numbers: [baseline.md](baseline.md).
 
 | Work | Before | After | Version |
 | --- | --- | --- | --- |
@@ -35,17 +35,19 @@ Measured on one machine; method and all numbers are in
 | Build the surface of 1aon (58870 atoms), with a small ray | 11.97 s | 9.66 s | 4.5.12 |
 | The same surface build | 9.44 s | 6.24 s | 4.7.7 to 4.7.9 |
 
-## Builds
+## Getting it
 
-- **Bundles** for Linux, Windows and macOS (arm64) that run without an
-  installed Python, published with wheels and `SHA256SUMS` on the
-  [Releases page](https://github.com/adrian-jasinski/pymolish-studio/releases)
-  (4.4.0, 4.5.1). They are unsigned preview builds.
-- **Name:** the package and the launcher are `pymolish`. The Python module
-  is still `import pymol` (4.5.5).
-- **Python 3.11 or newer** (4.1.0).
+- **Ready-to-run bundles** for Linux, Windows and macOS (arm64) on the
+  [Releases page](https://github.com/adrian-jasinski/pymolish-studio/releases).
+  No Python needed. Unsigned preview builds (4.4.0, 4.5.1).
+- **The program is called `pymolish`.** In Python it is still
+  `import pymol`, so scripts keep working (4.5.5).
+- **Python 3.11 or newer** when you build it yourself (4.1.0):
+  [Install from source](install.md).
 
 ## Removed
+
+Each row was unused, outdated or had a better replacement.
 
 | Removed | Version | Use instead |
 | --- | --- | --- |
@@ -63,11 +65,11 @@ Measured on one machine; method and all numbers are in
 
 ## Kept
 
-- The `cmd` API and the plugin loader: see [plugins.md](plugins.md).
+- The `cmd` API and the plugin loader: [Writing a plugin](plugins.md).
 - Reading and writing PDB, mmCIF, SDF/MOL and PSE sessions; PNG export.
 - Ray tracing, movies, the POV-Ray renderer, the VMD molfile plugins.
 
-Open and planned work is in the [roadmap](../PLAN.md).
+What comes next is in the [roadmap](../PLAN.md).
 
 ---
 

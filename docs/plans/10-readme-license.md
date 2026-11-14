@@ -182,6 +182,25 @@ Open:
   newer FreeType.
 - **Bundle and release notes** were not built here: first CI run.
 
+### Follow-up, 4.9.1
+
+Requested 2026-11-14: documents that a person can read without knowing the
+project. The legal lines above are unchanged and still tested.
+
+- README is shorter and starts from what the program does; it has a
+  three-step "Try it" and a table "I want to ... / Read ...".
+- New `docs/getting-started.md`: first structure, the window, the mouse,
+  looks, saving. Its commands were run headless on 4.9.0.
+- `docs/licenses.md` opens with a plain summary; `docs/features.md` says who
+  it is for.
+- `INSTALL` became `docs/install.md` with the commands that work today
+  (`pymolish`, `--config-settings`, pixi on Windows and macOS).
+- `DEVELOPERS` told contributors to transfer copyright to Schrodinger. It
+  moved unchanged to `docs/DEVELOPERS-upstream.txt`; the new
+  `CONTRIBUTING.md` says contributions are MIT.
+- Not touched: `PACKAGING` (its `python setup.py install` line is outdated;
+  the replacement was not tested), `docs/plugins.md`, `docs/baseline.md`.
+
 ## Skipped
 
 - Rewriting `INSTALL`, `DEVELOPERS`, `PACKAGING`: fix only commands that are wrong.

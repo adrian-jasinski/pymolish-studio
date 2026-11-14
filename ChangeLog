@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-14 pymolish-studio
 
+	* 4.9.1
+
+	* Documentation
+	  - README.md is shorter: what the program does, three steps to try
+	    it, and a table that leads to each document.
+	  - New docs/getting-started.md (first structure, window, mouse,
+	    looks, saving, coming from PyMOL) and CONTRIBUTING.md.
+	  - docs/licenses.md starts with a plain summary of what is allowed.
+	  - INSTALL is now docs/install.md with current commands. The 2006
+	    DEVELOPERS notice moved to docs/DEVELOPERS-upstream.txt.
+	  - No cmd.* change.
+
+
+2026-11-14 pymolish-studio
+
 	* 4.9.0
 
 	* Documentation and licenses

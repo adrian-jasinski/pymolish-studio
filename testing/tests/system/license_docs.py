@@ -11,7 +11,7 @@ import re
 from pymol import testing
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-DOCS = ["README.md"] + sorted(
+DOCS = ["README.md", "CONTRIBUTING.md"] + sorted(
     "docs/" + name
     for name in os.listdir(os.path.join(ROOT, "docs"))
     if name.endswith(".md")
@@ -55,9 +55,10 @@ class TestLicenseDocs(testing.PyMOLTestCase):
         for name in SLOGAN_FILES:
             text = read(name)
             self.assertNotRegex(text, r"(?i)pymolish(-studio)?\(TM\)", name)
+            if "PyMOL(TM)" in text:
+                self.assertIn(FOOTNOTE, text, name)
             for slogan in SLOGANS:
                 if slogan in text:
-                    self.assertIn(FOOTNOTE, text, name)
                     self.assertEqual(
                         text.count(slogan),
                         text.count("pymolish-studio. " + slogan),

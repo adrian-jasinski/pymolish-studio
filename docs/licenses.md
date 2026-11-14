@@ -5,9 +5,25 @@ pymolish-studio. Contains PyMOL(TM) source code.
 pymolish-studio is an independent fork. It is not a Schrodinger product and is
 not affiliated with or endorsed by Schrodinger, LLC.
 
-This page lists every part of pymolish-studio, its license and where the
-license text is. It is a list, not legal advice. Each license was read from
-the file or package named in the "Text" column.
+## In short
+
+- **Use it for anything, also at work.** No fee, no registration.
+- **Change it and share it.** Keep the two license files,
+  [LICENSE](../LICENSE) and [LICENSE-MIT](../LICENSE-MIT), with every copy,
+  and do not remove copyright notices from the source.
+- **Give your version its own name.** Do not present it as PyMOL or as a
+  Schrodinger product, and do not use the name Schrodinger to advertise it.
+  `LICENSE` lists the few phrases with "PyMOL(TM)" that are allowed.
+- **No warranty.** The software comes as it is.
+
+Why two licenses: the code that came from Open-Source PyMOL keeps its
+license, and the code this project added is under MIT. Both are permissive
+and ask for much the same. The third-party parts in the tables below have
+their own licenses; all of them allow free use.
+
+This is a summary to help you find your way, not legal advice. Where it and a
+license file differ, the license file counts. The tables below name every
+part, its license and the file the license was read from.
 
 ## pymolish-studio itself
 
