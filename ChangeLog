@@ -4,6 +4,19 @@ CHANGE LOG
 
 2026-11-14 pymolish-studio
 
+	* 4.7.10
+
+	* Core
+	  - Atom labels are text again in the viewport on drivers without
+	    the EXT_geometry_shader4 extension (all Mesa drivers on Linux:
+	    Intel, AMD, software). Each character was drawn as a solid
+	    block in the color of the geometry drawn before it. Ray-traced
+	    images and distance labels were not affected.
+	  - No cmd.* change.
+
+
+2026-11-14 pymolish-studio
+
 	* 4.7.9
 
 	* Core

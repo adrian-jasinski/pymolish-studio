@@ -16,7 +16,7 @@ Three more 1b changes, numbers in [docs/baseline.md](../baseline.md): the surfac
 
 GUI frame time is now measured: `testing/bench_gui.py`. Main finding: under WSLg the GUI runs on Mesa's software renderer (50 to 120 ms per frame for 1aon); with `GALLIUM_DRIVER=d3d12` the same frames take 0.7 to 11 ms on the RTX 5070. Open decision: whether the app selects that driver itself on WSL. It draws lines 1 pixel wide, so the default would need `trilines` with it, and mesh lines stay thin.
 
-Found while measuring, not fixed: with `use_shaders` on, atom labels are drawn as solid blocks in the GUI (software and D3D12 alike); with `use_shaders` off they are text. Distance labels are fine.
+Found while measuring, fixed in 4.7.10: atom labels were solid blocks in the GUI on every driver without `EXT_geometry_shader4` (all Mesa drivers). An upstream refactor of `RepLabel` had dropped the switch that turns shaders off for the fallback label path. Check: `testing/tests/api/label_render.py` (needs the GUI).
 
 Next candidates: sticks on the GPU (11 ms per frame, p99 36 ms, 6 ms of it CPU), surface draw submission (7.6 ms CPU per frame), the two advancing-front passes of the triangulation (0.85 s and 0.82 s), the ray tracer's voxel table (1.0 s per ray of the 1aon surface; the 4.7.9 count-then-fill pattern may carry over to `MapSetupExpressXYVert`).
 
