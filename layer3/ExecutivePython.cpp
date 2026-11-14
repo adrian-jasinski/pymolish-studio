@@ -40,7 +40,7 @@ pymol::Result<> ExecutiveLoadObject(PyMOLGlobals* G,
         ExecutiveManageObject(G, obj, zoom, quiet);
         if (frame < 0)
           frame = ((ObjectMolecule*) obj)->NCSet - 1;
-        sprintf(buf,
+        snprintf(buf, std::size(buf),
             " CmdLoad: ChemPy-model loaded into object \"%s\", state %d.\n",
             valid_name, frame + 1);
       }
@@ -49,7 +49,7 @@ pymol::Result<> ExecutiveLoadObject(PyMOLGlobals* G,
         ExecutiveUpdateObjectSelection(G, origObj);
       if (frame < 0)
         frame = ((ObjectMolecule*) origObj)->NCSet - 1;
-      sprintf(buf,
+      snprintf(buf, std::size(buf),
           " CmdLoad: ChemPy-model appended into object \"%s\", state %d.\n",
           valid_name, frame + 1);
     }
@@ -69,11 +69,11 @@ pymol::Result<> ExecutiveLoadObject(PyMOLGlobals* G,
       if (obj) {
         ObjectSetName(obj, valid_name);
         ExecutiveManageObject(G, obj, zoom, quiet);
-        sprintf(buf, " CmdLoad: chempy.brick loaded into object \"%s\"\n",
+        snprintf(buf, std::size(buf), " CmdLoad: chempy.brick loaded into object \"%s\"\n",
             valid_name);
       }
     } else if (origObj) {
-      sprintf(buf, " CmdLoad: chempy.brick appended into object \"%s\"\n",
+      snprintf(buf, std::size(buf), " CmdLoad: chempy.brick appended into object \"%s\"\n",
           valid_name);
     }
     break;
@@ -91,11 +91,11 @@ pymol::Result<> ExecutiveLoadObject(PyMOLGlobals* G,
       if (obj) {
         ObjectSetName(obj, valid_name);
         ExecutiveManageObject(G, obj, zoom, quiet);
-        sprintf(buf, " CmdLoad: chempy.map loaded into object \"%s\"\n",
+        snprintf(buf, std::size(buf), " CmdLoad: chempy.map loaded into object \"%s\"\n",
             valid_name);
       }
     } else if (origObj) {
-      sprintf(buf, " CmdLoad: chempy.map appended into object \"%s\"\n",
+      snprintf(buf, std::size(buf), " CmdLoad: chempy.map appended into object \"%s\"\n",
           valid_name);
     }
     break;
@@ -113,11 +113,11 @@ pymol::Result<> ExecutiveLoadObject(PyMOLGlobals* G,
       if (obj) {
         ObjectSetName(obj, valid_name);
         ExecutiveManageObject(G, obj, zoom, quiet);
-        sprintf(buf, " CmdLoad: pymol.callback loaded into object \"%s\"\n",
+        snprintf(buf, std::size(buf), " CmdLoad: pymol.callback loaded into object \"%s\"\n",
             valid_name);
       }
     } else if (origObj) {
-      sprintf(buf, " CmdLoad: pymol.callback appended into object \"%s\"\n",
+      snprintf(buf, std::size(buf), " CmdLoad: pymol.callback appended into object \"%s\"\n",
           valid_name);
     }
     break;
@@ -134,10 +134,10 @@ pymol::Result<> ExecutiveLoadObject(PyMOLGlobals* G,
       if (obj) {
         ObjectSetName(obj, valid_name);
         ExecutiveManageObject(G, obj, zoom, quiet);
-        sprintf(buf, " CmdLoad: CGO loaded into object \"%s\"\n", valid_name);
+        snprintf(buf, std::size(buf), " CmdLoad: CGO loaded into object \"%s\"\n", valid_name);
       }
     } else if (origObj) {
-      sprintf(buf, " CmdLoad: CGO appended into object \"%s\"\n", valid_name);
+      snprintf(buf, std::size(buf), " CmdLoad: CGO appended into object \"%s\"\n", valid_name);
     }
     break;
   }

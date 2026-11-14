@@ -720,7 +720,7 @@ void CShaderMgr::Config() {
     char buf[50];
     int major, minor;
     getGLSLVersion(G, &major, &minor);
-    sprintf(buf, " Detected GLSL version %d.%d.\n", major, minor);
+    snprintf(buf, std::size(buf), " Detected GLSL version %d.%d.\n", major, minor);
     G->Feedback->add(buf);
   }
 #endif

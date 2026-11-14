@@ -630,14 +630,14 @@ static void ObjectGadgetRampUpdateCGO(ObjectGadgetRamp* I, GadgetSet* gs)
     float axes[] = {1.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 1.0F};
     float color[] = {1.f, 1.f, 1.f};
     /* left text for ramp */
-    sprintf(buffer, "%0.3f", I->Level[0]);
+    snprintf(buffer, std::size(buffer), "%0.3f", I->Level[0]);
     VFontWriteToCGO(I->G, font_id, cgo, buffer, pos, scale, axes, color);
 
     /* right text, right justified for ramp */
     pos[0] = I->width + I->border - exindent;
     pos[1] = I->text_border - (I->border + I->height);
     pos[2] = I->border + I->text_raise;
-    sprintf(buffer, "%0.3f", I->Level[I->NLevel - 1]);
+    snprintf(buffer, std::size(buffer), "%0.3f", I->Level[I->NLevel - 1]);
     /* indent for right justification */
     VFontIndent(I->G, font_id, buffer, pos, scale, axes, -1.f);
     VFontWriteToCGO(I->G, font_id, cgo, buffer, pos, scale, axes, color);

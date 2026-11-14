@@ -49,6 +49,17 @@ class PyMOLQtGUI(QtWidgets.QMainWindow, pymol._gui.PyMOLDesktopGUI):
     _initialdir = ''
 
     def keyPressEvent(self, ev):
+        # without the prompt in the viewport, text typed over it goes to
+        # the command line; Ctrl and Alt combinations stay PyMOL shortcuts
+        text = ev.text()
+        if (text and text.isprintable()
+                and not keymapping.get_modifiers(ev) & 0x6
+                and not self.cmd.get_setting_int('internal_feedback')):
+            self.ext_window.show()
+            self.lineedit.setFocus()
+            self.lineedit.insert(text)
+            return
+
         args = keymapping.keyPressEventToPyMOLButtonArgs(ev)
 
         if args is not None:
@@ -115,7 +126,7 @@ class PyMOLQtGUI(QtWidgets.QMainWindow, pymol._gui.PyMOLDesktopGUI):
 
         # "session_file" setting in window title
         self.setting_callbacks[440].append(
-            lambda v: self.setWindowTitle("PyMOL (" + os.path.basename(v) + ")")
+            lambda v: self.setWindowTitle("pymolish-studio (" + os.path.basename(v) + ")")
         )
 
         # "External" Command Line and Loggin Widget
@@ -204,8 +215,12 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         cmd = self.cmd = self.pymolwidget.cmd
 
         # objects and wizard panel (replaces the viewport's internal GUI)
-        from .object_panel import ObjectPanel
+        from .object_panel import ObjectPanel, popup_at_cursor
         self.object_panel = ObjectPanel(cmd, self)
+
+        # menus the core opens (right click in the viewport, sequence
+        # viewer, scene buttons) are Qt menus; object_panel imported pymol.menu
+        pymol.menu.popup = lambda entries: popup_at_cursor(self, entries, cmd)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.object_panel)
         self.resizeDocks([self.object_panel], [300], Qt.Orientation.Horizontal)
 
@@ -229,7 +244,6 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         def _addmenu(data, menu):
             '''Fill a menu from "data"'''
-            menu.setTearOffEnabled(True)
             menu.setWindowTitle(menu.title())  # needed for Windows
             for item in data:
                 if item[0] == 'separator':
@@ -390,14 +404,6 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         act.setCheckable(True)
         act.setChecked(theme.is_dark())
         act.toggled.connect(theme.set_dark)
-        scales = self.menudict['Display'].addMenu('UI Scale')
-        group = QtWidgets.QActionGroup(scales)
-        for scale in theme.SCALES:
-            act = group.addAction(scales.addAction('%d%%' % (scale * 100)))
-            act.setCheckable(True)
-            act.setChecked(scale == theme.ui_scale())
-            act.setData(scale)
-        group.triggered.connect(self.set_ui_scale)
 
         # focus in command line
         if options.external_gui:
@@ -419,11 +425,6 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         # Load saved shortcuts on launch
         self.saved_shortcuts = pymol.save_shortcut.load_and_set(self.cmd)
-
-    def set_ui_scale(self, action):
-        theme.set_ui_scale(action.data())
-        QtWidgets.QMessageBox.information(
-            self, 'UI Scale', 'The new scale applies the next time pymolish starts.')
 
     def lineeditKeyPressEventFilter(self, watched, event):
         key = event.key()
@@ -921,23 +922,11 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.scene_panel_dialog.show()
 
     def show_about(self):
-        msg = [
-            'The PyMOL Molecular Graphics System\n',
-            'Version %s' % (self.cmd.get_version()[0]),
-            u'Copyright (C) Schr\xF6dinger, LLC.',
-            'All rights reserved.\n',
-            'License information:',
-        ]
-
-        msg.append('Open-Source Build')
-
-        msg += [
-            '',
-            'For more information:',
-            'https://pymol.org',
-            'sales@schrodinger.com',
-        ]
-        QtWidgets.QMessageBox.about(self, "About PyMOL", '\n'.join(msg))
+        QtWidgets.QMessageBox.about(
+            self,
+            "About pymolish-studio",
+            ABOUT_TEXT % self.cmd.get_version()[0],
+        )
 
     #################
     # GUI callbacks
@@ -981,8 +970,6 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         self.feedback_timer.start(500)
         self.object_panel.poll()
-        self.action_toolbar.set_movie_visible(
-            self.cmd.count_frames() > 1 or self.cmd.count_states() > 1)
 
     def doPrompt(self):
         self.doTypedCommand(self.command_get())
@@ -1008,7 +995,6 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         # Redirect to Legacy submenu
         self.menudict['PluginQt'] = self.menudict['Plugin']
         self.menudict['Plugin'] = self.menudict['PluginQt'].addMenu('Legacy Plugins')
-        self.menudict['Plugin'].setTearOffEnabled(True)
         self.menudict['PluginQt'].addSeparator()
 
         plugins.HAVE_QT = True
@@ -1218,9 +1204,27 @@ def _copy_image(_self=pymol.cmd, quiet=1, dpi=-1):
 LAYOUT_VERSION = 2
 
 
+# Slogan, copyright lines and trademark footnote are copied from LICENSE;
+# keep them word for word (docs/plans/10-readme-license.md, Wording).
+ABOUT_TEXT = """pymolish-studio %s
+Based on PyMOL(TM) technology.
+
+An independent fork of Open-Source PyMOL. Not a Schrodinger product;
+not affiliated with or endorsed by Schrodinger, LLC.
+
+Copyright (C) Schr\xf6dinger, LLC.
+All rights reserved.
+New code: MIT, pymolish-studio contributors.
+https://github.com/adrian-jasinski/pymolish-studio
+
+PyMOL is a trademark of Schrodinger, LLC."""
+
+
 def make_pymol_qicon():
+    # ponytail: one 1254 px master, Qt scales it. Blurry at 16 px? Add a
+    # hand-tuned 32 px file with QIcon.addFile.
     icons_dir = os.path.expandvars('$PYMOL_DATA/pymol/icons')
-    return QtGui.QIcon(os.path.join(icons_dir, 'icon2.svg'))
+    return QtGui.QIcon(os.path.join(icons_dir, 'pymolish.png'))
 
 
 def execapp():
@@ -1238,8 +1242,9 @@ def execapp():
     if hasattr(Qt, 'AA_UseDesktopOpenGL') and pymol.IS_WINDOWS:
         QtCore.QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_UseDesktopOpenGL)
 
-    # Qt 6 always follows the OS scale; this adds the user's Display > UI Scale
+    # Qt 6 always follows the OS scale; this adds the user's UI scale (toolbar)
     theme.apply_ui_scale()
+    theme.prefer_x11_on_wsl()
 
     # fix Windows taskbar icon
     if pymol.IS_WINDOWS:
@@ -1251,13 +1256,18 @@ def execapp():
     # old panel back: Display > Internal GUI, or "set internal_gui" in pymolrc.
     pymol.invocation.options.internal_gui = 0
 
+    # The command area has the prompt; the viewport does not draw a second
+    # one. "set internal_feedback, 1" in pymolrc brings it back.
+    if pymol.invocation.options.external_gui:
+        pymol.invocation.options.internal_feedback = 0
+
     app = PyMOLApplication(['PyMOL'])
     app.setWindowIcon(make_pymol_qicon())
     theme.apply(app, theme.is_dark())
-    theme.offer_ui_scale(app)
+    theme.round_menus(app)
 
     window = PyMOLQtGUI()
-    window.setWindowTitle("PyMOL")
+    window.setWindowTitle("pymolish-studio")
     window.restore_layout()
 
     # fix gnome/wayland dash icon/missing wmclass

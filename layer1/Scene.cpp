@@ -2545,7 +2545,6 @@ int SceneLoadPNG(PyMOLGlobals * G, const char *fname, int movie_flag, int stereo
 
     I->CopyType = true;
     I->CopyForced = true;
-    OrthoRemoveSplash(G);
     SettingSetGlobal_b(G, cSetting_text, 0);
     if(movie_flag &&
        I->Image && !I->Image->empty()) {
@@ -3501,28 +3500,28 @@ static void SceneRovingCleanup(PyMOLGlobals * G)
 
   s = SettingGet_s(G, nullptr, nullptr, cSetting_roving_selection);
 
-  sprintf(buffer, "cmd.hide('lines','''%s''')", s);
+  snprintf(buffer, std::size(buffer), "cmd.hide('lines','''%s''')", s);
   PParse(G, buffer);
   PFlush(G);
-  sprintf(buffer, "cmd.hide('sticks','''%s''')", s);
+  snprintf(buffer, std::size(buffer), "cmd.hide('sticks','''%s''')", s);
   PParse(G, buffer);
   PFlush(G);
-  sprintf(buffer, "cmd.hide('spheres','''%s''')", s);
+  snprintf(buffer, std::size(buffer), "cmd.hide('spheres','''%s''')", s);
   PParse(G, buffer);
   PFlush(G);
-  sprintf(buffer, "cmd.hide('ribbon','''%s''')", s);
+  snprintf(buffer, std::size(buffer), "cmd.hide('ribbon','''%s''')", s);
   PParse(G, buffer);
   PFlush(G);
-  sprintf(buffer, "cmd.hide('cartoon','''%s''')", s);
+  snprintf(buffer, std::size(buffer), "cmd.hide('cartoon','''%s''')", s);
   PParse(G, buffer);
   PFlush(G);
-  sprintf(buffer, "cmd.hide('labels','''%s''')", s);
+  snprintf(buffer, std::size(buffer), "cmd.hide('labels','''%s''')", s);
   PParse(G, buffer);
   PFlush(G);
-  sprintf(buffer, "cmd.hide('nonbonded','''%s''')", s);
+  snprintf(buffer, std::size(buffer), "cmd.hide('nonbonded','''%s''')", s);
   PParse(G, buffer);
   PFlush(G);
-  sprintf(buffer, "cmd.hide('nb_spheres','''%s''')", s);
+  snprintf(buffer, std::size(buffer), "cmd.hide('nb_spheres','''%s''')", s);
   PParse(G, buffer);
   PFlush(G);
 }
@@ -3577,7 +3576,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
       } else {
         p1 = empty;
       }
-      sprintf(buffer,
+      snprintf(buffer, std::size(buffer),
               "cmd.hide('sticks','''%s''');cmd.show('sticks','%s & enabled & %s %s (center expand %1.3f)')",
               s, s, p1, p2, sticks);
       PParse(G, buffer);
@@ -3592,7 +3591,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
       } else {
         p1 = empty;
       }
-      sprintf(buffer,
+      snprintf(buffer, std::size(buffer),
               "cmd.hide('lines','''%s''');cmd.show('lines','%s & enabled & %s %s (center expand %1.3f)')",
               s, s, p1, p2, lines);
       PParse(G, buffer);
@@ -3607,7 +3606,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
       } else {
         p1 = empty;
       }
-      sprintf(buffer,
+      snprintf(buffer, std::size(buffer),
               "cmd.hide('labels','''%s''');cmd.show('labels','%s & enabled & %s %s (center expand %1.3f)')",
               s, s, p1, p2, labels);
       PParse(G, buffer);
@@ -3622,7 +3621,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
       } else {
         p1 = empty;
       }
-      sprintf(buffer,
+      snprintf(buffer, std::size(buffer),
               "cmd.hide('spheres','''%s''');cmd.show('spheres','%s & enabled & %s %s (center expand %1.3f)')",
               s, s, p1, p2, spheres);
       PParse(G, buffer);
@@ -3637,7 +3636,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
       } else {
         p1 = empty;
       }
-      sprintf(buffer,
+      snprintf(buffer, std::size(buffer),
               "cmd.hide('cartoon','''%s''');cmd.show('cartoon','%s & enabled & %s %s (center expand %1.3f)')",
               s, s, p1, p2, cartoon);
       PParse(G, buffer);
@@ -3652,7 +3651,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
       } else {
         p1 = empty;
       }
-      sprintf(buffer,
+      snprintf(buffer, std::size(buffer),
               "cmd.hide('ribbon','''%s''');cmd.show('ribbon','%s & enabled & %s %s (center expand %1.3f)')",
               s, s, p1, p2, ribbon);
       PParse(G, buffer);
@@ -3673,7 +3672,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
         label_flag = true;
         polar_cutoff = (float) fabs(polar_cutoff);
       }
-      sprintf(buffer,
+      snprintf(buffer, std::size(buffer),
               "cmd.delete('rov_pc');cmd.dist('rov_pc','%s & enabled & %s %s (center expand %1.3f)','same',%1.4f,mode=2,label=%d,quiet=2)",
               s, p1, p2, polar_contacts, polar_cutoff, label_flag);
       PParse(G, buffer);
@@ -3689,7 +3688,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
       } else {
         p1 = empty;
       }
-      sprintf(buffer,
+      snprintf(buffer, std::size(buffer),
               "cmd.hide('nonbonded','''%s''');cmd.show('nonbonded','%s & enabled & %s %s (center expand %1.3f)')",
               s, s, p1, p2, nonbonded);
       PParse(G, buffer);
@@ -3704,7 +3703,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
       } else {
         p1 = empty;
       }
-      sprintf(buffer,
+      snprintf(buffer, std::size(buffer),
               "cmd.hide('nb_spheres','''%s''');cmd.show('nb_spheres','%s & enabled & %s %s (center expand %1.3f)')",
               s, s, p1, p2, nb_spheres);
       PParse(G, buffer);
@@ -3723,7 +3722,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
         if(name[0])
           if(ExecutiveFindObjectByName(G, name)) {
             level = SettingGetGlobal_f(G, cSetting_roving_map1_level);
-            sprintf(buffer,
+            snprintf(buffer, std::size(buffer),
                     "cmd.isomesh('rov_m1','%s',%8.6f,'center',%1.3f)",
                     name, level, isomesh);
             PParse(G, buffer);
@@ -3736,7 +3735,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
         if(name[0])
           if(ExecutiveFindObjectByName(G, name)) {
             level = SettingGetGlobal_f(G, cSetting_roving_map2_level);
-            sprintf(buffer,
+            snprintf(buffer, std::size(buffer),
                     "cmd.isomesh('rov_m2','%s',%8.6f,'center',%1.3f)",
                     name, level, isomesh);
             PParse(G, buffer);
@@ -3749,7 +3748,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
         if(name[0])
           if(ExecutiveFindObjectByName(G, name)) {
             level = SettingGetGlobal_f(G, cSetting_roving_map3_level);
-            sprintf(buffer,
+            snprintf(buffer, std::size(buffer),
                     "cmd.isomesh('rov_m3','%s',%8.6f,'center',%1.3f)",
                     name, level, isomesh);
             PParse(G, buffer);
@@ -3770,7 +3769,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
         if(name[0])
           if(ExecutiveFindObjectByName(G, name)) {
             level = SettingGetGlobal_f(G, cSetting_roving_map1_level);
-            sprintf(buffer,
+            snprintf(buffer, std::size(buffer),
                     "cmd.isosurface('rov_s1','%s',%8.6f,'center',%1.3f)",
                     name, level, isosurface);
             PParse(G, buffer);
@@ -3783,7 +3782,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
         if(name[0])
           if(ExecutiveFindObjectByName(G, name)) {
             level = SettingGetGlobal_f(G, cSetting_roving_map2_level);
-            sprintf(buffer,
+            snprintf(buffer, std::size(buffer),
                     "cmd.isosurface('rov_s2','%s',%8.6f,'center',%1.3f)",
                     name, level, isosurface);
             PParse(G, buffer);
@@ -3796,7 +3795,7 @@ void SceneRovingUpdate(PyMOLGlobals * G)
         if(name[0])
           if(ExecutiveFindObjectByName(G, name)) {
             level = SettingGetGlobal_f(G, cSetting_roving_map3_level);
-            sprintf(buffer,
+            snprintf(buffer, std::size(buffer),
                     "cmd.isosurface('rov_s3','%s',%8.6f,'center',%1.3f)",
                     name, level, isosurface);
             PParse(G, buffer);

@@ -302,7 +302,7 @@ int ObjectMoleculeAddPseudoatom(ObjectMolecule * I, int sele_index, const char *
     ai->segi = LexIdx(G, segi);
     ai->resn = LexIdx(G, resn);
     ai->name = LexIdx(G, name);
-    strcpy(ai->elem, elem);
+    UtilNCopy(ai->elem, elem, std::size(ai->elem));
     ai->id = -1;
     ai->rank = -1;
     if(vdw >= 0.0F)
@@ -1925,7 +1925,7 @@ CoordSet *ObjectMoleculePDBStr2CoordSet(PyMOLGlobals * G,
 
   if(tags_in && (!quiet) && (!*restart_model)) {
     char *p = tags;
-    strcpy(tags, tags_in);
+    UtilNCopy(tags, tags_in, std::size(tags));
 
     while(*p) {
       while(*p == ' ')          /* skip spaces */
@@ -2411,7 +2411,7 @@ CoordSet *ObjectMoleculePDBStr2CoordSet(PyMOLGlobals * G,
           if(ai_name[0]) {
             if(isdigit(ai_name[0]) && ai_name[1] && (!isdigit(ai_name[1]))) {
               if (1 < name_len && name_len < 5) {
-                strcpy(name, ai_name + 1);
+                UtilNCopy(name, ai_name + 1, std::size(name));
                 name[name_len - 1] = ai_name[0];
                 name[name_len] = 0;
                 LexAssign(G, ai->name, name);

@@ -777,7 +777,7 @@ static int ObjectAlignmentStateFromPyList(PyMOLGlobals * G, ObjectAlignmentState
      Always check ll when adding new PyList_GetItem's */
   if(ok && (ll > 1)) {
     PConvPyListToIntVLA(PyList_GetItem(list, 0), &I->alignVLA);
-    strcpy(I->guide, PyString_AsString(PyList_GetItem(list, 1)));
+    UtilNCopy(I->guide, PyString_AsString(PyList_GetItem(list, 1)), std::size(I->guide));
 
     for (auto& align : I->alignVLA) {
       if (align) {
@@ -1194,7 +1194,7 @@ ObjectAlignment *ObjectAlignmentDefine(PyMOLGlobals * G,
     ObjectAlignmentState *oas = I->State.data() + state;
     oas->valid = false;
     if(guide) {
-      strcpy(oas->guide, guide->Name);
+      UtilNCopy(oas->guide, guide->Name, std::size(oas->guide));
     }
     if(align_vla.data()) {
       if(merge && oas->alignVLA) {

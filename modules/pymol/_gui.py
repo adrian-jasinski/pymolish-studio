@@ -885,7 +885,7 @@ class PyMOLDesktopGUI(object):
                 ('separator',),
                 ('command', 'PyMOL Mailing List', lambda: webbrowser.open("https://lists.sourceforge.net/lists/listinfo/pymol-users")),
                 ('separator',),
-                ('command', 'About PyMOL', self.show_about),
+                ('command', 'About pymolish-studio', self.show_about),
                 ('command', 'Sponsorship Information', lambda: webbrowser.open("http://pymol.org/funding.html")),
                 ('command', 'How to Cite PyMOL', lambda: webbrowser.open("http://pymol.org/citing")),
             ]),

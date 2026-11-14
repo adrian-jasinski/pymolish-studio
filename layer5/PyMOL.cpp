@@ -2070,7 +2070,7 @@ void PyMOL_Free(CPyMOL * I)
 #endif
 
   FreeP(I->G);
-  FreeP(I);
+  delete I; // allocated with new in PyMOL_NewWithOptions
   return;
 #if !defined(_PYMOL_ACTIVEX) && !defined(_MACPYMOL_XCODE)
   PYMOL_API_UNLOCK;
@@ -2379,7 +2379,7 @@ void PyMOL_Special(CPyMOL * I, int k, int x, int y, int modifiers)
 
 #ifndef _PYMOL_NOPY
   if(!grabbed) {
-    sprintf(buffer, "_special %d,%d,%d,%d", k, x, y, modifiers);
+    snprintf(buffer, std::size(buffer), "_special %d,%d,%d,%d", k, x, y, modifiers);
     PLog(G, buffer, cPLog_pml);
     PParse(G, buffer);
     PFlush(G);
@@ -2597,7 +2597,7 @@ void PyMOL_SetClickReady(CPyMOL * I, const char *name, int index, int button, in
   I->ClickedY = y;
   I->ClickedPosState = state;
 
-  strcpy(I->ClickedObject, name ? name : "");
+  UtilNCopy(I->ClickedObject, name ? name : "", std::size(I->ClickedObject));
 
   if ((I->ClickedHavePos = bool(pos))) {
     copy3f(pos, I->ClickedPos);
@@ -2649,13 +2649,13 @@ char *PyMOL_GetClickString(CPyMOL * I, int reset)
 
       WordType modstr = "";
       if(cOrthoCTRL & I->ClickedModifiers) {
-        strcat(modstr, " ctrl");
+        UtilNConcat(modstr, " ctrl", std::size(modstr));
       }
       if(cOrthoALT & I->ClickedModifiers) {
-        strcat(modstr, " alt");
+        UtilNConcat(modstr, " alt", std::size(modstr));
       }
       if(cOrthoSHIFT & I->ClickedModifiers) {
-        strcat(modstr, " shift");
+        UtilNConcat(modstr, " shift", std::size(modstr));
       }
 
       result[0] = 0;

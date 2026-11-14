@@ -103,8 +103,8 @@ Observations worth a profile later, in order of size:
   made from. Fixed in 4.5.10, see below.
 - Startup is 80 ms headless, not a target.
 
-Not measured: GUI frame latency and GPU time (needs a real GL context, see
-`testing/tests/performance/shaders.py`), Windows, macOS.
+Not measured here: GUI frame time (see "GUI frame time" below, 4.7.9),
+Windows, macOS.
 
 ## 1b results
 
@@ -160,6 +160,125 @@ comparison: their hashes differ between two runs of the same build.
 
 Left serial: triangulation and refinement are advancing-front algorithms, and
 `SolventDotNew` shares its counters across atoms. They are the next 6.9 s.
+
+### Surface build again (4.7.7 to 4.7.9)
+
+Temporary timers in `SurfaceJobRun`, `TrianglePointsToSurface` and
+`MapSetupExpress`, 1aon, default settings, 32 threads. One change per commit.
+Rows marked "about" were not timed again on 4.7.9: they are the 4.7.6 time
+minus the measured saving of the parts inside them.
+
+| Part of the surface build | 4.7.6 | 4.7.9 |
+| --- | --- | --- |
+| Solvent dots, per-atom pass | 1.07 s | 0.12 s |
+| Solvent dots, cavity cull | 0.31 s | 0.31 s |
+| Dots to surface points | 0.46 s | 0.46 s |
+| Eliminate close points (3 passes) | 0.87 s | about 0.6 s |
+| Eliminate troublesome points (4 passes) | 1.17 s | about 0.8 s |
+| Triangulation | 3.55 s | about 2.4 s |
+| ... of it: search for the next start point (132 searches) | 1.17 s | 0.18 s |
+| Neighbor tables, 10 of about 450 000 points (inside the rows above) | 1.8 s | 0.6 s |
+
+| Workload (median of 5) | 4.7.6 | 4.7.7 | 4.7.8 | 4.7.9 |
+| --- | --- | --- | --- | --- |
+| surface build (1aon, +ray 16x16) | 9.44 s | 8.63 s | 7.31 s | 6.24 s |
+
+- 4.7.7: the triangulation's search for a start point walked the neighbors
+  of vertices that were already triangulated and rejected them one neighbor
+  at a time. The test now runs once per vertex.
+- 4.7.8: the per-atom solvent-dot pass runs in chunks under OpenMP and
+  appends the chunks in atom order.
+- 4.7.9: `MapSetupExpress` (the neighbor table behind every distance search)
+  counts first, then fills a vector of the exact size in parallel. Above
+  10 000 points only. Per table 0.16-0.19 s to 0.04-0.07 s.
+
+Same output: the POV-Ray export of the surface has the same MD5 as the 4.7.6
+build for 13 cases (1aon whole, chain A, partial selection; 1rx1;
+`surface_quality` -1, 1, 2; `surface_type` 2, 3, 4; `surface_solvent`;
+`surface_cavity_mode` 1, 2; `surface_mode` 1) and for 1, 5 and 32 threads. The
+old and the new `MapSetupExpress` ran side by side on every call of the
+Python suite: identical tables. Checks: `testing/tests/api/surface_threads.py`,
+`layerCTest/Test_Map.cpp`.
+
+Full table, commit 3e4218d9, PyMOL 4.7.9, same machine, Python 3.13.12:
+
+| Workload | 4.7.6 | 4.7.9 |
+| --- | --- | --- |
+| load 1aon.pdb.gz (58870 atoms) | 0.147 s | 0.191 s |
+| ray 800x600, cartoon (1aon) | 4.286 s | 4.565 s |
+| surface build (1aon, +ray 16x16) | 9.438 s | 6.510 s |
+| ray 800x600, surface (1aon) | 13.065 s | 8.954 s |
+| isosurface emd_1155.ccp4 level 2.0 (+ray 64x64) | 1.072 s | 1.046 s |
+| isosurface level change 2.0 -> 3.0 (+ray 64x64) | 0.090 s | 0.093 s |
+| save PSE (1aon, cartoon) | 0.180 s | 0.211 s |
+| load PSE (1aon, cartoon) | 0.151 s | 0.175 s |
+| startup `pymolish -ckq -d quit` | 0.073 s | 0.100 s |
+
+The rows that got slower are machine noise, not the changes: the 4.7.9 run
+came after an hour of builds and benchmarks on a laptop, and startup, which
+none of the changes touch, moved the most. Load was checked on its own
+because it builds a neighbor table: 20 loads, three runs each, old
+`MapSetupExpress` 216 / 155 / 161 ms, new 225 / 160 / 157 ms.
+
+On one thread (`OMP_NUM_THREADS=1` and `max_threads` 1, which is also what
+a build without OpenMP does, the macOS default): surface build 12.36 s to
+10.60 s, load 150 ms to 137 ms. The changes cost nothing where there are no
+extra cores.
+
+Left: the two advancing-front passes of the triangulation (0.85 s and
+0.82 s), the point elimination passes (order-dependent, serial), the ray
+tracer's own voxel table (1.0 s per ray of this surface).
+
+### GUI frame time (first measurement, 4.7.9)
+
+Command: `pymolish -qk $PWD/testing/bench_gui.py`. 1aon, viewport
+952x747 px, 300 frames per row while rotating. A frame is one PyMOL draw
+plus `glFinish`, outside Qt's paint cycle, so display synchronization is not
+in the numbers. "First frame" includes building the representation.
+
+Under WSLg the GUI gets Mesa's software renderer unless told otherwise. The
+same Mesa has a D3D12 driver that reaches both GPUs of this laptop:
+
+| Median frame | llvmpipe (default) | `GALLIUM_DRIVER=d3d12` (AMD Radeon 610M) | + `MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA` (RTX 5070) |
+| --- | --- | --- | --- |
+| lines | 55.1 ms | 0.9 ms | 2.3 ms |
+| sticks | 51.7 ms | 23.1 ms | 11.3 ms |
+| spheres | 24.6 ms | 6.3 ms | 0.8 ms |
+| cartoon | 50.6 ms | 11.2 ms | 0.7 ms |
+| surface | 122.7 ms | 27.1 ms | 10.4 ms |
+
+| RTX 5070 | first frame | median | p95 | p99 | max | draw calls (median) |
+| --- | --- | --- | --- | --- | --- | --- |
+| lines | 0.11 s | 2.3 ms | 2.5 ms | 3.0 ms | 3.1 ms | 0.0 ms |
+| sticks | 0.18 s | 11.3 ms | 13.7 ms | 36.3 ms | 85.8 ms | 6.0 ms |
+| spheres | 0.08 s | 0.8 ms | 0.9 ms | 2.1 ms | 2.4 ms | 0.0 ms |
+| cartoon | 0.55 s | 0.7 ms | 0.8 ms | 0.9 ms | 1.4 ms | 0.0 ms |
+| surface | 5.75 s | 10.4 ms | 13.6 ms | 15.3 ms | 19.2 ms | 7.6 ms |
+
+| llvmpipe | first frame | median | p95 | p99 | max | draw calls (median) |
+| --- | --- | --- | --- | --- | --- | --- |
+| lines | 0.26 s | 55.1 ms | 57.4 ms | 67.8 ms | 102.5 ms | 53.0 ms |
+| sticks | 0.15 s | 51.7 ms | 54.4 ms | 55.9 ms | 58.2 ms | 49.8 ms |
+| spheres | 0.11 s | 24.6 ms | 28.9 ms | 39.2 ms | 44.5 ms | 13.4 ms |
+| cartoon | 0.78 s | 50.6 ms | 55.5 ms | 59.5 ms | 63.9 ms | 47.3 ms |
+| surface | 6.00 s | 122.7 ms | 136.7 ms | 146.2 ms | 155.5 ms | 121.5 ms |
+
+Idle with a cartoon shown, 5 s: 0.8 % of one core, 48 timer wakeups per
+second (the 20 ms poll in `PyMOLGLWidget._pymolProcess`), no repaints.
+
+What the numbers say:
+- On this machine the renderer choice is worth 5 to 70 times; nothing in the
+  drawing code comes close. The app does not select the D3D12 driver itself.
+  The same scene (cartoon, sticks, spheres, lines, transparent surface)
+  differs from the software image in about 1 % of the pixels, and a click
+  selects the same residue on all three renderers. One visible difference:
+  the D3D12 driver draws every line 1 pixel wide. `set trilines` restores
+  the width for lines, nonbonded and dashes (3.1 ms instead of 2.3 ms per
+  frame); mesh stays thin.
+- On the GPU, sticks are the slowest representation and the only one with a
+  long tail (p99 36 ms, max 86 ms); sticks and surface spend 6 to 8 ms per
+  frame on the CPU before the GPU starts. These are the next two profiles.
+- Idle cost is small; the 20 ms poll is not worth replacing for speed.
 
 ### Isosurface at 1σ: not the mesh
 

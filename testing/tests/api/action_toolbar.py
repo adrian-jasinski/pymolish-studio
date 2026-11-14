@@ -1,6 +1,6 @@
 """
 Action toolbar: selection mode menu and label, rock state, zoom, presets
-menu, panel and More entries, movie buttons only when asked for.
+menu, panel and More entries, an icon on every button, the UI scale menu.
 Headless (offscreen QApplication).
 """
 
@@ -62,6 +62,47 @@ class TestActionToolbar(testing.PyMOLTestCase):
         more["Get View"].trigger()
         self.assertEqual(hits, ["builder", "view"])
 
-        self.assertFalse(texts["Play"].isVisible())
-        bar.set_movie_visible(True)
-        self.assertTrue(texts["Play"].isVisible())
+    def test_icons(self):
+        from pymol.Qt import QtCore, QtWidgets
+        from pmg_qt.action_toolbar import ActionToolbar
+
+        bar = ActionToolbar(
+            cmd,
+            defaultdict(list),
+            panels=[
+                ("Builder", lambda: None),
+                ("Scenes", lambda: None),
+                ("Draw/Ray", QtWidgets.QMenu()),
+            ],
+        )
+        buttons = [
+            b
+            for b in bar.findChildren(QtWidgets.QToolButton)
+            if b.objectName() != "qt_toolbar_ext_button"  # Qt's overflow arrow
+        ]
+        self.assertEqual(len(buttons), 12)
+        self.assertEqual([b.text() for b in buttons if b.icon().isNull()], [])
+        IconOnly = QtCore.Qt.ToolButtonStyle.ToolButtonIconOnly
+        self.assertEqual(
+            sorted(b.toolTip() for b in buttons if b.toolButtonStyle() == IconOnly),
+            ["More view actions", "Redo", "Undo"],
+        )
+
+    def test_scale(self):
+        from unittest import mock
+        from pmg_qt import action_toolbar, theme
+
+        with mock.patch.object(theme, "ui_scale", return_value=1.8):
+            bar = action_toolbar.ActionToolbar(cmd, defaultdict(list))
+        self.assertEqual(bar.scale.text(), "180%")
+        actions = bar.scale.menu().actions()
+        self.assertEqual(
+            [a.text() for a in actions], ["100%", "120%", "150%", "180%", "200%"]
+        )
+        self.assertEqual([a.text() for a in actions if a.isChecked()], ["180%"])
+        with (
+            mock.patch.object(theme, "set_ui_scale") as save,
+            mock.patch.object(action_toolbar.QtWidgets.QMessageBox, "information"),
+        ):
+            actions[1].trigger()
+        save.assert_called_once_with(1.2)

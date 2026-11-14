@@ -1148,12 +1148,12 @@ void RayRenderVRML1(CRay * I, int width, int height,
   RayExpandPrimitives(I);
   RayTransformFirst(I, 0, false);
 
-  strcpy(buffer, "#VRML V1.0 ascii\n\n");
+  UtilNCopy(buffer, "#VRML V1.0 ascii\n\n", std::size(buffer));
   UtilConcatVLA(&vla, &cc, buffer);
 
   UtilConcatVLA(&vla, &cc, "MaterialBinding { value OVERALL }\n");
 
-  sprintf(buffer,
+  snprintf(buffer, std::size(buffer),
           "Material {\n ambientColor 0 0 0\n diffuseColor 1 1 1\n specularColor 1 1 1\nshininess 0.2\n}\n");
   UtilConcatVLA(&vla, &cc, buffer);
 
@@ -1169,7 +1169,7 @@ void RayRenderVRML1(CRay * I, int width, int height,
     UtilConcatVLA(&vla, &cc, "matrix 1.0 0.0 0.0 0.0\n");
     UtilConcatVLA(&vla, &cc, "       0.0 1.0 0.0 0.0\n");
     UtilConcatVLA(&vla, &cc, "       0.0 0.0 1.0 0.0\n");
-    sprintf(buffer, "    %8.6f %8.6f %8.6f 1.0\n",
+    snprintf(buffer, std::size(buffer), "    %8.6f %8.6f %8.6f 1.0\n",
             (I->Volume[0] + I->Volume[1]) / 2, (I->Volume[2] + I->Volume[3]) / 2, 0.0F);
     UtilConcatVLA(&vla, &cc, buffer);
     UtilConcatVLA(&vla, &cc, "}\n");
@@ -1179,16 +1179,16 @@ void RayRenderVRML1(CRay * I, int width, int height,
       vert = base->Vertex + 3 * (prim->vert);
       switch (prim->type) {
       case cPrimSphere:
-        sprintf(buffer,
+        snprintf(buffer, std::size(buffer),
                 "Material {\ndiffuseColor %6.4f %6.4f %6.4f\n}\n\n",
                 prim->c1[0], prim->c1[1], prim->c1[2]);
         UtilConcatVLA(&vla, &cc, buffer);
         UtilConcatVLA(&vla, &cc, "Separator {\n");
-        sprintf(buffer,
+        snprintf(buffer, std::size(buffer),
                 "Transform {\ntranslation %8.6f %8.6f %8.6f\nscaleFactor %8.6f %8.6f %8.6f\n}\n",
                 vert[0], vert[1], vert[2] - z_corr, prim->r1, prim->r1, prim->r1);
         UtilConcatVLA(&vla, &cc, buffer);
-        sprintf(buffer, "Sphere {}\n");
+        snprintf(buffer, std::size(buffer), "Sphere {}\n");
         UtilConcatVLA(&vla, &cc, buffer);
         UtilConcatVLA(&vla, &cc, "}\n\n");
         break;
@@ -1274,7 +1274,7 @@ void RayRenderVRML2(CRay * I, int width, int height,
   UtilConcatVLA(&vla, &cc, "#VRML V2.0 utf8\n"  /* WLD: most VRML2 readers req. utf8 */
                 "\n");
   if(!identity) {
-    sprintf(buffer, "Viewpoint {\n" " position 0 0 %6.8f\n" " orientation 1 0 0 0\n" " description \"Z view\"\n" " fieldOfView %8.6f\n" /* WLD: use correct FOV */
+    snprintf(buffer, std::size(buffer), "Viewpoint {\n" " position 0 0 %6.8f\n" " orientation 1 0 0 0\n" " description \"Z view\"\n" " fieldOfView %8.6f\n" /* WLD: use correct FOV */
             "}\n"
             /* WLD: only write the viewpoint which matches PyMOL
                "Viewpoint {\n"
@@ -1300,7 +1300,7 @@ void RayRenderVRML2(CRay * I, int width, int height,
     auto lightv = SettingGet<const float*>(I->G, cSetting_light);
     copy3f(lightv, light);
     normalize3f(light);
-    sprintf(buffer,
+    snprintf(buffer, std::size(buffer),
             "DirectionalLight {\n"
             " direction %8.6f %8.6f %8.3f\n" "}\n", light[0], light[1], light[2]);
     UtilConcatVLA(&vla, &cc, buffer);
@@ -1340,9 +1340,9 @@ void RayRenderVRML2(CRay * I, int width, int height,
         for(b = mesh_start; b < a; b++) {
           cprim = I->Primitive + b;
           if(TriangleReverse(cprim))
-            sprintf(buffer, "%d %d %d -1,\n", tri, tri + 2, tri + 1);
+            snprintf(buffer, std::size(buffer), "%d %d %d -1,\n", tri, tri + 2, tri + 1);
           else
-            sprintf(buffer, "%d %d %d -1,\n", tri, tri + 1, tri + 2);
+            snprintf(buffer, std::size(buffer), "%d %d %d -1,\n", tri, tri + 1, tri + 2);
           UtilConcatVLA(&vla, &cc, buffer);
           tri += 3;
         }
@@ -1353,7 +1353,7 @@ void RayRenderVRML2(CRay * I, int width, int height,
                       "  colorPerVertex TRUE\n" "  color Color {\n" "   color [\n");
         for(b = mesh_start; b < a; b++) {
           cprim = I->Primitive + b;
-          sprintf(buffer,
+          snprintf(buffer, std::size(buffer),
                   "%6.4f %6.4f %6.4f,\n"
                   "%6.4f %6.4f %6.4f,\n"
                   "%6.4f %6.4f %6.4f,\n",
@@ -1371,7 +1371,7 @@ void RayRenderVRML2(CRay * I, int width, int height,
           cprim = I->Primitive + b;
           {
             float *norm = base->Normal + 3 * base->Vert2Normal[cprim->vert];
-            sprintf(buffer, "%6.4f %6.4f %6.4f,\n" "%6.4f %6.4f %6.4f,\n" "%6.4f %6.4f %6.4f,\n", norm[3], norm[4], norm[5],    /* transformed cprim->n1 */
+            snprintf(buffer, std::size(buffer), "%6.4f %6.4f %6.4f,\n" "%6.4f %6.4f %6.4f,\n" "%6.4f %6.4f %6.4f,\n", norm[3], norm[4], norm[5],    /* transformed cprim->n1 */
                     norm[6], norm[7], norm[8],  /* transformed cprim->n2 */
                     norm[9], norm[10], norm[11]);       /* transformed cprim->n3 */
             UtilConcatVLA(&vla, &cc, buffer);
@@ -1382,9 +1382,9 @@ void RayRenderVRML2(CRay * I, int width, int height,
         for(b = mesh_start; b < a; b++) {
           cprim = I->Primitive + b;
           if(TriangleReverse(cprim))
-            sprintf(buffer, "%d %d %d -1,\n", tri, tri + 2, tri + 1);
+            snprintf(buffer, std::size(buffer), "%d %d %d -1,\n", tri, tri + 2, tri + 1);
           else
-            sprintf(buffer, "%d %d %d -1,\n", tri, tri + 1, tri + 2);
+            snprintf(buffer, std::size(buffer), "%d %d %d -1,\n", tri, tri + 1, tri + 2);
           UtilConcatVLA(&vla, &cc, buffer);
           tri += 3;
         }
@@ -1396,7 +1396,7 @@ void RayRenderVRML2(CRay * I, int width, int height,
 
       switch (prim->type) {
       case cPrimSphere:
-        sprintf(buffer,
+        snprintf(buffer, std::size(buffer),
                 "Transform {\n"
                 " translation %8.6f %8.6f %8.6f\n"
                 " children Shape {\n"
@@ -1454,7 +1454,7 @@ void RayRenderVRML2(CRay * I, int width, int height,
           add3f(vert, vert2, vert2);
           if(prim->type == cPrimSausage) {
             OrthoLineType geom_add;
-            sprintf(geometry,
+            snprintf(geometry, std::size(geometry),
                     "  Shape {\n"
                     "   geometry Cylinder {\n"
                     "    radius %8.6f\n"
@@ -1471,7 +1471,7 @@ void RayRenderVRML2(CRay * I, int width, int height,
                     (prim->c1[0] + prim->c2[0]) / 2,
                     (prim->c1[1] + prim->c2[1]) / 2, (prim->c1[2] + prim->c2[2]) / 2);
             /* WLD: format string split to comply with ISO C89 standards */
-            sprintf(geom_add,
+            snprintf(geom_add, std::size(geom_add),
                     "  }\n"
                     "  Transform {\n"
                     "   translation 0.0 %8.6f 0.0\n"
@@ -1485,9 +1485,9 @@ void RayRenderVRML2(CRay * I, int width, int height,
                     "   }\n"
                     "  }\n", prim->l1 / 2, prim->r1, prim->c1[0], prim->c1[1], prim->c1[2]
               );
-            strcat(geometry, geom_add);
+            UtilNConcat(geometry, geom_add, std::size(geometry));
             /* WLD: format string split to comply with ISO C89 standards */
-            sprintf(geom_add,
+            snprintf(geom_add, std::size(geom_add),
                     "  Transform {\n"
                     "   translation 0.0 %8.6f 0.0\n"
                     "   children Shape {\n"
@@ -1500,9 +1500,9 @@ void RayRenderVRML2(CRay * I, int width, int height,
                     "   }\n"
                     "  }\n",
                     -prim->l1 / 2, prim->r1, prim->c2[0], prim->c2[1], prim->c2[2]);
-            strcat(geometry, geom_add);
+            UtilNConcat(geometry, geom_add, std::size(geometry));
           } else {
-            sprintf(geometry,
+            snprintf(geometry, std::size(geometry),
                     "  Shape {\n"
                     "   geometry Cylinder {\n"
                     "    radius %8.6f\n"
@@ -1518,7 +1518,7 @@ void RayRenderVRML2(CRay * I, int width, int height,
                     (prim->c1[0] + prim->c2[0]) / 2,
                     (prim->c1[1] + prim->c2[1]) / 2, (prim->c1[2] + prim->c2[2]) / 2);
           }
-          sprintf(buffer,
+          snprintf(buffer, std::size(buffer),
                   "Transform {\n"
                   " translation %8.6f %8.6f %8.6f\n"
                   " rotation %8.6f %8.6f %8.6f %8.6f\n"
@@ -1534,7 +1534,7 @@ void RayRenderVRML2(CRay * I, int width, int height,
         break;
       case cPrimTriangle:
         /* output coords. connectivity and vertex colors handled above/below */
-        sprintf(buffer,
+        snprintf(buffer, std::size(buffer),
                 "%8.6f %8.6f %8.6f,\n"
                 "%8.6f %8.6f %8.6f,\n"
                 "%8.6f %8.6f %8.6f,\n",
@@ -1555,9 +1555,9 @@ void RayRenderVRML2(CRay * I, int width, int height,
       for(b = mesh_start; b < a; b++) {
         cprim = I->Primitive + b;
         if(TriangleReverse(cprim))
-          sprintf(buffer, "%d %d %d -1,\n", tri, tri + 2, tri + 1);
+          snprintf(buffer, std::size(buffer), "%d %d %d -1,\n", tri, tri + 2, tri + 1);
         else
-          sprintf(buffer, "%d %d %d -1,\n", tri, tri + 1, tri + 2);
+          snprintf(buffer, std::size(buffer), "%d %d %d -1,\n", tri, tri + 1, tri + 2);
         UtilConcatVLA(&vla, &cc, buffer);
         tri += 3;
       }
@@ -1567,7 +1567,7 @@ void RayRenderVRML2(CRay * I, int width, int height,
                     "  ]\n" "  colorPerVertex TRUE\n" "  color Color {\n" "   color [\n");
       for(b = mesh_start; b < a; b++) {
         cprim = I->Primitive + b;
-        sprintf(buffer,
+        snprintf(buffer, std::size(buffer),
                 "%6.4f %6.4f %6.4f,\n"
                 "%6.4f %6.4f %6.4f,\n"
                 "%6.4f %6.4f %6.4f,\n",
@@ -1585,7 +1585,7 @@ void RayRenderVRML2(CRay * I, int width, int height,
         cprim = I->Primitive + b;
         {
           float *norm = base->Normal + 3 * base->Vert2Normal[cprim->vert];
-          sprintf(buffer, "%6.4f %6.4f %6.4f,\n" "%6.4f %6.4f %6.4f,\n" "%6.4f %6.4f %6.4f,\n", norm[3], norm[4], norm[5],      /* transformed cprim->n1 */
+          snprintf(buffer, std::size(buffer), "%6.4f %6.4f %6.4f,\n" "%6.4f %6.4f %6.4f,\n" "%6.4f %6.4f %6.4f,\n", norm[3], norm[4], norm[5],      /* transformed cprim->n1 */
                   norm[6], norm[7], norm[8],    /* transformed cprim->n2 */
                   norm[9], norm[10], norm[11]); /* transformed cprim->n3 */
           UtilConcatVLA(&vla, &cc, buffer);
@@ -1596,9 +1596,9 @@ void RayRenderVRML2(CRay * I, int width, int height,
       for(b = mesh_start; b < a; b++) {
         cprim = I->Primitive + b;
         if(TriangleReverse(cprim))
-          sprintf(buffer, "%d %d %d -1,\n", tri, tri + 2, tri + 1);
+          snprintf(buffer, std::size(buffer), "%d %d %d -1,\n", tri, tri + 2, tri + 1);
         else
-          sprintf(buffer, "%d %d %d -1,\n", tri, tri + 1, tri + 2);
+          snprintf(buffer, std::size(buffer), "%d %d %d -1,\n", tri, tri + 1, tri + 2);
         UtilConcatVLA(&vla, &cc, buffer);
         tri += 3;
       }
@@ -1857,7 +1857,7 @@ static ov_size idtf_dump_model_nodes(char **vla, ov_size cnt,
 
     UtilConcatVLA(vla, &cnt, "NODE \"MODEL\" {\n");
 
-    sprintf(buffer, "\tNODE_NAME \"Mesh%d\"\n", a);
+    snprintf(buffer, std::size(buffer), "\tNODE_NAME \"Mesh%d\"\n", a);
     UtilConcatVLA(vla, &cnt, buffer);
 
     UtilConcatVLA(vla, &cnt, "\tPARENT_LIST {\n");
@@ -1873,7 +1873,7 @@ static ov_size idtf_dump_model_nodes(char **vla, ov_size cnt,
     UtilConcatVLA(vla, &cnt, "\t\t}\n");
     UtilConcatVLA(vla, &cnt, "\t}\n");
 
-    sprintf(buffer, "\tRESOURCE_NAME \"Mesh%d\"\n", a);
+    snprintf(buffer, std::size(buffer), "\tRESOURCE_NAME \"Mesh%d\"\n", a);
     UtilConcatVLA(vla, &cnt, buffer);
 
     UtilConcatVLA(vla, &cnt, "}\n\n");
@@ -1923,20 +1923,20 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
 
     UtilConcatVLA(vla, &cnt, "RESOURCE_LIST \"SHADER\" {\n");
 
-    sprintf(buffer, "\tRESOURCE_COUNT %d\n", n_color);
+    snprintf(buffer, std::size(buffer), "\tRESOURCE_COUNT %d\n", n_color);
     UtilConcatVLA(vla, &cnt, buffer);
 
     {
       int c;
       for(c = 0; c < n_color; c++) {
 
-        sprintf(buffer, "\tRESOURCE %d {\n", c);
+        snprintf(buffer, std::size(buffer), "\tRESOURCE %d {\n", c);
         UtilConcatVLA(vla, &cnt, buffer);
 
-        sprintf(buffer, "\t\tRESOURCE_NAME \"Shader%06d\"\n", c);
+        snprintf(buffer, std::size(buffer), "\t\tRESOURCE_NAME \"Shader%06d\"\n", c);
         UtilConcatVLA(vla, &cnt, buffer);
 
-        sprintf(buffer, "\t\tSHADER_MATERIAL_NAME \"Material%06d\"\n", c);
+        snprintf(buffer, std::size(buffer), "\t\tSHADER_MATERIAL_NAME \"Material%06d\"\n", c);
         UtilConcatVLA(vla, &cnt, buffer);
 
         UtilConcatVLA(vla, &cnt, "\t\tSHADER_ACTIVE_TEXTURE_COUNT 0\n");
@@ -1952,7 +1952,7 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
 
     UtilConcatVLA(vla, &cnt, "RESOURCE_LIST \"MATERIAL\" {\n");
 
-    sprintf(buffer, "\tRESOURCE_COUNT %d\n", n_color);
+    snprintf(buffer, std::size(buffer), "\tRESOURCE_COUNT %d\n", n_color);
     UtilConcatVLA(vla, &cnt, buffer);
 
     {
@@ -1960,26 +1960,26 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
       float *fp = material->color_list;
 
       for(c = 0; c < n_color; c++) {
-        sprintf(buffer, "\tRESOURCE %d {\n", c);
+        snprintf(buffer, std::size(buffer), "\tRESOURCE %d {\n", c);
         UtilConcatVLA(vla, &cnt, buffer);
-        sprintf(buffer, "\t\tRESOURCE_NAME \"Material%06d\"\n", c);
+        snprintf(buffer, std::size(buffer), "\t\tRESOURCE_NAME \"Material%06d\"\n", c);
         UtilConcatVLA(vla, &cnt, buffer);
 
-        sprintf(buffer, "\t\tMATERIAL_AMBIENT %0.6f %0.6f %0.6f\n",
+        snprintf(buffer, std::size(buffer), "\t\tMATERIAL_AMBIENT %0.6f %0.6f %0.6f\n",
                 fp[0] * 0, fp[1] * 0, fp[2] * 0);
         UtilConcatVLA(vla, &cnt, buffer);
 
-        sprintf(buffer, "\t\tMATERIAL_DIFFUSE %0.6f %0.6f %0.6f\n", fp[0], fp[1], fp[2]);
+        snprintf(buffer, std::size(buffer), "\t\tMATERIAL_DIFFUSE %0.6f %0.6f %0.6f\n", fp[0], fp[1], fp[2]);
         UtilConcatVLA(vla, &cnt, buffer);
 
         UtilConcatVLA(vla, &cnt, "\t\tMATERIAL_SPECULAR 0.750000 0.750000 0.750000\n");
 
-        sprintf(buffer, "\t\tMATERIAL_EMISSIVE %0.6f %0.6f %0.6f\n",
+        snprintf(buffer, std::size(buffer), "\t\tMATERIAL_EMISSIVE %0.6f %0.6f %0.6f\n",
                 fp[0] * 0.13, fp[1] * 0.13, fp[2] * 0.13);
         UtilConcatVLA(vla, &cnt, buffer);
         UtilConcatVLA(vla, &cnt, "\t\tMATERIAL_REFLECTIVITY 0.40000\n");
 
-        sprintf(buffer, "\t\tMATERIAL_OPACITY %0.6f\n", fp[3]);
+        snprintf(buffer, std::size(buffer), "\t\tMATERIAL_OPACITY %0.6f\n", fp[3]);
         UtilConcatVLA(vla, &cnt, buffer);
 
         UtilConcatVLA(vla, &cnt, "\t}\n");
@@ -1995,7 +1995,7 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
     OrthoLineType buffer;
     UtilConcatVLA(vla, &cnt, "RESOURCE_LIST \"MODEL\" {\n");
 
-    sprintf(buffer, "\tRESOURCE_COUNT %d\n", n_mesh);
+    snprintf(buffer, std::size(buffer), "\tRESOURCE_COUNT %d\n", n_mesh);
     UtilConcatVLA(vla, &cnt, buffer);
 
     {
@@ -2003,28 +2003,28 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
       IdtfResourceMesh *mesh = mesh_vla;
       for(a = 0; a < n_mesh; a++) {
 
-        sprintf(buffer, "\tRESOURCE %d {\n", a);
+        snprintf(buffer, std::size(buffer), "\tRESOURCE %d {\n", a);
         UtilConcatVLA(vla, &cnt, buffer);
 
-        sprintf(buffer, "\t\tRESOURCE_NAME \"Mesh%d\"\n", a);
+        snprintf(buffer, std::size(buffer), "\t\tRESOURCE_NAME \"Mesh%d\"\n", a);
         UtilConcatVLA(vla, &cnt, buffer);
 
         UtilConcatVLA(vla, &cnt, "\t\tMODEL_TYPE \"MESH\"\n");
         UtilConcatVLA(vla, &cnt, "\t\tMESH {\n");
 
-        sprintf(buffer, "\t\t\tFACE_COUNT %d\n", mesh->face_count);
+        snprintf(buffer, std::size(buffer), "\t\t\tFACE_COUNT %d\n", mesh->face_count);
         UtilConcatVLA(vla, &cnt, buffer);
 
-        sprintf(buffer, "\t\t\tMODEL_POSITION_COUNT %d\n", mesh->position_count);
+        snprintf(buffer, std::size(buffer), "\t\t\tMODEL_POSITION_COUNT %d\n", mesh->position_count);
         UtilConcatVLA(vla, &cnt, buffer);
 
-        sprintf(buffer, "\t\t\tMODEL_NORMAL_COUNT %d\n", mesh->normal_count);
+        snprintf(buffer, std::size(buffer), "\t\t\tMODEL_NORMAL_COUNT %d\n", mesh->normal_count);
         UtilConcatVLA(vla, &cnt, buffer);
 #ifdef IDTF_COLOR
-        sprintf(buffer, "\t\t\tMODEL_DIFFUSE_COLOR_COUNT %d\n", mesh->color_count);
+        snprintf(buffer, std::size(buffer), "\t\t\tMODEL_DIFFUSE_COLOR_COUNT %d\n", mesh->color_count);
         UtilConcatVLA(vla, &cnt, buffer);
 
-        sprintf(buffer, "\t\t\tMODEL_SPECULAR_COLOR_COUNT %d\n", mesh->color_count);
+        snprintf(buffer, std::size(buffer), "\t\t\tMODEL_SPECULAR_COLOR_COUNT %d\n", mesh->color_count);
         UtilConcatVLA(vla, &cnt, buffer);
 #else
         UtilConcatVLA(vla, &cnt, "\t\t\tMODEL_DIFFUSE_COLOR_COUNT 0\n");
@@ -2036,7 +2036,7 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
         {
           int n_color = material->color_count;
 
-          sprintf(buffer, "\t\t\tMODEL_SHADING_COUNT %d\n", n_color);
+          snprintf(buffer, std::size(buffer), "\t\t\tMODEL_SHADING_COUNT %d\n", n_color);
           UtilConcatVLA(vla, &cnt, buffer);
 
           UtilConcatVLA(vla, &cnt, "\t\t\tMODEL_SHADING_DESCRIPTION_LIST {\n");
@@ -2045,12 +2045,12 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
             int c;
             for(c = 0; c < n_color; c++) {
 
-              sprintf(buffer, "\t\t\t\tSHADING_DESCRIPTION %d {\n", c);
+              snprintf(buffer, std::size(buffer), "\t\t\t\tSHADING_DESCRIPTION %d {\n", c);
               UtilConcatVLA(vla, &cnt, buffer);
 
               UtilConcatVLA(vla, &cnt, "\t\t\t\tTEXTURE_LAYER_COUNT 0\n");
 
-              sprintf(buffer, "\t\t\t\tSHADER_ID %d\n", c + 1);
+              snprintf(buffer, std::size(buffer), "\t\t\t\tSHADER_ID %d\n", c + 1);
               UtilConcatVLA(vla, &cnt, buffer);
 
               UtilConcatVLA(vla, &cnt, "\t\t\t\t}\n");
@@ -2065,7 +2065,7 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
           UtilConcatVLA(vla, &cnt, "\t\t\tMESH_FACE_POSITION_LIST {\n");
 
           for(b = 0; b < mesh->face_count; b++) {
-            sprintf(buffer, "\t\t\t%d %d %d\n", ip[0], ip[1], ip[2]);
+            snprintf(buffer, std::size(buffer), "\t\t\t%d %d %d\n", ip[0], ip[1], ip[2]);
             UtilConcatVLA(vla, &cnt, buffer);
             ip += 3;
           }
@@ -2078,7 +2078,7 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
           UtilConcatVLA(vla, &cnt, "\t\t\tMESH_FACE_NORMAL_LIST {\n");
 
           for(b = 0; b < mesh->face_count; b++) {
-            sprintf(buffer, "\t\t\t%d %d %d\n", ip[0], ip[1], ip[2]);
+            snprintf(buffer, std::size(buffer), "\t\t\t%d %d %d\n", ip[0], ip[1], ip[2]);
             UtilConcatVLA(vla, &cnt, buffer);
             ip += 3;
           }
@@ -2091,7 +2091,7 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
           UtilConcatVLA(vla, &cnt, "\t\t\tMESH_FACE_SHADING_LIST {\n");
 
           for(b = 0; b < mesh->face_count; b++) {
-            sprintf(buffer, "\t\t\t%d\n", ip[0]);
+            snprintf(buffer, std::size(buffer), "\t\t\t%d\n", ip[0]);
             UtilConcatVLA(vla, &cnt, buffer);
             ip++;
           }
@@ -2105,7 +2105,7 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
           UtilConcatVLA(vla, &cnt, "\t\t\tMESH_FACE_DIFFUSE_COLOR_LIST {\n");
 
           for(b = 0; b < mesh->face_count; b++) {
-            sprintf(buffer, "\t\t\t%d %d %d\n", ip[0], ip[1], ip[2]);
+            snprintf(buffer, std::size(buffer), "\t\t\t%d %d %d\n", ip[0], ip[1], ip[2]);
             UtilConcatVLA(vla, &cnt, buffer);
             ip += 3;
           }
@@ -2117,7 +2117,7 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
           UtilConcatVLA(vla, &cnt, "\t\t\tMESH_FACE_SPECULAR_COLOR_LIST {\n");
 
           for(b = 0; b < mesh->face_count; b++) {
-            sprintf(buffer, "\t\t\t%d %d %d\n", ip[0], ip[1], ip[2]);
+            snprintf(buffer, std::size(buffer), "\t\t\t%d %d %d\n", ip[0], ip[1], ip[2]);
             UtilConcatVLA(vla, &cnt, buffer);
             ip += 3;
           }
@@ -2131,7 +2131,7 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
           UtilConcatVLA(vla, &cnt, "\t\t\tMODEL_POSITION_LIST {\n");
 
           for(b = 0; b < mesh->position_count; b++) {
-            sprintf(buffer, "\t\t\t\t%1.6f %1.6f %1.6f\n", fp[0], fp[1], fp[2]);
+            snprintf(buffer, std::size(buffer), "\t\t\t\t%1.6f %1.6f %1.6f\n", fp[0], fp[1], fp[2]);
             UtilConcatVLA(vla, &cnt, buffer);
             fp += 3;
           }
@@ -2145,7 +2145,7 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
           UtilConcatVLA(vla, &cnt, "\t\t\tMODEL_NORMAL_LIST {\n");
 
           for(b = 0; b < mesh->normal_count; b++) {
-            sprintf(buffer, "\t\t\t\t%1.6f %1.6f %1.6f\n", fp[0], fp[1], fp[2]);
+            snprintf(buffer, std::size(buffer), "\t\t\t\t%1.6f %1.6f %1.6f\n", fp[0], fp[1], fp[2]);
             UtilConcatVLA(vla, &cnt, buffer);
             fp += 3;
           }
@@ -2159,7 +2159,7 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
           UtilConcatVLA(vla, &cnt, "\t\t\tMODEL_DIFFUSE_COLOR_LIST {\n");
 
           for(b = 0; b < mesh->color_count; b++) {
-            sprintf(buffer, "\t\t\t\t%1.6f %1.6f %1.6f %1.6f\n", fp[0], fp[1], fp[2],
+            snprintf(buffer, std::size(buffer), "\t\t\t\t%1.6f %1.6f %1.6f %1.6f\n", fp[0], fp[1], fp[2],
                     fp[3]);
             UtilConcatVLA(vla, &cnt, buffer);
             fp += 4;
@@ -2173,7 +2173,7 @@ static ov_size idtf_dump_resources(char **vla, ov_size cnt,
           UtilConcatVLA(vla, &cnt, "\t\t\tMODEL_SPECULAR_COLOR_LIST {\n");
 
           for(b = 0; b < mesh->color_count; b++) {
-            sprintf(buffer, "\t\t\t\t%1.6f %1.6f %1.6f %1.6f\n", fp[0], fp[1], fp[2],
+            snprintf(buffer, std::size(buffer), "\t\t\t\t%1.6f %1.6f %1.6f %1.6f\n", fp[0], fp[1], fp[2],
                     fp[3]);
             UtilConcatVLA(vla, &cnt, buffer);
             fp += 4;
@@ -2457,23 +2457,23 @@ void RayRenderObjMtl(CRay * I, int width, int height, char **objVLA_ptr,
       norm = base->Normal + 3 * base->Vert2Normal[prim->vert] + 3;
       switch (prim->type) {
       case cPrimTriangle:
-        sprintf(buffer, "v %8.6f %8.6f %8.6f\n", vert[0], vert[1], vert[2] - z_corr);
+        snprintf(buffer, std::size(buffer), "v %8.6f %8.6f %8.6f\n", vert[0], vert[1], vert[2] - z_corr);
         UtilConcatVLA(&objVLA, &oc, buffer);
-        sprintf(buffer, "v %8.6f %8.6f %8.6f\n", vert[3], vert[4], vert[5] - z_corr);
+        snprintf(buffer, std::size(buffer), "v %8.6f %8.6f %8.6f\n", vert[3], vert[4], vert[5] - z_corr);
         UtilConcatVLA(&objVLA, &oc, buffer);
-        sprintf(buffer, "v %8.6f %8.6f %8.6f\n", vert[6], vert[7], vert[8] - z_corr);
+        snprintf(buffer, std::size(buffer), "v %8.6f %8.6f %8.6f\n", vert[6], vert[7], vert[8] - z_corr);
         UtilConcatVLA(&objVLA, &oc, buffer);
-        sprintf(buffer, "vn %8.6f %8.6f %8.6f\n", norm[0], norm[1], norm[2]);
+        snprintf(buffer, std::size(buffer), "vn %8.6f %8.6f %8.6f\n", norm[0], norm[1], norm[2]);
         UtilConcatVLA(&objVLA, &oc, buffer);
-        sprintf(buffer, "vn %8.6f %8.6f %8.6f\n", norm[3], norm[4], norm[5]);
+        snprintf(buffer, std::size(buffer), "vn %8.6f %8.6f %8.6f\n", norm[3], norm[4], norm[5]);
         UtilConcatVLA(&objVLA, &oc, buffer);
-        sprintf(buffer, "vn %8.6f %8.6f %8.6f\n", norm[6], norm[7], norm[8]);
+        snprintf(buffer, std::size(buffer), "vn %8.6f %8.6f %8.6f\n", norm[6], norm[7], norm[8]);
         UtilConcatVLA(&objVLA, &oc, buffer);
         if(TriangleReverse(prim)) {
-          sprintf(buffer, "f %d//%d %d//%d %d//%d\n",
+          snprintf(buffer, std::size(buffer), "f %d//%d %d//%d %d//%d\n",
                   vc + 1, nc + 1, vc + 3, nc + 3, vc + 2, nc + 2);
         } else {
-          sprintf(buffer, "f %d//%d %d//%d %d//%d\n",
+          snprintf(buffer, std::size(buffer), "f %d//%d %d//%d %d//%d\n",
                   vc + 1, nc + 1, vc + 2, nc + 2, vc + 3, nc + 3);
         }
         UtilConcatVLA(&objVLA, &oc, buffer);
@@ -2494,13 +2494,13 @@ void RayRenderObjMtl(CRay * I, int width, int height, char **objVLA_ptr,
            vert[0],vert[1],vert[2]-z_corr,vc+1);
            UtilConcatVLA(&objVLA,&oc,buffer); */
 
-        sprintf(buffer, "v %8.6f %8.6f %8.6f\n", vert[0], vert[1], vert[2] - z_corr);
+        snprintf(buffer, std::size(buffer), "v %8.6f %8.6f %8.6f\n", vert[0], vert[1], vert[2] - z_corr);
         UtilConcatVLA(&objVLA, &oc, buffer);
-        sprintf(buffer, "v %8.6f %8.6f %8.6f\n", vert[0], vert[1], vert[2] - z_corr);
+        snprintf(buffer, std::size(buffer), "v %8.6f %8.6f %8.6f\n", vert[0], vert[1], vert[2] - z_corr);
         UtilConcatVLA(&objVLA, &oc, buffer);
-        sprintf(buffer, "v %8.6f %8.6f %8.6f\n", vert[0], vert[1], vert[2] - z_corr);
+        snprintf(buffer, std::size(buffer), "v %8.6f %8.6f %8.6f\n", vert[0], vert[1], vert[2] - z_corr);
         UtilConcatVLA(&objVLA, &oc, buffer);
-        sprintf(buffer, "f %d %d %d\n", vc + 1, vc + 2, vc + 3);
+        snprintf(buffer, std::size(buffer), "f %d %d %d\n", vc + 1, vc + 2, vc + 3);
         UtilConcatVLA(&objVLA, &oc, buffer);
         vc += 3;
         break;
@@ -2594,10 +2594,10 @@ void RayRenderPOV(CRay * I, int width, int height, char **headerVLA_ptr,
     int ortho = SettingGetGlobal_b(I->G, cSetting_ortho);
     if(!identity) {
       if(!ortho) {
-        sprintf(buffer, "camera {direction<0.0,0.0,%8.3f>\n location <0.0 , 0.0 , 0.0>\n right %12.10f*x up y \n }\n", -57.3F * cos(fov * cPI / (180 * 2.4)) / fov,     /* by trial and error */
+        snprintf(buffer, std::size(buffer), "camera {direction<0.0,0.0,%8.3f>\n location <0.0 , 0.0 , 0.0>\n right %12.10f*x up y \n }\n", -57.3F * cos(fov * cPI / (180 * 2.4)) / fov,     /* by trial and error */
                 I->Range[0] / I->Range[1]);
       } else {
-        sprintf(buffer,
+        snprintf(buffer, std::size(buffer),
                 "camera {orthographic location <0.0 , 0.0 , %12.10f>\nlook_at  <0.0 , 0.0 , -1.0> right %12.10f*x up %12.10f*y}\n",
                 front, -I->Range[0], I->Range[1]);
       }
@@ -2613,14 +2613,14 @@ void RayRenderPOV(CRay * I, int width, int height, char **headerVLA_ptr,
       add3f(look, loc, loc);
 
       if(!ortho) {
-        sprintf(buffer,
+        snprintf(buffer, std::size(buffer),
                 "camera {angle %12.10f sky<%12.10f,%12.10f,%12.10f>\nlocation<%12.10f,%12.10f,%12.10f>\nlook_at<%12.10f,%12.10f,%12.10f> right %12.10f*x up y }\n",
                 fov * I->Range[0] / I->Range[1],
                 view[1], view[5], view[9],
                 loc[0], loc[1], loc[2],
                 look[0], look[1], look[2], -I->Range[0] / I->Range[1]);
       } else {
-        sprintf(buffer,
+        snprintf(buffer, std::size(buffer),
                 "camera {orthographic sky<%12.10f,%12.10f,%12.10f>\nlocation<%12.10f,%12.10f,%12.10f>\nlook_at<%12.10f,%12.10f,%12.10f> right %12.10f*x up %12.10f*y}\n",
                 view[1], view[5], view[9],
                 loc[0], loc[1], loc[2],
@@ -2640,7 +2640,7 @@ void RayRenderPOV(CRay * I, int width, int height, char **headerVLA_ptr,
 
     reflect = 1.2F - 1.5F * ambient;
 
-    sprintf(buffer,
+    snprintf(buffer, std::size(buffer),
             "#default { finish{phong %8.3f ambient %8.3f diffuse %8.3f phong_size %8.6f}}\n",
             SettingGetGlobal_f(I->G, cSetting_spec_reflect), ambient, reflect, spec_power);
     UtilConcatVLA(&headerVLA, &hc, buffer);
@@ -2675,7 +2675,7 @@ void RayRenderPOV(CRay * I, int width, int height, char **headerVLA_ptr,
       MatrixInvTransformC44fAs33f3f(view, lite, lite);
       add3f(look, lite, lite);
     }
-    sprintf(buffer, "light_source{<%6.4f,%6.4f,%6.4f>  rgb<1.0,1.0,1.0>}\n",
+    snprintf(buffer, std::size(buffer), "light_source{<%6.4f,%6.4f,%6.4f>  rgb<1.0,1.0,1.0>}\n",
             lite[0], lite[1], lite[2]);
     UtilConcatVLA(&headerVLA, &hc, buffer);
   }
@@ -2686,7 +2686,7 @@ void RayRenderPOV(CRay * I, int width, int height, char **headerVLA_ptr,
       opaque_back = SettingGetGlobal_i(I->G, cSetting_opaque_background);
 
     if(opaque_back) {           /* drop a plane into the background for the background color */
-      sprintf(buffer,
+      snprintf(buffer, std::size(buffer),
               "plane{z , %6.4f \n pigment{color rgb<%6.4f,%6.4f,%6.4f>}\n finish{phong 0 specular 0 diffuse 0 ambient 1.0}}\n",
               -back, bkrd[0], bkrd[1], bkrd[2]);
       UtilConcatVLA(&headerVLA, &hc, buffer);
@@ -2701,21 +2701,21 @@ void RayRenderPOV(CRay * I, int width, int height, char **headerVLA_ptr,
     if(prim->type == cPrimTriangle) {
       if(smooth_color_triangle)
         if(!mesh_obj) {
-          sprintf(buffer, "mesh {\n");
+          snprintf(buffer, std::size(buffer), "mesh {\n");
           UtilConcatVLA(&charVLA, &cc, buffer);
           mesh_obj = true;
         }
     } else if(mesh_obj) {
-      sprintf(buffer, " pigment{color rgb <1,1,1>}}");
+      snprintf(buffer, std::size(buffer), " pigment{color rgb <1,1,1>}}");
       UtilConcatVLA(&charVLA, &cc, buffer);
       mesh_obj = false;
     }
     switch (prim->type) {
     case cPrimSphere:
-      sprintf(buffer, "sphere{<%12.10f,%12.10f,%12.10f>, %12.10f\n",
+      snprintf(buffer, std::size(buffer), "sphere{<%12.10f,%12.10f,%12.10f>, %12.10f\n",
               vert[0], vert[1], vert[2], prim->r1);
       UtilConcatVLA(&charVLA, &cc, buffer);
-      sprintf(buffer, "pigment{color rgb<%6.4f,%6.4f,%6.4f>}}\n",
+      snprintf(buffer, std::size(buffer), "pigment{color rgb<%6.4f,%6.4f,%6.4f>}}\n",
               prim->c1[0], prim->c1[1], prim->c1[2]);
       UtilConcatVLA(&charVLA, &cc, buffer);
       break;
@@ -2726,7 +2726,7 @@ void RayRenderPOV(CRay * I, int width, int height, char **headerVLA_ptr,
       d = base->Normal + 3 * base->Vert2Normal[prim->vert];
       scale3f(d, prim->l1, vert2);
       add3f(vert, vert2, vert2);
-      sprintf(buffer,
+      snprintf(buffer, std::size(buffer),
               "cylinder{<%12.10f,%12.10f,%12.10f>,\n<%12.10f,%12.10f,%12.10f>,\n %12.10f\n",
               vert[0], vert[1], vert[2], vert2[0], vert2[1], vert2[2], prim->r1);
       UtilConcatVLA(&charVLA, &cc, buffer);
@@ -2735,25 +2735,25 @@ void RayRenderPOV(CRay * I, int width, int height, char **headerVLA_ptr,
         UtilConcatVLA(&charVLA, &cc, "open\n");
       }
 
-      sprintf(buffer, "pigment{color rgb<%6.4f1,%6.4f,%6.4f>}}\n",
+      snprintf(buffer, std::size(buffer), "pigment{color rgb<%6.4f1,%6.4f,%6.4f>}}\n",
               (prim->c1[0] + prim->c2[0]) / 2,
               (prim->c1[1] + prim->c2[1]) / 2, (prim->c1[2] + prim->c2[2]) / 2);
       UtilConcatVLA(&charVLA, &cc, buffer);
 
       if (cap1 == cCylCapRound) {
-      sprintf(buffer, "sphere{<%12.10f,%12.10f,%12.10f>, %12.10f\n",
+      snprintf(buffer, std::size(buffer), "sphere{<%12.10f,%12.10f,%12.10f>, %12.10f\n",
               vert[0], vert[1], vert[2], prim->r1);
       UtilConcatVLA(&charVLA, &cc, buffer);
-      sprintf(buffer, "pigment{color rgb<%6.4f1,%6.4f,%6.4f>}}\n",
+      snprintf(buffer, std::size(buffer), "pigment{color rgb<%6.4f1,%6.4f,%6.4f>}}\n",
               prim->c1[0], prim->c1[1], prim->c1[2]);
       UtilConcatVLA(&charVLA, &cc, buffer);
       }
 
       if (cap2 == cCylCapRound) {
-      sprintf(buffer, "sphere{<%12.10f,%12.10f,%12.10f>, %12.10f\n",
+      snprintf(buffer, std::size(buffer), "sphere{<%12.10f,%12.10f,%12.10f>, %12.10f\n",
               vert2[0], vert2[1], vert2[2], prim->r1);
       UtilConcatVLA(&charVLA, &cc, buffer);
-      sprintf(buffer, "pigment{color rgb<%6.4f1,%6.4f,%6.4f>}}\n",
+      snprintf(buffer, std::size(buffer), "pigment{color rgb<%6.4f1,%6.4f,%6.4f>}}\n",
               prim->c2[0], prim->c2[1], prim->c2[2]);
       UtilConcatVLA(&charVLA, &cc, buffer);
       }
@@ -2765,7 +2765,7 @@ void RayRenderPOV(CRay * I, int width, int height, char **headerVLA_ptr,
       if(!TriangleDegenerate(vert, norm, vert + 3, norm + 3, vert + 6, norm + 6)) {
 
         if(smooth_color_triangle) {
-          sprintf(buffer,
+          snprintf(buffer, std::size(buffer),
                   "smooth_color_triangle{<%12.10f,%12.10f,%12.10f>,\n<%12.10f,%12.10f,%12.10f>,\n<%6.4f1,%6.4f,%6.4f>,\n<%12.10f,%12.10f,%12.10f>,\n<%12.10f,%12.10f,%12.10f>,\n<%6.4f1,%6.4f,%6.4f>,\n<%12.10f,%12.10f,%12.10f>,\n<%12.10f,%12.10f,%12.10f>,\n<%6.4f1,%6.4f,%6.4f> }\n",
                   vert[0], vert[1], vert[2], norm[0], norm[1], norm[2], prim->c1[0],
                   prim->c1[1], prim->c1[2], vert[3], vert[4], vert[5], norm[3], norm[4],
@@ -2778,7 +2778,7 @@ void RayRenderPOV(CRay * I, int width, int height, char **headerVLA_ptr,
           /* nowadays we use mesh2 to generate smooth_color_triangles */
 
           UtilConcatVLA(&charVLA, &cc, "mesh2 { ");
-          sprintf(buffer,
+          snprintf(buffer, std::size(buffer),
                   "vertex_vectors { 3, <%12.10f,%12.10f,%12.10f>,\n<%12.10f,%12.10f,%12.10f>,\n<%12.10f,%12.10f,%12.10f>}\n normal_vectors { 3,\n<%12.10f,%12.10f,%12.10f>,\n<%12.10f,%12.10f,%12.10f>,\n<%12.10f,%12.10f,%12.10f>}\n",
                   vert[0], vert[1], vert[2], vert[3], vert[4], vert[5], vert[6], vert[7],
                   vert[8], norm[0], norm[1], norm[2], norm[3], norm[4], norm[5], norm[6],
@@ -2787,26 +2787,26 @@ void RayRenderPOV(CRay * I, int width, int height, char **headerVLA_ptr,
           UtilConcatVLA(&charVLA, &cc, buffer);
 
           if(prim->trans > R_SMALL4)
-            sprintf(transmit, "transmit %4.6f", prim->trans);
+            snprintf(transmit, std::size(transmit), "transmit %4.6f", prim->trans);
           else
             transmit[0] = 0;
 
-          sprintf(buffer, "texture_list { 3, ");
+          snprintf(buffer, std::size(buffer), "texture_list { 3, ");
           UtilConcatVLA(&charVLA, &cc, buffer);
 
-          sprintf(buffer, "texture { pigment{color rgb<%6.4f1,%6.4f,%6.4f> %s}}\n",
+          snprintf(buffer, std::size(buffer), "texture { pigment{color rgb<%6.4f1,%6.4f,%6.4f> %s}}\n",
                   prim->c1[0], prim->c1[1], prim->c1[2], transmit);
           UtilConcatVLA(&charVLA, &cc, buffer);
 
-          sprintf(buffer, ",texture { pigment{color rgb<%6.4f1,%6.4f,%6.4f> %s}}\n",
+          snprintf(buffer, std::size(buffer), ",texture { pigment{color rgb<%6.4f1,%6.4f,%6.4f> %s}}\n",
                   prim->c2[0], prim->c2[1], prim->c2[2], transmit);
           UtilConcatVLA(&charVLA, &cc, buffer);
 
-          sprintf(buffer, ",texture { pigment{color rgb<%6.4f1,%6.4f,%6.4f> %s}} }\n",
+          snprintf(buffer, std::size(buffer), ",texture { pigment{color rgb<%6.4f1,%6.4f,%6.4f> %s}} }\n",
                   prim->c3[0], prim->c3[1], prim->c3[2], transmit);
           UtilConcatVLA(&charVLA, &cc, buffer);
 
-          sprintf(buffer, "face_indices { 1, <0,1,2>, 0, 1, 2 } }\n");
+          snprintf(buffer, std::size(buffer), "face_indices { 1, <0,1,2>, 0, 1, 2 } }\n");
           UtilConcatVLA(&charVLA, &cc, buffer);
         }
       }
@@ -2815,7 +2815,7 @@ void RayRenderPOV(CRay * I, int width, int height, char **headerVLA_ptr,
   }
 
   if(mesh_obj) {
-    sprintf(buffer, " pigment{color rgb <1,1,1>}}");
+    snprintf(buffer, std::size(buffer), " pigment{color rgb <1,1,1>}}");
     UtilConcatVLA(&charVLA, &cc, buffer);
     mesh_obj = false;
   }

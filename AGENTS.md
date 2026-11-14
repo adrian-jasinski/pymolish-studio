@@ -30,6 +30,7 @@ Follow https://github.com/dietrichgebert/ponytail. Short form:
 
 ### 2.2 Dependencies
 - Runtime Python deps: `numpy` and `PySide6`. Nothing else without an explicit reason written in the PR.
+- Approved optional Python deps (2026-11-14), imported lazily, shipped in release bundles, extras for `pip`: `rdkit` (extra `chem`; SMILES, ligand `clean`), `pdbfixer` + `openmm` (extra `fix`; structure repair and relaxation). See `docs/plans/12-native-commands.md`, `13-structure-cleanup.md`.
 - Native deps: OpenGL, GLEW, GLM, libpng, freetype; optional msgpack-c (BinaryCIF), netcdf (VMD plugins), nlohmann-json (glTF). Nothing else without a kept feature behind it.
 - Never vendor a library when the system package or a header-only include does the job. Never add a dependency for something a few lines can do.
 - Pin dev tools exactly in `pyproject.toml` `[project.optional-dependencies].dev`; keep runtime deps as floors (`>=`).
@@ -90,7 +91,7 @@ CI (`.github/workflows/build.yml`) builds Linux (apt) / Windows / macOS (native 
 - Never change behavior of a public `cmd.*` API without saying so in the PR and updating `ChangeLog`. Removal of a command is allowed (see 2.1) but must be deliberate, not a side effect.
 - Keep file formats readable and writable: PDB, mmCIF, SDF/MOL, PSE, PNG export. Everything else may be cut.
 - Don't reformat files you didn't otherwise change. Formatting-only PRs are separate and say so.
-- Don't touch `LICENSE`, `AUTHORS`, copyright headers.
+- Don't touch `AUTHORS`, copyright headers, or the Schrodinger notice inside `LICENSE`: that text stays byte for byte. Text may be added above it (`docs/plans/10-readme-license.md`); nothing in it may be changed or removed.
 - Don't commit build output (`build/`, `generated/`, `*.pyc`).
 - Commit messages: `<type>(<scope>): <summary>` with type in `remove | perf | simplify | ui | fix | deps | ci | docs`. Example: `remove(gui): drop Tk GUI and Pmw support`.
 - Commit after each completed task. No AI attribution trailers in commit messages. Never force-push `master`.

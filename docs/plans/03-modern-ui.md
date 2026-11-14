@@ -102,18 +102,20 @@ banner) are not imitated.
 
 | Step | What | Where | State |
 | --- | --- | --- | --- |
-| 1 | **Action toolbar** on top: selection mode (what a click selects), Undo, Redo, Zoom (menu: all, selection, center, reset), Orient, Rock (shows its state), Presets (same list as A > preset for all). Right side: Builder, Scenes, Draw/Ray (the existing render popup), More (Unpick, Deselect, Get View, Rebuild, Properties, Reset, movie commands). Previous, Stop, Play and Next appear in the toolbar only while there is more than one state or frame; first and last frame are in More. | New `modules/pmg_qt/action_toolbar.py`, a `QToolBar` | Done 4.5.14 |
+| 1 | **Action toolbar** on top: selection mode (what a click selects), Undo, Redo, Zoom (menu: all, selection, center, reset), Orient, Rock (shows its state), Presets (same list as A > preset for all). Right side: Builder, Scenes, Draw/Ray (the existing render popup), More (Unpick, Deselect, Get View, Rebuild, Properties, Reset, movie commands). The movie buttons moved to the states panel in 4.6.0 ([step 6](06-states-panel.md)). | New `modules/pmg_qt/action_toolbar.py`, a `QToolBar` | Done 4.5.14 |
 | 2 | **Command area at the bottom**: log and command line move from the top dock to the bottom; progress bar and Abort sit at the end of the command line. The grid of 18 quick buttons is deleted: every one of them is in the toolbar or its More menu. | `pymol_qt_gui.py` | Done 4.5.14 |
 | 3 | **Content panel look**: no header row, visibility shown as a dot, A/S/H/L/C as rounded chips (accent colors on the "all" row, neutral on the others; since 4.5.15 every shown row, see Row state and colors), taller rows. Still the same checkable tree, so the keyboard works as before. | `object_panel.py` | Done 4.5.14 |
-| 4 | **Toggle bar** under the content panel: mouse mode (the Mouse menu), Wizard (the Wizard menu), SEQ (sequence viewer), `>_` (show or hide the command area). The state counter sits above it and shows only with more than one state. | `object_panel.py` footer, filled by the window | Done 4.5.14 |
+| 4 | **Toggle bar** under the content panel: mouse mode (the Mouse menu), Wizard (the Wizard menu), SEQ (sequence viewer), `>_` (show or hide the command area). The states panel sits above it ([step 6](06-states-panel.md)). | `object_panel.py` footer, filled by the window | Done 4.5.14 |
 | 5 | Saved layouts are versioned again (2) so the command area starts at the bottom. `pymolish -x` (no external GUI) hides the toolbar and the command area as before. | `pymol_qt_gui.py` | Done 4.5.14 |
 | 6 | Scenes as a docked panel with thumbnails, like the reference's left panel. Today "Scenes" opens the existing dialog. | | Open |
-| 7 | Icons for the toolbar (Qt standard or own SVG). Text labels for now: no icon pack is bundled and none is copied. | | Open |
+| 7 | Icons for the toolbar. Text labels for now. The menu icons of step 11 (Lucide) are the set to use. | | Open |
+| 11 | **Menu look.** Request 2026-11-12 with a reference picture: rounded menus, roomy rows, thin-line icons, hairline separators. One style for every menu in the window (`pymol.sty`); `theme.round_menus` makes the window corners see-through. Icons: 43 Lucide drawings (ISC license, `data/pmg_qt/icons/lucide/`), matched to menu labels in `icons.py` and tinted with the text color; delete, reinitialize and quit keep their red. Menu titles are muted captions. Tear-off rows are removed. | `icons.py`, `pymol.sty`, `theme.py`, `object_panel.py` | Done 4.5.18 |
 | 8 | Timeline. Not planned: no timeline feature exists in this code base. | | Skipped |
-| 9 | The viewport still draws its own `PyMOL>` prompt and feedback line above the command area. Hiding them changes where typed keys show up while the viewport has focus; decide separately. | | Open |
+| 10 | **Menus stay on the screen under WSLg.** Reported 2026-11-12: with the window maximized, the Color menu of the Objects panel opened its submenu to the right, off the screen. Cause: under Wayland the compositor places popups, and WSLg's does not flip or slide them. On WSL the GUI now starts through X11 (`QT_QPA_PLATFORM=xcb;wayland` unless the user set one), where Qt places menus itself. Checked maximized at 150 %: menu inside the screen, submenu to its left. | `theme.py` `prefer_x11_on_wsl` | Done 4.5.17 |
+| 9 | The viewport no longer draws its own `PyMOL>` prompt and feedback line (`internal_feedback` 0 when the command area exists; `pymolish -x` keeps it). Text typed while the viewport has focus goes to the command line, which is shown and focused; Ctrl and Alt combinations and the special keys stay viewport shortcuts. `set internal_feedback, 1` in pymolrc restores the old prompt and key handling. | `pymol_qt_gui.py` | Done 4.5.16 |
 
 Checks: `testing/tests/api/action_toolbar.py` (selection mode, rock state,
-presets menu, zoom, movie visibility), `object_panel.py` tests extended for the
+presets menu, zoom), `object_panel.py` tests extended for the
 footer. Real GUI on WSLg at 100 % and 150 %.
 
 ## Objects panel
@@ -142,7 +144,8 @@ text path of all five. Its menus, though, are plain data from
 | Reorder and regroup by dragging rows | Use `order` and `group` meanwhile. | Open |
 | Group open/closed shared with the core | Expansion is view state of the tree for now. | Open |
 | Picking an atom selects its row | Viewport-to-panel synchronization. | Open |
-| Viewport popup menus, sequence viewer, scene buttons | Still drawn by the core in whole scale steps. | Open |
+| Menus the core opens (right click in the viewport or on a sequence residue, scene buttons, timeline) | Qt menus since 4.5.18: the core hands its menu list to `pymol.menu.popup`, which the window sets (`popup_at_cursor`). Without a window (`-x` keeps the hook too; `-c` has none) the GL popup is still used. | Done 4.5.18 |
+| Sequence viewer, scene buttons | Still drawn by the core in whole scale steps. | Open |
 | Per-object motion menu (movie column) | Only shown by the old panel when a movie exists. | Open |
 
 ### Row state and colors
@@ -177,10 +180,10 @@ made up (650 mm for a laptop panel), so the size cannot be detected.
 
 | Item | Decision | State |
 | --- | --- | --- |
-| Text, widgets, icons, spacing | One knob: Display > UI Scale (100 to 300 %), saved in `QSettings` `ui/scale`, handed to Qt as `QT_SCALE_FACTOR` before the application object exists. It multiplies the OS scale. An exported `QT_SCALE_FACTOR` wins. Applies on next start. | Done 4.5.7 |
+| Text, widgets, icons, spacing | One knob: Display > UI Scale (100 to 300 %), saved in `QSettings` `ui/scale`, handed to Qt as `QT_SCALE_FACTOR` before the application object exists. It multiplies the OS scale. An exported `QT_SCALE_FACTOR` wins. Applies on next start. | Done 4.5.7; since 4.7.0 picked from a toolbar button, 100 to 200 %, default 150 % ([step 7](07-toolbar-icons-scale.md)) |
 | Viewport menus, object panel, labels | Drawn by the C++ core with the integer `display_scale_factor`. Now rounded from the window scale, not truncated: 150 % gives 2, was 1. | Done 4.5.7 |
 | Text colors | No hard-coded foreground color in Qt code, forms or bundled plugins: bold or the palette instead. Text on a hard-coded light background sets its own dark color. Links use the palette link color. | Done 4.5.7: Lighting Settings, APBS, PNG dialog, Fetch, Plugin Manager, script editor syntax colors |
-| First start on an unscaled high-resolution screen | Offer 150 % once when the OS reports scale 1 and the screen is 2560 px wide or more. Offer, do not guess: a 27" monitor at that width is fine at 100 %. Either answer is saved, so it is asked once. | Done 4.5.8 |
+| First start on an unscaled high-resolution screen | Offer 150 % once when the OS reports scale 1 and the screen is 2560 px wide or more. Offer, do not guess: a 27" monitor at that width is fine at 100 %. Either answer is saved, so it is asked once. | Done 4.5.8; removed in 4.7.0, 150 % is the default |
 | 125 % in the viewport | `display_scale_factor` is an integer, so 125 % still draws viewport text at 1x. The object list no longer depends on it (Objects panel, 4.5.11); what remains is the viewport popup menus and the sequence viewer. | Open, only if reported |
 | Live rescale without restart | Qt reads the factor once. Skip unless restarts prove painful. | Skipped |
 | Separate font-size setting | A second knob next to UI Scale. Skip unless the scale alone is not enough. | Skipped |

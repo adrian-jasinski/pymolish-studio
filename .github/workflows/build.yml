@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-22.04
 
     strategy:
+      # one failing Python must not hide the result of the other
+      fail-fast: false
       matrix:
         python-version: ["3.13", "3.14"]
 
@@ -71,11 +73,58 @@ jobs:
         if-no-files-found: error
 
 
+  sanitize-Linux:
+    # the suite under AddressSanitizer and UndefinedBehaviorSanitizer:
+    # the safety net for docs/plans/08-cpp-modernization.md
+
+    runs-on: ubuntu-22.04
+
+    env:
+      DEBUG: "1"
+      # alignment is off: CGO keeps structs with pointers in a float buffer
+      CXXFLAGS: -fsanitize=address,undefined -fno-sanitize=alignment -fno-sanitize-recover=undefined -fno-omit-frame-pointer
+      CFLAGS: -fsanitize=address,undefined -fno-sanitize=alignment -fno-sanitize-recover=undefined -fno-omit-frame-pointer
+      LDFLAGS: -fsanitize=address,undefined
+      # Python itself does not free everything at exit
+      ASAN_OPTIONS: detect_leaks=0
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.13"
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get --no-install-recommends install \
+            libfreetype6-dev \
+            libglew-dev \
+            libglm-dev \
+            libmsgpack-dev \
+            libnetcdf-dev \
+            nlohmann-json3-dev \
+            libpng-dev
+
+    - name: Build
+      run: |
+        pip install --upgrade pip
+        pip install -v --config-settings json=True '.[dev]'
+
+    - name: Test
+      run: |
+        LD_PRELOAD=$(gcc -print-file-name=libasan.so) pymolish -ckqy testing/testing.py --run all
+
+
   build-Windows:
 
     runs-on: windows-latest
 
     strategy:
+      # one failing Python must not hide the result of the other
+      fail-fast: false
       matrix:
         python: [py313, py314]
 
@@ -122,6 +171,8 @@ jobs:
     runs-on: macos-latest
 
     strategy:
+      # one failing Python must not hide the result of the other
+      fail-fast: false
       matrix:
         python: [py313, py314]
 

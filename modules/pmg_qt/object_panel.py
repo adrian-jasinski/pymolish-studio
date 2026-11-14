@@ -2,9 +2,10 @@
 Objects panel: the Qt replacement for the object list and the wizard buttons
 of the viewport's internal GUI. One row per object or selection (group members
 nested) with a visibility dot and the A/S/H/L/C menus from pymol.menu; a click
-on the row shows or hides the object.
+on the row shows or hides the object. Under the list: the states panel (step,
+play, speed) while there is more than one state or frame.
 Everything is Qt text, so it follows the application font, the theme and
-Display > UI Scale, and the dock is resized by dragging its edge.
+the toolbar's UI scale, and the dock is resized by dragging its edge.
 """
 
 import re
@@ -12,6 +13,8 @@ import re
 from pymol import CmdException, _cmd
 from pymol import menu as menus
 from pymol.Qt import QtCore, QtGui, QtWidgets
+
+from .icons import menu_icon
 
 Qt = QtCore.Qt
 Checked, Unchecked = Qt.CheckState.Checked, Qt.CheckState.Unchecked
@@ -118,11 +121,6 @@ SELECTING = (
 )
 
 
-def status_text(cmd):
-    """The state counter, as the internal GUI shows it under its list."""
-    return "State %d/%d" % (cmd.get_state(), cmd.count_states())
-
-
 _COLOR_CODE = re.compile(r"\\(\d{3}|---)")
 
 
@@ -158,8 +156,11 @@ def fill_menu(menu, entries, cmd):
             continue
         text, color = plain_label(entry[1])
         command = entry[2] if len(entry) > 2 else ""
-        if kind == 2:
-            menu.addSection(text)
+        if kind == 2:  # a caption: not selectable, drawn muted
+            title = QtWidgets.QWidgetAction(menu)
+            title.setDefaultWidget(QtWidgets.QLabel(text, objectName="menu_title"))
+            title.setEnabled(False)
+            menu.addAction(title)
             continue
         if isinstance(command, str):
             action = menu.addAction(text)
@@ -168,8 +169,24 @@ def fill_menu(menu, entries, cmd):
             sub = menu.addMenu(text)
             sub.aboutToShow.connect(lambda s=sub, c=command: fill_once(s, c))
             action = sub.menuAction()
-        if color:
-            action.setIcon(_swatch(color))
+        icon = menu_icon(text, color or menu.palette().text().color())
+        if icon or color:
+            action.setIcon(icon or _swatch(color))
+
+
+def popup_at_cursor(parent, entries, cmd):
+    """Show a pymol.menu list as a context menu at the mouse pointer, once
+    the caller has returned to the event loop. The core calls this through
+    pymol.menu.popup in the middle of handling a click."""
+
+    def show():
+        menu = QtWidgets.QMenu(parent)
+        menu.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        fill_menu(menu, entries, cmd)
+        menu.popup(QtGui.QCursor.pos())
+
+    QtCore.QTimer.singleShot(0, show)
+    return True
 
 
 # chip colors A S H L C: three blues, violet, green
@@ -258,6 +275,110 @@ class WizardPanel(QtWidgets.QGroupBox):
         self.changed.emit()
 
 
+class StatesPanel(QtWidgets.QWidget):
+    """First, previous, play/stop, next, last, a counter to jump to a number
+    and the playback speed (movie_fps). Without a movie a frame is a state,
+    so the frame commands drive both. Hidden with a single state."""
+
+    BUTTONS = (  # icon (icons.LABELS), tooltip, command
+        ("first", "First", "rewind"),
+        ("previous", "Previous", "backward"),
+        ("play", "Play", "mtoggle"),
+        ("forward", "Next", "forward"),
+        ("last", "Last", "ending"),
+    )
+    SPEEDS = (1, 5, 10, 15, 30, 60)
+
+    def __init__(self, cmd):
+        super().__init__()
+        self.cmd = cmd
+        self.playing = False
+        self.title = QtWidgets.QLabel("States")
+        self.speed = QtWidgets.QToolButton()
+        self.speed.setToolTip("Playback speed (movie_fps)")
+        self.speed.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.speed.setMenu(QtWidgets.QMenu(self.speed))
+        for fps in self.SPEEDS:
+            self.speed.menu().addAction(
+                "%d fps" % fps, lambda f=fps: self._run("set", "movie_fps", f)
+            )
+        self.counter = QtWidgets.QSpinBox()
+        self.counter.setMinimum(1)
+        self.counter.setToolTip("Type a number to jump there")
+        self.counter.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.counter.setKeyboardTracking(False)  # jump on Enter, not per digit
+        self.counter.valueChanged.connect(lambda n: self._run("frame", n))
+
+        top = QtWidgets.QHBoxLayout()
+        top.addWidget(self.title, 1)
+        top.addWidget(self.speed)
+        row = QtWidgets.QHBoxLayout()
+        row.setSpacing(2)
+        row.addWidget(self.counter, 1)
+        self.buttons = {}
+        for icon, tip, command in self.BUTTONS:
+            button = self.buttons[icon] = QtWidgets.QToolButton()
+            button.setToolTip(tip)
+            button.setAutoRaise(True)
+            button.setAutoRepeat(command in ("backward", "forward"))
+            button.clicked.connect(lambda _=False, c=command: self._run(c))
+            row.addWidget(button)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 4, 0, 4)
+        layout.addLayout(top)
+        layout.addLayout(row)
+        self._set_icons()
+
+        # the window polls twice a second: too coarse for a running counter
+        self.timer = QtCore.QTimer(self, interval=100)
+        self.timer.timeout.connect(self.refresh)
+        self.hide()
+
+    def _run(self, command, *args):
+        getattr(self.cmd, command)(*args)
+        self.refresh()
+
+    def _set_icons(self):
+        color = self.palette().buttonText().color()
+        for label, button in self.buttons.items():
+            if label == "play" and self.playing:
+                label = "stop"
+            button.setIcon(menu_icon(label, color))
+
+    def changeEvent(self, event):
+        if event.type() == QtCore.QEvent.Type.PaletteChange:
+            self._set_icons()  # they are tinted: follow Display > Dark Theme
+        super().changeEvent(event)
+
+    # ponytail: polled like the object list; a state change made by command
+    # shows up to 0.5 s late. Upgrade path: a notification from the C++ scene.
+    def refresh(self):
+        cmd = self.cmd
+        count = cmd.count_frames()
+        self.setVisible(count > 1)
+        playing = count > 1 and bool(cmd.get_movie_playing())
+        if playing != self.playing:
+            self.playing = playing
+            self.buttons["play"].setToolTip("Stop" if playing else "Play")
+            self._set_icons()
+        if playing and self.isVisible():
+            self.timer.isActive() or self.timer.start()
+        else:
+            self.timer.stop()
+        if count < 2:
+            return
+        self.title.setText("Frames" if cmd.get_movie_length(images=0) else "States")
+        self.speed.setText("%g fps" % cmd.get_setting_float("movie_fps"))
+        # set only what changed: setting a spin box drops text being typed
+        self.counter.blockSignals(True)
+        if self.counter.maximum() != count:
+            self.counter.setMaximum(count)
+            self.counter.setSuffix("/%d" % count)
+        if self.counter.value() != cmd.get_frame():
+            self.counter.setValue(cmd.get_frame())
+        self.counter.blockSignals(False)
+
+
 class ObjectPanel(QtWidgets.QDockWidget):
     def __init__(self, cmd, parent=None):
         super().__init__("Objects", parent)
@@ -313,10 +434,7 @@ class ObjectPanel(QtWidgets.QDockWidget):
         self.filter.setClearButtonEnabled(True)
         self.filter.textChanged.connect(self._apply_filter)
 
-        # state counter, shown only when there is more than one state
-        self.status = QtWidgets.QLabel()
-        self.status.setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.status.hide()
+        self.states = StatesPanel(cmd)
         # toggle bar: the window fills it with its buttons
         self.footer = QtWidgets.QHBoxLayout()
         self.footer.setSpacing(2)
@@ -329,7 +447,7 @@ class ObjectPanel(QtWidgets.QDockWidget):
         layout.addWidget(self.filter)
         layout.addWidget(tree, 1)
         layout.addWidget(self.wizard)
-        layout.addWidget(self.status)
+        layout.addWidget(self.states)
         layout.addLayout(self.footer)
         self.setWidget(body)
 
@@ -342,8 +460,7 @@ class ObjectPanel(QtWidgets.QDockWidget):
             self.show()  # a wizard is unusable without its buttons
         if self.isVisible():
             self.refresh()
-            self.status.setText(status_text(self.cmd))
-            self.status.setVisible(self.cmd.count_states() > 1)
+            self.states.refresh()
 
     def refresh_soon(self):
         QtCore.QTimer.singleShot(0, self.poll)

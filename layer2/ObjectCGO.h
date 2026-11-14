@@ -26,7 +26,9 @@ struct ObjectCGOState {
   pymol::cache_ptr<CGO> origCGO;
   pymol::cache_ptr<CGO> renderCGO;
   PyMOLGlobals* G;
-  bool renderWithShaders, hasTransparency, cgo_lighting, hasOpaque;
+  // set when renderCGO is built; copied before that by the copy constructor
+  bool renderWithShaders = false, hasTransparency = false,
+       cgo_lighting = false, hasOpaque = false;
   ObjectCGOState(PyMOLGlobals* G);
   ObjectCGOState(const ObjectCGOState& other);
 };

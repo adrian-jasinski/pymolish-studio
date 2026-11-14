@@ -9,16 +9,21 @@ modernize the existing window, and deliver downloadable builds early.** Changing
 bindings does not move molecular computation to the GPU. Follow
 [AGENTS.md](AGENTS.md): smaller, faster, simpler, prettier.
 
-## Plans for all six steps
+Finished steps are in [PLAN-DONE.md](PLAN-DONE.md). A step moves there when its
+last milestone ships; its detailed plan stays in `docs/plans/`.
+
+## Open steps
 
 | Step | Detailed plan | Recommendation |
 | --- | --- | --- |
-| 0 | [UI engine research](docs/plans/00-ui-engine.md) | PySide6 + Qt Widgets; preserve the renderer while simplifying bindings. |
 | 1 | [Performance and GPU](docs/plans/01-performance-gpu.md) | Baseline first; optimize measured CPU, rendering, and interaction bottlenecks. |
-| 2 | [Code and dependencies](docs/plans/02-cleanup-dependencies.md) | One feature removal per PR; trace dependencies before deleting. |
 | 3 | [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Improve the existing window; ship docks and an object metadata table first. |
-| 4 | [Features and external libraries](docs/plans/04-extensibility.md) | Preserve `cmd` and the existing loader; document small integration patterns. |
-| 5 | [Builds and test binaries](docs/plans/05-builds-binaries.md) | Improve incremental builds and deliver test artifacts before large changes. |
+| 8 | [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. |
+| 10 | [README and license files](docs/plans/10-readme-license.md) | New README naming the fork; PyMOL notice kept word for word, new code MIT, third parties listed; two allowed slogans with the trademark footnote. |
+| 11 | [Color palettes](docs/plans/11-color-palettes.md) | Five palettes replace the object color order; toolbar button; remembered in `QSettings`. |
+| 12 | [pymolish plugin commands, native](docs/plans/12-native-commands.md) | Port command bodies, not the framework: 58 commands become about 17, two dialogs, no new top menu. rdkit approved. |
+| 13 | [Clean, fix and optimize structures](docs/plans/13-structure-cleanup.md) | Four layers: remove water and ions, ligand `clean` with rdkit, PDBFixer repair, OpenMM relax. PDBFixer and OpenMM approved. |
+| 14 | [Action and right-click menus](docs/plans/14-menus.md) | Red squares are a rendering artifact: one-line fix now. Merge duplicated menus after 12 and 13, from a list the user approves. |
 
 ## Validation of the original draft
 
@@ -47,19 +52,36 @@ bindings does not move molecular computation to the GPU. Follow
 Evidence and implementation boundaries are linked in each step. “Keep” means a
 recommended direction, not a claim that an implementation has passed tests.
 
-## Recommended execution order
+## Open work, in execution order
 
 The topic numbers remain the user's original numbers. The letters identify
 milestones in the detailed plans, not new topics.
 
 | Order | Work | Exit condition | Relative size |
 | --- | --- | --- | --- |
-| 1 | **0 — UI decision** | PySide6/Widgets recommendation, supported platforms and GL smoke checks are explicit. | Small research task; implemented in working tree 2026-11-08, see step 0 Status |
-| 2 | **5a + 1a — feedback and baseline** | Repeatable build/test commands and recorded build/performance timings before removals. | Done 2026-11-08: [docs/baseline.md](docs/baseline.md), `testing/bench.py` |
-| 3 | **2a — binding and legacy GUI cleanup**, with **4a — plugin contract** | Explicit runtime binding; alternative bindings removed in one PR; plugin migration precedes separate Tk and GLUT removals. | Done 2026-11-08: 4.1.0 bindings, 4.3.0 Tk + plugin contract, 4.3.1 GLUT |
-| 4 | **5b — downloadable application**, alongside **2b — independent removals** | Tester launches without installing Python; each removal passes its own checks. | 5b done 2026-11-08 (4.4.0, Linux verified locally, CI artifacts for 3 OS; 4.5.1 publishes archives on a GitHub pre-release per push to master); 2b done 2026-11-08 (4.4.1 to 4.4.8): chempy.fast, VTK-m, mpeg_encode, RPC/HTTP/web, OpenVR, COLLADA+libxml2, MMTF, dev utilities. Kept: VMD plugins/netcdf, xwin paste, POV-Ray renderer |
-| 5 | **1b — measured optimization** and **3 — workspace increments** | Performance changes have before/after evidence; docks and table ship in reviewable test builds. | 3 slices 1-3 done 2026-11-08 (4.5.0: objects dock, layout persistence, Panels menu); slice 4 done (4.5.11 Qt Objects panel replaces the viewport's object list; 4.5.14 workspace layout: action toolbar on top, command area at the bottom, toggle bar); slice 5 partly done (4.5.2 dark theme, 4.5.7 UI Scale for high-resolution screens and dark-theme color audit); 1b started (4.5.10 session load 6.6x faster, 4.5.12 surface build 1.24x); rest of the surface build, GUI frame latency and slice 6 open |
-| 6 | **4b — extension examples and proven helpers** | Command/menu integration documented; any dock helper has real consumers. | Done 2026-11-12: [docs/plugins.md](docs/plugins.md); no dock helper, no two consumers yet |
+| 5 | **1b — measured optimization** and **3 — workspace increments** | Performance changes have before/after evidence; docks and table ship in reviewable test builds. | 3 slices 1-3 done 2026-11-08 (4.5.0: objects dock, layout persistence, Panels menu); slice 4 done (4.5.11 Qt Objects panel replaces the viewport's object list; 4.5.14 workspace layout: action toolbar on top, command area at the bottom, toggle bar); slice 5 partly done (4.5.2 dark theme, 4.5.7 UI Scale for high-resolution screens and dark-theme color audit); 1b started (4.5.10 session load 6.6x faster, 4.5.12 surface build 1.24x, 4.7.7 to 4.7.9 surface build another 1.5x; GUI frame time measured 2026-11-14, software rendering under WSL is the main cost); renderer default on WSL, sticks and surface draw cost, and slice 6 open |
+| 9 | **10a — README and license text** and **14a — red squares** | The repository presents itself as a fork with both license files; destructive menu rows show a red trash icon. | Small. No inputs, no dependencies: first. |
+| 10 | **10b — images in the README** | README shows the logo and one screenshot. | Small. 9 done (4.8.0): the files are in `data/pymol/icons/`. `logo.png` has dark text on a transparent background, so a dark page needs a second file or a backdrop. |
+| 11 | **11 — color palettes** | A palette picked in the toolbar colors new objects and is back after a restart. | Small to medium; touches C++. Before 12: group coloring reuses it. |
+| 12 | **12a to 12e — native commands** | Kept plugin commands work without the plugin, from the command line and from File, Build and the group menu. | Large; five PRs. |
+| 13 | **13a to 13d — cleanup** | Water and ions go in one click; `clean` works on ligands; a protein is repaired and relaxed into a new object. | Medium to large. 13a needs nothing; 13b needs 12d. |
+| 14 | **14b, 14c — menu consolidation** | Approved keep, merge, drop list applied; fewer rows and fewer lines in `menu.py`. | Medium. Last, so the rows from 12 and 13 are audited once. |
+
+Orders 9 to 14 were requested on 2026-11-14 and do not block order 5.
+
+### Working rules for orders 9 to 14
+
+- One slice per session and per PR. Each plan names the files and lines to
+  open, so a session starts there instead of exploring again.
+- [ponytail](https://github.com/dietrichgebert/ponytail) is already the rule
+  (`AGENTS.md` §1): each plan has a "Skipped" list and, where code goes away,
+  a "Deleted" list. Nothing on a "Skipped" list is built without a new request.
+- [caveman](https://github.com/JuliusBrussee/caveman) shortens replies only;
+  optional. The larger saving is the narrow slice and a fresh session per slice.
+- Decided on 2026-11-14: rdkit, PDBFixer and OpenMM are approved optional
+  dependencies; the palette is remembered in `QSettings`; `LICENSE` gets a
+  header above the unchanged notice. Still the user's: the two image files
+  (9), which dropped plugin commands to keep (12), the menu list (14b).
 
 Cleanup precedes speculative optimization. Recording a baseline is preparation.
 UI work needs the binding decision and a usable test build, not completion of
@@ -67,18 +89,6 @@ every unrelated removal. GPU compute is not on the critical path. Plugin
 compatibility work starts before Tk removal; final extension documentation can
 follow the first UI increments. Artifact work can start after the binding change
 while the remaining legacy cleanup proceeds.
-
-### First concrete changes
-
-1. Record an optimized baseline and current headless/GUI test status. Resolve
-   existing failures before using those results to judge a change.
-2. Promote the tested PySide6 binding to runtime metadata and establish a coherent
-   Python minimum with dependencies and CI. Keep dev pins exact.
-3. PR title `remove: alternative Qt bindings`; commit subject
-   `remove(gui): standardize on PySide6`. Preserve used import aliases; keep Tk,
-   GLUT, and renderer changes separate.
-4. Deliver a first test artifact, then complete the Tk/plugin migration and other
-   removals one at a time. Docks and the object table are the first visible UI work.
 
 ## Shared completion criteria
 

@@ -342,11 +342,11 @@ void EditorDefineExtraPks(PyMOLGlobals* G)
   WordType buffer;
 
   if (EditorGetSinglePicked(G, name)) {
-    sprintf(buffer, "(byres %s)", name);
+    snprintf(buffer, std::size(buffer), "(byres %s)", name);
     SelectorCreate(G, cEditorRes, buffer, nullptr, true, nullptr);
-    sprintf(buffer, "(bychain %s)", name);
+    snprintf(buffer, std::size(buffer), "(bychain %s)", name);
     SelectorCreate(G, cEditorChain, buffer, nullptr, true, nullptr);
-    sprintf(buffer, "(byobject %s)", name);
+    snprintf(buffer, std::size(buffer), "(byobject %s)", name);
     SelectorCreate(G, cEditorObject, buffer, nullptr, true, nullptr);
 
     if (SettingGetGlobal_b(G, cSetting_auto_hide_selections))
@@ -594,7 +594,7 @@ int EditorLogState(PyMOLGlobals* G, int pkresi)
         }
       }
 
-      sprintf(buffer, "cmd.edit(%s,%s,%s,%s,pkresi=%d,pkbond=%d)", buf1, buf2,
+      snprintf(buffer, std::size(buffer), "cmd.edit(%s,%s,%s,%s,pkresi=%d,pkbond=%d)", buf1, buf2,
           buf3, buf4, pkresi ? 1 : 0, pkbond ? 1 : 0);
 
       PLog(G, buffer, cPLog_pym);
@@ -657,7 +657,7 @@ pymol::Result<> EditorInvert(PyMOLGlobals* G, int quiet)
 
         get_rotation_about3f3fTTTf((float) cPI, n0, v, m);
         for (frg = 1; frg <= I->NFrag; frg++) {
-          sprintf(name, "%s%1d", cEditorFragPref, frg);
+          snprintf(name, std::size(name), "%s%1d", cEditorFragPref, frg);
           sele2 = SelectorIndexByName(G, name);
 
           if (ObjectMoleculeIsAtomBondedToSele(obj0, i0, sele2) &&
@@ -711,8 +711,8 @@ pymol::Result<> EditorTorsion(PyMOLGlobals* G, float angle)
       obj0 = SelectorGetFastSingleAtomObjectIndex(G, sele0, &i0);
       sele1 = SelectorIndexByName(G, cEditorSele2);
       obj1 = SelectorGetFastSingleAtomObjectIndex(G, sele1, &i1);
-      strcpy(sele, cEditorFragPref);
-      strcat(sele, "1");
+      UtilNCopy(sele, cEditorFragPref, std::size(sele));
+      UtilNConcat(sele, "1", std::size(sele));
       sele2 = SelectorIndexByName(G, sele);
       obj2 = SelectorGetFastSingleObjectMolecule(G, sele2);
       if (!((sele0 >= 0) && (sele1 >= 0) && (sele2 >= 0) && (obj0 == obj1))) {
@@ -1896,7 +1896,7 @@ void EditorPrepareDrag(PyMOLGlobals* G, pymol::CObject* obj, int sele,
     if (sele >= 0) {
       auto sele_name = SelectorGetNameFromIndex(G, sele);
       if (sele_name) {
-        strcpy(I->DragSeleName, sele_name);
+        UtilNCopy(I->DragSeleName, sele_name, std::size(I->DragSeleName));
         if (SettingGetGlobal_b(G, cSetting_editor_auto_origin)) {
           if (I->FavorOrigin) {
             I->DragHaveBase = true;
@@ -1928,14 +1928,14 @@ void EditorPrepareDrag(PyMOLGlobals* G, pymol::CObject* obj, int sele,
 
     /* anchored / fragment dragging  */
     for (frg = 1; frg <= I->NFrag; frg++) {
-      sprintf(name, "%s%1d", cEditorFragPref, frg);
+      snprintf(name, std::size(name), "%s%1d", cEditorFragPref, frg);
       drag_sele = SelectorIndexByName(G, name);
       if (drag_sele >= 0) {
         s = objMol->AtomInfo[index].selEntry;
         seleFlag = SelectorIsMember(G, s, drag_sele);
       }
       if (seleFlag) {
-        strcpy(I->DragSeleName, name);
+        UtilNCopy(I->DragSeleName, name, std::size(I->DragSeleName));
         break;
       }
     }
@@ -1952,7 +1952,7 @@ void EditorPrepareDrag(PyMOLGlobals* G, pymol::CObject* obj, int sele,
       I->DragBondFlag = false;
       I->DragSlowFlag = false;
 
-      sprintf(name, "%s%1d", cEditorBasePref,
+      snprintf(name, std::size(name), "%s%1d", cEditorBasePref,
           frg); /* get relevant base vertex of bond */
       sele1 = SelectorIndexByName(G, name);
       if (sele1 >= 0) {
@@ -2093,7 +2093,7 @@ void EditorPrepareDrag(PyMOLGlobals* G, pymol::CObject* obj, int sele,
       " Editor: grabbing all fragments." ENDFB(G);
       I->DragIndex = index;
       I->DragSelection = SelectorIndexByName(G, cEditorComp);
-      strcpy(I->DragSeleName, cEditorComp);
+      UtilNCopy(I->DragSeleName, cEditorComp, std::size(I->DragSeleName));
       I->DragObject = obj;
       I->DragHaveAxis = false;
       I->DragHaveBase = false;

@@ -30,5 +30,7 @@ a.binaries = [b for b in a.binaries if not any(k in b[0] for k in PRUNE)]
 a.datas = [d for d in a.datas if not any(k in d[0] for k in PRUNE)]
 
 pyz = PYZ(a.pure)
-exe = EXE(pyz, a.scripts, exclude_binaries=True, name='pymolish', console=True)
+exe = EXE(pyz, a.scripts, exclude_binaries=True, name='pymolish', console=True,
+          # PyInstaller converts the PNG with Pillow (dev extra)
+          icon='../data/pymol/icons/pymolish.png')
 coll = COLLECT(exe, a.binaries, a.datas, name='pymolish')

@@ -296,13 +296,13 @@ Rep* RepDistLabelNew(DistSet* ds, int state)
         digits = default_digits;
       if (digits > 10)
         digits = 10;
-      sprintf(format, "%c0.%df", '%', digits);
+      snprintf(format, std::size(format), "%c0.%df", '%', digits);
       for (a = 0; ok && a < ds->NIndex; a = a + 2) {
         v1 = ds->Coord + 3 * a;
         v2 = ds->Coord + 3 * (a + 1);
         average3f(v2, v1, d);
         di = (float) diff3f(v1, v2);
-        sprintf(buffer, format, di);
+        snprintf(buffer, std::size(buffer), format, di);
 
         VLACheck(I->V, float, 6 * n + 5);
         CHECKOK(ok, I->V);
@@ -356,7 +356,7 @@ Rep* RepDistLabelNew(DistSet* ds, int state)
         digits = default_digits;
       if (digits > 10)
         digits = 10;
-      sprintf(format, "%c0.%df", '%', digits);
+      snprintf(format, std::size(format), "%c0.%df", '%', digits);
 
       for (a = 0; ok && a < ds->NAngleIndex; a = a + 5) {
         v1 = ds->AngleCoord + 3 * a;
@@ -390,7 +390,7 @@ Rep* RepDistLabelNew(DistSet* ds, int state)
         add3f(v2, avg, avg);
 
         di = (float) (180.0F * get_angle3f(d1, d2) / PI);
-        sprintf(buffer, format, di);
+        snprintf(buffer, std::size(buffer), format, di);
 
         VLACheck(I->V, float, 6 * n + 5);
         CHECKOK(ok, I->V);
@@ -449,7 +449,7 @@ Rep* RepDistLabelNew(DistSet* ds, int state)
         digits = default_digits;
       if (digits > 10)
         digits = 10;
-      sprintf(format, "%c0.%df", '%', digits);
+      snprintf(format, std::size(format), "%c0.%df", '%', digits);
 
       for (a = 0; ok && a < ds->NDihedralIndex; a = a + 6) {
         v1 = ds->DihedralCoord + 3 * a;
@@ -490,7 +490,7 @@ Rep* RepDistLabelNew(DistSet* ds, int state)
         add3f(a32, avg, avg);
 
         di = (float) (180.0F * get_dihedral3f(v1, v2, v3, v4) / PI);
-        sprintf(buffer, format, di);
+        snprintf(buffer, std::size(buffer), format, di);
 
         VLACheck(I->V, float, 6 * n + 5);
         CHECKOK(ok, I->V);

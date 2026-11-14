@@ -314,7 +314,7 @@ int ObjectSurfaceInvalidateMapName(ObjectSurface * I, const char *name, const ch
     if(ms->Active) {
       if(strcmp(ms->MapName, name) == 0) {
         if (new_name)
-          strcpy(ms->MapName, new_name);
+          UtilNCopy(ms->MapName, new_name, std::size(ms->MapName));
         I->invalidate(cRepAll, cRepInvAll, a);
         result = true;
       }
@@ -1046,7 +1046,7 @@ ObjectSurface *ObjectSurfaceFromBox(PyMOLGlobals * G, ObjectSurface * obj,
   ms = &I->State[state];
   *ms = ObjectSurfaceState(G);
 
-  strcpy(ms->MapName, map->Name);
+  UtilNCopy(ms->MapName, map->Name, std::size(ms->MapName));
   ms->MapState = map_state;
   oms = ObjectMapGetState(map, map_state);
 

@@ -500,7 +500,5 @@ if True:
         if loaded_something and (options.after_load_script!=""):
             options.deferred.append(options.after_load_script)
         options.deferred.extend(final_actions)
-        if options.show_splash and not options.no_gui and not restricted:
-            options.deferred.insert(0,"_do__ cmd.splash(1)")
         if options.full_screen:
             options.deferred.append("_do__ full_screen on")

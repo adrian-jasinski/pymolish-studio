@@ -65,7 +65,6 @@ class PmwMenuBar:
 
         label = kw.get('label', statusHelp) or menuName
         menu = menu.addMenu(label)
-        menu.setTearOffEnabled(True)
         self._menudict[menuName] = menu
 
 

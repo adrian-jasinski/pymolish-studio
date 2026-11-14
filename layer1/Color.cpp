@@ -765,9 +765,9 @@ const char *ColorGetName(PyMOLGlobals * G, int index)
     index = (((index & 0xFFFFFF) | ((index << 2) & 0xFC000000) |        /* convert 6 bits of trans into 8 */
               ((index >> 4) & 0x03000000)));
     if(index & 0xFF000000)      /* if transparent */
-      sprintf(I->RGBName, "0x%08x", index);
+      snprintf(I->RGBName, std::size(I->RGBName), "0x%08x", index);
     else                        /* else */
-      sprintf(I->RGBName, "0x%06x", index);
+      snprintf(I->RGBName, std::size(I->RGBName), "0x%06x", index);
     return I->RGBName;
   } else if(index <= cColorExtCutoff) {
     int a = cColorExtCutoff - index;
@@ -1078,7 +1078,7 @@ void ColorReset(PyMOLGlobals * G)
 
   /* greybow */
 
-  strcpy(name, "grey00");       /* english spelling */
+  UtilNCopy(name, "grey00", std::size(name));       /* english spelling */
   for(a = 0; a < 100; a = a + 1) {
     name[5] = (a % 10) + '0';
     name[4] = ((a % 100) / 10) + '0';
@@ -1092,7 +1092,7 @@ void ColorReset(PyMOLGlobals * G)
 
   /* full spectrum (s000-s999) */
 
-  strcpy(name, "s000");
+  UtilNCopy(name, "s000", std::size(name));
   for(a = 0; a < 1000; a = a + 1) {
     set1 = (int) (a / A_DIV);
     name[3] = (a % 10) + '0';
@@ -1108,7 +1108,7 @@ void ColorReset(PyMOLGlobals * G)
 
   /* offset & reversed full spectrum (r000-r999) */
 
-  strcpy(name, "r000");
+  UtilNCopy(name, "r000", std::size(name));
   for(a = 0; a < 1000; a = a + 1) {
     set1 = (int) (a / A_DIV);
     /* sprintf(color->Name,"r%03d",a); */
@@ -1124,7 +1124,7 @@ void ColorReset(PyMOLGlobals * G)
 
   /* complementary spectra (c000-c999) */
 
-  strcpy(name, "c000");
+  UtilNCopy(name, "c000", std::size(name));
   for(a = 0; a < 1000; a = a + 1) {
     set1 = (int) (a / A_DIV);
     /*     sprintf(color->Name,"c%03d",a); */
@@ -1142,7 +1142,7 @@ void ColorReset(PyMOLGlobals * G)
 
   /* complementary spectra separated by white (w000-w999) */
 
-  strcpy(name, "w000");
+  UtilNCopy(name, "w000", std::size(name));
   for(a = 0; a < 1000; a = a + 1) {
     set1 = (int) (a / W_DIV);
     /* sprintf(color->Name,"w%03d",a); */
@@ -1158,7 +1158,7 @@ void ColorReset(PyMOLGlobals * G)
 
   reg_named_color("density", 0.1F, 0.1F, 0.6F);
 
-  strcpy(name, "gray00");       /* american */
+  UtilNCopy(name, "gray00", std::size(name));       /* american */
   for(a = 0; a < 100; a = a + 1) {
     name[5] = (a % 10) + '0';
     name[4] = ((a % 100) / 10) + '0';
@@ -1170,7 +1170,7 @@ void ColorReset(PyMOLGlobals * G)
 
 #define B_DIV 35.7143F
 
-  strcpy(name, "o000");
+  UtilNCopy(name, "o000", std::size(name));
   for(a = 0; a < 1000; a = a + 1) {
     set1 = (int) (a / B_DIV);
     name[3] = (a % 10) + '0';

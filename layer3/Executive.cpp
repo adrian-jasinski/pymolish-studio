@@ -740,7 +740,7 @@ void ExecutiveMotionMenuActivate(PyMOLGlobals* G, BlockRect* rect, int expected,
       int frame = MovieXtoFrame(G, &draw_rect, n_frame, x, false);
       WordType frame_str = "0";
       if ((frame >= 0) && (frame < n_frame)) {
-        sprintf(frame_str, "%d", frame + 1);
+        snprintf(frame_str, std::size(frame_str), "%d", frame + 1);
       }
       MenuActivate2Arg(
           G, x, y, x, y, passive, "obj_motion", cKeywordSame, frame_str);
@@ -757,7 +757,7 @@ void ExecutiveMotionMenuActivate(PyMOLGlobals* G, BlockRect* rect, int expected,
             int frame = MovieXtoFrame(G, &draw_rect, n_frame, x, false);
             WordType frame_str = "0";
             if ((frame >= 0) && (frame < n_frame)) {
-              sprintf(frame_str, "%d", frame + 1);
+              snprintf(frame_str, std::size(frame_str), "%d", frame + 1);
             }
             MenuActivate1Arg(
                 G, x, y, x, y, passive, "camera_motion", frame_str);
@@ -775,7 +775,7 @@ void ExecutiveMotionMenuActivate(PyMOLGlobals* G, BlockRect* rect, int expected,
             int frame = MovieXtoFrame(G, &draw_rect, n_frame, x, false);
             WordType frame_str = "0";
             if ((frame >= 0) && (frame < n_frame)) {
-              sprintf(frame_str, "%d", frame + 1);
+              snprintf(frame_str, std::size(frame_str), "%d", frame + 1);
             }
             MenuActivate2Arg(G, x, y, x, y, passive, "obj_motion",
                 rec->obj->Name, frame_str);
@@ -2256,7 +2256,7 @@ int ExecutiveGroup(PyMOLGlobals* G, pymol::zstring_view nameView,
                 while (ListIterate(I->Spec, rec2, next)) {
                   if ((rec2->group == rec) ||
                       WordMatch(G, rec->name, rec2->group_name, ignore_case)) {
-                    strcpy(rec2->group_name, rec->group_name);
+                    UtilNCopy(rec2->group_name, rec->group_name, std::size(rec2->group_name));
                     rec2->group = rec->group;
                   }
                 }
@@ -3440,7 +3440,7 @@ int ExecutiveGetActiveSeleName(
       if (log) {
         if (SettingGetGlobal_i(G, cSetting_logging)) {
           OrthoLineType buf2;
-          sprintf(buf2, "cmd.select('%s','none')\n", name);
+          snprintf(buf2, std::size(buf2), "cmd.select('%s','none')\n", name);
           PLog(G, buf2, cPLog_no_flush);
         }
       }
@@ -3449,7 +3449,7 @@ int ExecutiveGetActiveSeleName(
       SelectorCreateEmpty(G, name, -1);
       if (log) {
         OrthoLineType buf2;
-        sprintf(buf2, "cmd.select('%s','none')\n", name);
+        snprintf(buf2, std::size(buf2), "cmd.select('%s','none')\n", name);
         PLog(G, buf2, cPLog_no_flush);
       }
     }
@@ -3551,7 +3551,7 @@ std::string ExecutiveGetUnusedName(
 {
 
   OrthoLineType unused_name;
-  strcpy(unused_name, prefix);
+  UtilNCopy(unused_name, prefix, std::size(unused_name));
 
   ObjectMakeValidName(G, unused_name);
 
@@ -4098,16 +4098,16 @@ pymol::Result<> ExecutiveLoad(PyMOLGlobals* G, ExecutiveLoadArgs const& args)
       ExecutiveUpdateObjectSelection(G, origObj);
 
     if (fname)
-      sprintf(buf, " CmdLoad: \"%s\" appended into object \"%s\", state %d.\n",
+      snprintf(buf, std::size(buf), " CmdLoad: \"%s\" appended into object \"%s\", state %d.\n",
           fname, object_name, state + 1);
   } else if (obj) {
     ObjectSetName(obj, object_name);
     ExecutiveManageObject(G, obj, zoom, true);
 
     if (fname)
-      sprintf(buf, " CmdLoad: \"%s\" loaded as \"%s\".\n", fname, obj->Name);
+      snprintf(buf, std::size(buf), " CmdLoad: \"%s\" loaded as \"%s\".\n", fname, obj->Name);
     else
-      sprintf(buf, " CmdLoad: loaded as \"%s\".\n", obj->Name);
+      snprintf(buf, std::size(buf), " CmdLoad: loaded as \"%s\".\n", obj->Name);
   }
 
   if (!quiet && buf[0]) {
@@ -4266,11 +4266,11 @@ int ExecutiveProcessPDBFile(PyMOLGlobals* G, pymol::CObject* origObj,
         eff_frame = ((ObjectMolecule*) origObj)->NCSet - 1;
       if (buf) {
         if (fname)
-          sprintf(buf,
+          snprintf(buf, sizeof(OrthoLineType),
               " CmdLoad: \"%s\" appended into object \"%s\", state %d.\n",
               fname, oname, eff_frame + 1);
         else
-          sprintf(buf,
+          snprintf(buf, sizeof(OrthoLineType),
               " CmdLoad: PDB-string appended into object \"%s\", state %d.\n",
               oname, eff_frame + 1);
       }
@@ -4289,21 +4289,21 @@ int ExecutiveProcessPDBFile(PyMOLGlobals* G, pymol::CObject* origObj,
         if (next_pdb) {
           if (pdb_name[0] == 0) {
             if (cur_name[0]) {
-              sprintf(pdb_name, "%s_%04d", cur_name, n_processed + 1);
+              snprintf(pdb_name, std::size(pdb_name), "%s_%04d", cur_name, n_processed + 1);
             } else {
-              sprintf(pdb_name, "%s_%04d", oname, n_processed + 1);
+              snprintf(pdb_name, std::size(pdb_name), "%s_%04d", oname, n_processed + 1);
             }
           } else if (multiplex > 0) {
             if (pdb_info->multi_object_status ==
                 1) { /* this is a multi-object PDB file */
-              strcpy(cur_name, pdb_name);
+              UtilNCopy(cur_name, pdb_name, std::size(cur_name));
             } else if (cur_name[0] == 0) {
-              strcpy(cur_name, oname);
+              UtilNCopy(cur_name, oname, std::size(cur_name));
             }
             if (model_number > 0) {
-              sprintf(pdb_name, "%s_%04d", cur_name, model_number);
+              snprintf(pdb_name, std::size(pdb_name), "%s_%04d", cur_name, model_number);
             } else {
-              sprintf(pdb_name, "%s_%04d", cur_name, n_processed + 1);
+              snprintf(pdb_name, std::size(pdb_name), "%s_%04d", cur_name, n_processed + 1);
             }
           }
           ObjectSetName(obj, pdb_name);
@@ -4312,21 +4312,21 @@ int ExecutiveProcessPDBFile(PyMOLGlobals* G, pymol::CObject* origObj,
           if (is_repeat_pass) {
             if (pdb_name[0] == 0) {
               if (cur_name[0]) {
-                sprintf(pdb_name, "%s_%04d", cur_name, n_processed + 1);
+                snprintf(pdb_name, std::size(pdb_name), "%s_%04d", cur_name, n_processed + 1);
               } else {
-                sprintf(pdb_name, "%s_%04d", oname, n_processed + 1);
+                snprintf(pdb_name, std::size(pdb_name), "%s_%04d", oname, n_processed + 1);
               }
             } else if (multiplex > 0) {
               if (pdb_info->multi_object_status ==
                   1) { /* this is a multi-object PDB file */
-                strcpy(cur_name, pdb_name);
+                UtilNCopy(cur_name, pdb_name, std::size(cur_name));
               } else if (cur_name[0] == 0) {
-                strcpy(cur_name, oname);
+                UtilNCopy(cur_name, oname, std::size(cur_name));
               }
               if (model_number > 0) {
-                sprintf(pdb_name, "%s_%04d", cur_name, model_number);
+                snprintf(pdb_name, std::size(pdb_name), "%s_%04d", cur_name, model_number);
               } else {
-                sprintf(pdb_name, "%s_%04d", cur_name, n_processed + 1);
+                snprintf(pdb_name, std::size(pdb_name), "%s_%04d", cur_name, n_processed + 1);
               }
             }
             ObjectSetName(obj, pdb_name);  /* from PDB */
@@ -4348,19 +4348,18 @@ int ExecutiveProcessPDBFile(PyMOLGlobals* G, pymol::CObject* origObj,
           if (buf) {
             if (n_processed < 1) {
               if (fname)
-                sprintf(
-                    buf, " CmdLoad: \"%s\" loaded as \"%s\".\n", fname, oname);
+                snprintf(buf, sizeof(OrthoLineType), " CmdLoad: \"%s\" loaded as \"%s\".\n", fname, oname);
               else
-                sprintf(buf,
+                snprintf(buf, sizeof(OrthoLineType),
                     " CmdLoad: PDB-string loaded into object \"%s\", state "
                     "%d.\n",
                     oname, eff_frame + 1);
             } else {
               if (fname) {
-                sprintf(buf, " CmdLoad: loaded %d objects from \"%s\".\n",
+                snprintf(buf, sizeof(OrthoLineType), " CmdLoad: loaded %d objects from \"%s\".\n",
                     n_processed + 1, fname);
               } else {
-                sprintf(buf, " CmdLoad: loaded %d objects from string.\n",
+                snprintf(buf, sizeof(OrthoLineType), " CmdLoad: loaded %d objects from string.\n",
                     n_processed + 1);
               }
             }
@@ -5249,8 +5248,8 @@ static int ExecutiveSetNamedEntries(
       if (ok && !skip) {
         if (part_rest && ExecutiveProcessObjectName(G, rec->name, new_name)) {
           // rename duplicates
-          strcpy(rec->obj->Name, new_name);
-          strcpy(rec->name, new_name);
+          UtilNCopy(rec->obj->Name, new_name, std::size(rec->obj->Name));
+          UtilNCopy(rec->name, new_name, std::size(rec->name));
         }
 
         // replace existing object (unless auto_rename_duplicate_objects=1)
@@ -9957,7 +9956,7 @@ pymol::Result<> ExecutiveCopy(
     return pymol::make_error("Failed to create copy");
   }
 
-  strcpy(oDst->Name, dst);
+  UtilNCopy(oDst->Name, dst, std::size(oDst->Name));
   ExecutiveManageObject(G, oDst, zoom, false);
 
   PRINTFB(G, FB_Executive, FB_Actions)
@@ -10867,7 +10866,7 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
         FreeP(idx1);
         FreeP(idx2);
       } else if (op1.nvv1 != op2.nvv1) {
-        sprintf(buffer, "Atom counts between selections don't match (%d vs %d)",
+        snprintf(buffer, std::size(buffer), "Atom counts between selections don't match (%d vs %d)",
             op1.nvv1, op2.nvv1);
         ErrMessage(G, "ExecutiveRMS", buffer);
         n_pair = 0;
@@ -11357,23 +11356,23 @@ float ExecutiveRMSPairs(
   op2.vv1 = (float*) VLAMalloc(1000, sizeof(float), 5, 1); /* auto-zero */
   op2.code = OMOP_AVRT;
 
-  strcpy(combi, "(");
+  UtilNCopy(combi, "(", std::size(combi));
   c = 0;
   auto pairs = sele.size() / 2;
   for (a = 0; a < pairs; a++) {
     sele1 = sele[c].getIndex();
     if (sele1 >= 0)
       ExecutiveObjMolSeleOp(G, sele1, &op1);
-    strcat(combi, sele[c].getName());
+    UtilNConcat(combi, sele[c].getName(), std::size(combi));
     if (a < (pairs - 1))
-      strcat(combi, " or ");
+      UtilNConcat(combi, " or ", std::size(combi));
     c++;
     sele2 = sele[c].getIndex();
     if (sele2 >= 0)
       ExecutiveObjMolSeleOp(G, sele2, &op2);
     c++;
   }
-  strcat(combi, ")");
+  UtilNConcat(combi, ")", std::size(combi));
   for (a = 0; a < op1.nvv1; a++) {
     inv = (float) op1.vc1[a];
     if (inv) {
@@ -11396,7 +11395,7 @@ float ExecutiveRMSPairs(
   }
   if (op1.vv1 && op2.vv1) {
     if (op1.nvv1 != op2.nvv1) {
-      sprintf(buffer,
+      snprintf(buffer, std::size(buffer),
           "Atom counts between selection sets don't match (%d != %d).",
           op1.nvv1, op2.nvv1);
       ErrMessage(G, __func__, buffer);
@@ -14668,7 +14667,7 @@ static void ExecutiveDoAutoGroup(PyMOLGlobals* G, SpecRec* rec)
               if (WordMatchExact(
                       G, group_rec->name, seek_group_name, ignore_case)) {
                 found_group = group_rec;
-                strcpy(rec->group_name, seek_group_name);
+                UtilNCopy(rec->group_name, seek_group_name, std::size(rec->group_name));
                 break;
               }
             }
@@ -14679,7 +14678,7 @@ static void ExecutiveDoAutoGroup(PyMOLGlobals* G, SpecRec* rec)
           auto obj = new ObjectGroup(G);
           if (obj) {
             ObjectSetName(obj, seek_group_name);
-            strcpy(rec->group_name, obj->Name);
+            UtilNCopy(rec->group_name, obj->Name, std::size(rec->group_name));
             ExecutiveManageObject(G, obj, false, true);
             ExecutiveInvalidateGroups(G, false);
             break;
@@ -14732,7 +14731,7 @@ void ExecutiveManageObject(
       PRINTFB(G, FB_Executive, FB_Warnings)
       " Executive: object name \"%s\" is illegal -- renamed to 'all_'.\n",
           obj->Name ENDFB(G);
-      strcat(obj->Name, "_"); /* don't allow object named "all" */
+      UtilNConcat(obj->Name, "_", std::size(obj->Name)); /* don't allow object named "all" */
     } else if (SelectorNameIsKeyword(G, obj->Name)) {
       PRINTFB(G, FB_Executive, FB_Warnings)
       " Executive-Warning: name \"%s\" collides with a selection language "
@@ -14762,7 +14761,7 @@ void ExecutiveManageObject(
     if (!rec)
       ListElemCalloc(G, rec, SpecRec);
 
-    strcpy(rec->name, obj->Name);
+    UtilNCopy(rec->name, obj->Name, std::size(rec->name));
     rec->type = cExecObject;
     rec->obj = obj;
     previousVisible = rec->visible;
@@ -14847,7 +14846,7 @@ void ExecutiveManageSelection(PyMOLGlobals* G, const char* name)
 
   if (!rec) {
     ListElemCalloc(G, rec, SpecRec);
-    strcpy(rec->name, name);
+    UtilNCopy(rec->name, name, std::size(rec->name));
     rec->type = cExecSelection;
     rec->next = nullptr;
     rec->sele_color = -1;
@@ -15311,7 +15310,7 @@ static void ExecutiveSpecEnable(
 {
   if (log && SettingGetGlobal_b(G, cSetting_logging)) {
     OrthoLineType buffer = "";
-    sprintf(buffer, "cmd.enable('%s',%d)", rec->obj->Name, parents);
+    snprintf(buffer, std::size(buffer), "cmd.enable('%s',%d)", rec->obj->Name, parents);
     PLog(G, buffer, cPLog_pym);
   }
 
@@ -15503,7 +15502,7 @@ int CExecutive::release(int button, int x, int y, int mod)
               if (rec->hilight == 2) {
                 ObjectGroup* obj = (ObjectGroup*) rec->obj;
                 OrthoLineType buf2;
-                sprintf(buf2, "cmd.group(\"%s\",action='%s')\n", rec->obj->Name,
+                snprintf(buf2, std::size(buf2), "cmd.group(\"%s\",action='%s')\n", rec->obj->Name,
                     obj->OpenOrClosed ? "close" : "open");
                 PLog(G, buf2, cPLog_no_flush);
                 ExecutiveGroup(G, rec->obj->Name, "", 5, 1);
@@ -15725,7 +15724,7 @@ int CExecutive::drag(int x, int y, int mod)
                 first = mov_rec->group->name;
                 second = mov_rec->name;
                 order_flag = true;
-                strcpy(mov_rec->group_name, mov_rec->group->group_name);
+                UtilNCopy(mov_rec->group_name, mov_rec->group->group_name, std::size(mov_rec->group_name));
                 group_flag = true;
               } else if (mov_rec && new_rec) {
                 if (new_rec->isChildOf(mov_rec)) {
@@ -15751,7 +15750,7 @@ int CExecutive::drag(int x, int y, int mod)
                       ObjectGroup* group = (ObjectGroup*) new_rec->obj;
                       if (group->OpenOrClosed && !is_child) {
                         /* put inside an open group */
-                        strcpy(mov_rec->group_name, new_rec->name);
+                        UtilNCopy(mov_rec->group_name, new_rec->name, std::size(mov_rec->group_name));
                         order_flag = false;
                         group_flag = true;
                       }
@@ -15764,9 +15763,9 @@ int CExecutive::drag(int x, int y, int mod)
                       ObjectGroup* group = (ObjectGroup*) new_rec->obj;
                       if (group->OpenOrClosed && !is_child) {
                         /* put inside group */
-                        strcpy(mov_rec->group_name, new_rec->name);
+                        UtilNCopy(mov_rec->group_name, new_rec->name, std::size(mov_rec->group_name));
                       } else {
-                        strcpy(mov_rec->group_name, new_rec->group_name);
+                        UtilNCopy(mov_rec->group_name, new_rec->group_name, std::size(mov_rec->group_name));
                       }
 
                       /* WLD TEST */
@@ -15784,7 +15783,7 @@ int CExecutive::drag(int x, int y, int mod)
                       /* WLD END */
 
                     } else
-                      strcpy(mov_rec->group_name, new_rec->group_name);
+                      UtilNCopy(mov_rec->group_name, new_rec->group_name, std::size(mov_rec->group_name));
                     group_flag = true;
                   }
                 }
@@ -15793,10 +15792,10 @@ int CExecutive::drag(int x, int y, int mod)
               if (group_flag) {
                 OrthoLineType buf;
                 if (mov_rec->group_name[0]) {
-                  sprintf(buf, "group %s, %s\n", mov_rec->group_name,
+                  snprintf(buf, std::size(buf), "group %s, %s\n", mov_rec->group_name,
                       mov_rec->name);
                 } else {
-                  sprintf(buf, "ungroup %s\n", mov_rec->name);
+                  snprintf(buf, std::size(buf), "ungroup %s\n", mov_rec->name);
                 }
                 PLog(G, buf, cPLog_no_flush);
                 ExecutiveInvalidateGroups(G, false);
@@ -15805,9 +15804,9 @@ int CExecutive::drag(int x, int y, int mod)
               }
               if (order_flag && first && second) {
                 OrthoLineType order_input;
-                sprintf(order_input, "%s %s", first, second);
+                snprintf(order_input, std::size(order_input), "%s %s", first, second);
                 ExecutiveOrder(G, order_input, false, location);
-                sprintf(I->ReorderLog, "cmd.order(\"%s\",location=\"%s\")\n",
+                snprintf(I->ReorderLog, std::size(I->ReorderLog), "cmd.order(\"%s\",location=\"%s\")\n",
                     order_input, (location == -2) ? "upper" : "current");
                 PLog(G, I->ReorderLog, cPLog_no_flush);
                 I->RecoverPressed = mov_rec;
@@ -16608,7 +16607,7 @@ int ExecutiveInit(PyMOLGlobals* G)
 
     ListElemCalloc(G, rec, SpecRec);
 
-    strcpy(rec->name, cKeywordAll);
+    UtilNCopy(rec->name, cKeywordAll, std::size(rec->name));
     rec->type = cExecAll;
     rec->visible = true;
     rec->next = nullptr;

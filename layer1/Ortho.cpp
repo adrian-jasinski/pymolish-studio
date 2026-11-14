@@ -91,7 +91,6 @@ public:
   int BusyStatus[4]{};
   char BusyMessage[255]{};
   char* WizardPromptVLA{};
-  int SplashFlag{};
   int HaveSeqViewer{};
   BlockRect LoopRect{};
   int LoopFlag{};
@@ -328,13 +327,13 @@ void OrthoSpecial(PyMOLGlobals* G, int k, int x, int y, int mod)
   switch (k) {
   case P_GLUT_KEY_DOWN:
     if (I->CurChar && (I->HistoryView == I->HistoryLine)) {
-      strcpy(I->History[I->HistoryLine], I->Line[curLine] + I->PromptChar);
+      UtilNCopy(I->History[I->HistoryLine], I->Line[curLine] + I->PromptChar, std::size(I->History[I->HistoryLine]));
     }
     I->HistoryView = (I->HistoryView + 1) & OrthoHistoryLines;
-    strcpy(I->Line[curLine], I->Prompt);
+    UtilNCopy(I->Line[curLine], I->Prompt, std::size(I->Line[curLine]));
     I->PromptChar = strlen(I->Prompt);
     if (I->History[I->HistoryView][0]) {
-      strcat(I->Line[curLine], I->History[I->HistoryView]);
+      UtilNConcat(I->Line[curLine], I->History[I->HistoryView], std::size(I->Line[curLine]));
       I->CurChar = strlen(I->Line[curLine]);
     } else {
       I->CurChar = I->PromptChar;
@@ -345,13 +344,13 @@ void OrthoSpecial(PyMOLGlobals* G, int k, int x, int y, int mod)
     break;
   case P_GLUT_KEY_UP:
     if (I->CurChar && (I->HistoryView == I->HistoryLine)) {
-      strcpy(I->History[I->HistoryLine], I->Line[curLine] + I->PromptChar);
+      UtilNCopy(I->History[I->HistoryLine], I->Line[curLine] + I->PromptChar, std::size(I->History[I->HistoryLine]));
     }
     I->HistoryView = (I->HistoryView - 1) & OrthoHistoryLines;
-    strcpy(I->Line[curLine], I->Prompt);
+    UtilNCopy(I->Line[curLine], I->Prompt, std::size(I->Line[curLine]));
     I->PromptChar = strlen(I->Prompt);
     if (I->History[I->HistoryView][0]) {
-      strcat(I->Line[curLine], I->History[I->HistoryView]);
+      UtilNConcat(I->Line[curLine], I->History[I->HistoryView], std::size(I->Line[curLine]));
       I->CurChar = strlen(I->Line[curLine]);
     } else {
       I->CurChar = I->PromptChar;
@@ -424,13 +423,6 @@ void OrthoRemoveAutoOverlay(PyMOLGlobals* G)
 {
   COrtho* I = G->Ortho;
   I->AutoOverlayStopLine = I->CurLine;
-}
-
-/*========================================================================*/
-void OrthoRemoveSplash(PyMOLGlobals* G)
-{
-  COrtho* I = G->Ortho;
-  I->SplashFlag = false;
 }
 
 /*========================================================================*/
@@ -528,7 +520,7 @@ void OrthoBusyMessage(PyMOLGlobals* G, const char* message)
 {
   COrtho* I = G->Ortho;
   if (strlen(message) < 255)
-    strcpy(I->BusyMessage, message);
+    UtilNCopy(I->BusyMessage, message, std::size(I->BusyMessage));
 }
 
 /*========================================================================*/
@@ -739,7 +731,7 @@ void OrthoRestorePrompt(PyMOLGlobals* G)
         OrthoNewLine(G, nullptr, true);
       }
       curLine = I->CurLine & OrthoSaveLines;
-      strcpy(I->Line[curLine], I->Saved);
+      UtilNCopy(I->Line[curLine], I->Saved, std::size(I->Line[curLine]));
       I->Saved[0] = 0;
       I->CurChar = I->SavedCC;
       I->PromptChar = I->SavedPC;
@@ -748,7 +740,7 @@ void OrthoRestorePrompt(PyMOLGlobals* G)
         OrthoNewLine(G, I->Prompt, true);
       else {
         curLine = I->CurLine & OrthoSaveLines;
-        strcpy(I->Line[curLine], I->Prompt);
+        UtilNCopy(I->Line[curLine], I->Prompt, std::size(I->Line[curLine]));
         I->CurChar = (I->PromptChar = strlen(I->Prompt));
       }
     }
@@ -763,7 +755,7 @@ static void OrthoKeyControl(PyMOLGlobals* G, unsigned char k)
 
   /* safer... */
 
-  sprintf(buffer, "cmd._ctrl(chr(%d))", k);
+  snprintf(buffer, std::size(buffer), "cmd._ctrl(chr(%d))", k);
   /* sprintf(buffer,"_ctrl %c",k); */
   PLog(G, buffer, cPLog_pym);
   PParse(G, buffer);
@@ -777,7 +769,7 @@ static void OrthoKeyCmmd(PyMOLGlobals* G, unsigned char k)
 
   /* safer... */
 
-  sprintf(buffer, "cmd._cmmd(chr(%d))", k);
+  snprintf(buffer, std::size(buffer), "cmd._cmmd(chr(%d))", k);
   /* sprintf(buffer,"_ctrl %c",k); */
   PLog(G, buffer, cPLog_pym);
   PParse(G, buffer);
@@ -791,7 +783,7 @@ static void OrthoKeyCtSh(PyMOLGlobals* G, unsigned char k)
 
   /* safer... */
 
-  sprintf(buffer, "cmd._ctsh(chr(%d))", k);
+  snprintf(buffer, std::size(buffer), "cmd._ctsh(chr(%d))", k);
   /* sprintf(buffer,"_ctrl %c",k); */
   PLog(G, buffer, cPLog_pym);
   PParse(G, buffer);
@@ -810,7 +802,7 @@ static void OrthoKeyAlt(PyMOLGlobals* G, unsigned char k)
        ignore the modifier */
     OrthoKey(G, k, 0, 0, 0);
   } else {
-    sprintf(buffer, "cmd._alt(chr(%d))", k);
+    snprintf(buffer, std::size(buffer), "cmd._alt(chr(%d))", k);
     /* sprintf(buffer,"_alt %c",k); */
     PLog(G, buffer, cPLog_pym);
     PParse(G, buffer);
@@ -823,7 +815,7 @@ static int add_normal_char(COrtho* I, unsigned char k)
   char buffer[OrthoLineLength];
   int curLine = I->CurLine & OrthoSaveLines;
   if (I->CursorChar >= 0) {
-    strcpy(buffer, I->Line[curLine] + I->CursorChar);
+    UtilNCopy(buffer, I->Line[curLine] + I->CursorChar, std::size(buffer));
     I->Line[curLine][I->CursorChar] = k;
     I->CursorChar++;
     I->CurChar++;
@@ -883,7 +875,7 @@ void OrthoKey(PyMOLGlobals* G, unsigned char k, int x, int y, int mod)
       } else {
         if (I->CursorChar > -1 && I->CursorChar < I->CurChar) {
           curLine = I->CurLine & OrthoSaveLines;
-          strcpy(buffer, I->Line[curLine] + I->CursorChar + 1);
+          UtilNCopy(buffer, I->Line[curLine] + I->CursorChar + 1, std::size(buffer));
           I->CurChar--;
           strcpy(I->Line[curLine] + I->CursorChar, buffer);
         }
@@ -894,7 +886,7 @@ void OrthoKey(PyMOLGlobals* G, unsigned char k, int x, int y, int mod)
         curLine = I->CurLine & OrthoSaveLines;
         if (I->CursorChar >= 0) {
           if (I->CursorChar > I->PromptChar) {
-            strcpy(buffer, I->Line[curLine] + I->CursorChar);
+            UtilNCopy(buffer, I->Line[curLine] + I->CursorChar, std::size(buffer));
             I->Line[curLine][I->CursorChar] = k;
             I->CursorChar--;
             I->CurChar--;
@@ -926,13 +918,13 @@ void OrthoKey(PyMOLGlobals* G, unsigned char k, int x, int y, int mod)
       } else if ((I->CurChar > I->PromptChar) && (I->CursorChar >= 0) &&
                  (I->CursorChar < I->CurChar)) { /* deleting */
         curLine = I->CurLine & OrthoSaveLines;
-        strcpy(buffer, I->Line[curLine] + I->CursorChar + 1);
+        UtilNCopy(buffer, I->Line[curLine] + I->CursorChar + 1, std::size(buffer));
         I->CurChar--;
         strcpy(I->Line[curLine] + I->CursorChar, buffer);
       } else { /* filename completion query */
         curLine = I->CurLine & OrthoSaveLines;
         if (I->PromptChar) {
-          strcpy(buffer, I->Line[curLine]);
+          UtilNCopy(buffer, I->Line[curLine], std::size(buffer));
           PComplete(G, buffer + I->PromptChar,
               sizeof(OrthoLineType) -
                   I->PromptChar); /* just print, don't complete */
@@ -945,13 +937,13 @@ void OrthoKey(PyMOLGlobals* G, unsigned char k, int x, int y, int mod)
       } else {
         curLine = I->CurLine & OrthoSaveLines;
         if (I->PromptChar) {
-          strcpy(buffer, I->Line[curLine]);
+          UtilNCopy(buffer, I->Line[curLine], std::size(buffer));
 
           if (PComplete(G, buffer + I->PromptChar,
                   sizeof(OrthoLineType) - I->PromptChar)) {
             OrthoRestorePrompt(G);
             curLine = I->CurLine & OrthoSaveLines;
-            strcpy(I->Line[curLine], buffer);
+            UtilNCopy(I->Line[curLine], buffer, std::size(I->Line[curLine]));
             I->CurChar = strlen(I->Line[curLine]);
             I->CursorChar = -1;
           }
@@ -963,16 +955,12 @@ void OrthoKey(PyMOLGlobals* G, unsigned char k, int x, int y, int mod)
           !(mod & (cOrthoCTRL | cOrthoSHIFT))) {
         PParse(G, "_quit");
       } else {
-        if (I->SplashFlag) {
-          OrthoRemoveSplash(G);
-        } else {
-          if (mod & cOrthoSHIFT)
-            SettingSetGlobal_i(G, cSetting_overlay,
-                !(SettingGetGlobal_i(G, cSetting_overlay)));
-          else
-            SettingSetGlobal_b(
-                G, cSetting_text, !(SettingGetGlobal_b(G, cSetting_text)));
-        }
+        if (mod & cOrthoSHIFT)
+          SettingSetGlobal_i(G, cSetting_overlay,
+              !(SettingGetGlobal_i(G, cSetting_overlay)));
+        else
+          SettingSetGlobal_b(
+              G, cSetting_text, !(SettingGetGlobal_b(G, cSetting_text)));
       }
       break;
     case 13: /* CTRL M -- carriage return */
@@ -1038,10 +1026,10 @@ void OrthoParseCurrentLine(PyMOLGlobals* G)
   OrthoRemoveAutoOverlay(G);
   curLine = I->CurLine & OrthoSaveLines;
   I->Line[curLine][I->CurChar] = 0;
-  strcpy(buffer, I->Line[curLine] + I->PromptChar);
+  UtilNCopy(buffer, I->Line[curLine] + I->PromptChar, std::size(buffer));
 #ifndef _PYMOL_NOPY
   if (buffer[0]) {
-    strcpy(I->History[I->HistoryLine], buffer);
+    UtilNCopy(I->History[I->HistoryLine], buffer, std::size(I->History[I->HistoryLine]));
     I->HistoryLine = (I->HistoryLine + 1) & OrthoHistoryLines;
     I->History[I->HistoryLine][0] = 0;
     I->HistoryView = I->HistoryLine;
@@ -1068,7 +1056,7 @@ void OrthoAddOutput(PyMOLGlobals* G, const char* str)
   int wrap;
   curLine = I->CurLine & OrthoSaveLines;
   if (I->InputFlag) {
-    strcpy(I->Saved, I->Line[curLine]);
+    UtilNCopy(I->Saved, I->Line[curLine], std::size(I->Saved));
     I->SavedPC = I->PromptChar;
     I->SavedCC = I->CurChar;
     I->PromptChar = 0;
@@ -1173,7 +1161,7 @@ void OrthoNewLine(PyMOLGlobals* G, const char* prompt, int crlf)
   curLine = I->CurLine & OrthoSaveLines;
 
   if (prompt) {
-    strcpy(I->Line[curLine], prompt);
+    UtilNCopy(I->Line[curLine], prompt, std::size(I->Line[curLine]));
     I->CurChar = (I->PromptChar = strlen(prompt));
     I->InputFlag = 1;
   } else {
@@ -1634,7 +1622,7 @@ static void OrthoDrawText(PyMOLGlobals* G, CGO* orthoCGO, bool draw_text,
   auto y = cOrthoBottomMargin + MovieGetPanelHeight(G);
 
   int showLines{};
-  if (draw_text || I->SplashFlag)
+  if (draw_text)
     showLines = I->ShowLines;
   else {
     showLines = internal_feedback + numOverlayLines;
@@ -1991,7 +1979,7 @@ void OrthoDoDraw(PyMOLGlobals* G, const OrthoDrawInfo& drawInfo)
 
       OrthoDrawWizardPrompt(G, orthoCGO);
 
-      if (draw_text || I->SplashFlag) {
+      if (draw_text) {
         Block* block;
         int active_tmp;
         block = SeqGetBlock(G);
@@ -2475,7 +2463,6 @@ int OrthoButton(PyMOLGlobals* G, int button, int state, int x, int y, int mod)
     I->WrapClickSide = ClickSide::None;
   }
 
-  OrthoRemoveSplash(G);
   OrthoRemoveAutoOverlay(G);
   I->X = x;
   I->Y = y;
@@ -2589,6 +2576,7 @@ void OrthoSplash(PyMOLGlobals* G)
   /* END PROPRIETARY CODE SEGMENT */
   {
     /* Splash message for unrestricted access open-source versions... */
+    PRINTF " pymolish-studio, an independent fork.\n" ENDF(G);
     PRINTF " PyMOL(TM) Molecular Graphics System, Version " ENDF(G);
     PRINTF _PyMOL_VERSION ENDF(G);
     PRINTF ".\n" ENDF(G);
@@ -2670,7 +2658,6 @@ int OrthoInit(PyMOLGlobals* G, int showSplash)
     I->HistoryView = 0;
     I->Line[I->CurLine & OrthoSaveLines][I->CurChar] = 0;
     I->WizardPromptVLA = nullptr;
-    I->SplashFlag = false;
     I->ShowLines = 1;
     I->Saved[0] = 0;
     I->DirtyFlag = true;
@@ -2683,16 +2670,15 @@ int OrthoInit(PyMOLGlobals* G, int showSplash)
 
     if (showSplash) {
       OrthoSplash(G);
-      I->SplashFlag = true;
     }
     /*  OrthoFeedbackIn(G," "); */
     I->CurLine++;
 
 #ifndef _PYMOL_LIB
     /* prompt (and typing) should only be shown for PyMOL, not libpymol */
-    strcpy(I->Prompt, "PyMOL>");
+    UtilNCopy(I->Prompt, "PyMOL>", std::size(I->Prompt));
 #endif
-    strcpy(I->Line[I->CurLine], I->Prompt);
+    UtilNCopy(I->Line[I->CurLine], I->Prompt, std::size(I->Line[I->CurLine]));
     I->CurChar = (I->PromptChar = strlen(I->Prompt));
     I->InputFlag = 1;
 
@@ -2831,7 +2817,7 @@ void OrthoPasteIn(PyMOLGlobals* G, const char* buffer)
 
   if (I->InputFlag) {
     if (I->CursorChar >= 0) {
-      strcpy(buf2, I->Line[curLine] + I->CursorChar);
+      UtilNCopy(buf2, I->Line[curLine] + I->CursorChar, std::size(buf2));
       strcpy(I->Line[curLine] + I->CursorChar, buffer);
       I->CurChar = strlen(I->Line[curLine]);
       I->CursorChar = I->CurChar;
@@ -2848,7 +2834,7 @@ void OrthoPasteIn(PyMOLGlobals* G, const char* buffer)
         I->CurChar = strlen(I->Line[curLine]);
       }
     } else {
-      strcat(I->Line[curLine], buffer);
+      UtilNConcat(I->Line[curLine], buffer, std::size(I->Line[curLine]));
       I->CurChar = strlen(I->Line[curLine]);
       while ((I->Line[curLine][I->CurChar - 1] == 10) ||
              (I->Line[curLine][I->CurChar - 1] == 13)) {

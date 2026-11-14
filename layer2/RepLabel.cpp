@@ -1398,7 +1398,11 @@ void RepLabelRenderImmediate(RepLabel* I, RenderInfo* info)
   CGO* connectorCGO = nullptr;
   float xn[3] = {1.0F, 0.0F, 0.0F};
   float yn[3] = {0.0F, 1.0F, 0.0F};
-  int pre_use_shaders = info->use_shaders;
+  /* Labels come here with use_shaders on when the driver has no geometry
+     shaders (Mesa); the text must then be drawn without shaders too, or
+     every character is a solid block. */
+  const int pre_use_shaders = info->use_shaders;
+  info->use_shaders = false;
 
   Pickable* p = I->P;
   CGOFree(I->shaderCGO);
@@ -1477,6 +1481,7 @@ void RepLabelRenderImmediate(RepLabel* I, RenderInfo* info)
               I->labelV[c].position, (draw_var ? 1 : 0),
               I->labelV[c].getRelativeMode(), false, I->shaderCGO)) {
         CGOFree(connectorCGO);
+        info->use_shaders = pre_use_shaders;
         return;
       }
       if (draw_var) {
@@ -1534,6 +1539,7 @@ void RepLabelRenderImmediate(RepLabel* I, RenderInfo* info)
   if (float_text) {
     glEnable(GL_DEPTH_TEST);
   }
+  info->use_shaders = pre_use_shaders;
 }
 
 static void RepLabelGenerateShaderCGO(RepLabel* I, RenderInfo* info)

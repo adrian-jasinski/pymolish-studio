@@ -1642,7 +1642,10 @@ static int TriangleFill(TriangleSurfaceRec * II, float *v, float *vn, int n,
       minDist2 = I->maxEdgeLenSq;
 
       for(a = 0; a < n; a++) {
-        if(!I->edgeStatus[a]) {
+        /* Only a vertex no triangle has touched can start a patch. The edge
+           list alone does not tell: edges are filed under their lower
+           vertex, so a finished vertex can have none of its own. */
+        if(!I->edgeStatus[a] && I->vertActive[a] == -1) {
           v0 = v + a * 3;
           n0 = vn + 3 * a;
 
@@ -1655,16 +1658,15 @@ static int TriangleFill(TriangleSurfaceRec * II, float *v, float *vn, int n,
               if(j != a) {
                 float dif2 = diffsq3f(v + 3 * j, v0);
                 if(dif2 < minDist2)
-                  if(I->vertActive[a] == -1)
-                    if(TriangleEdgeStatus(I, a, j) >= 0) {      /* can we put a triangle here? */
-                      n1 = vn + 3 * j;
-                      if(dot_product3f(n0, n1) > 0.5) { /* start with vertices pointing the same way */
-                        minDist2 = dif2;
-                        i1 = a;
-                        i2 = j;
-                        first_vert_used = first_vert;
-                      }
+                  if(TriangleEdgeStatus(I, a, j) >= 0) {      /* can we put a triangle here? */
+                    n1 = vn + 3 * j;
+                    if(dot_product3f(n0, n1) > 0.5) { /* start with vertices pointing the same way */
+                      minDist2 = dif2;
+                      i1 = a;
+                      i2 = j;
+                      first_vert_used = first_vert;
                     }
+                  }
               }
               j = map->EList[i++];
             }

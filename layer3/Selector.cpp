@@ -6250,7 +6250,7 @@ int SelectorCreateObjectMolecule(PyMOLGlobals * G, SelectorID_t sele, const char
           }
           if(cs1) {
             if((!cs2->Name[0]) && (cs1->Name[0]))       /* copy the molecule name (if any) */
-              strcpy(cs2->Name, cs1->Name);
+              UtilNCopy(cs2->Name, cs1->Name, std::size(cs2->Name));
 
             if(CoordSetGetAtomVertex(cs1, at, cs2->coordPtr(c))) {
               a2 = cs->IdxToAtm[I->Table[a].index];     /* actual merged atom index */

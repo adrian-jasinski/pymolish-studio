@@ -2,6 +2,230 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-14 pymolish-studio
+
+	* 4.8.0
+
+	* GUI
+	  - Own application icon (data/pymol/icons/pymolish.png) and logo
+	    (logo.png). The upstream PyMOL logo icon2.svg is removed.
+	  - The window title is "pymolish-studio". The About box names the
+	    fork, says it is not a Schrodinger product, keeps the copyright
+	    lines and ends with the trademark footnote; pymol.org and the
+	    Schrodinger sales address are gone from it.
+	  - Windows and macOS bundles carry the icon.
+
+	* Core
+	  - cmd.splash prints one more line, first: "pymolish-studio, an
+	    independent fork." The upstream lines are unchanged.
+
+
+2026-11-14 pymolish-studio
+
+	* 4.7.10
+
+	* Core
+	  - Atom labels are text again in the viewport on drivers without
+	    the EXT_geometry_shader4 extension (all Mesa drivers on Linux:
+	    Intel, AMD, software). Each character was drawn as a solid
+	    block in the color of the geometry drawn before it. Ray-traced
+	    images and distance labels were not affected.
+	  - No cmd.* change.
+
+
+2026-11-14 pymolish-studio
+
+	* 4.7.9
+
+	* Core
+	  - The neighbor table behind distance searches (MapSetupExpress)
+	    is built about 3 times faster for more than 10000 points: the
+	    lists are sized first and then filled on all cores (OpenMP
+	    builds). Same table as before. A surface of 1aon (58870 atoms)
+	    builds 10 such tables: 7.31 s to 6.24 s.
+	  - No cmd.* change.
+
+
+2026-11-14 pymolish-studio
+
+	* 4.7.8
+
+	* Core
+	  - Building a molecular surface is faster: the solvent dots around
+	    each atom are computed on all cores (OpenMP builds). 1aon
+	    (58870 atoms): 8.63 s to 7.31 s. Same surface for any thread
+	    count.
+	  - No cmd.* change.
+
+
+2026-11-14 pymolish-studio
+
+	* 4.7.7
+
+	* Core
+	  - Building a molecular surface is faster: the triangulation no
+	    longer re-walks the neighbors of finished vertices each time it
+	    looks for a place to start a new patch. 1aon (58870 atoms):
+	    9.44 s to 8.63 s. Same triangles as before.
+	  - No cmd.* change.
+
+
+2026-11-14 pymolish-studio
+
+	* 4.7.6
+
+	* Core
+	  - "set" with a text value of 1024 characters or more read past
+	    a buffer when it printed "Setting: ... set to ...". The echo is
+	    now cut at 1023 characters; the stored value is complete.
+	  - cmd.label2 wrote one byte past a buffer for a label of 1024
+	    characters or more. Such labels are now cut at 1023 characters.
+	  - The "CmdLoad: ... loaded as ..." message of the PDB reader can
+	    no longer overflow with a very long file name (only reachable
+	    through the C API).
+
+
+2026-11-14 pymolish-studio
+
+	* 4.7.5
+
+	* Core
+	  - 22 strcat() calls into fixed-size buffers now append at most
+	    what fits (UtilNConcat). No visible change for text that fits.
+	  - No cmd.* change.
+
+
+2026-11-13 pymolish-studio
+
+	* 4.7.4
+
+	* Core
+	  - 159 strcpy() calls into fixed-size buffers now copy at most
+	    the size of the buffer (UtilNCopy): a name that does not fit is
+	    cut instead of written past the end. No visible change for
+	    text that fits.
+	  - No cmd.* change.
+
+
+2026-11-13 pymolish-studio
+
+	* 4.7.3
+
+	* Core
+	  - 227 sprintf() calls that wrote into fixed-size buffers are
+	    now snprintf() with the size of the buffer: text that does not
+	    fit is cut instead of written past the end. No visible change
+	    for text that fits.
+	  - No cmd.* change.
+
+
+2026-11-13 pymolish-studio
+
+	* 4.7.2
+
+	* Core
+	  - Three bugs found by running the test suite under the address
+	    and undefined-behavior sanitizers are fixed: an object made
+	    with new was released with free() when a PyMOL instance was
+	    destroyed, the sculpting neighbor hash shifted negative
+	    numbers, and four flags of a CGO object state were read before
+	    they were set. No visible change.
+	  - CI runs the test suite under both sanitizers.
+	  - No cmd.* change.
+
+
+2026-11-13 pymolish-studio
+
+	* 4.7.1
+
+	* Windows
+	  - The Qt GUI starts from a conda environment that has the "icu"
+	    package (libxml2, libnetcdf and many others pull it in). Before,
+	    PySide6 failed with "DLL load failed while importing QtCore: The
+	    specified procedure could not be found".
+
+
+2026-11-13 pymolish-studio
+
+	* 4.7.0
+
+	* Action toolbar
+	  - Every button has a line icon. Undo, Redo and More show only the
+	    icon; the name is the tooltip.
+	  - New scale button (100, 120, 150, 180, 200 %) for the size of
+	    text and controls; it shows the running scale. A pick applies
+	    the next time pymolish starts. It replaces Display > UI Scale.
+	  - The interface starts at 150 % when no scale was saved (was
+	    100 %). The one-time question that offered 150 % on wide
+	    screens is gone. A saved scale and QT_SCALE_FACTOR still win.
+	  - No cmd.* change.
+
+
+2026-11-13 pymolish-studio
+
+	* 4.6.1
+
+	* Start screen
+	  - The viewport starts empty: the "Open-Source PyMOL by
+	    Schrodinger" image (data/pymol/splash.png) is gone, and the
+	    startup notice no longer covers the viewport. The copyright
+	    notice is still printed to the log, and LICENSE is unchanged.
+	  - cmd.splash(1) no longer loads an image; like cmd.splash() it
+	    prints the notice.
+
+
+2026-11-13 pymolish-studio
+
+	* 4.6.0
+
+	* States panel
+	  - New panel in the Objects dock, above the toggle bar, shown while
+	    there is more than one state or movie frame: first, previous,
+	    play/stop, next, last, a counter (type a number to jump there)
+	    and a speed button that sets movie_fps (1 to 60 fps).
+	  - It replaces the "State n/m" label and the Previous, Stop, Play
+	    and Next buttons of the action toolbar; "First frame" and "Last
+	    frame" left the toolbar's More menu.
+	  - No cmd.* change.
+
+
+2026-11-12 pymolish-studio
+
+	* 4.5.18
+
+	* Menus
+	  - The right-click menu of the viewport (and the other menus the
+	    core opens: sequence residues, scene buttons, timeline) is a Qt
+	    menu at the mouse pointer instead of one drawn in the viewport.
+	    A GUI takes these menus by setting pymol.menu.popup.
+	  - New menu style for the whole window: rounded corners, more room
+	    per row, thin-line icons next to known commands (Lucide icons,
+	    ISC license, data/pmg_qt/icons/lucide), muted titles.
+	  - Menus can no longer be torn off into their own window.
+
+
+2026-11-12 pymolish-studio
+
+	* 4.5.17
+
+	* Menus
+	  - Under WSL the GUI starts through X11 instead of Wayland, so menus
+	    at the window edge stay on the screen and their submenus open to
+	    the left when there is no room on the right. Set QT_QPA_PLATFORM
+	    to choose the platform yourself.
+
+
+2026-11-12 pymolish-studio
+
+	* 4.5.16
+
+	* Workspace layout
+	  - The viewport no longer draws its own "PyMOL>" prompt line above
+	    the command area (internal_feedback is 0 in the GUI; unchanged
+	    with -x). Text typed while the viewport has focus goes to the
+	    command line. "set internal_feedback, 1" restores the old prompt.
+
+
 2026-11-12 pymolish-studio
 
 	* 4.5.15

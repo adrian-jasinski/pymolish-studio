@@ -27,7 +27,10 @@ class TestBondSymOp(testing.PyMOLTestCase):
         cmd.set_view((0., 1., 0., 0., 0., 1., 1., 0., 0., -0.223610640,
                       -0.169926167, -10.333316803, 1., 1., 1., 6., 13., 20.))
         self.ambientOnly()
-        self.assertImageEqual("symop-ref/bond_symop.png")
+        # the reference is from x86 Linux; arm64 macOS ray traces a few edge
+        # pixels differently (73 values of 160000), so allow 50 pixels. A
+        # missing bond is thousands.
+        self.assertImageEqual("symop-ref/bond_symop.png", count=50)
 
         m = cmd.get_model()
         self.assertEqual(m.bond[0].symmetry_2, "2_555")
@@ -41,12 +44,12 @@ class TestBondSymOp(testing.PyMOLTestCase):
         cmd.color('0x00cc00', 'name A2')
         cmd.color('yellow', 'name A3')
         cmd.show_as('sticks')
-        self.assertImageEqual("symop-ref/bond_symop.png")
+        self.assertImageEqual("symop-ref/bond_symop.png", count=50)
 
         # load session
         for binary in (0, 1):
             cmd.set_session(cmd.get_session(binary=binary))
-            self.assertImageEqual("symop-ref/bond_symop.png")
+            self.assertImageEqual("symop-ref/bond_symop.png", count=50)
 
     @testing.requires("incentive")
     def test_load_mae(self):

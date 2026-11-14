@@ -1166,7 +1166,7 @@ int SettingGetTextValue(PyMOLGlobals * G, const CSetting * set1, const CSetting 
         "Setting-Warning: text longer than OrthoLineLength" ENDFB(G);
     }
 
-    strncpy(buffer, sptr, OrthoLineLength);
+    UtilNCopy(buffer, sptr, OrthoLineLength); // cuts and terminates
   }
 
   return 1;
