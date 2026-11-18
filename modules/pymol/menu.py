@@ -735,7 +735,7 @@ def cartoon_transparency(self_cmd, sele):
     # the next preset resets it (preset._prepare)
     return [[ 2, 'Cartoon Transparency:', '' ]] + [
         [ 1, '%d%%' % (t * 100) if t else 'off',
-          'cmd.set("cartoon_transparency",%s,"%s")' % (t, sele) ]
+          'preset.cartoon_transparency(%s,"%s",_self=cmd)' % (t, sele) ]
         for t in (0, 0.25, 0.5, 0.75) ]
 
 def presets(self_cmd, sele):
@@ -758,6 +758,8 @@ def presets(self_cmd, sele):
               _preset('ligands', 'ligands', sele),
               [ 1, 'ligand sites'   , preset_ligand_sites(self_cmd, sele)         ],
               _preset('protein interface', 'interface', sele),
+              _preset('protein-protein interaction', 'interaction', sele),
+              _preset('antibody and antigen', 'antibody', sele),
               [ 0, '', '' ],
               [ 1, 'cartoon transparency', cartoon_transparency(self_cmd, sele) ],
               [ 1, 'hide solvent' if preset.solvent else 'show solvent',

@@ -55,6 +55,23 @@ class TestActionToolbar(testing.PyMOLTestCase):
         texts["Orient"].trigger()
         self.assertNotEqual(cmd.get_view(), view)
 
+        # the zoom button fills the viewport with what is shown: a hidden
+        # object far away does not count
+        cmd.set("animation", 0)
+        cmd.fragment("gly", "far")
+        cmd.translate([500, 0, 0], "far")
+        cmd.zoom("ala")
+        near = cmd.get_view()[11]  # camera distance
+        cmd.zoom("all")
+        self.assertLess(cmd.get_view()[11], near * 3)  # further away
+        cmd.disable("far")
+        bar.zoom.click()
+        self.assertAlmostEqual(cmd.get_view()[11], near, 1)
+        self.assertEqual(
+            [a.text() for a in bar.zoom.menu().actions()][:2], ["Visible", "Everything"]
+        )
+        cmd.delete("far")
+
         bar.presets.menu().aboutToShow.emit()
         rows = [a.text() for a in bar.presets.menu().actions()]
         self.assertIn("technical", rows)
@@ -96,7 +113,7 @@ class TestActionToolbar(testing.PyMOLTestCase):
                 "Redo",
                 "Rock",
                 "Undo",
-                "Zoom on everything",
+                "Zoom on what is visible",
             ],
         )
         # bolder and larger than the menu icons, and blue while hovered or

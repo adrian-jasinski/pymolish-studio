@@ -4,6 +4,40 @@ CHANGE LOG
 
 2026-11-18 pymolish-studio
 
+	* 4.19.1
+
+	* Action toolbar
+	  - The text is bold and larger (10 pt) in the first simple
+	    sans-serif the system has: Inter, Segoe UI, Helvetica Neue,
+	    Ubuntu, Noto Sans or Arial. More room between the buttons.
+	  - The default window is as wide as the toolbar needs (1104
+	    px at 150 %, was 940). A saved layout or -W still wins.
+	  - Behavior change: the zoom button zooms on what is visible.
+	    Hidden objects and hidden atoms no longer count. Its menu
+	    has "Visible" and "Everything".
+	  - Behavior change: a preset picked in the toolbar acts on the
+	    objects that are switched on, not on all. The rows for
+	    light and outline stay for the whole scene.
+
+	* Presets
+	  - New preset "protein-protein interaction"
+	    (preset.interaction): every chain as cartoon in its own
+	    color inside a faint surface of that color, the residues
+	    that touch another chain as sticks, polar contacts between
+	    chains as dashes.
+	  - New preset "antibody and antigen" (preset.antibody): heavy
+	    chain blue, light chain light blue, as cartoon; the antigen
+	    as a sand-colored surface with the epitope in orange; the
+	    residues of the antibody that touch it as sticks; polar
+	    contacts as dashes. Antibody chains are found by the start
+	    of framework 2 in the sequence, else by the chain names H
+	    and L; without any, the preset shows the interaction.
+	  - New preset.cartoon_transparency(value, selection), used by
+	    the menu rows: it works for a selection of several objects.
+	  - Every preset now also clears a per-atom surface_color.
+
+2026-11-18 pymolish-studio
+
 	* 4.19.0
 
 	* Action toolbar

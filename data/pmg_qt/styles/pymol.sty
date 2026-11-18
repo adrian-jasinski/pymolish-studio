@@ -3,18 +3,21 @@
     padding:        1px 3px;
 }
 
-/* 14 buttons with 20 px icons must fit the 940 px default window at 150 %:
-   the bar is 932 px wide with these numbers (docs/plans/20-toolbar-look.md) */
+/* Room between the buttons, and a bold, slightly larger text in the first
+   simple sans-serif the system has. The window opens at least as wide as
+   this bar (pymol_qt_gui.py; docs/plans/20-toolbar-look.md). */
 #toolbar_actions
 {
-    spacing:        1px;
-    padding:        2px 4px;
+    spacing:        8px;
+    padding:        3px 6px;
 }
 
 #toolbar_actions QToolButton
 {
-    padding:        4px 2px;
-    font-weight:    500;
+    padding:        4px 4px;
+    font-family:    "Inter", "Segoe UI", "Helvetica Neue", "Ubuntu", "Noto Sans", "Arial";
+    font-size:      10pt;
+    font-weight:    600;
 }
 
 /* Blue for what is chosen and for what the pointer is on: the text of the

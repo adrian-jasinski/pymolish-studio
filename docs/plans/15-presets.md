@@ -2,8 +2,8 @@
 
 [Roadmap](../../PLAN.md) · Request 2026-11-16 · **15a done 2026-11-16 in
 4.14.0, 15d in 4.14.3, 15f in 4.14.4.** 15b, 15c and 15e are open and wait for
-the user. **15g and 15h done 2026-11-18 in 4.14.5** (last section before
-"Skipped"). They change three decisions below: the looks are part of the
+the user. **15g and 15h done 2026-11-18 in 4.14.5, 15i (visible objects, two
+presets for complexes) in 4.19.1** (the last sections before "Skipped"). They change three decisions below: the looks are part of the
 one preset list, they leave the background alone, and three presets stop
 recoloring the protein.
 
@@ -341,6 +341,50 @@ preset. "default" resets the colors, and so does a click in the palette menu.
 - Checks: `testing/tests/api/preset.py` (`testKeepsProteinColors`,
   `testLook`, `testIllustration`), `menu.py` (`testPresets`),
   `action_toolbar.py`. Not checked in the real window.
+
+## Request 2026-11-18, second: visible objects, complexes (15i)
+
+Done in 4.19.1.
+
+- **A preset from the toolbar acts on the objects that are switched on**
+  (the selection `enabled`), no longer on all. A hidden object keeps its
+  look. The rows for light and outline are for the whole scene as before.
+  The cartoon transparency rows now go through
+  `preset.cartoon_transparency`, because `set` with a selection of several
+  objects did not reach the objects.
+- **Preset "protein-protein interaction"** (`preset.interaction`): each
+  chain of each object in the next palette color, as cartoon inside a
+  surface of the same color at `transparency` 0.75; the residues within
+  4.5 A of another chain as sticks; polar contacts between chains as
+  dashes. "protein interface" stays: it is the plain version without
+  surfaces and contacts.
+- **Preset "antibody and antigen"** (`preset.antibody`): heavy chain
+  `skyblue`, light chain `lightblue`, cartoon; the antigen as a `wheat`
+  surface with the residues within 4.5 A of the antibody in `orange`; the
+  antibody residues that touch the antigen as sticks; polar contacts as
+  dashes.
+- **How an antibody chain is found:** by the start of framework 2 in its
+  sequence, heavy `W[VIFY][RK]Q.PG` (also single-domain antibodies), light
+  `W[YFL][QLH]Q.[PSA]G`. A chain named H or L fills a role the sequences
+  left empty. Without any antibody chain the preset shows the interaction
+  picture and says so in the log.
+- **Tried on real structures,** ray traced on black and on white: 1N8Z
+  (trastuzumab Fab with HER2: chain A found as light, B as heavy, C as
+  antigen) and 1BRS (barnase with barstar).
+
+  | Tried | Result | Verdict |
+  | --- | --- | --- |
+  | Other elements by element color on every atom | The surfaces are speckled red and blue | Element colors only on the atoms drawn as sticks |
+  | One color per chain through `surface_color` per atom | Clean surfaces; the sticks keep their element colors | In `interaction`; `_prepare` clears it |
+  | Antigen as an opaque surface, epitope by residue | The footprint of the antibody reads at once | In `antibody` |
+
+- **Both leave the camera alone** (the contacts are made with `zoom=0`).
+- Checks: `testing/tests/api/preset.py` (`testInteraction`, `testAntibody`
+  with the motif, with the names H and L and without an antibody,
+  `testEnabledOnly`), `menu.py`.
+- Not covered: an antibody whose framework 2 differs from both patterns and
+  whose chains are not named H and L (some mouse lambda chains); it then
+  gets the interaction picture. T-cell receptors are not recognized.
 
 ## Skipped
 

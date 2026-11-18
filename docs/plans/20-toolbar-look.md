@@ -53,6 +53,31 @@ new texts and 20 px icons it was 973 px. Spacing between buttons went from
 2 to 1 px and their side padding from 3 to 2 px: 929 px, nothing in the
 overflow.
 
+## Second round, 4.19.1
+
+Request of the same day: the text was too small; bigger and bold, in
+another simple font; more room between the buttons; the zoom button for what
+is visible.
+
+- **Font:** bold (600), 10 pt instead of 9, and a family list in `pymol.sty`:
+  Inter, Segoe UI, Helvetica Neue, Ubuntu, Noto Sans, Arial. The first one
+  the system has is used: Ubuntu on the development machine, Segoe UI on
+  Windows, Helvetica Neue on macOS. No font file is shipped. Option A of the
+  font table above (regular weight) is withdrawn.
+- **Room:** 8 px between buttons (was 1) and 4 px side padding (was 2).
+- **Width:** the bar is now 1096 px at 150 %, more than the old default
+  window. The window therefore opens as wide as the bar needs (1104 px);
+  the extra width goes to the viewport. A saved layout that is narrower
+  keeps its size and shows the overflow arrow until it is widened.
+- **Zoom:** a click zooms on `visible`, the atoms that are shown in objects
+  that are switched on; with nothing shown, on everything. The menu has
+  "Visible" and "Everything". Orient is unchanged: it still acts on
+  everything (question 3).
+
+Checked in the real window with a fresh layout: no overflow, and with a
+hidden object 300 A away the camera distance after the click is 364 instead
+of 1248.
+
 ## Checks
 
 - `testing/tests/api/action_toolbar.py`: which buttons are icon-only, icon
@@ -69,7 +94,9 @@ overflow.
 1. Blue hover in every menu of the program (right-click menus, the menu
    bar), not only in the menus of the toolbar? One rule in `pymol.sty`.
    Recommended: yes, so that there is one style.
-2. Icons and font: A as built, or B or C?
+2. Icons: 20 px with line width 2 as built, or B or C?
+3. Should Orient also act only on what is visible, like Zoom now?
+   Recommended: yes.
 
 ## Skipped
 

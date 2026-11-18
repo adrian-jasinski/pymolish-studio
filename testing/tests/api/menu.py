@@ -216,7 +216,8 @@ class TestMenu(testing.PyMOLTestCase):
             'default', 'classified', 'technical', 'ball and stick',
             'b factor putty', 'pretty', 'publication', 'glass', 'wire',
             'illustration', 'ligands',
-            'ligand sites', 'protein interface', 'cartoon transparency',
+            'ligand sites', 'protein interface', 'protein-protein interaction',
+            'antibody and antigen', 'cartoon transparency',
             'show solvent',
             'standard light', 'figure', 'soft', 'flat', 'comic', 'sketch',
             'x-ray'])

@@ -37,6 +37,92 @@ class TestPreset(testing.PyMOLTestCase):
         preset.pretty('all')  # a picture preset still colors
         self.assertGreater(len(self._guideColors()), 10)
 
+    def testInteraction(self):
+        # two chains in two objects, built on top of each other: all touch
+        cmd.fab('ACDEFGHIK', 'one', chain='A')
+        cmd.fab('LMNPQRSTV', 'two', chain='A')
+        preset.interaction('all')
+        self.assertEqual(cmd.count_atoms('rep cartoon'), cmd.count_atoms('polymer'))
+        self.assertEqual(cmd.count_atoms('rep surface'), cmd.count_atoms('polymer'))
+        self.assertGreater(cmd.count_atoms('rep sticks'), 0)
+        # one color per chain and object, the same for its surface
+        colors = {name: self._colors(name + ' & guide') for name in ('one', 'two')}
+        self.assertEqual([len(c) for c in colors.values()], [1, 1])
+        self.assertNotEqual(colors['one'], colors['two'])
+        stored.surface = set()
+        cmd.iterate('one', 'stored.surface.add(s.surface_color)')
+        self.assertEqual(stored.surface, colors['one'])
+        self.assertIn('polar_contacts', cmd.get_names('all'))
+        self.assertNotIn('_p_tmp', cmd.get_names('all'))
+        # the next preset undoes surface, sticks and the surface colors
+        preset.pretty('all')
+        self.assertEqual(cmd.count_atoms('rep surface | rep sticks'), 0)
+        stored.surface = set()
+        cmd.iterate('one', 'stored.surface.add(s.surface_color)')
+        self.assertEqual(stored.surface, {None})
+
+    def _colors(self, selection):
+        stored.colors = set()
+        cmd.iterate(selection, 'stored.colors.add(color)')
+        return stored.colors
+
+    def testAntibody(self):
+        index = cmd.get_color_index
+        # found by the start of framework 2, whatever the chains are called
+        cmd.fab('AAWVRQAPGKGLEW', 'm', chain='X')
+        cmd.fab('AAWYQQKPGKAPKL', 'm2', chain='Y')
+        cmd.fab('ACDEFGHIKLMNPQ', 'ag', chain='Z')
+        preset.antibody('all')
+        self.assertEqual(self._colors('m & guide'), {index('skyblue')})
+        self.assertEqual(self._colors('m2 & guide'), {index('lightblue')})
+        # the antigen: a surface, sand with the epitope in orange
+        self.assertEqual(cmd.count_atoms('rep surface'), cmd.count_atoms('ag'))
+        self.assertEqual(cmd.count_atoms('rep cartoon'), cmd.count_atoms('m | m2'))
+        self.assertTrue(self._colors('ag') <= {index('wheat'), index('orange')})
+        self.assertIn(index('orange'), self._colors('ag'))
+        self.assertGreater(cmd.count_atoms('rep sticks & (m | m2)'), 0)
+
+        # without the motif: the chains named H and L
+        cmd.delete('all')
+        cmd.fab('ACDEFGHIK', 'h', chain='H')
+        cmd.fab('ACDEFGHIK', 'l', chain='L')
+        cmd.fab('ACDEFGHIK', 'ag', chain='A')
+        preset.antibody('all')
+        self.assertEqual(self._colors('h & guide'), {index('skyblue')})
+        self.assertEqual(self._colors('l & guide'), {index('lightblue')})
+        self.assertEqual(cmd.count_atoms('rep surface'), cmd.count_atoms('ag'))
+
+        # no antibody at all: the interaction picture
+        cmd.delete('all')
+        cmd.fab('ACDEFGHIK', 'pa', chain='A')
+        cmd.fab('ACDEFGHIK', 'pb', chain='B')
+        preset.antibody('all')
+        self.assertEqual(cmd.count_atoms('rep surface'), cmd.count_atoms('all'))
+        self.assertNotIn('_p_tmp', cmd.get_names('all'))
+
+    def testEnabledOnly(self):
+        # the toolbar applies a preset to "enabled": a hidden object is left
+        from pymol import menu
+        cmd.fab('ACDEFGHIK', 'shown')
+        cmd.fab('ACDEFGHIK', 'hidden')
+        cmd.disable('hidden')
+
+        def reps(name):
+            return [cmd.count_atoms('%s & rep %s' % (name, r))
+                    for r in ('lines', 'sticks', 'cartoon', 'surface', 'spheres')]
+
+        before = reps('hidden')
+        self.addCleanup(preset.look, 'default')
+        self.addCleanup(setattr, preset, 'solvent', False)  # the solvent row
+        for row in menu.presets(cmd, 'enabled'):
+            if row[0] == 1 and isinstance(row[2], str):
+                cmd.do(row[2], echo=0)
+                self.assertEqual(reps('hidden'), before, row[1])
+        rows = dict((r[1], r[2]) for r in menu.cartoon_transparency(cmd, 'enabled'))
+        cmd.do(rows['50%'], echo=0)
+        self.assertEqual(cmd.get_setting_float('cartoon_transparency', 'shown'), 0.5)
+        self.assertEqual(cmd.get_setting_float('cartoon_transparency', 'hidden'), 0)
+
     def testTechnical(self):
         cmd.load(self.datafile('1oky.pdb.gz'))
         preset.technical('all')

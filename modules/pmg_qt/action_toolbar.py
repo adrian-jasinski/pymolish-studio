@@ -136,10 +136,11 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.addSeparator()
 
         self.zoom = self._menu_button(
-            "Zoom", "Zoom on everything", lambda: cmd.zoom(animate=1.0)
+            "Zoom", "Zoom on what is visible", self._zoom_visible
         )
+        self.zoom.menu().addAction("Visible", self._zoom_visible)
         for label, command in (
-            ("All", "zoom animate=1"),
+            ("Everything", "zoom animate=1"),
             ("Selection (sele)", "zoom sele, animate=1"),
             ("Center", "center animate=1"),
             ("Reset view", "reset"),
@@ -448,8 +449,16 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.selecting.setText(SELECTING[int(value)])
         self.selecting.menu().actions()[int(value)].setChecked(True)
 
+    def _zoom_visible(self):
+        """Fill the viewport with what is shown, centered. Hidden objects
+        and hidden atoms do not count; with nothing shown, with everything."""
+        cmd = self.cmd
+        cmd.zoom("visible" if cmd.count_atoms("visible") else "all", animate=1.0)
+
     def _fill_presets(self):
         menu = self.presets.menu()
         menu.clear()
-        rows = menus.presets(self.cmd, "all")
+        # "enabled": only the objects that are switched on. The light rows
+        # at the end are for the whole scene.
+        rows = menus.presets(self.cmd, "enabled")
         fill_menu(menu, rows, self.cmd)

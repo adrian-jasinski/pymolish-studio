@@ -440,6 +440,15 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         if style:
             self.setStyleSheet(style)
 
+        # The default window is at least as wide as the action toolbar, so
+        # that no button starts in the overflow menu. A size given with -W
+        # or a saved layout is applied later and wins.
+        if options.external_gui:
+            self.action_toolbar.ensurePolished()
+            needed = self.action_toolbar.sizeHint().width() + 8
+            if needed > self.width():
+                self.resize(needed, self.height())
+
         # Load saved shortcuts on launch
         self.saved_shortcuts = pymol.save_shortcut.load_and_set(self.cmd)
 

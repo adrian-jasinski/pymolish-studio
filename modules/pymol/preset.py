@@ -62,6 +62,7 @@ def _prepare(selection,polar_contacts=None,_self=cmd):
     cmd.unset("cartoon_transparency",s)
     cmd.unset("cartoon_transparency",selection)
     cmd.unset("surface_color", selection)
+    cmd.unset("surface_color", s) # per atom: interaction
     cmd.unset("surface_quality", selection)
     cmd.unset("surface_type",selection)
     cmd.unset("sphere_scale",s)
@@ -393,6 +394,146 @@ def interface(selection='*', _self=cmd):
     # delete temporary selections
     _self.delete(s_interface)
     _self.delete(s)
+
+
+def _units(s, _self=cmd):
+    '''
+    The polymer chains of the named selection `s` as (selection, chain)
+    pairs, one per object and chain.
+    '''
+    return [
+        ('(?%s & %%%s & polymer & chain "%s")' % (s, model, chain), chain)
+        for model in _self.get_object_list('?' + s) or ()
+        for chain in _self.get_chains('?%s & %%%s & polymer' % (s, model))
+    ]
+
+
+def _contacts(name, pairs, _self=cmd):
+    '''
+    Polar contacts between each pair of selections, as dashes without
+    labels in one measurement object.
+    '''
+    for i, (a, b) in enumerate(pairs):
+        # zoom=0: a preset of this kind leaves the camera where it is
+        _self.dist(name, a, b, mode=2, quiet=1, label=0, reset=not i, zoom=0)
+    if name in _self.get_names():
+        _self.enable(name)
+        _self.hide('labels', name)
+        _self.show('dashes', name)
+
+
+def interaction(selection='*', _self=cmd):
+    '''
+    Protein-protein interaction: every chain as cartoon in its own color
+    inside a faint surface of that color, the side chains that touch
+    another chain as sticks, and the polar contacts between chains as
+    dashes.
+    '''
+    from . import palettes
+    s, selection, dname = _prepare(selection, _self=_self)
+    units = _units(s, _self)
+
+    # one color per chain, also for its surface: the element colors of the
+    # sticks below would speckle it
+    colors = palettes.cycle()
+    for i, (unit, _) in enumerate(units):
+        color = str(colors[i % len(colors)])
+        _self.color(color, unit)
+        _self.set('surface_color', color, unit)
+
+    _self.show('cartoon', 'polymer & ?' + s)
+    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _self.show('surface', 'polymer & ?' + s)
+    _self.set('transparency', 0.75, s)
+
+    # atoms within 4.5 A of another chain
+    iface = _self.get_unused_name('_iface')
+    _self.select(iface, 'none')
+    for unit, _ in units:
+        _self.select(iface, '?%s | ((polymer & ?%s & !%s) within 4.5 of %s)'
+                     % (iface, s, unit, unit), 0)
+    _self.set('cartoon_side_chain_helper', 1, selection)
+    _self.show('sticks', 'byres ?' + iface)
+    _self.color('atomic', '((byres ?%s) | ((organic | inorganic) & ?%s)) & !(elem C)'
+                % (iface, s))
+    _contacts(dname, [
+        ('?%s & %s' % (iface, a), '?%s & %s' % (iface, b))
+        for i, (a, _) in enumerate(units) for b, _ in units[i + 1:]
+    ], _self)
+
+    _self.delete(iface)
+    _self.delete(s)
+
+
+# The start of framework 2 of an antibody variable domain: heavy chains and
+# single-domain antibodies (W-V-R-Q-A-P-G, W-F-R-Q-A-P-G, mouse W-V-K-Q-R-P-G),
+# light chains (kappa W-Y-Q-Q-K-P-G, lambda W-Y-Q-Q-L-P-G).
+_heavy_re = 'W[VIFY][RK]Q.PG'
+_light_re = 'W[YFL][QLH]Q.[PSA]G'
+
+
+def antibody(selection='*', _self=cmd):
+    '''
+    Antibody with its antigen: the heavy chain blue and the light chain
+    light blue, as cartoon; the antigen as a sand-colored surface with the
+    epitope in orange; the residues of the antibody that touch the antigen
+    as sticks; the polar contacts between the two as dashes.
+
+    Antibody chains are found by the conserved start of framework 2 in
+    their sequence; a chain named H or L fills a role that the sequences
+    left empty. Without any antibody chain this is "interaction".
+    '''
+    import re
+    s, selection, dname = _prepare(selection, _self=_self)
+    heavy, light, other = [], [], []
+    for unit, chain in _units(s, _self):
+        lines = _self.get_fastastr(unit).splitlines()
+        sequence = ''.join(x for x in lines if not x.startswith('>'))
+        if re.search(_heavy_re, sequence):
+            heavy.append(unit)
+        elif re.search(_light_re, sequence):
+            light.append(unit)
+        else:
+            other.append((unit, chain))
+    for role, name in ((heavy, 'H'), (light, 'L')):
+        if not role:
+            role.extend(unit for unit, chain in other if chain == name)
+    antigen = [unit for unit, chain in other if unit not in heavy + light]
+    if not heavy and not light:
+        print(' preset.antibody: no antibody chain found, showing "interaction".')
+        _self.delete(s)
+        return interaction(selection, _self=_self)
+
+    ab = '(%s)' % ' | '.join(heavy + light)
+    ag = '(%s)' % (' | '.join(antigen) or 'none')
+    for units, color in ((heavy, 'skyblue'), (light, 'lightblue'), (antigen, 'wheat')):
+        for unit in units:
+            _self.color(color, unit)
+    epitope = '(%s within 4.5 of %s)' % (ag, ab)
+    paratope = '(%s within 4.5 of %s)' % (ab, ag)
+    _self.color('orange', 'byres ' + epitope)
+    # element colors only on what is drawn as sticks: the surface of the
+    # antigen stays sand and orange
+    _self.color('atomic', '((byres %s) | ((organic | inorganic) & ?%s)) & !(elem C)'
+                % (paratope, s))
+
+    _self.show('cartoon', ab)
+    _self.show('surface', ag)
+    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _self.set('cartoon_side_chain_helper', 1, selection)
+    _self.show('sticks', 'byres ' + paratope)
+    _contacts(dname, [(paratope, epitope)], _self)
+
+    _self.delete(s)
+
+
+def cartoon_transparency(value, selection='*', _self=cmd):
+    '''
+    The cartoon transparency rows of the preset menu: for every object of
+    the selection. The next preset makes the cartoon opaque again.
+    '''
+    for name in _self.get_object_list(selection) or ():
+        _self.set('cartoon_transparency', value, name)
 
 
 def classified(selection='*', _self=cmd):
