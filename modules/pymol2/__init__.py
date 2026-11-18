@@ -102,7 +102,6 @@ class PyMOL(SingletonPyMOL):
                     options.external_gui = 0
                     options.internal_feedback = 0
                     options.no_quit = 1
-                    options.internal_gui = 0
                     options.presentation = 1
                 elif scheme == 'widget': # An embedded widget of some type
                     options.quiet = 0

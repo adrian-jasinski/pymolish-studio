@@ -4,6 +4,28 @@ CHANGE LOG
 
 2026-11-18 pymolish-studio
 
+	* 4.17.1
+
+	* The old internal GUI is removed
+	  - Removed: the object list, the mouse mode table, the movie
+	    buttons and the wizard buttons that the core drew at the
+	    right edge of the viewport. The Qt Objects panel has
+	    replaced them since 4.5.11.
+	  - Removed settings: internal_gui, internal_gui_width and
+	    internal_gui_name_color_mode. "set internal_gui_width" in a
+	    pymolrc now prints "unknown Setting" and the start goes on;
+	    session files that carry the settings load as before.
+	  - Removed: the command line option -i (it is ignored when
+	    given) and the option field internal_gui.
+	  - "viewport" and the window size no longer add the width of
+	    the panel.
+	  - Kept: internal_gui_control_size (row height of the scene
+	    buttons) and internal_gui_mode (colors of the menus the
+	    core draws), the text console in the viewport, the movie
+	    panel under the viewport.
+
+2026-11-18 pymolish-studio
+
 	* 4.17.0
 
 	* Sequence viewer

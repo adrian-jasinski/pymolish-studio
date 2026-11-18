@@ -1812,7 +1812,6 @@ void PConvertOptions(CPyMOLOptions * rec, PyObject * options)
   const char *load_str;
 
   rec->pmgui = !PyInt_AsLong(PyObject_GetAttrString(options, "no_gui"));
-  rec->internal_gui = PyInt_AsLong(PyObject_GetAttrString(options, "internal_gui"));
   rec->internal_feedback =
     PyInt_AsLong(PyObject_GetAttrString(options, "internal_feedback"));
   rec->show_splash = PyInt_AsLong(PyObject_GetAttrString(options, "show_splash"));

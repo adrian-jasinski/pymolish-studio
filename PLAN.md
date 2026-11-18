@@ -27,7 +27,7 @@ user's original numbers; the letters are milestones of the detailed plans.
 | none | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Next: 8c to 8g. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `bench.py` and a PSE round trip. |
 | none | **5c** — [Release builds without GitHub Actions](docs/plans/05-builds-binaries.md) | A proposal of 2026-11-16 inside finished step 5: Linux in podman, Windows on the host, macOS not possible off Apple hardware. Nothing is built yet. | The user accepts or drops the proposal. |
 | none | **15** — [Presets and looks](docs/plans/15-presets.md) | 15b: the outline of the looks in the viewport (today only in ray-traced images). 15c: ChimeraX object colors as a palette. 15e: five more effects, tried and described. 15a (ordered menu, solvent row, glass, looks) shipped in 4.14.0, 15d (cartoon everywhere, ligand balls and sticks, cartoon transparency, comic and sketch) in 4.14.3, 15f (wire, illustration, shades of one color) in 4.14.4. 15g and 15h (one list, looks keep the background, working presets keep the protein colors) in 4.14.5. | The user picks or drops 15b, 15c and each effect of 15e. |
-| none | **17** — [Legacy menu rows and the old internal GUI](docs/plans/17-legacy-ui.md) | 17a (the legacy menu rows) shipped in 4.16.0, 17b (the last Tk stand-ins and the Legacy Plugins menu) in 4.16.1. Open: 17c, the C++ panel code, one removal per file (about 2,900 lines by function ranges). 17d and 17e: the panel list and the OpenGL menus, after step 19. | After 17a the panel is hidden; each later slice passes the suite, the sanitizer job and a PSE round trip, or the file stays. |
+| none | **17** — [Legacy menu rows and the old internal GUI](docs/plans/17-legacy-ui.md) | 17a (the legacy menu rows) shipped in 4.16.0, 17b (the last Tk stand-ins and the Legacy Plugins menu) in 4.16.1. 17c (the C++ code of the panel, 2,694 lines) in 4.17.1. Open: 17d, the panel list, after step 19d; 17e, the menus the core draws in OpenGL. | 17d and 17e each pass the suite, the sanitizer job and a PSE round trip. |
 | none | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | 19a: a read-only storyboard panel and one core query. 19b: add, move, stretch and delete scenes. 19c: motion lane, templates, a shorter Movie menu. 19d: the core's movie panel goes. | Each slice ships in a reviewable test build. |
 
 Steps 8, 5c, 15, 17 and 19 never got an order number. Steps 16 (4.15.0) and
@@ -71,7 +71,6 @@ recommended direction, not a claim that an implementation has passed tests.
 | # | Decision | Where it is described | What it holds up |
 | --- | --- | --- | --- |
 | 1 | On WSL, should the app select the `d3d12` driver itself? Frames go from 50 to 120 ms down to 0.7 to 11 ms; lines are then 1 pixel wide, so `trilines` goes on with it and mesh lines stay thin. | [01-performance-gpu.md](docs/plans/01-performance-gpu.md), Status 2026-11-14 | The first open item of 1b |
-| 2 | Answered 2026-11-18: the old C++ object panel is not needed; its removal is step 17. Still open there: what `pymolish -x` shows afterwards. Recommended: the viewport alone, with the Objects panel as a floating window one key away. | [17-legacy-ui.md](docs/plans/17-legacy-ui.md), question 1 | 17c |
 | 3 | Rights line for the icon and the logo: who made them, which license. | [09-icons-logo.md](docs/plans/09-icons-logo.md), `docs/licenses.md` | A complete license list; no code |
 | 4 | 5c: build the Linux and Windows bundles on the development machine, or stay with GitHub Actions now that the failing test is fixed (4.12.7)? | [05-builds-binaries.md](docs/plans/05-builds-binaries.md), 5c | 5c |
 | 5 | 15b: draw the black outline of the looks figure, soft, flat, comic and sketch in the viewport too? It needs a new edge pass in the shaders; today the outline appears only in ray-traced images. The preset illustration depends on it most: without the outline the viewport shows only flat blue shapes. | [15-presets.md](docs/plans/15-presets.md), Slices | 15b |
@@ -85,8 +84,8 @@ The user's to do, not decisions:
   merged 2026-11-16). The checks marked "first CI run" can now be looked at:
   the icon of the Windows program, the release notes, the `chem` and `fix`
   extras on three systems.
-- Before 17c: take the lines `set internal_gui_width` and
-  `set internal_gui_control_size` out of `~/.pymolrc`.
+- Take the line `set internal_gui_width, 400` out of `~/.pymolrc`: since
+  4.17.1 it prints "unknown Setting" at every start.
 - Remove the pymolish plugin from `~/.pymol/startup`: it still wins over the
   native commands.
 - Look at the Windows artifact after the merge.

@@ -1,8 +1,8 @@
 # 17 — Legacy menu rows and the old internal GUI
 
 [Roadmap](../../PLAN.md) · Request 2026-11-18 · **17a done in 4.16.0, 17b in
-4.16.1** (2026-11-18, see "Result" before "Questions"). 17c is in progress;
-17d waits for step 19.
+4.16.1, 17c in 4.17.1** (2026-11-18, see "Result" before "Questions"). 17d
+waits for step 19; 17e is open.
 The request answers the open question of [step 3](03-modern-ui.md): the old
 C++ panel is not needed any more.
 
@@ -150,13 +150,60 @@ A build detail: `build/lib.*/` kept copies of the three deleted files and
 put them back into the installed package. They had to be deleted there by
 hand once.
 
+**17c, 4.17.1. The panel code is gone: 2,694 lines deleted in 19 files.**
+
+| File | Lines | What went |
+| --- | --- | --- |
+| `layer3/Executive.cpp` | 1,313 | `CExecutive::click`, `release`, `drag`, `draw`, `reshape`; the session fix-up of the panel width; the reinitialize cases 5 and 6 that reset `internal_gui` |
+| `layer1/Control.cpp` | 568 | `CControl::draw`, `click`, `drag`, `release`, `reshape`, `which_button`, `draw_button` |
+| `layer1/ButMode.cpp` | 335 | `CButMode::draw`, `click`, `fastDraw`, `ButModeDrawFastImpl`, `ButModeGetHeight` |
+| `layer1/Wizard.cpp` | 211 | `CWizard::draw`, `click`, `drag`, `release` |
+| `layer1/Ortho.cpp` | 211 | `OrthoLayoutPanel`, `OrthoCalculateRightSideMargin`, `OrthoDrawInternalGUIBG`, `OrthoReshapeWizard`, the right margin of the scene and of the sequence viewer |
+| `Setting.cpp`, `SettingInfo.h`, `PyMOL.cpp`, `Cmd.cpp`, `P.cpp`, `PyMOLOptions.h` | 30 | The settings 98, 99 and 768 (placeholders left), the option field, the readers, the unused parameter `reset_gui` |
+| `pymol_gl_widget.py`, `pymol_qt_gui.py`, `invocation.py`, `pymol2/__init__.py` | 48 | The edge drag of the old panel, `-i`, the option |
+
+How it was done: Ortho no longer lays the four blocks out or activates
+them, so their draw and mouse methods cannot be reached; then the methods
+went. A script removed each function by matching its braces. A first
+version of the script cut at the first closing brace in column 0 and left
+half functions behind; it was caught by the line counts, the files were
+restored and the removal redone.
+
+Where it differs from the plan:
+
+- **One commit, not one per file.** The methods of the four blocks only
+  make sense together with the layout in Ortho.
+- **`internal_gui_control_size` stays** as a setting: the scene buttons read
+  it and the user's pymolrc sets it. **`internal_gui_mode` stays** until 17e.
+- **`-x` needed nothing** (question 1): the Qt Objects panel is docked in
+  that mode too. `-x` hides the toolbar and the command area, as before.
+- **The first test run failed in seven tests** (`viewport`, PNG sizes): the
+  core still added the panel's width to the window while Ortho no longer
+  reserved it. Removing the readers fixed all seven.
+
+Checks:
+
+- Full Python suite and the Catch2 tests.
+- Two session files from the test data load; a session saved now loads.
+- `set internal_gui_width, 400` prints "unknown Setting" and the next line
+  of the script runs. `set internal_gui` prints "ambiguous Setting", because
+  the name is now a prefix of two others.
+- Real window on WSLg at 150 %, started with `-qk`, `-qkx` and with the
+  user's pymolrc: measurement wizard (five buttons in the Objects panel,
+  prompt in the viewport), mouse modes, rock, scenes, a 60-frame movie with
+  the core's movie panel, the sequence viewer, `viewport 700, 500`.
+- Sanitizer run: see the end of this section.
+- Not tested: a 3D mouse (`ControlSdof*` is untouched), stereo modes,
+  Windows and macOS.
+
 ## Questions
 
 1. `pymolish -x` after the removal: (A) it shows the viewport alone, with
    the object list one key away as a floating Objects panel (recommended);
    (B) `-x` goes away and prints a hint; (C) the panel code stays for `-x`
    only, which keeps all of it.
-   **Not answered; A is built in 17c.**
+   **Not answered. Nothing had to be built: the Qt Objects panel is docked
+   with `-x` too.**
 2. The text console in the viewport (`internal_feedback`, `internal_prompt`,
    `overlay`): keep the code and only remove the rows (recommended: full
    screen and `-x` have no other command line), or plan its removal too?

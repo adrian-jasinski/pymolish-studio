@@ -155,7 +155,7 @@ int SettingUniqueFromPyList(PyMOLGlobals * G, PyObject * list, int partial_resto
 int SettingUniqueConvertOldSessionID(PyMOLGlobals * G, int old_unique_id);
 
 int SettingUniqueCopyAll(PyMOLGlobals * G, int src_unique_id, int dst_unique_id);
-void SettingInitGlobal(PyMOLGlobals * G, int alloc, int reset_gui, int use_default);
+void SettingInitGlobal(PyMOLGlobals * G, int alloc, int use_default);
 void SettingStoreDefault(PyMOLGlobals * G);
 void SettingPurgeDefault(PyMOLGlobals * G);
 

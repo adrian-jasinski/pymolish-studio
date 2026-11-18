@@ -22,7 +22,7 @@ Z* -------------------------------------------------------------------
 #define PYMOL_MAX_OPT_STR 1025
 
 struct CPyMOLOptions {
-  int pmgui, internal_gui, show_splash, internal_feedback, security, game_mode, force_stereo,   /* 1 = force stereo (if possible); -1 = force mono; 0 = autodetect */
+  int pmgui, show_splash, internal_feedback, security, game_mode, force_stereo,   /* 1 = force stereo (if possible); -1 = force mono; 0 = autodetect */
    
     winX,
     winY,

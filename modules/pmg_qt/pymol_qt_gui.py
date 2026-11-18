@@ -1162,7 +1162,6 @@ class PyMOLApplication(QtWidgets.QApplication):
         # PyMOL Show
         if ev.file().endswith('.psw'):
             pymol.cmd.set('presentation')
-            pymol.cmd.set('internal_gui', 0)
             pymol.cmd.set('internal_feedback', 0)
             pymol.cmd.full_screen('on')
 
@@ -1247,10 +1246,6 @@ def execapp():
         import ctypes
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
                 u'com.schrodinger.pymol')
-
-    # The Qt Objects panel replaces the viewport's internal GUI. To get the
-    # old panel back: "set internal_gui" on the command line or in pymolrc.
-    pymol.invocation.options.internal_gui = 0
 
     # The command area has the prompt; the viewport does not draw a second
     # one. "set internal_feedback, 1" in pymolrc brings it back.

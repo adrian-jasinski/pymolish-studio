@@ -4959,10 +4959,6 @@ static PyObject *CmdViewport(PyObject * self, PyObject * args)
           if(h < 10)
             h = 10;
 
-          if(SettingGetGlobal_b(G, cSetting_internal_gui)) {
-            w += DIP2PIXEL(SettingGetGlobal_i(G, cSetting_internal_gui_width));
-          }
-
           if(SettingGetGlobal_i(G, cSetting_internal_feedback)) {
             h += (SettingGetGlobal_i(G, cSetting_internal_feedback) - 1) * cOrthoLineHeight +
               cOrthoBottomSceneMargin;

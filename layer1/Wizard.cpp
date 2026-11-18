@@ -78,10 +78,6 @@ struct CWizard : public Block {
 
   CWizard(PyMOLGlobals * G) : Block(G) {};
 
-  int click(int button, int x, int y, int mod) override;
-  int drag(int x, int y, int mod) override;
-  void draw(CGO* orthoCGO) override;
-  int release(int button, int x, int y, int mod) override;
 
   bool isEventType(cWizEvent_t eventType) const noexcept;
 };
@@ -249,12 +245,6 @@ void WizardRefresh(PyMOLGlobals * G)
       }
       Py_XDECREF(P_list);
     }
-  }
-  if(I->NLine) {
-    int LineHeight = DIP2PIXEL(SettingGetGlobal_i(G, cSetting_internal_gui_control_size));
-    OrthoReshapeWizard(G, LineHeight * I->NLine + 4);
-  } else {
-    OrthoReshapeWizard(G, 0);
   }
 }
 
@@ -476,111 +466,6 @@ int WizardDoSpecial(PyMOLGlobals * G, int k, int x, int y, int mod)
 }
 
 
-/*========================================================================*/
-int CWizard::click(int button, int x, int y, int mod)
-{
-  PyMOLGlobals *G = m_G;
-  CWizard *I = G->Wizard;
-  int LineHeight = DIP2PIXEL(SettingGet<int>(G, cSetting_internal_gui_control_size));
-
-  int a = ((rect.top - (y + cWizardClickOffset)) - cWizardTopMargin) / LineHeight;
-  if((a >= 0) && ((ov_size) a < I->NLine)) {
-    switch (I->Line[a].type) {
-    case cWizTypeButton:
-      OrthoGrab(G, this);
-      I->Pressed = (int) a;
-      OrthoDirty(G);
-      break;
-    case cWizTypePopUp:
-      {
-        pymol::pblock block(G);
-        auto wiz = WizardGet(G);
-        PyObject* menuList = nullptr;
-        if (wiz) {
-          menuList = WizardCallPython(G, wiz, "get_menu", PyObject_CallMethod, "s", I->Line[a].code);
-        }
-
-        if(menuList && (menuList != Py_None)) {
-          int my = rect.top - (cWizardTopMargin + a * LineHeight) - 2;
-
-          PopUpNew(G, x, my, x, y, false, menuList, nullptr);
-        }
-        Py_XDECREF(menuList);
-      }
-      break;
-    }
-  }
-  return (1);
-}
-
-
-/*========================================================================*/
-int CWizard::drag(int x, int y, int mod)
-{
-  PyMOLGlobals *G = m_G;
-
-  CWizard *I = G->Wizard;
-  int LineHeight = DIP2PIXEL(SettingGetGlobal_i(G, cSetting_internal_gui_control_size));
-
-  int a;
-  a = ((rect.top - (y + cWizardClickOffset)) - cWizardTopMargin) / LineHeight;
-
-  if((x < rect.left) || (x > rect.right))
-    a = -1;
-
-  if(I->Pressed != a) {
-    I->Pressed = -1;
-    OrthoDirty(G);
-  }
-  if((a >= 0) && ((ov_size) a < I->NLine)) {
-
-    switch (I->Line[a].type) {
-    case cWizTypeButton:
-      if(I->Pressed != a) {
-        I->Pressed = a;
-        OrthoDirty(G);
-      }
-      break;
-    }
-  }
-  return (1);
-}
-
-
-/*========================================================================*/
-int CWizard::release(int button, int x, int y, int mod)
-{
-  PyMOLGlobals *G = m_G;
-
-  CWizard *I = this; // TODO: Remove during Wizard Refactor
-  int LineHeight = DIP2PIXEL(SettingGetGlobal_i(G, cSetting_internal_gui_control_size));
-
-  int a;
-  a = ((rect.top - (y + cWizardClickOffset)) - cWizardTopMargin) / LineHeight;
-
-  if(I->Pressed)
-    I->Pressed = -1;
-  OrthoDirty(G);
-
-  OrthoUngrab(G);
-
-  if((a >= 0) && ((ov_size) a < I->NLine)) {
-    switch (I->Line[a].type) {
-    case cWizTypeButton:
-      {
-        if (WizardGet(G)) {
-          PLog(G, I->Line[a].code, cPLog_pym);
-          PParse(G, I->Line[a].code);
-          PFlush(G);
-        }
-      }
-      break;
-    }
-  }
-  I->Pressed = -1;
-  return (1);
-}
-
 static void draw_button(int x2, int y2, int w, int h, float *light, float *dark,
                         float *inside , CGO *orthoCGO)
 {
@@ -681,101 +566,6 @@ static void draw_text(PyMOLGlobals * G, char *c, int xx, int yy, float *color , 
 
 
 /*========================================================================*/
-void CWizard::draw(CGO* orthoCGO)
-{
-  PyMOLGlobals *G = m_G;
-
-  CWizard *I = G->Wizard;
-  int x, y;
-  int a;
-
-  float buttonTextColor[3] = { 1.0, 1.0, 1.0 };
-  float buttonActiveColor[3] = { 0.8F, 0.8F, 0.8F };
-
-  float dimColor[3] = { 0.45F, 0.45F, 0.45F };
-
-  float dimLightEdge[3] = { 0.6F, 0.6F, 0.6F };
-  float dimDarkEdge[3] = { 0.25F, 0.25F, 0.25F };
-
-  float menuBGColor[3] = { 0.5F, 0.5F, 1.0 };
-  float menuLightEdge[3] = { 0.7F, 0.7F, 0.9F };
-  float menuDarkEdge[3] = { 0.3F, 0.3F, 0.5F };
-
-  float black_color[3] = { 0.0F, 0.0F, 0.0F };
-  float menuColor[3] = { 0.0, 0.0, 0.0 };
-  int LineHeight = DIP2PIXEL(SettingGetGlobal_i(G, cSetting_internal_gui_control_size));
-  int text_lift = (LineHeight / 2) - DIP2PIXEL(5);
-  float *text_color, *text_color2 = TextColor;
-
-  text_color = menuColor;
-
-  if(G->HaveGUI && G->ValidContext && ((rect.right - rect.left) > 6)) {
-
-    if(SettingGet<InternalGUIMode>(cSetting_internal_gui_mode, G->Setting) == InternalGUIMode::Default) {
-    if (orthoCGO)
-      CGOColorv(orthoCGO, BackColor);
-    else
-      glColor3fv(BackColor);
-      fill(orthoCGO);
-      drawLeftEdge(orthoCGO);
-    } else {
-      drawLeftEdge(orthoCGO);
-    if (orthoCGO)
-      CGOColor(orthoCGO, .5f, .5f, .5f);
-    else
-      glColor3f(0.5, 0.5, 0.5);
-      drawTopEdge();
-      text_color2 = OrthoGetOverlayColor(G);
-    }
-
-    if (orthoCGO)
-      CGOColorv(orthoCGO, TextColor);
-    else
-      glColor3fv(TextColor);
-    x = rect.left + cWizardLeftMargin;
-    y = (rect.top - LineHeight) - cWizardTopMargin;
-
-    for(a = 0; (ov_size) a < I->NLine; a++) {
-      if(I->Pressed == a) {
-        draw_button(rect.left + 1, y,
-                    (rect.right - rect.left) - 1,
-                    LineHeight - 1, dimLightEdge, dimDarkEdge, buttonActiveColor, orthoCGO);
-        /*        glColor3f(0.0,0.0,0.0); */
-        text_color = black_color;
-      } else {
-        switch (I->Line[a].type) {
-        case cWizTypeText:
-          text_color = text_color2;
-          glColor3fv(text_color2);
-          break;
-        case cWizTypeButton:
-          draw_button(rect.left + 1, y,
-                      (rect.right - rect.left) - 1,
-                      LineHeight - 1, dimLightEdge, dimDarkEdge, dimColor, orthoCGO);
-
-          /*          glColor3fv(buttonTextColor); */
-          text_color = buttonTextColor;
-          break;
-        case cWizTypePopUp:
-          draw_button(rect.left + 1, y,
-                      (rect.right - rect.left) - 1,
-                      LineHeight - 1, menuLightEdge, menuDarkEdge, menuBGColor, orthoCGO);
-          /* glColor3fv(menuColor); */
-          text_color = menuColor;
-          break;
-        default:
-          break;
-        }
-      }
-      draw_text(G, I->Line[a].text, x, y + text_lift, text_color, orthoCGO);
-      /*GrapDrawStr(I->Line[a].text,x+1,y+text_lift); */
-      y -= LineHeight;
-    }
-  }
-}
-
-
-/*========================================================================*/
 PyObject* WizardGet(PyMOLGlobals* G)
 {
   auto I = G->Wizard;
@@ -822,7 +612,6 @@ int WizardInit(PyMOLGlobals * G)
 {
   auto I = new CWizard(G);
   G->Wizard = I;
-  I->active = true;
   I->TextColor[0] = 0.2F;
   I->TextColor[1] = 1.0F;
   I->TextColor[2] = 0.2F;
