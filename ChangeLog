@@ -4,6 +4,18 @@ CHANGE LOG
 
 2026-11-18 pymolish-studio
 
+	* 4.19.4
+
+	* Quit
+	  - Fix: "quit" in a headless run (-c) crashed on the way out when
+	    a script had made a Qt application and a widget was still
+	    alive, so the exit code was lost. Seen on Windows with
+	    Python 3.14: every test passed and the run still failed. The
+	    Qt application is now closed before the process exits.
+	    This was what failed the Windows Python 3.14 CI job.
+
+2026-11-18 pymolish-studio
+
 	* 4.19.3
 
 	* Presets

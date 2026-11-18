@@ -517,6 +517,12 @@ def _quit(code=0, _self=cmd):
     pymol=_self._pymol
     # WARNING: internal routine, subject to change
     _self.interrupt()
+    # exit() skips Python's finalization, where PySide6 destroys the
+    # QApplication. One made by a headless script would stay alive, and its
+    # widgets crash the process on the way out (Windows, Python 3.14).
+    qt = sys.modules.get('PySide6.QtWidgets')
+    if qt and pymol.invocation.options.no_gui and qt.QApplication.instance():
+        qt.QApplication.instance().shutdown()
     try:
         _self.lock(_self)
         try: # flush and close log if possible to avoid threading exception

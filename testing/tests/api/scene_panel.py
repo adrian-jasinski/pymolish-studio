@@ -25,8 +25,6 @@ class TestScenePanel(testing.PyMOLTestCase):
             cmd.turn("x", 30)
             cmd.scene(name, "store")
         panel = ScenePanel(cmd)
-        # without a GUI, quit crashes on a Qt widget that is still alive (PExit)
-        self.addCleanup(lambda: (panel.deleteLater(), self.app.processEvents()))
         rows = panel.list
 
         def names():

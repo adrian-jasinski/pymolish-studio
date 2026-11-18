@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import os
+import subprocess
 import sys
 import pytest
 
@@ -115,8 +117,21 @@ class TestCommanding(testing.PyMOLTestCase):
         pass
 
     def testQuit(self):
-        cmd.quit
-        self.skipTest("cannot test quit")
+        # a headless script with a Qt application and a live widget: quit
+        # closes the application and the exit code still arrives
+        with testing.mktemp('.py') as filename:
+            with open(filename, 'w') as handle:
+                handle.write(
+                    'from pymol.Qt import QtWidgets\n'
+                    'app = QtWidgets.QApplication([])\n'
+                    'panel = QtWidgets.QDockWidget()\n'
+                    'cmd.quit(3)\n'
+                )
+            code = subprocess.call(
+                [sys.executable, '-m', 'pymol', '-ckq', filename],
+                env=dict(os.environ, QT_QPA_PLATFORM='offscreen'),
+            )
+        self.assertEqual(code, 3)
 
     def testReinitialize(self):
         def check(v, names):
