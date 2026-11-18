@@ -143,13 +143,13 @@ text path of all five. Its menus, though, are plain data from
 | Resize | Drag the dock edge. The dock also floats, tabs and closes (Display > Panels). | Done 4.5.11 |
 | Wizards | Title, buttons and popups of the active wizard (`get_panel`, `get_menu`) under the list; the dock reopens when a wizard starts. | Done 4.5.11 |
 | Mouse mode, selection mode, state | One status line under the list. | Done 4.5.11 |
-| Old internal GUI | Off by default in the GUI; Display > Internal GUI or `set internal_gui` in pymolrc brings it back. Its left edge can now be dragged, with a resize cursor. Removal planned on 2026-11-18 as [step 17](17-legacy-ui.md): first the menu rows, then the C++ code file by file. | Planned |
+| Old internal GUI | Off by default in the GUI; Display > Internal GUI or `set internal_gui` in pymolrc brings it back. Its left edge can now be dragged, with a resize cursor. Removed on 2026-11-18 in [step 17](17-legacy-ui.md): the menu rows in 4.16.0, the C++ code in 4.17.1. | Done 4.17.1 |
 | Updates | Polled from the window's 0.5 s timer: names, types, visibility. Counts are looked up for tooltips and copied rows only. Marked `ponytail:`; upgrade path is a change notification from the executive. | Done 4.5.11 |
 | Reorder and regroup by dragging rows | Use `order` and `group` meanwhile. | Open |
 | Group open/closed shared with the core | Expansion is view state of the tree for now. | Open |
 | Picking an atom selects its row | Viewport-to-panel synchronization. | Open |
 | Menus the core opens (right click in the viewport or on a sequence residue, scene buttons, timeline) | Qt menus since 4.5.18: the core hands its menu list to `pymol.menu.popup`, which the window sets (`popup_at_cursor`). Without a window (`-x` keeps the hook too; `-c` has none) the GL popup is still used. | Done 4.5.18 |
-| Sequence viewer, scene buttons | Still drawn by the core in whole scale steps. Their scroll bar gets a flat look in [step 18](18-dialogs-scrollbar.md). | Open |
+| Sequence viewer, scene buttons | Text still drawn by the core in whole scale steps. The scroll bar of the sequence viewer is a Qt scroll bar since 4.17.0 ([step 18](18-dialogs-scrollbar.md)). | Open |
 | Per-object motion menu (movie column) | Only shown by the old panel when a movie exists. | Open |
 
 ### Row state and colors
@@ -192,7 +192,7 @@ made up (650 mm for a laptop panel), so the size cannot be detected.
 | Live rescale without restart | Qt reads the factor once. Skip unless restarts prove painful. | Skipped |
 | Separate font-size setting | A second knob next to UI Scale. Skip unless the scale alone is not enough. | Skipped |
 | Fixed point sizes in rich text | `help_shortcut.ui` (13 pt, a macOS font) and `pluginmanager.ui` (9 pt, Ubuntu) carried a designer font in their HTML. Removed, so both use the application font. | Done 4.5.13 |
-| Spacing and labels | Hand-built dialogs with zero margins (Lighting Settings fixed); remaining dialogs audited one at a time. Dialogs that open too small are [step 18](18-dialogs-scrollbar.md). | Open |
+| Spacing and labels | Hand-built dialogs with zero margins (Lighting Settings fixed); remaining dialogs audited one at a time. Dialogs opened too small until 4.15.1 ([step 18](18-dialogs-scrollbar.md)). | Open |
 
 Rule for plugins (in [docs/plugins.md](../plugins.md)): do not set text colors
 or pixel font sizes; use the palette, `<b>`, and layouts with default spacing.

@@ -117,6 +117,11 @@ step 3 may).
 **17e, the GL menus.** `PopUp.cpp` and `Menu.cpp`: check whether any start
 mode still reaches them (`-x` keeps the Qt hook, `-c` draws nothing). If
 none does: one removal, 969 lines, and `internal_gui_mode` with it.
+Checked on 2026-11-18: `MenuShow` (`Menu.cpp:35`) falls back to `PopUpNew`
+when `pymol.menu.popup` is not set or returns false. The window always sets
+it, so the fallback only serves a program that embeds the viewport through
+`pymol2` without the window. Removing it takes the right-click menus from
+such a program: the user's call, question 4.
 
 ## Result
 
@@ -192,7 +197,11 @@ Checks:
   user's pymolrc: measurement wizard (five buttons in the Objects panel,
   prompt in the viewport), mouse modes, rock, scenes, a 60-frame movie with
   the core's movie panel, the sequence viewer, `viewport 700, 500`.
-- Sanitizer run: see the end of this section.
+- Sanitizer run of commit `87deefc3` (address and undefined behavior, the
+  flags of the CI job, built in a scratch copy): 1,078 tests and the Catch2
+  tests pass, no report, exit code 0. It also covers the scroll bar change
+  of step 18b. 292 tests were skipped instead of 276: the scratch
+  environment had no rdkit, PDBFixer or OpenMM.
 - Not tested: a 3D mouse (`ControlSdof*` is untouched), stereo modes,
   Windows and macOS.
 
@@ -208,6 +217,9 @@ Checks:
    `overlay`): keep the code and only remove the rows (recommended: full
    screen and `-x` have no other command line), or plan its removal too?
    **Not answered; the code stays.**
+4. 17e: remove the menus the core draws in OpenGL (969 lines)? Only a
+   program that embeds the viewport without the window still sees them.
+   Recommended: yes, after asking whether such a program exists.
 3. Old-style plugins: only hide the empty submenu (recommended first), or
    delete the Tk shims, after which a plugin written for the Tk window no
    longer adds its rows? **Answer: delete everything Tk.**

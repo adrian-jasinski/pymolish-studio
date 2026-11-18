@@ -77,6 +77,7 @@ recommended direction, not a claim that an implementation has passed tests.
 | 6 | 15c: add ChimeraX's object colors (tan, sky blue, plum, ...) as one more palette? | [15-presets.md](docs/plans/15-presets.md), Slices | 15c, one line |
 | 7 | 15e: which of the five effects to build: color steps in the viewport, fog toward a white background, helices as cylinders, ambient occlusion in the soft look, a "balls in glass" preset? | [15-presets.md](docs/plans/15-presets.md), 15e | 15e |
 | 13 | 19: which ways to edit a movie should be built? Recommended: the shot list (D) first, the storyboard (A) as its picture, then record (E), guided tour (F) and the export panel (I); easing (H) and effects (G) last. Open the panel by itself when a movie gets frames (recommended: yes)? Undo for movie edits (recommended: not in the first version)? | [19-movie-timeline.md](docs/plans/19-movie-timeline.md), Options and Questions | 19 |
+| 14 | 17e: remove the menus the core draws in OpenGL (969 lines)? Since the window shows Qt menus, only a program that embeds the viewport through `pymol2` without the window still gets them. Recommended: yes, if no such program is in use. | [17-legacy-ui.md](docs/plans/17-legacy-ui.md), 17e and question 4 | 17e |
 
 The user's to do, not decisions:
 
