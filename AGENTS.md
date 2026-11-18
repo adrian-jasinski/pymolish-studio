@@ -101,5 +101,6 @@ CI (`.github/workflows/build.yml`) builds Linux (apt) / Windows / macOS (native 
 ## 6. When unsure
 
 - Pick the smaller change and say what you skipped.
+- Always offer options or ask (rule of 2026-11-18). Where a request leaves a real choice open (what to build, how it looks or is named, what gets removed), propose two or three options with a recommendation, or ask a question, before building it. In a plan they go into the plan and into "Waiting for the user" of `PLAN.md`. This is for choices, not for permission: the last bullet still holds.
 - If a removal might break a feature a user cares about, do the removal in a branch and list what disappears in the PR description. Scaling scope down is the user's call.
 - Don't ask permission for reversible work that follows from these rules. Do ask before deleting data files, changing file-format output, or adding a dependency.

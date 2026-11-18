@@ -2,7 +2,9 @@
 
 [Roadmap](../../PLAN.md) · Request 2026-11-16 · **15a done 2026-11-16 in
 4.14.0, 15d in 4.14.3, 15f in 4.14.4.** 15b, 15c and 15e are open and wait for
-the user.
+the user. 15g and 15h were planned on 2026-11-18 (last section before
+"Skipped") and change two decisions below: looks leave the background alone,
+and three presets stop recoloring the protein.
 
 **The preset menu is ordered, has one solvent row instead of twin rows, a
 glass preset and a cartoon transparency row. Every preset but "simple" draws
@@ -191,6 +193,117 @@ except the first, which needs code.
 | Ambient occlusion in the soft look | `ambient_occlusion_mode` 1 in the look; glass must switch it off for its own objects. To be timed on a large surface first. |
 | "Balls in glass" preset from the gallery | One preset; only for small proteins. |
 | Glow and blur with distance, as in the wire example pictures | Not tried, needs code: a blur pass over the drawn picture, the same kind of pass as 15b. |
+
+## Request 2026-11-18: one menu or two, background, colors (15g, 15h)
+
+Planned, not built. The user asked why the menu has "Preset" and "Look",
+wants neither to change the background, wants the cartoon colors left alone
+in the working presets, and "simple" out of the menu.
+
+### What a look is, and how it differs from a preset
+
+| | Preset | Look |
+| --- | --- | --- |
+| Acts on | the selection or the object of the menu | the whole scene |
+| Sets | representations, colors, settings of that object | global settings: light, outline of ray-traced images, and today the background |
+| Combines | one preset per object | one look for everything; any preset with any look (16 x 7) |
+| Code | functions in `preset.py`, `menu.presets` | `preset.LOOKS`, `preset.look`, `menu.looks` |
+
+That is why they are two lists: merged into one, "glass" in the soft light
+and "glass" in the figure light would need a row each, and a preset picked
+for one object would change the light of all the others. What is wrong today
+is the naming, not the split: "Look" does not say what it changes, both lists
+start with "default", and a look also turns the background white, which
+reads like a preset.
+
+**Options for the menu:**
+
+| | Option | For | Against |
+| --- | --- | --- | --- |
+| A | **Keep two groups in the Presets menu, rename the second.** Caption "Light and outline:" instead of "Look:", its first row "standard" instead of a second "default". Recommended. | Two lines in `menu.looks`. The caption says what the rows change. | Still two groups in one menu. |
+| B | One list: the looks become presets. | One thing to learn. | Loses the combinations (glass in soft light), or needs a row for each. A preset on one object changes the whole scene. |
+| C | The looks leave the Presets menu and get their own toolbar button next to the palette and the background ([step 16](16-background.md)): three small buttons for the three things that are scene-wide. | The cleanest split. | One more button; the bar already hides two button texts at 150 %. |
+
+A can become C later without a change to `preset.py`.
+
+### 15g, looks keep the background. Planned.
+
+Facts read from the code:
+
+- `preset._outline` (`preset.py:502`) is shared by figure, soft, flat, comic
+  and sketch. Two of its six settings are background: `bg_rgb` white and
+  `ray_opaque_background` 1. x-ray sets neither.
+- `look("default")` unsets every key a look sets, so today it also turns the
+  background black again.
+- `_outline` sets `ray_trace_color` black. The default of that setting is
+  `-6`, "front": the color that contrasts with the background
+  (`SettingInfo.h:646`, read in `Ray.cpp:5674`). Without the black the
+  outline should be black on white and white on black by itself. Read, not
+  yet rendered.
+
+Slice:
+
+- `preset.py`: `_outline` loses `bg_rgb`, `ray_opaque_background` and
+  `ray_trace_color`. Three keys out, nothing in.
+- Ray trace every look on black, on white and on one gradient of step 16,
+  with the presets illustration and glass. sketch on black becomes white
+  lines on black; if that or another look is unusable on a dark background,
+  say so in the "What was tried" table and decide there, not by setting the
+  background again.
+- `menu.py`: the caption and the first row of option A (or what the user
+  picks).
+- Decision "illustration also picks the look flat" stays; it now keeps the
+  background too.
+- Checks: `testing/tests/api/preset.py:120,152,160` assert a white and a
+  black background after a look; they become "the background is what it was".
+- `ChangeLog`: `preset.look` no longer sets the background.
+- Commit: `ui(presets): looks keep the background; caption says what they set`.
+
+### 15h, presets keep the protein colors; "simple" leaves the menu. Planned.
+
+A cartoon takes its color from the carbon atoms, so "recoloring the cartoon"
+means a preset that colors the carbons of the protein.
+
+| Preset | Colors it sets today | Planned |
+| --- | --- | --- |
+| default | by element, carbons in the object color | Stays: it is the reset, also for colors. |
+| classified | none | Stays. |
+| simple | by chain | Row removed. |
+| technical | rainbow along each chain (`util.chainbow`, `preset.py:300`); ligands by chain; other elements by element | The rainbow line goes. |
+| ligands, ligand sites (six variants, one function) | rainbow along the protein chains (`:130`, `:212`); ligand carbons grey; other elements by element | The rainbow lines go. The ligand keeps its ball-and-stick colors. |
+| ball and stick | none | Stays. |
+| b factor putty | by B factor | Stays: the color is the picture. |
+| illustration | shades of blue | Stays: the user asked for it. |
+| pretty, publication | rainbow over the protein carbons; ligands by chain | Question 1 below. |
+| glass, wire, protein interface | by chain | Question 1 below. |
+
+Slice:
+
+- `preset.py`: delete the three `util.chainbow` lines. Coloring the
+  non-carbon atoms by element stays in all three: lines and sticks need it,
+  and it does not touch the cartoon.
+- `menu.py:747`: delete the "simple" row. The group "Plain" is then
+  technical, ball and stick, b factor putty.
+- Checks: `testTechnical` and `testLigands` get "the carbon colors of the
+  protein are the ones from before"; `testPresets` counts one row less.
+- `ChangeLog`: `preset.technical`, `preset.ligands` and `preset.ligand_sites`
+  no longer color the protein.
+- Commit: `ui(presets): technical and ligand presets keep the protein colors;
+  simple leaves the menu`.
+
+Known consequence: after "illustration" the protein stays blue in the next
+preset. "default" resets the colors, and so does a click in the palette menu.
+
+**Questions:**
+
+1. Should pretty, publication, glass, wire and protein interface also stop
+   coloring? Recommended: no. They are picture presets like illustration, and
+   an interface needs chains in different colors. If yes: five more deleted
+   lines, and pretty and publication then differ from each other only in the
+   shape of the cartoon.
+2. "simple": remove only the menu row (recommended, as step 15 decided "no
+   function is removed"), or also the functions `preset.simple` and
+   `simple_no_solv`? Scripts that call them would then fail.
 
 ## Skipped
 

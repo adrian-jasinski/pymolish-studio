@@ -3,7 +3,8 @@
 First reviewed 2026-11-08 against revision `3250e7a3`. Checked again 2026-11-16
 at 4.12.6 (`f30d3525`) against the code, the detailed plans and the git log; the
 user's decisions of that day are applied (4.12.8 to 4.13.0) and listed in
-[PLAN-DONE.md](PLAN-DONE.md).
+[PLAN-DONE.md](PLAN-DONE.md). Extended 2026-11-18 at 4.14.4 (`6125122a`) with
+the request of that day: 15g, 15h and steps 16 to 19, all planned, none built.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -22,12 +23,18 @@ user's original numbers; the letters are milestones of the detailed plans.
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
 | 5 | **1b** — [Performance and GPU](docs/plans/01-performance-gpu.md) | Renderer default on WSL, draw cost of sticks and surfaces, the two triangulation passes. One measured bottleneck per change. | Each change has before and after numbers. |
-| 5 | **3** — [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Rows moved by dragging, a picked atom selects its row, sequence viewer and scene buttons still drawn by the core, spacing of the remaining dialogs, removal of the old C++ panel. | Each increment ships in a reviewable test build. |
+| 5 | **3** — [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Rows moved by dragging, a picked atom selects its row, sequence viewer and scene buttons still drawn by the core, spacing of the remaining dialogs. The removal of the old C++ panel moved to step 17, dialog sizes and the scroll bar of the sequence viewer to step 18, the timeline to step 19. | Each increment ships in a reviewable test build. |
 | none | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Next: 8c to 8g. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `bench.py` and a PSE round trip. |
 | none | **5c** — [Release builds without GitHub Actions](docs/plans/05-builds-binaries.md) | A proposal of 2026-11-16 inside finished step 5: Linux in podman, Windows on the host, macOS not possible off Apple hardware. Nothing is built yet. | The user accepts or drops the proposal. |
-| none | **15** — [Presets and looks](docs/plans/15-presets.md) | 15b: the outline of the looks in the viewport (today only in ray-traced images). 15c: ChimeraX object colors as a palette. 15e: five more effects, tried and described. 15a (ordered menu, solvent row, glass, looks) shipped in 4.14.0, 15d (cartoon everywhere, ligand balls and sticks, cartoon transparency, comic and sketch) in 4.14.3, 15f (wire, illustration, shades of one color) in 4.14.4. | The user picks or drops 15b, 15c and each effect of 15e. |
+| none | **15** — [Presets and looks](docs/plans/15-presets.md) | 15b: the outline of the looks in the viewport (today only in ray-traced images). 15c: ChimeraX object colors as a palette. 15e: five more effects, tried and described. 15a (ordered menu, solvent row, glass, looks) shipped in 4.14.0, 15d (cartoon everywhere, ligand balls and sticks, cartoon transparency, comic and sketch) in 4.14.3, 15f (wire, illustration, shades of one color) in 4.14.4. Planned 2026-11-18: 15g, looks no longer set the background and their caption says what they set; 15h, technical and the ligand presets keep the protein colors and "simple" leaves the menu. | The user picks or drops 15b, 15c and each effect of 15e; 15g and 15h ship with their tests. |
+| none | **16** — [Background menu and palette caption](docs/plans/16-background.md) | 16a: a caption on the palette menu. 16b: the candidate backgrounds tried on a real structure. 16c: a toolbar button after the palette with plain colors, two blues and gradients; the four color rows of Display > Background go. | The menu ships with the rows that passed 16b. |
+| none | **17** — [Legacy menu rows and the old internal GUI](docs/plans/17-legacy-ui.md) | 17a: the rows Internal GUI, Internal Prompt, Internal Feedback and Overlay go. 17b: no empty Legacy Plugins submenu. 17c: the C++ panel code, one removal per file (about 2,900 lines by function ranges). 17d and 17e: the panel list and the OpenGL menus, after step 19. | After 17a the panel is hidden; each later slice passes the suite, the sanitizer job and a PSE round trip, or the file stays. |
+| none | **18** — [Dialog sizes and the scroll bar of the sequence viewer](docs/plans/18-dialogs-scrollbar.md) | 18a: dialogs open at the size of their content, one fix in `load_form` for every form. 18b: a flat scroll bar in the viewport. | Every window opens right at 100, 150 and 200 %. |
+| none | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | 19a: a read-only storyboard panel and one core query. 19b: add, move, stretch and delete scenes. 19c: motion lane, templates, a shorter Movie menu. 19d: the core's movie panel goes. | Each slice ships in a reviewable test build. |
 
-Steps 8, 5c and 15 never got an order number. GPU compute is not on the critical
+Steps 8, 5c and 15 to 19 never got an order number. Suggested order for the
+request of 2026-11-18, smallest and most visible first: 15g with 15h, 16,
+18a, 17a with 17b, 18b, 19a to 19c, then the removals 17c, 19d, 17d, 17e. GPU compute is not on the critical
 path. What needs the user's answer first is in "Waiting for the user", not
 repeated in this table.
 
@@ -65,20 +72,27 @@ recommended direction, not a claim that an implementation has passed tests.
 | # | Decision | Where it is described | What it holds up |
 | --- | --- | --- | --- |
 | 1 | On WSL, should the app select the `d3d12` driver itself? Frames go from 50 to 120 ms down to 0.7 to 11 ms; lines are then 1 pixel wide, so `trilines` goes on with it and mesh lines stay thin. | [01-performance-gpu.md](docs/plans/01-performance-gpu.md), Status 2026-11-14 | The first open item of 1b |
-| 2 | Delete the old C++ object panel (Display > Internal GUI)? The Qt panel replaced it in 4.5.11. `pymolish -x` still uses it. | [03-modern-ui.md](docs/plans/03-modern-ui.md), Objects panel | One removal PR |
+| 2 | Answered 2026-11-18: the old C++ object panel is not needed; its removal is step 17. Still open there: what `pymolish -x` shows afterwards. Recommended: the viewport alone, with the Objects panel as a floating window one key away. | [17-legacy-ui.md](docs/plans/17-legacy-ui.md), question 1 | 17c |
 | 3 | Rights line for the icon and the logo: who made them, which license. | [09-icons-logo.md](docs/plans/09-icons-logo.md), `docs/licenses.md` | A complete license list; no code |
 | 4 | 5c: build the Linux and Windows bundles on the development machine, or stay with GitHub Actions now that the failing test is fixed (4.12.7)? | [05-builds-binaries.md](docs/plans/05-builds-binaries.md), 5c | 5c |
 | 5 | 15b: draw the black outline of the looks figure, soft, flat, comic and sketch in the viewport too? It needs a new edge pass in the shaders; today the outline appears only in ray-traced images. The preset illustration depends on it most: without the outline the viewport shows only flat blue shapes. | [15-presets.md](docs/plans/15-presets.md), Slices | 15b |
 | 6 | 15c: add ChimeraX's object colors (tan, sky blue, plum, ...) as one more palette? | [15-presets.md](docs/plans/15-presets.md), Slices | 15c, one line |
 | 7 | 15e: which of the five effects to build: color steps in the viewport, fog toward a white background, helices as cylinders, ambient occlusion in the soft look, a "balls in glass" preset? | [15-presets.md](docs/plans/15-presets.md), 15e | 15e |
+| 8 | 15g: the looks stay a second group in the Presets menu under the caption "Light and outline:" (recommended), become presets, or get their own toolbar button? | [15-presets.md](docs/plans/15-presets.md), Request 2026-11-18 | 15g |
+| 9 | 15h: should pretty, publication, glass, wire and protein interface also stop coloring the protein (recommended: no)? Remove only the menu row "simple" (recommended) or the functions too? | [15-presets.md](docs/plans/15-presets.md), 15h | 15h |
+| 10 | 16: which caption for the palette menu; remember the background after a restart (recommended: yes); delete the color rows of Display > Background (recommended: yes); an "Other..." row (recommended: no)? | [16-background.md](docs/plans/16-background.md), Questions | 16a, 16c |
+| 11 | 17: keep the text console of the viewport and remove only its menu rows (recommended)? Old-style plugins: only hide the empty submenu (recommended first) or delete the Tk shims? | [17-legacy-ui.md](docs/plans/17-legacy-ui.md), Questions | 17a, 17b |
+| 12 | 18: dialogs fit their content (recommended), or also remember size and position? Scroll bar: restyle the core's (recommended), or a Qt scroll bar under the viewport? | [18-dialogs-scrollbar.md](docs/plans/18-dialogs-scrollbar.md), Questions | 18a, 18b |
+| 13 | 19: storyboard timeline (recommended), keyframe tracks, or only a switch for the core's movie panel? Open by itself when a movie gets frames (recommended: yes)? Undo for timeline edits (recommended: not in the first version)? | [19-movie-timeline.md](docs/plans/19-movie-timeline.md), Options and Questions | 19 |
 
 The user's to do, not decisions:
 
-- Merge to `master`: it is at 4.8.0. Everything since (steps 10 to 14, 4.9.0
-  to 4.13.0) is on `feature5` and `feature6`, with no pull request; the newest
-  commits of `feature6` are not pushed. Release bundles and every check marked
-  "first CI run" wait for it: the icon of the Windows program, the release
-  notes, the `chem` and `fix` extras on three systems.
+- `master` on GitHub has everything up to 4.14.4 (pull requests 5 to 7,
+  merged 2026-11-16). The checks marked "first CI run" can now be looked at:
+  the icon of the Windows program, the release notes, the `chem` and `fix`
+  extras on three systems.
+- Before 17c: take the lines `set internal_gui_width` and
+  `set internal_gui_control_size` out of `~/.pymolrc`.
 - Remove the pymolish plugin from `~/.pymol/startup`: it still wins over the
   native commands.
 - Look at the Windows artifact after the merge.
