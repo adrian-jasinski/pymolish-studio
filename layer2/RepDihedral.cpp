@@ -201,7 +201,6 @@ void RepDihedral::render(RenderInfo * info)
   line_width = SceneGetDynamicLineWidth(info, line_width);
 
   if(ray) {
-#ifndef _PYMOL_NO_RAY
     float radius;
 
     if (dash_transparency_enabled){
@@ -228,7 +227,6 @@ void RepDihedral::render(RenderInfo * info)
       v += 6;
       c -= 2;
     }
-#endif
   } else if(G->HaveGUI && G->ValidContext) {
     if(pick) {
     } else {
@@ -257,7 +255,6 @@ void RepDihedral::render(RenderInfo * info)
 	  return;
 	}
       }
-#ifndef PURE_OPENGL_ES_2
       if (!generate_shader_cgo) {
 	if(info->width_scale_flag) {
 	  glLineWidth(line_width * info->width_scale);
@@ -295,7 +292,6 @@ void RepDihedral::render(RenderInfo * info)
         if (dash_transparency_enabled && !t_mode_3)
           glEnable(GL_DEPTH_TEST);	
       }
-#endif
       if (use_shader) {
 	
 	if (ok) {

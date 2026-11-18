@@ -92,9 +92,7 @@ struct ObjectMolecule;
 class CShaderMgr;
 class CMovieScenes;
 
-#ifndef _PYMOL_NOPY
 typedef struct _CP_inst CP_inst;
-#endif
 
 struct OVLexicon;
 
@@ -155,9 +153,7 @@ struct PyMOLGlobals {
   CPlugIOManager *PlugIOManager;
   CShaderMgr* ShaderMgr;
   GFXManager* GFXMgr;
-#ifndef _PYMOL_NOPY
   CP_inst *P_inst;
-#endif
 
   /* global variables */
 
@@ -187,10 +183,6 @@ struct PyMOLGlobals {
 
   int DragDirtyFlag;            /* do we need an extra callback to handle a mouse drag? */
 
-#ifdef _PYMOL_LIB
-  void *CallbackObject;
-  void (*enabledCallback)(void *, const char *, int );
-#endif
 
   // user defined scenes
   CMovieScenes * scenes;
@@ -205,8 +197,6 @@ struct PyMOLGlobals {
    compatible) then this global variable will contain a pointer to
    PyMOL global state variables */
 
-#ifndef _PYMOL_NOPY
 extern PyMOLGlobals *SingletonPyMOLGlobals;
-#endif
 
 #endif

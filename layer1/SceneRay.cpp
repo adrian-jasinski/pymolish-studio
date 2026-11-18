@@ -92,10 +92,6 @@ bool SceneRay(PyMOLGlobals * G,
               char **charVLA_ptr, float angle,
               float shift, int quiet, G3dPrimitive ** g3d, int show_timing, int antialias)
 {
-#ifdef _PYMOL_NO_RAY
-  FeedbackAdd(G, "" _PYMOL_NO_RAY);
-  return false;
-#else
 
   CScene *I = G->Scene;
   CRay *ray = nullptr;
@@ -396,14 +392,12 @@ bool SceneRay(PyMOLGlobals * G,
                      I->m_view.m_clipSafe().m_front, I->m_view.m_clipSafe().m_back, fov, angle, antialias);
         if(!(charVLA_ptr && headerVLA_ptr)) {   /* immediate mode */
           UtilNCopy(prefix, SettingGet_s(G, nullptr, nullptr, cSetting_batch_prefix), std::size(prefix));
-#ifndef _PYMOL_NOPY
           if(PPovrayRender(G, headerVLA, charVLA, prefix, ray_width,
                            ray_height, antialias)) {
             UtilNConcat(prefix, ".png", std::size(prefix));
             SceneLoadPNG(G, prefix, false, 0, false);
             I->DirtyFlag = false;
           }
-#endif
           VLAFreeP(charVLA);
           VLAFreeP(headerVLA);
         } else {                /* get_povray mode */
@@ -751,7 +745,6 @@ bool SceneRay(PyMOLGlobals * G,
   PyMOL_SetBusy(G->PyMOL, false);
 
   return true;
-#endif
 }
 
 int SceneDeferRay(PyMOLGlobals * G,
@@ -768,11 +761,6 @@ int SceneDeferRay(PyMOLGlobals * G,
 #ifdef _PYMOL_IP_EXTRAS
       PParse(G, "cmd._copy_image(quiet=0)");
 #else
-#ifdef PYMOL_EVAL
-      PRINTFB(G, FB_Scene, FB_Warnings)
-      " Warning: Clipboard image transfers disabled in Evaluation "
-      "Builds.\n" ENDFB(G);
-#endif
 #endif
     }
   };
@@ -781,7 +769,6 @@ int SceneDeferRay(PyMOLGlobals * G,
 }
 
 void SceneRenderRayVolume(PyMOLGlobals * G, CScene *I){
-#ifndef PURE_OPENGL_ES_2
   glMatrixMode(GL_PROJECTION);
   glPushMatrix();
   glLoadIdentity();
@@ -789,13 +776,9 @@ void SceneRenderRayVolume(PyMOLGlobals * G, CScene *I){
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glLoadIdentity();
-#endif
   
-#ifndef PURE_OPENGL_ES_2
   glRasterPos3f(0, 0, -1);
-#endif
   glDepthMask(GL_FALSE);
-#ifndef PURE_OPENGL_ES_2
   if (PIsGlutThread() && rayVolumeImage) {
     if (rayWidth == I->Width && rayHeight == I->Height){
       glDrawPixels(rayVolumeImage->getWidth(), rayVolumeImage->getHeight(),
@@ -804,23 +787,16 @@ void SceneRenderRayVolume(PyMOLGlobals * G, CScene *I){
       SceneDrawImageOverlay(G, 1, nullptr);
     }
   }
-#endif
   glDepthMask(GL_TRUE);
   glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
   glDepthFunc(GL_ALWAYS);
-#ifndef PURE_OPENGL_ES_2
   if (PIsGlutThread() && rayWidth == I->Width && rayHeight == I->Height)
     glDrawPixels(I->Width, I->Height, GL_DEPTH_COMPONENT, GL_FLOAT, rayDepthPixels); 
-#endif
   glDepthFunc(GL_LESS);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   
-#ifdef PURE_OPENGL_ES_2
-  /* TODO */
-#else
   glPopMatrix();
   glMatrixMode(GL_PROJECTION);
   glPopMatrix();
   glMatrixMode(GL_MODELVIEW);
-#endif
 }

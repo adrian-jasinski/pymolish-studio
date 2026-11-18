@@ -1181,10 +1181,8 @@ int ObjectMapStateInterpolate(
   return (ok);
 }
 
-#ifndef _PYMOL_NOPY
 static int ObjectMapNumPyArrayToMapState(PyMOLGlobals * G, ObjectMapState * I,
                                          PyObject * ary, int quiet);
-#endif
 
 void ObjectMapRegeneratePoints(ObjectMap * om){
   int i;
@@ -1783,7 +1781,6 @@ void ObjectMap::render(RenderInfo * info)
           ray->sausage3fv(corner + 3 * 5, corner + 3 * 7, radius, vc, vc);
         } else if(G->HaveGUI && G->ValidContext) {
           if(pick) {
-#ifndef PURE_OPENGL_ES_2
           } else if (!info->use_shaders) {
             // immediate
             ObjectUseColor(I);
@@ -1828,7 +1825,6 @@ void ObjectMap::render(RenderInfo * info)
             glEnd();
             glEnable(GL_LIGHTING);
           } else {
-#endif
             // shader
             if (!ms->shaderCGO) {
               ms->shaderCGO.reset(ObjectMapCGOGenerate(G, corner));
@@ -5586,7 +5582,6 @@ int ObjectMapSetBorder(ObjectMap * I, float level, int state)
 
 
 /*========================================================================*/
-#ifndef _PYMOL_NOPY
 static int ObjectMapNumPyArrayToMapState(PyMOLGlobals * G, ObjectMapState * ms,
                                          PyObject * ary, int quiet)
 {
@@ -5675,7 +5670,6 @@ static int ObjectMapNumPyArrayToMapState(PyMOLGlobals * G, ObjectMapState * ms,
   }
   return (ok);
 }
-#endif
 
 /*========================================================================*/
 ObjectMap *ObjectMapLoadChemPyBrick(PyMOLGlobals * G, ObjectMap * I, PyObject * Map,
@@ -5686,9 +5680,6 @@ ObjectMap *ObjectMapLoadChemPyBrick(PyMOLGlobals * G, ObjectMap * I, PyObject * 
   return nullptr;
 #endif
 
-#ifdef _PYMOL_NOPY
-  return nullptr;
-#else
 
   int ok = true;
   int isNew = true;
@@ -5771,7 +5762,6 @@ ObjectMap *ObjectMapLoadChemPyBrick(PyMOLGlobals * G, ObjectMap * I, PyObject * 
     }
   }
   return (I);
-#endif
 }
 
 
@@ -5779,9 +5769,6 @@ ObjectMap *ObjectMapLoadChemPyBrick(PyMOLGlobals * G, ObjectMap * I, PyObject * 
 ObjectMap *ObjectMapLoadChemPyMap(PyMOLGlobals * G, ObjectMap * I, PyObject * Map,
                                   int state, int discrete, int quiet)
 {
-#ifdef _PYMOL_NOPY
-  return nullptr;
-#else
   int ok = true;
   int isNew = true;
   float *cobj;
@@ -5932,7 +5919,6 @@ ObjectMap *ObjectMapLoadChemPyMap(PyMOLGlobals * G, ObjectMap * I, PyObject * Ma
     }
   }
   return (I);
-#endif
 }
 
 void ObjectMapDump(const ObjectMap* om, const char* fname, int state, int quiet)

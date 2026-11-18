@@ -242,7 +242,6 @@ int PConvPyStrToLexRef(PyObject * obj, OVLexicon * lex, int *lex_ref)
   return ok;
 }
 
-#ifndef _PYMOL_NOPY
 int PConvPyStrToStrPtr(PyObject * obj, const char **ptr)
 {
   int ok = true;
@@ -255,7 +254,6 @@ int PConvPyStrToStrPtr(PyObject * obj, const char **ptr)
     *ptr = PyString_AsString(obj);
   return (ok);
 }
-#endif
 
 int PConvPyStrToStr(PyObject * obj, char *ptr, int size)
 {
@@ -970,11 +968,9 @@ int PConvPyListToFloatArrayInPlaceAutoZero(PyObject * obj, float *ii, ov_size ll
 
 PyObject *PConvFloatArrayToPyList(const float *f, int l, bool dump_binary)
 {
-#ifndef PICKLETOOLS
   if (dump_binary){
     return PyBytes_FromStringAndSize(reinterpret_cast<const char*>(f), l * sizeof(float));
   } 
-#endif
   int a;
   PyObject *result = PyList_New(l);
   for(a = 0; a < l; a++)
@@ -1060,11 +1056,9 @@ PyObject *PConvIntVLAToPyTuple(int *vla)
 
 PyObject *PConvIntArrayToPyList(const int *f, int l, bool dump_binary)
 {
-#ifndef PICKLETOOLS
   if (dump_binary){
     return PyBytes_FromStringAndSize(reinterpret_cast<const char*>(f), l * sizeof(int));
   }
-#endif
   int a;
   PyObject *result = PyList_New(l);
   for(a = 0; a < l; a++)

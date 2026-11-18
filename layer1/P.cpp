@@ -329,7 +329,6 @@ int PLabelAtomAlt(PyMOLGlobals * G, AtomInfoType * at, const char *model, const 
   return (result);
 }
 
-#ifndef _PYMOL_NOPY
 
 
 /* all of the following Python objects must be invariant & global for the application */
@@ -1754,7 +1753,6 @@ int PLockAPIAsGlut(PyMOLGlobals * G, int block_if_busy)
 
 
 /* THESE CALLS ARE REQUIRED FOR MONOLITHIC COMPILATION TO SUCCEED UNDER WINDOWS. */
-#ifndef _PYMOL_EMBEDDED
 
 #ifdef __cplusplus
 extern "C" {
@@ -1769,10 +1767,8 @@ void init_champ(void);
 #ifdef __cplusplus
 }
 #endif
-#endif
 
 #ifdef _PYMOL_MONOLITHIC
-#ifndef _PYMOL_EMBEDDED
 
 /* BEGIN PROPRIETARY CODE SEGMENT (see disclaimer in "os_proprietary.h") */
 #ifdef WIN32
@@ -1788,10 +1784,8 @@ void initranlib();
 
 /* END PROPRIETARY CODE SEGMENT */
 #endif
-#endif
 
 #ifdef _PYMOL_MONOLITHIC
-#ifndef _PYMOL_EMBEDDED
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1807,7 +1801,6 @@ void init_pyomm(void);
 
 #ifdef __cplusplus
 }
-#endif
 #endif
 #endif
 
@@ -1927,9 +1920,7 @@ void PInit(PyMOLGlobals * G, int global_instance)
   /* BEGIN PROPRIETARY CODE SEGMENT (see disclaimer in "os_proprietary.h") */
 #ifdef WIN32
 #ifdef _PYMOL_MONOLITHIC
-#ifndef _PYMOL_EMBEDDED
 #define _PYMOL_INIT_MODULES
-#endif
 #endif
 #endif
   /* END PROPRIETARY CODE SEGMENT */
@@ -2419,7 +2410,6 @@ void PBlock(PyMOLGlobals * G)
  */
 int PAutoBlock(PyMOLGlobals * G)
 {
-#ifndef _PYMOL_EMBEDDED
   SavedThreadRec *SavedThread = G->P_inst->savedThread;
 
   auto id = PyThread_get_thread_ident();
@@ -2440,9 +2430,6 @@ int PAutoBlock(PyMOLGlobals * G)
 
   assert(PyGILState_Check());
   return 0;
-#else
-  return 1;
-#endif
 }
 
 /**
@@ -2461,7 +2448,6 @@ int PIsGlutThread(void)
  */
 void PUnblock(PyMOLGlobals * G)
 {
-#ifndef _PYMOL_EMBEDDED
   assert(PyGILState_Check());
 
   SavedThreadRec *SavedThread = G->P_inst->savedThread;
@@ -2480,7 +2466,6 @@ void PUnblock(PyMOLGlobals * G)
   SavedThread[a].state = PyEval_SaveThread();
 
   assert(!PyGILState_Check());
-#endif
 }
 
 /**
@@ -2751,4 +2736,3 @@ GIL_Ensure::~GIL_Ensure()
 }
 } // namespace pymol
 
-#endif

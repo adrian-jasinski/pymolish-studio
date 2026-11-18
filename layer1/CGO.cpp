@@ -788,66 +788,7 @@ int CGODrawConnector(CGO* I, float* targetPt3d, float* labelCenterPt3d,
   return true;
 }
 
-#ifdef WITH_UNUSED_FUNCTIONS
-int CGODrawLabel(CGO* I, int texture_id, float* targetPos, float* worldPos,
-    float* screenWorldOffset, float* screenMin, float* screenMax,
-    float* textExtent, short relativeMode)
-{
-  float* pc = CGO_add(I, CGO_DRAW_LABEL_SZ + 1);
-  if (!pc)
-    return false;
-  CGO_write_int(pc, CGO_DRAW_LABEL);
-  *(pc++) = worldPos[0];
-  *(pc++) = worldPos[1];
-  *(pc++) = worldPos[2];
-  *(pc++) = screenWorldOffset[0];
-  *(pc++) = screenWorldOffset[1];
-  *(pc++) = screenWorldOffset[2];
-  *(pc++) = screenMin[0];
-  *(pc++) = screenMin[1];
-  *(pc++) = screenMin[2];
-  *(pc++) = screenMax[0];
-  *(pc++) = screenMax[1];
-  *(pc++) = screenMax[2];
-  *(pc++) = textExtent[0];
-  *(pc++) = textExtent[1];
-  *(pc++) = textExtent[2];
-  *(pc++) = textExtent[3];
-  *(pc++) = (float) relativeMode;
-  *(pc++) = targetPos[0];
-  *(pc++) = targetPos[1];
-  *(pc++) = targetPos[2];
-  return true;
-}
-#endif
 
-#ifdef WITH_UNUSED_FUNCTIONS
-int CGOConev(CGO* I, const float* p1, const float* p2, float r1, float r2,
-    const float* c1, const float* c2, float cap1, float cap2)
-{
-  float* pc = CGO_add(I, CGO_CONE_SZ + 1);
-  if (!pc)
-    return false;
-  CGO_write_int(pc, CGO_CONE);
-  *(pc++) = *(p1++);
-  *(pc++) = *(p1++);
-  *(pc++) = *(p1++);
-  *(pc++) = *(p2++);
-  *(pc++) = *(p2++);
-  *(pc++) = *(p2++);
-  *(pc++) = r1;
-  *(pc++) = r2;
-  *(pc++) = *(c1++);
-  *(pc++) = *(c1++);
-  *(pc++) = *(c1++);
-  *(pc++) = *(c2++);
-  *(pc++) = *(c2++);
-  *(pc++) = *(c2++);
-  *(pc++) = cap1;
-  *(pc++) = cap2;
-  return true;
-}
-#endif
 
 int CGOPickColor(CGO* I, unsigned int index, int bond)
 {
@@ -917,33 +858,6 @@ int CGOEllipsoid(CGO* I, const float* v1, float r, const float* n1,
   return true;
 }
 
-#ifdef WITH_UNUSED_FUNCTIONS
-int CGOQuadric(CGO* I, const float* v, float r, const float* q)
-{
-  float* pc = CGO_add(I, CGO_QUADRIC_SZ + 1);
-  if (!pc)
-    return false;
-  CGO_write_int(pc, CGO_QUADRIC);
-
-  *(pc++) = *(v++);
-  *(pc++) = *(v++);
-  *(pc++) = *(v++);
-  *(pc++) = r;
-
-  *(pc++) = *(q++);
-  *(pc++) = *(q++);
-  *(pc++) = *(q++);
-  *(pc++) = *(q++);
-  *(pc++) = *(q++);
-
-  *(pc++) = *(q++);
-  *(pc++) = *(q++);
-  *(pc++) = *(q++);
-  *(pc++) = *(q++);
-  *(pc++) = *(q++);
-  return true;
-}
-#endif
 
 void CGOSetZVector(CGO* I, float z0, float z1, float z2)
 {
@@ -1084,18 +998,6 @@ int CGOVertexCrossv(CGO* I, const float* v)
   return true;
 }
 
-#ifdef WITH_UNUSED_FUNCTIONS
-int CGOInterpolated(CGO* I, const bool interp)
-{
-  float* pc = CGO_add(I, CGO_INTERPOLATED_SZ + 1);
-  if (!pc)
-    return false;
-  CGO_write_int(pc, CGO_INTERPOLATED);
-  *(pc++) = interp ? 1.f : 0.f;
-  I->interpolated = interp;
-  return true;
-}
-#endif
 
 int CGOColor(CGO* I, float v1, float v2, float v3)
 {
@@ -1156,31 +1058,6 @@ int CGOResetNormal(CGO* I, int mode)
   return true;
 }
 
-#ifdef WITH_UNUSED_FUNCTIONS
-int CGOFontVertexv(CGO* I, const float* v)
-{
-  float* pc = CGO_add(I, CGO_FONT_VERTEX_SZ + 1);
-  if (!pc)
-    return false;
-  CGO_write_int(pc, CGO_FONT_VERTEX);
-  *(pc++) = *(v++);
-  *(pc++) = *(v++);
-  *(pc++) = *(v++);
-  return true;
-}
-
-int CGOFontVertex(CGO* I, float x, float y, float z)
-{
-  float* pc = CGO_add(I, CGO_FONT_VERTEX_SZ + 1);
-  if (!pc)
-    return false;
-  CGO_write_int(pc, CGO_FONT_VERTEX);
-  *(pc++) = x;
-  *(pc++) = y;
-  *(pc++) = z;
-  return true;
-}
-#endif
 
 int CGOFontScale(CGO* I, float v1, float v2)
 {
@@ -1193,88 +1070,6 @@ int CGOFontScale(CGO* I, float v1, float v2)
   return true;
 }
 
-#ifdef WITH_UNUSED_FUNCTIONS
-int CGOChar(CGO* I, char c)
-{
-  float* pc = CGO_add(I, CGO_CHAR_SZ + 1);
-  if (!pc)
-    return false;
-  CGO_write_int(pc, CGO_CHAR);
-  *(pc++) = (float) c;
-  return true;
-}
-
-int CGOIndent(CGO* I, char c, float dir)
-{
-  float* pc = CGO_add(I, CGO_INDENT_SZ + 1);
-  if (!pc)
-    return false;
-  CGO_write_int(pc, CGO_INDENT);
-  *(pc++) = (float) c;
-  *(pc++) = dir;
-  return true;
-}
-
-int CGOWrite(CGO* I, const char* str)
-{
-  float* pc;
-
-  while (*str) {
-    pc = CGO_add(I, CGO_CHAR_SZ + 1);
-    if (!pc)
-      return false;
-    CGO_write_int(pc, CGO_CHAR);
-    *(pc++) = (float) *(str++);
-  }
-  return true;
-}
-
-int CGOWriteLeft(CGO* I, const char* str)
-{
-  float* pc;
-  const char* s = str;
-  while (*s) {
-    pc = CGO_add(I, CGO_INDENT_SZ + 1);
-    if (!pc)
-      return false;
-    CGO_write_int(pc, CGO_INDENT);
-    *(pc++) = (float) *(s++);
-    *(pc++) = -1.0F;
-  }
-  s = str;
-  while (*s) {
-    pc = CGO_add(I, CGO_CHAR_SZ + 1);
-    if (!pc)
-      return false;
-    CGO_write_int(pc, CGO_CHAR);
-    *(pc++) = (float) *(s++);
-  }
-  return true;
-}
-
-int CGOWriteIndent(CGO* I, const char* str, float indent)
-{
-  float* pc;
-  const char* s = str;
-  while (*s) {
-    pc = CGO_add(I, CGO_INDENT_SZ + 1);
-    if (!pc)
-      return false;
-    CGO_write_int(pc, CGO_INDENT);
-    *(pc++) = (float) *(s++);
-    *(pc++) = indent;
-  }
-  s = str;
-  while (*s) {
-    pc = CGO_add(I, CGO_CHAR_SZ + 1);
-    if (!pc)
-      return false;
-    CGO_write_int(pc, CGO_CHAR);
-    *(pc++) = (float) *(s++);
-  }
-  return true;
-}
-#endif
 
 int CGONormalv(CGO* I, const float* v)
 {
@@ -1947,19 +1742,6 @@ struct CGOCount
 
 static CGOCount CGOCountNumVertices(const CGO* I);
 
-#ifdef WITH_UNUSED_FUNCTIONS
-void CGOCountNumVerticesDEBUG(const CGO* I)
-{
-  auto count = CGOCountNumVertices(I);
-  CGOCountNumVertices(I);
-  printf("CGOCountNumVerticesDEBUG: num_total_vertices=%d num_total_indexes=%d "
-         "num_total_vertices_lines=%d num_total_indexes_lines=%d "
-         "num_total_vertices_points=%d\n",
-      count.num_total_vertices, count.num_total_indexes,
-      count.num_total_vertices_lines, count.num_total_indexes_lines,
-      count.num_total_vertices_points);
-}
-#endif
 
 static CGOCount CGOCountNumVertices(const CGO* I)
 {
@@ -4108,11 +3890,7 @@ static OptimizeSphereData GetOptimizeSphereData(
 {
   OptimizeSphereData sphereData;
   const int tot = VerticesPerSphere() * 4 * num_total_spheres;
-#if defined(PURE_OPENGL_ES_2)
-  int rightup_flags[6] = {0, 1, 3, 3, 2, 0};
-#else
   int rightup_flags[4] = {0, 1, 3, 2};
-#endif
 
   auto cgo_shader_ub_flags =
       SettingGet<bool>(cgo->G, cSetting_cgo_shader_ub_flags);
@@ -4256,9 +4034,7 @@ static OptimizeSphereData GetOptimizeSphereData(
       }
       leftOverCGO->add_to_cgo(op, pc);
     }
-#ifndef _WEBGL
     ok &= !I->G->Interrupt;
-#endif
   }
   return sphereData;
 }
@@ -5726,9 +5502,6 @@ static int CGORenderQuadricRay(CRay* ray, float* v, float r, float* q)
 int CGORenderRay(CGO* I, CRay* ray, RenderInfo* info, const float* color,
     ObjectGadgetRamp* ramp, CSetting* set1, CSetting* set2)
 {
-#ifdef _PYMOL_NO_RAY
-  return 0;
-#else
   int vc = 0;
   float linewidth = 1.0F;
   float widthscale = 0.15F;
@@ -6170,7 +5943,6 @@ int CGORenderRay(CGO* I, CRay* ray, RenderInfo* info, const float* color,
   if (ok)
     ray->transparentf(0.0F);
   return ok;
-#endif
 }
 
 /**
@@ -7312,142 +7084,6 @@ CGO* CGOConvertLinesToShaderCylinders(const CGO* I, int est)
   }
 }
 
-#ifdef WITH_UNUSED_FUNCTIONS
-/* CGOSplitUpLinesForPicking: This operation goes through */
-/* a CGO and returns a new CGO that has the same lines but */
-/* a line that has two different pick colors will get split */
-/* at its midpoint into two separate lines so that it can */
-/* be used for picking */
-CGO* CGOSplitUpLinesForPicking(const CGO* I)
-{
-  auto G = I->G;
-
-  std::unique_ptr<CGO> cgo_managed(new CGO(G));
-  CGO* cgo = cgo_managed.get();
-  int tot_nverts = 0;
-
-  CGOBegin(cgo, GL_LINES);
-
-  for (auto it = I->begin(); !it.is_stop(); ++it) {
-    const auto op = it.op_code();
-    const auto pc = it.data();
-
-    switch (op) {
-    case CGO_PICK_COLOR: {
-      cgo->current_pick_color_index = CGO_get_uint(pc);
-      cgo->current_pick_color_bond = CGO_get_int(pc + 1);
-    } break;
-    case CGO_END:
-    case CGO_VERTEX:
-      WARN_UNEXPECTED_OPERATION(G, op);
-      return nullptr;
-    case CGO_BEGIN: {
-      const float *last_vertex = nullptr, *last_color = nullptr,
-                  *current_color = nullptr, *color = nullptr;
-      unsigned int last_pick_color_idx = 0;
-      int last_pick_color_bnd = cPickableNoPick;
-      int nverts = 0;
-      const int mode = it.cast<cgo::draw::begin>()->mode;
-
-      for (++it;; ++it) {
-        if (it.is_stop()) {
-          WARN_UNEXPECTED_OPERATION(G, CGO_STOP);
-          return nullptr;
-        }
-
-        const auto op = it.op_code();
-        if (op == CGO_END) {
-          break;
-        }
-
-        const auto pc = it.data();
-
-        switch (op) {
-        case CGO_VERTEX:
-          if (last_vertex) {
-            switch (mode) {
-            case GL_LINES:
-            case GL_LINE_STRIP: {
-              bool pick_color_diff = false;
-              pick_color_diff =
-                  (cgo->current_pick_color_index != last_pick_color_idx ||
-                      cgo->current_pick_color_bond != last_pick_color_bnd);
-              if (pick_color_diff ||
-                  (last_color && current_color &&
-                      (!equal3f(last_color, current_color)))) {
-                if (pick_color_diff) {
-                  float haxis[3];
-                  float mid[3];
-                  uint curp_idx = cgo->current_pick_color_index;
-                  int curp_bnd = cgo->current_pick_color_bond;
-                  haxis[0] = .5f * (pc[0] - last_vertex[0]);
-                  haxis[1] = .5f * (pc[1] - last_vertex[1]);
-                  haxis[2] = .5f * (pc[2] - last_vertex[2]);
-                  add3f(last_vertex, haxis, mid);
-                  CGOPickColor(cgo, last_pick_color_idx, last_pick_color_bnd);
-                  CGOVertexv(cgo, last_vertex);
-                  CGOVertexv(cgo, mid);
-                  CGOPickColor(cgo, curp_idx, curp_bnd);
-                  CGOVertexv(cgo, mid);
-                  CGOVertexv(cgo, pc);
-                } else {
-                  CGOVertexv(cgo, last_vertex);
-                  CGOVertexv(cgo, pc);
-                }
-              } else {
-                CGOVertexv(cgo, last_vertex);
-                CGOVertexv(cgo, pc);
-              }
-              last_vertex = pc;
-              last_pick_color_idx = cgo->current_pick_color_index;
-              last_pick_color_bnd = cgo->current_pick_color_bond;
-            }
-              if (mode == GL_LINES) {
-                last_vertex = nullptr;
-                last_color = nullptr;
-              }
-            }
-          } else {
-            last_vertex = pc;
-            current_color = color;
-            last_pick_color_idx = cgo->current_pick_color_index;
-            last_pick_color_bnd = cgo->current_pick_color_bond;
-          }
-          nverts++;
-          break;
-        case CGO_COLOR: {
-          last_color = current_color;
-          current_color = pc;
-          color = pc;
-        } break;
-        case CGO_PICK_COLOR: {
-          cgo->current_pick_color_index = CGO_get_uint(pc);
-          cgo->current_pick_color_bond = CGO_get_int(pc + 1);
-        } break;
-        }
-      }
-      tot_nverts += nverts;
-    } break;
-    }
-  }
-
-  if (!tot_nverts) {
-    return nullptr;
-  }
-
-  CGOEnd(cgo);
-  CGOStop(cgo);
-  cgo->use_shader = I->use_shader;
-  if (cgo->use_shader) {
-    cgo->cgo_shader_ub_color =
-        SettingGetGlobal_i(cgo->G, cSetting_cgo_shader_ub_color);
-    cgo->cgo_shader_ub_normal =
-        SettingGetGlobal_i(cgo->G, cSetting_cgo_shader_ub_normal);
-  }
-
-  return cgo_managed.release();
-}
-#endif
 
 static void trilinesBufferAddVertex(float*& buffer,
     const float* v1,    // vertex
@@ -9644,7 +9280,6 @@ CGO* CGOConvertToLinesShader(const CGO* I, CGO* addTo, bool add_color)
     // need to add a_interpolate attribute
     attrDesc.push_back({"a_interpolate", VertexFormat::UByte, interpOps});
   }
-#ifndef PURE_OPENGL_ES_2
   {
     attrDesc.push_back({"a_line_position", VertexFormat::UByte});
     AttribDesc* lpdesc = &attrDesc[attrDesc.size() - 1];
@@ -9652,7 +9287,6 @@ CGO* CGOConvertToLinesShader(const CGO* I, CGO* addTo, bool add_color)
     static unsigned char flip_bits[] = {0, 1};
     lpdesc->repeat_value = flip_bits;
   }
-#endif
   if (!add_color) {
     attrDesc.erase(attrDesc.begin() + 1); // a_Color
   }
@@ -9883,7 +9517,6 @@ CGO* CGOConvertCrossesToLinesShader(
     // need to add a_interpolate attribute
     attrDesc.push_back({"a_interpolate", VertexFormat::UByte, interpOps});
   }
-#ifndef PURE_OPENGL_ES_2
   {
     attrDesc.push_back({"a_line_position", VertexFormat::UByte});
     AttribDesc* lpdesc = &attrDesc[attrDesc.size() - 1];
@@ -9891,7 +9524,6 @@ CGO* CGOConvertCrossesToLinesShader(
     static unsigned char flip_bits[] = {0, 1};
     lpdesc->repeat_value = flip_bits;
   }
-#endif
   return CGOConvertToShader(
       I, attrDesc, pickDesc, GL_LINES, VertexBufferLayout::Interleaved);
 }

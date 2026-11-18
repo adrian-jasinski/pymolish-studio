@@ -41,7 +41,6 @@ Z* -------------------------------------------------------------------
  * python calls, especially, PyArg_ParseTuple()
  */
 
-#ifndef _PYMOL_NOPY
 #define PY_SSIZE_T_CLEAN
 #include"os_python.h"
 #include"PyMOLGlobals.h"
@@ -1692,10 +1691,6 @@ static PyObject* CmdGetCapabilities(PyObject*, PyObject*)
     // mmlibs atom typing and stereochemistry, incentive feature PyMOL 1.4-1.8
     PySet_Add(caps, PConvToPyObject("mmlibs"));
 #endif
-#ifdef _PYMOL_INCENTIVE
-    // Incentive PyMOL
-    PySet_Add(caps, PConvToPyObject("incentive"));
-#endif // _PYMOL_INCENTIVE
   }
 
   Py_INCREF(caps);
@@ -2899,12 +2894,8 @@ static PyObject *CmdSplash(PyObject * self, PyObject * args)
     }
   } else {
     /* BEGIN PROPRIETARY CODE SEGMENT (see disclaimer in "os_proprietary.h") */
-#ifdef PYMOL_EVAL
-    result = 2;
-#else
 #ifdef _PYMOL_IP_EXTRAS
     result = 0;
-#endif
 #endif
     /* END PROPRIETARY CODE SEGMENT */
   }
@@ -6685,6 +6676,3 @@ void init_cmd(void)
 }
 #endif
 
-#else
-typedef int this_file_is_no_longer_empty;
-#endif

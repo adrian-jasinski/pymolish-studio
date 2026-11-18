@@ -274,11 +274,8 @@ pymol::Result<> ExecutiveRevalence(PyMOLGlobals* G, const char* s1,
     int reset, int quiet);
 int ExecutiveVdwFit(PyMOLGlobals* G, const char* s1, int state1, const char* s2,
     int state2, float buffer, int quiet);
-#ifdef _WEBGL
-#else
 pymol::Result<int> ExecutiveIterate(PyMOLGlobals* G, const char* str1,
     const char* expr, int read_only, int quiet, PyObject* space);
-#endif
 pymol::Result<int> ExecutiveIterateList(PyMOLGlobals* G, const char* s1,
     PyObject* list, int read_only, int quiet, PyObject* space);
 
@@ -305,12 +302,9 @@ pymol::Result<> ExecutiveLabel(PyMOLGlobals* G, const char* s1,
     const char* expr, int quiet, int eval_mode);
 
 int ExecutiveCountMotions(PyMOLGlobals* G);
-#ifdef _WEBGL
-#else
 pymol::Result<int> ExecutiveIterateState(PyMOLGlobals* G, int state,
     const char* str1, const char* expr, int read_only, int quiet,
     PyObject* space);
-#endif
 pymol::Result<> ExecutiveColor(
     PyMOLGlobals* G, const char* name, const char* color, int flags, int quiet);
 pymol::Result<> ExecutiveColorFromSele(
@@ -562,10 +556,8 @@ pymol::CObject* ExecutiveGetLastObjectEdited(PyMOLGlobals* G);
 bool ExecutiveIsFullScreen(PyMOLGlobals* G);
 void ExecutiveFullScreen(PyMOLGlobals* G, int flag);
 
-#ifndef _PYMOL_NOPY
 PyObject* ExecutiveGetSettingOfType(
     PyMOLGlobals* G, int index, const char* object, int state, int type);
-#endif
 
 pymol::vla<ObjectMolecule*> ExecutiveGetObjectMoleculeVLA(
     PyMOLGlobals* G, const char* sele);
@@ -839,10 +831,6 @@ pymol::Result<ExecutiveRMSInfo> ExecutiveFit(PyMOLGlobals* G,
     int cycles, int quiet, pymol::zstring_view object, int state1, int state2,
     int matchmaker);
 
-#ifdef _PYMOL_LIB
-int* ExecutiveGetRepsInSceneForObject(PyMOLGlobals* G, const char* name);
-int* ExecutiveGetRepsForObject(PyMOLGlobals* G, const char* name);
-#endif
 
 int ExecutiveGetNamesListFromPattern(
     PyMOLGlobals* G, const char* name, int allow_partial, int expand_groups);

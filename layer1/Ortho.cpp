@@ -535,18 +535,14 @@ void OrthoBusySlow(PyMOLGlobals* G, int progress, int total)
   I->BusyStatus[1] = total;
   if (SettingGetGlobal_b(G, cSetting_show_progress) && (time_yet > 0.15F)) {
     if (PyMOL_GetBusy(G->PyMOL, false)) { /* harmless race condition */
-#ifndef _PYMOL_NOPY
       int blocked = PAutoBlock(G);
       if (PLockStatusAttempt(G)) {
-#endif
         PyMOL_SetProgress(G->PyMOL, PYMOL_PROGRESS_SLOW, progress, total);
         I->BusyLastUpdate = UtilGetSeconds(G);
 
-#ifndef _PYMOL_NOPY
         PUnlockStatus(G);
       }
       PAutoUnblock(G, blocked);
-#endif
     }
     OrthoBusyDraw(G, false);
   }
@@ -566,17 +562,13 @@ void OrthoBusyFast(PyMOLGlobals* G, int progress, int total)
       (SettingGetGlobal_b(G, cSetting_show_progress) && (time_yet > 0.15F))) {
     if (PyMOL_GetBusy(G->PyMOL, false) ||
         finished) { /* harmless race condition */
-#ifndef _PYMOL_NOPY
       int blocked = PAutoBlock(G);
       if (PLockStatusAttempt(G)) {
-#endif
         PyMOL_SetProgress(G->PyMOL, PYMOL_PROGRESS_FAST, progress, total);
         I->BusyLastUpdate = UtilGetSeconds(G);
-#ifndef _PYMOL_NOPY
         PUnlockStatus(G);
       }
       PAutoUnblock(G, blocked);
-#endif
     }
     OrthoBusyDraw(G, false);
   }
@@ -636,7 +628,6 @@ void OrthoBusyDraw(PyMOLGlobals* G, int force)
               OrthoDrawBuffer(G, GL_FRONT); /* draw into the front buffer */
             }
 
-#ifndef PURE_OPENGL_ES_2
             glColor3f(0.f, 0.f, 0.f); // black
             glBegin(GL_TRIANGLE_STRIP);
             glVertex2i(0, I->Height);
@@ -645,7 +636,6 @@ void OrthoBusyDraw(PyMOLGlobals* G, int force)
             glVertex2i(cBusyWidth, I->Height - cBusyHeight);
             glEnd();
             glColor3fv(white);
-#endif
             y = I->Height - cBusyMargin;
             c = I->BusyMessage;
             if (*c) {
@@ -999,7 +989,6 @@ void OrthoKey(PyMOLGlobals* G, unsigned char k, int x, int y, int mod)
       }
       break;
     case 22: /* CTRL V -- paste */
-#ifndef _PYMOL_NOPY
       if (I->CurChar != I->PromptChar) { /* no text entered yet... */
         PBlockAndUnlockAPI(G);
         PRunStringInstance(G, "cmd.paste()");
@@ -1007,7 +996,6 @@ void OrthoKey(PyMOLGlobals* G, unsigned char k, int x, int y, int mod)
       } else {
         OrthoKeyControl(G, (unsigned char) (k + 64));
       }
-#endif
       break;
     default:
       OrthoKeyControl(G, (unsigned char) (k + 64));
@@ -1027,7 +1015,6 @@ void OrthoParseCurrentLine(PyMOLGlobals* G)
   curLine = I->CurLine & OrthoSaveLines;
   I->Line[curLine][I->CurChar] = 0;
   UtilNCopy(buffer, I->Line[curLine] + I->PromptChar, std::size(buffer));
-#ifndef _PYMOL_NOPY
   if (buffer[0]) {
     UtilNCopy(I->History[I->HistoryLine], buffer, std::size(I->History[I->HistoryLine]));
     I->HistoryLine = (I->HistoryLine + 1) & OrthoHistoryLines;
@@ -1041,7 +1028,6 @@ void OrthoParseCurrentLine(PyMOLGlobals* G)
     PParse(G, buffer);
     OrthoRestorePrompt(G);
   }
-#endif
   I->CursorChar = -1;
 }
 
@@ -1130,7 +1116,7 @@ void OrthoNewLine(PyMOLGlobals* G, const char* prompt, int crlf)
   bool do_print = Feedback(G, FB_Python, FB_Output);
   bool do_print_with_escapes = false;
 
-#if !defined(_WIN32) && !defined(_WEBGL) && !defined(_PYMOL_LIB)
+#ifndef _WIN32
   do_print_with_escapes = do_print &&
                           SettingGetGlobal_b(G, cSetting_colored_feedback) &&
                           isatty(STDOUT_FILENO);
@@ -1232,9 +1218,6 @@ float* OrthoGetOverlayColor(PyMOLGlobals* G)
 /*========================================================================*/
 
 /* BEGIN PROPRIETARY CODE SEGMENT (see disclaimer in "os_proprietary.h") */
-#ifdef PYMOL_EVAL
-#include "OrthoEvalMessage.h"
-#endif
 #ifdef PYMOL_BETA
 #include "OrthoBetaMessage.h"
 #endif
@@ -1506,7 +1489,6 @@ static void OrthoDrawInternalFeedbackBG(PyMOLGlobals* G, CGO* orthoCGO,
       CGOVertex(orthoCGO, 0.f, height - 1, 0.f);
       CGOVertex(orthoCGO, 0.f, 0.f, 0.f);
       CGOEnd(orthoCGO);
-#ifndef PURE_OPENGL_ES_2
     } else {
       glColor3f(0.0, 0.0, 0.0);
       glBegin(GL_POLYGON);
@@ -1515,7 +1497,6 @@ static void OrthoDrawInternalFeedbackBG(PyMOLGlobals* G, CGO* orthoCGO,
       glVertex2i(0, 0);
       glVertex2i(0, height - 1);
       glEnd();
-#endif
     }
     /* deliberate fall-through */
   case InternalGUIMode::BG:
@@ -1527,14 +1508,12 @@ static void OrthoDrawInternalFeedbackBG(PyMOLGlobals* G, CGO* orthoCGO,
       CGOVertex(orthoCGO, -1, height, 0.f);
       CGOVertex(orthoCGO, -1, height - 1, 0.f);
       CGOEnd(orthoCGO);
-#ifndef PURE_OPENGL_ES_2
     } else {
       glColor3f(0.3, 0.3, 0.3);
       glBegin(GL_LINES);
       glVertex2i(1 + I->Width - rightSceneMargin, height - 1);
       glVertex2i(-1, height - 1);
       glEnd();
-#endif
     }
     break;
   }
@@ -1560,14 +1539,12 @@ static void OrthoDrawInternalGUIBG(
       CGOVertex(orthoCGO, I->Width - internal_gui_width, I->Height, 0.f);
       CGOVertex(orthoCGO, I->Width - internal_gui_width + 1.f, I->Height, 0.f);
       CGOEnd(orthoCGO);
-#ifndef PURE_OPENGL_ES_2
     } else {
       glColor3f(0.3, 0.3, 0.3);
       glBegin(GL_LINES);
       glVertex2i(I->Width - internal_gui_width, 0);
       glVertex2i(I->Width - internal_gui_width, I->Height);
       glEnd();
-#endif
     }
   }
 }
@@ -1634,10 +1611,8 @@ static void OrthoDrawText(PyMOLGlobals* G, CGO* orthoCGO, bool draw_text,
 
   if (orthoCGO)
     CGOColorv(orthoCGO, I->TextColor);
-#ifndef PURE_OPENGL_ES_2
   else
     glColor3fv(I->TextColor);
-#endif
   while (l >= 0) {
     lcount++;
     if (lcount > showLines)
@@ -1718,7 +1693,6 @@ static void OrthoDrawLoop(PyMOLGlobals* G, CGO* orthoCGO)
     CGOVertex(orthoCGO, I->LoopRect.right, I->LoopRect.bottom, 1.f);
     CGOVertex(orthoCGO, I->LoopRect.left, I->LoopRect.bottom, 1.f);
     CGOEnd(orthoCGO);*/
-#ifndef PURE_OPENGL_ES_2
   } else {
     glColor3f(vc[0], vc[1], vc[2]);
     glBegin(GL_LINE_LOOP);
@@ -1728,7 +1702,6 @@ static void OrthoDrawLoop(PyMOLGlobals* G, CGO* orthoCGO)
     glVertex2i(I->LoopRect.left, I->LoopRect.bottom);
     glVertex2i(I->LoopRect.left, I->LoopRect.top);
     glEnd();
-#endif
   }
 }
 
@@ -1739,11 +1712,6 @@ static void OrthoDrawLoop(PyMOLGlobals* G, CGO* orthoCGO)
 static void OrthoDrawMessages(PyMOLGlobals* G, CGO* orthoCGO)
 {
   /* BEGIN PROPRIETARY CODE SEGMENT (see disclaimer in "os_proprietary.h") */
-#ifdef PYMOL_EVAL
-#ifndef _NO_DISPLAY_EVAL
-  OrthoDrawEvalMessage(G, orthoCGO);
-#endif
-#endif
 #ifdef PYMOL_BETA
   OrthoDrawBetaMessage(G);
 #endif
@@ -1871,14 +1839,9 @@ void OrthoDoDraw(PyMOLGlobals* G, const OrthoDrawInfo& drawInfo)
     auto numOverlayLines = OrthoGetNumberOverlayLines(G);
     auto text = SettingGet<bool>(G, cSetting_text);
 
-#ifdef PURE_OPENGL_ES_2
-    // Workaround for now
-    shouldRenderScene = true;
-#else
     if (numOverlayLines || (!text) || drawInfo.renderMode == OrthoRenderMode::VR)
       if (!SceneRenderCached(G))
         shouldRenderScene = true;
-#endif
 
     for (const auto& backbuffer : backbuffers) {
       G->ShaderMgr->setDrawBuffer(backbuffer);
@@ -2674,10 +2637,8 @@ int OrthoInit(PyMOLGlobals* G, int showSplash)
     /*  OrthoFeedbackIn(G," "); */
     I->CurLine++;
 
-#ifndef _PYMOL_LIB
     /* prompt (and typing) should only be shown for PyMOL, not libpymol */
     UtilNCopy(I->Prompt, "PyMOL>", std::size(I->Prompt));
-#endif
     UtilNCopy(I->Line[I->CurLine], I->Prompt, std::size(I->Line[I->CurLine]));
     I->CurChar = (I->PromptChar = strlen(I->Prompt));
     I->InputFlag = 1;
@@ -2753,10 +2714,8 @@ void OrthoPushMatrix(PyMOLGlobals* G)
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_DITHER);
 
-#ifndef PURE_OPENGL_ES_2
     glShadeModel(
         SettingGetGlobal_b(G, cSetting_pick_shading) ? GL_FLAT : GL_SMOOTH);
-#endif
     if (G->Option->multisample)
       glDisable(0x809D); /* GL_MULTISAMPLE_ARB */
     I->Pushed++;

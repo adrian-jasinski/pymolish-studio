@@ -31,9 +31,6 @@ Z* -------------------------------------------------------------------
 #include"CGO.h"
 #include"ShaderMgr.h"
 #include"CoordSet.h"
-#ifdef _WEBGL
-#include "WebPyMOLLibrary.h"
-#endif
 
 #include <optional>
 
@@ -275,7 +272,6 @@ static void RepDistDashRenderImmediate(RepDistDash* I, RenderInfo* info,
     I->shaderCGO = nullptr;
   }
 
-#ifndef PURE_OPENGL_ES_2
   if (info->width_scale_flag) {
     glLineWidth(line_width * info->width_scale);
   } else {
@@ -309,7 +305,6 @@ static void RepDistDashRenderImmediate(RepDistDash* I, RenderInfo* info,
   glEnable(GL_LIGHTING);
   if (dash_transparency && !t_mode_3)
     glEnable(GL_DEPTH_TEST);
-#endif
 }
 
 void RepDistDash::render(RenderInfo* info)

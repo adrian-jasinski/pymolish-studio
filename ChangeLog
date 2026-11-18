@@ -4,6 +4,142 @@ CHANGE LOG
 
 2026-11-16 pymolish-studio
 
+	* 4.14.4
+
+	* Presets, looks and colors
+	  - New preset wire (preset.wire): the cartoon as a wire mesh,
+	    colored by chain, with ligand sticks. It sets the global
+	    cartoon_debug to 3; every preset now restores it.
+	  - New preset illustration (preset.illustration): cartoon in
+	    shades of blue inside a faint surface. It also picks the look
+	    flat; ray traced, that is a colored line drawing.
+	  - New util.shades(color, selection, chains=0): shades of one
+	    color from light to dark, along each chain, or with chains=1
+	    one shade per chain. In the color menus as "shades" under
+	    "spectrum" and under "by chain", with eight colors.
+	  - Behavior change: the look flat uses ray_trace_mode 1, not 3,
+	    so colors are no longer rounded to four steps, and it sets
+	    ray_trace_trans_cutoff to 1, so transparent surfaces and
+	    cartoons get an outline too.
+
+2026-11-16 pymolish-studio
+
+	* 4.14.3
+
+	* Presets and looks
+	  - Behavior change: preset.technical, preset.ligands and the
+	    ligand sites presets draw the protein as cartoon, not ribbon.
+	    Only "simple" keeps the ribbon.
+	  - Behavior change: preset.ligands and the ligand sites presets
+	    draw the ligand as balls on thin dark sticks with grey
+	    carbons (stick_radius 0.07, sphere_scale 0.18), not as
+	    sticks colored by chain.
+	  - New menu row "cartoon transparency" (off, 25%, 50%, 75%) in
+	    the preset menu. Every preset now also restores
+	    cartoon_transparency, so the next preset makes the cartoon
+	    opaque again.
+	  - New looks comic (bright colors in four steps inside thick
+	    outlines, ray_trace_mode 3) and sketch (black outlines on
+	    white, ray_trace_mode 2). Like the other outlines they show
+	    in ray-traced images only.
+
+2026-11-16 pymolish-studio
+
+	* 4.14.2
+
+	* Core
+	  - Removed the #ifdef branches of 12 macros that nothing defines
+	    (PURE_OPENGL_ES_2, _PYMOL_NOPY, _WEBGL, _PYMOL_NO_RAY,
+	    _PYMOL_LIB, PYMOL_EVAL, WITH_UNUSED_FUNCTIONS, _PYMOL_EMBEDDED,
+	    PICKLETOOLS, _PYMOL_ACTIVEX, _PYMOL_INCENTIVE, _MACPYMOL_XCODE):
+	    2207 lines in 97 files. The compiler sees the same text as
+	    before, so the program is unchanged.
+	  - No cmd.* change.
+
+2026-11-16 pymolish-studio
+
+	* 4.14.1
+
+	* Core
+	  - Fix: the name of a color number with transparency bits
+	    (0x4xxxxxxx) was computed with a left shift that overflows a
+	    signed int, which is undefined behavior. Found by running
+	    preset.look under the sanitizers. Same name as before.
+	  - No cmd.* change.
+
+2026-11-16 pymolish-studio
+
+	* 4.14.0
+
+	* Presets and looks
+	  - The preset menu (the toolbar's Presets button and A > preset)
+	    is ordered: default, classified; simple, technical, ball and
+	    stick, b factor putty; pretty, publication, glass; ligands,
+	    ligand sites, protein interface.
+	  - One row "show solvent" / "hide solvent" replaces the rows
+	    "simple (no solvent)", "pretty (with solvent)" and
+	    "publication (with solvent)". It shows or hides the water at
+	    once and the presets picked afterwards keep the choice. It
+	    starts hidden: "simple", "technical", "ball and stick" and the
+	    ligand presets picked from the menu no longer show water until
+	    "show solvent" is used. "default" shows everything.
+	  - New preset glass (preset.glass): cartoon and ligand sticks by
+	    chain inside a transparent white surface that gets denser
+	    toward its edges.
+	  - Looks, in the toolbar's Presets menu: default, figure (white
+	    background, matte, black outline), soft (even light from eight
+	    sides, outline), flat (unshaded colors, outline), x-ray. They
+	    set global light, background and outline settings
+	    (preset.look). The outline is drawn in ray-traced images only.
+	  - The preset functions are unchanged, with one addition: every
+	    preset now also restores surface_color of its objects and the
+	    global ray_transparency_oblique, which glass sets.
+
+2026-11-16 pymolish-studio
+
+	* 4.13.4
+
+	* Scenes panel
+	  - Scenes are a panel docked on the left, opened by the toolbar's
+	    Scenes button, Scene > Scenes or Display > Panels > Scenes. One
+	    row per scene with its thumbnail; the current scene is marked.
+	    Enter or a double click recalls a scene, F2 or Rename renames
+	    it, dragging a row or Ctrl+Up / Ctrl+Down moves it. Add, Update
+	    and Delete as before. The panel follows scenes made by commands
+	    and its place is saved with the window layout.
+	  - It replaces the separate Scene Panel window, which showed new
+	    scenes only after it got the focus again.
+	  - A rename to an empty name, to a name with a space or to the
+	    name of another scene is refused (the old window deleted or
+	    overwrote the scene).
+	  - No cmd.* change.
+
+2026-11-16 pymolish-studio
+
+	* 4.13.3
+
+	* Core
+	  - ray: the voxel table of the camera view (MapSetupExpressPerp)
+	    is sized first and then filled on all cores (OpenMP builds),
+	    like the neighbor table in 4.7.9. Same table as before. For the
+	    surface of 1aon (58870 atoms, 62.5 million rows) the table
+	    takes 0.28 s, was 0.68 s; a ray of that surface at 800x600
+	    4.2 s, was 4.7 s.
+	  - No cmd.* change.
+
+2026-11-16 pymolish-studio
+
+	* 4.13.2
+
+	* Load a folder
+	  - Fix: on Windows load_files loaded "UP.PDB" after "a.pdb" and
+	    "b.pdb", on Linux and macOS before them: Windows paths compare
+	    without case. The order is now the same on every system
+	    (capitals first, as on Linux), so object order and colors match.
+	    This was the test that failed on the Windows CI runners.
+
+2026-11-16 pymolish-studio
+
 	* 4.13.1
 
 	* Object color palettes

@@ -433,6 +433,16 @@ def by_rep_sub(self_cmd, rep, setting, sele):
     ]
     return r
 
+def shades(self_cmd, sele, chains=0):
+    # one color from light to dark: along each chain, or one shade per chain
+    return [[ 2, 'Shades of:', '' ]] + [
+        [ 1, code + name,
+          'util.shades("%s","%s",%d,_self=cmd)' % (name, sele, chains) ]
+        for code, name in (
+            ('\\009', 'blue'), ('\\059', 'marine'), ('\\077', 'teal'),
+            ('\\151', 'forest'), ('\\950', 'orange'), ('\\900', 'red'),
+            ('\\727', 'purple'), ('\\555', 'grey50')) ]
+
 def spectrum(self_cmd, sele):
     r = [
         [ 2, 'Spectrum:'     ,''                               ],
@@ -442,6 +452,7 @@ def spectrum(self_cmd, sele):
           'cmd.spectrum("count",selection="('+sele+')&*/CA")'],
         [ 1, '\\900r\\950a\\990i\\090n\\099b\\059o\\009w',
           'cmd.spectrum("count",selection="'+sele+'",byres=1)'],
+        [ 1, 'shades', shades(self_cmd, sele) ],
         [ 0, ''                                , ''                 ],
         [ 1, 'b-factors'   ,   'cmd.spectrum("b",selection=("'+sele+'"),quiet=0)'         ],
         [ 1, 'b-factors(*/CA)' , 'cmd.spectrum("b",selection="(('+sele+')&*/CA)",quiet=0)'         ],
@@ -464,6 +475,7 @@ def by_chain(self_cmd, sele):
                       [ 0, ''                                , ''                 ],
               [ 1, '\\900c\\950h\\990a\\090i\\099n\\059b\\009o\\705w\\888s',
                  'util.chainbow("('+sele+')",_self=cmd)'],
+              [ 1, 'shades', shades(self_cmd, sele, 1) ],
               [ 0, '', '' ],
               [ 1, by_segi + '(elem C)', 'cmd.spectrum("segi","rainbow","('+sele+') & elem C")'],
               [ 1, by_segi, 'cmd.spectrum("segi","rainbow","' + sele + '")' ],
@@ -701,40 +713,62 @@ def mesh_color(self_cmd, name, rep='mesh'):
 def general_color(self_cmd, sele):
     return [[ 2, 'Color:'     ,''                        ]] + all_colors(self_cmd, sele)
 
+def _preset(label, name, sele):
+    # preset.from_menu leaves the solvent out while the menu hides it
+    return [ 1, label, 'preset.from_menu("%s","%s",_self=cmd)' % (name, sele) ]
+
 def preset_ligand_sites(self_cmd, sele):
     return [[ 2, 'Ligand Sites:', ''],
-              [ 1, 'cartoon'   , 'preset.ligand_cartoon("'+sele+'",_self=cmd)'          ],
+              _preset('cartoon', 'ligand_cartoon', sele),
               [ 0, '', ''],
-              [ 1, 'solid surface'   , 'preset.ligand_sites("'+sele+'",_self=cmd)'          ],
-              [ 1, 'solid (better)'   , 'preset.ligand_sites_hq("'+sele+'",_self=cmd)'          ],
+              _preset('solid surface', 'ligand_sites', sele),
+              _preset('solid (better)', 'ligand_sites_hq', sele),
               [ 0, '', ''],
-              [ 1, 'transparent surface'   , 'preset.ligand_sites_trans("'+sele+'",_self=cmd)'          ],
-              [ 1, 'transparent (better)'   , 'preset.ligand_sites_trans_hq("'+sele+'",_self=cmd)'          ],
+              _preset('transparent surface', 'ligand_sites_trans', sele),
+              _preset('transparent (better)', 'ligand_sites_trans_hq', sele),
               [ 0, '', ''],
-              [ 1, 'dot surface'   , 'preset.ligand_sites_dots("'+sele+'",_self=cmd)'          ],
+              _preset('dot surface', 'ligand_sites_dots', sele),
               [ 0, '', ''],
-              [ 1, 'mesh surface'   , 'preset.ligand_sites_mesh("'+sele+'",_self=cmd)'          ]]
+              _preset('mesh surface', 'ligand_sites_mesh', sele)]
+
+def cartoon_transparency(self_cmd, sele):
+    # the next preset resets it (preset._prepare)
+    return [[ 2, 'Cartoon Transparency:', '' ]] + [
+        [ 1, '%d%%' % (t * 100) if t else 'off',
+          'cmd.set("cartoon_transparency",%s,"%s")' % (t, sele) ]
+        for t in (0, 0.25, 0.5, 0.75) ]
 
 def presets(self_cmd, sele):
+    from . import preset
     return [[ 2, 'Preset:'       ,''                        ],
-              [ 1, 'classified', 'preset.classified("'+sele+'",_self=cmd)' ],
+              _preset('default', 'default', sele),
+              _preset('classified', 'classified', sele),
               [ 0, '', '' ],
-              [ 1, 'simple'   ,'preset.simple("'+sele+'",_self=cmd)'          ],
-              [ 1, 'simple (no solvent)'   ,'preset.simple_no_solv("'+sele+'",_self=cmd)'          ],
-              [ 1, 'ball and stick' , 'preset.ball_and_stick("'+sele+'",_self=cmd)' ],
-              [ 1, 'b factor putty' , 'preset.b_factor_putty("'+sele+'",_self=cmd)' ],
-              [ 1, 'technical'   , 'preset.technical("'+sele+'",_self=cmd)'          ],
-              [ 1, 'ligands'   , 'preset.ligands("'+sele+'",_self=cmd)'          ],
+              _preset('simple', 'simple', sele),
+              _preset('technical', 'technical', sele),
+              _preset('ball and stick', 'ball_and_stick', sele),
+              _preset('b factor putty', 'b_factor_putty', sele),
+              [ 0, '', '' ],
+              # the variants with solvent: from_menu decides whether it shows
+              _preset('pretty', 'pretty_solv', sele),
+              _preset('publication', 'pub_solv', sele),
+              _preset('glass', 'glass', sele),
+              _preset('wire', 'wire', sele),
+              _preset('illustration', 'illustration', sele),
+              [ 0, '', '' ],
+              _preset('ligands', 'ligands', sele),
               [ 1, 'ligand sites'   , preset_ligand_sites(self_cmd, sele)         ],
-              [ 1, 'pretty ', 'preset.pretty("'+sele+'",_self=cmd)'          ],
-              [ 1, 'pretty (with solvent)'     , 'preset.pretty_solv("'+sele+'",_self=cmd)'          ],
-              [ 1, 'publication '   , 'preset.publication("'+sele+'",_self=cmd)'          ],
-              [ 1, 'publication (with solvent)'   , 'preset.pub_solv("'+sele+'",_self=cmd)'          ],
-              [ 0, ''               ,''                             ],
-              [ 1, 'protein interface', 'preset.interface("'+sele+'",_self=cmd)' ],
+              _preset('protein interface', 'interface', sele),
               [ 0, '', '' ],
-              [ 1, 'default'   ,'preset.default("'+sele+'",_self=cmd)'          ],
+              [ 1, 'cartoon transparency', cartoon_transparency(self_cmd, sele) ],
+              [ 1, 'hide solvent' if preset.solvent else 'show solvent',
+                'preset.show_solvent(%d,"%s",_self=cmd)' % (not preset.solvent, sele) ],
               ]
+
+def looks(self_cmd):
+    from . import preset
+    return [[ 2, 'Look:', '' ]] + [
+        [ 1, name, 'preset.look("%s",_self=cmd)' % name ] for name in preset.LOOKS ]
 
 def hydrogens(self_cmd, sele):
    return [[ 2, 'Hydrogens:'       ,''                        ],

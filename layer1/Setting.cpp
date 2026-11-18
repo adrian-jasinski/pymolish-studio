@@ -267,11 +267,7 @@ PyObject *SettingUniqueGetPyObject(PyMOLGlobals * G, int unique_id, int index)
     case cSetting_float:
       return CPythonVal_New_Float(val_f);
     case cSetting_color:
-#ifdef _PYMOL_NOPY
-      return CPythonVal_New_Integer(val_i);
-#else
       return PYOBJECT_CALLFUNCTION(G->P_inst->colortype, "i", val_i);
-#endif
     case cSetting_float3:
       {
         PyObject *result = PyTuple_New(3);
@@ -431,7 +427,6 @@ int SettingUniqueSetTypedValue(PyMOLGlobals * G, int unique_id, int setting_id,
   return isset;
 }
 
-#ifndef _PYMOL_NOPY
 /**
  * @pre GIL
  */
@@ -487,7 +482,6 @@ ok_except1:
     " Setting-Error: type mismatch\n" ENDFB(G);
   return false;
 }
-#endif
 
 void SettingUniqueResetAll(PyMOLGlobals * G)
 {
@@ -673,9 +667,6 @@ static bool is_session_blacklisted(int index) {
   case cSetting_use_shaders:
   case cSetting_pick32bit:
   case cSetting_display_scale_factor:
-#if defined(_PYMOL_ACTIVEX)
-  case cSetting_async_builds:
-#endif
     return true;
   }
 
@@ -1234,7 +1225,6 @@ const char * SettingGetTextPtr(PyMOLGlobals * G, const CSetting * set1, const CS
 }
 
 
-#ifndef _PYMOL_NOPY
 /*========================================================================*/
 /**
  * @pre GIL
@@ -1278,7 +1268,6 @@ int SettingSetFromTuple(PyMOLGlobals * G, CSetting * I, int index, PyObject * tu
   }
   return (ok);
 }
-#endif
 
 /*========================================================================*/
 int SettingStringToTypedValue(PyMOLGlobals * G, int index, const char *st, int *type,
@@ -1393,7 +1382,6 @@ int SettingSetFromString(PyMOLGlobals * G, CSetting * I, int index, const char *
 
 
 /*========================================================================*/
-#ifndef _PYMOL_NOPY
 /**
  * Warning: Returns colors as (fff) tuple instead of color index
  *
@@ -1474,7 +1462,6 @@ PyObject *SettingGetTuple(PyMOLGlobals * G, const CSetting * set1, const CSettin
   }
   return result;
 }
-#endif
 
 
 /*========================================================================*/
@@ -2797,8 +2784,6 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
   case cSetting_chromadepth:
   case cSetting_transparency_mode:
   if (index == cSetting_transparency_mode)
-#ifdef _WEBGL
-#endif
     ExecutiveInvalidateRep(G, inv_sele, cRepCGO, cRepInvAll);
   case cSetting_depth_cue:
   case cSetting_fog:
@@ -3065,12 +3050,10 @@ void SettingInitGlobal(PyMOLGlobals * G, int alloc, int reset_gui, int use_defau
     // Driver update breaks lighting
     set_b(I, cSetting_precomputed_lighting, 1);
 
-#ifndef _PYMOL_ACTIVEX
     if (auto count = std::thread::hardware_concurrency() > 1) {
       set_i(I, cSetting_max_threads, count);
     }
     /* END PROPRIETARY CODE SEGMENT */
-#endif
 #endif
 
 #ifndef _PYMOL_FREETYPE
@@ -3195,7 +3178,6 @@ bool CPyMOLInitSetting(OVLexicon * Lex, std::unordered_map<int, int>& Setting) {
   return true;
 }
 
-#ifndef _PYMOL_NOPY
 /**
  * Export the settings names to Python a as (name: index) dictionary.
  * Replacement for pymol.settings.SettingIndex
@@ -3240,7 +3222,6 @@ PyObject * SettingUniqueGetIndicesAsPyList(PyMOLGlobals * G, int unique_id)
 
   return list;
 }
-#endif
 
 /*
  * Getters for templatted programming

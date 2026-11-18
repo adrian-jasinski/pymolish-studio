@@ -174,10 +174,8 @@ void RepCylBond::render(RenderInfo * info)
   int ok = true;
 
   if(ray) {
-#ifndef _PYMOL_NO_RAY
     CGORenderRay(I->primitiveCGO, ray, info, nullptr, nullptr, I->cs->Setting.get(), I->obj->Setting.get());
     ray->transparentf(0.0);
-#endif
   } else if(G->HaveGUI && G->ValidContext) {
     bool use_shader = SettingGetGlobal_b(G, cSetting_stick_use_shader)
       && SettingGetGlobal_b(G, cSetting_use_shaders);
@@ -909,7 +907,6 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
   return (Rep *) I;
 }
 
-#ifndef PURE_OPENGL_ES_2
 static void RepCylinderImmediate(const float *v1arg, const float *v2arg, int nEdge,
                                  int frontCapArg, int endCapArg,
                                  float overlap, float nub, float radius, float **dir)
@@ -1062,11 +1059,9 @@ static void RepCylinderImmediate(const float *v1arg, const float *v2arg, int nEd
     glEnd();
   }
 }
-#endif
 
 void RepCylBondRenderImmediate(CoordSet * cs, RenderInfo * info)
 {
-#ifndef PURE_OPENGL_ES_2
   /* performance optimized, so it does not support the following:
 
      - anything other than opengl
@@ -1167,5 +1162,4 @@ void RepCylBondRenderImmediate(CoordSet * cs, RenderInfo * info)
     if(!active)
       cs->Active[cRepCyl] = false;
   }
-#endif
 }
