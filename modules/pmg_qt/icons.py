@@ -78,7 +78,7 @@ LABELS = {
     "rock": "rotate-3d",
     "presets": "sliders-horizontal",
     "builder": "hammer",
-    "scenes": "image",
+    "scenes": "camera",
     "draw/ray": "aperture",
     "ui scale": "scaling",
     "more actions": "ellipsis",
@@ -87,28 +87,38 @@ LABELS = {
 
 
 @functools.lru_cache(maxsize=None)
-def _pixmap(name, color, ratio):
+def _pixmap(name, color, ratio, size=16, stroke=1.5):
     path = os.path.expandvars("$PYMOL_DATA/pmg_qt/icons/lucide/%s.svg" % name)
     with open(path) as handle:
         svg = handle.read()
     # the files draw 2 px lines on a 24 px grid in "currentColor"
     svg = svg.replace("currentColor", color).replace(
-        'stroke-width="2"', 'stroke-width="1.5"'
+        'stroke-width="2"', 'stroke-width="%s"' % stroke
     )
     data = QtCore.QBuffer()
     data.setData(svg.encode())
     reader = QtGui.QImageReader(data, b"svg")
-    side = round(16 * ratio)
+    side = round(size * ratio)
     reader.setScaledSize(QtCore.QSize(side, side))
     pixmap = QtGui.QPixmap.fromImage(reader.read())
     pixmap.setDevicePixelRatio(ratio)
     return pixmap
 
 
-def menu_icon(label, color):
+def menu_icon(label, color, size=16, stroke=1.5, accent=None):
     """The icon for a menu label, drawn in `color` (a QColor); None if the
-    label has none. "delete object" falls back to the icon of "delete"."""
+    label has none. "delete object" falls back to the icon of "delete".
+    `size` is the side in pixels and `stroke` the line width on the 24 px
+    grid of the drawing. With `accent`, the icon is drawn in that color
+    while the pointer is over its button and while the button is checked."""
     name = LABELS.get(label) or LABELS.get(label.split(" ")[0])
     if name:
         ratio = QtWidgets.QApplication.instance().devicePixelRatio()
-        return QtGui.QIcon(_pixmap(name, color.name(), ratio))
+        icon = QtGui.QIcon(_pixmap(name, color.name(), ratio, size, stroke))
+        if accent is not None:
+            pixmap = _pixmap(name, accent.name(), ratio, size, stroke)
+            Mode, State = QtGui.QIcon.Mode, QtGui.QIcon.State
+            icon.addPixmap(pixmap, Mode.Active, State.Off)
+            icon.addPixmap(pixmap, Mode.Normal, State.On)
+            icon.addPixmap(pixmap, Mode.Active, State.On)
+        return icon

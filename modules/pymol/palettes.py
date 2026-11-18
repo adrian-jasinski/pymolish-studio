@@ -62,6 +62,38 @@ PALETTES = {
     ),
 }
 PALETTES = {name: (bg, colors.split()) for name, (bg, colors) in PALETTES.items()}
+BUILTIN = tuple(PALETTES)  # define() adds the palettes of the user
+
+
+def define(name, colors, background="any", _self=cmd):
+    """Add or replace a palette of the user: `colors` are at least two hex
+    colors ("ff8800" or "#ff8800") in the order they are given out. The name
+    becomes the prefix of the color names (<name>_01, ...). The palette is
+    known until the program ends; the toolbar keeps its own for later."""
+    import re
+
+    name = str(name).strip()
+    if not re.fullmatch(r"[a-z][a-z0-9_]*", name) or name == "default":
+        raise pymol.CmdException("palette name '%s': lowercase letters, digits, _" % name)
+    if name in BUILTIN:
+        raise pymol.CmdException("'%s' is a built-in palette" % name)
+    colors = [str(c).lstrip("#").lower() for c in colors]
+    if len(colors) < 2 or not all(re.fullmatch("[0-9a-f]{6}", c) for c in colors):
+        raise pymol.CmdException("a palette needs two or more colors like ff8800")
+    PALETTES[name] = (background, colors)
+    if active == name:  # its colors may have changed
+        apply(_self)
+        _self.recolor()
+
+
+def undefine(name, _self=cmd):
+    """Forget a palette of the user. Its colors stay defined, so objects
+    that have them keep them."""
+    if name in BUILTIN or name not in PALETTES:
+        raise pymol.CmdException("'%s' is not a palette of the user" % name)
+    if active == name:
+        palette("default", _self=_self)
+    del PALETTES[name]
 
 active = "default"  # process-wide, like the table in Color.cpp
 

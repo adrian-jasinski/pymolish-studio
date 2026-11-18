@@ -3,6 +3,7 @@ Dark/light palette for the Qt GUI. The 3D viewport and its internal menu are
 drawn by PyMOL itself and are dark already; this makes the Qt panels match.
 """
 
+import json
 import os
 
 from pymol.Qt import QtCore, QtGui, QtWidgets
@@ -71,6 +72,19 @@ def object_palette():
 
 def set_object_palette(name):
     _settings().setValue("colors/palette", name)
+
+
+def user_palettes():
+    """The palettes defined in the toolbar: {name: ["rrggbb", ...]}."""
+    try:
+        value = json.loads(_settings().value("colors/user_palettes", "{}"))
+    except (TypeError, ValueError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def set_user_palettes(value):
+    _settings().setValue("colors/user_palettes", json.dumps(value))
 
 
 def background():

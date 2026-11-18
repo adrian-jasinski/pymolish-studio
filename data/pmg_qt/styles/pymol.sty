@@ -3,16 +3,47 @@
     padding:        1px 3px;
 }
 
+/* 14 buttons with 20 px icons must fit the 940 px default window at 150 %:
+   the bar is 932 px wide with these numbers (docs/plans/20-toolbar-look.md) */
 #toolbar_actions
 {
-    spacing:        2px;
+    spacing:        1px;
     padding:        2px 4px;
 }
 
 #toolbar_actions QToolButton
 {
-    padding:        4px 3px;
-    font-weight:    600;
+    padding:        4px 2px;
+    font-weight:    500;
+}
+
+/* Blue for what is chosen and for what the pointer is on: the text of the
+   selection mode, a checked button, a hovered button. palette(link) is a
+   blue that reads on the window color of either theme; the icons follow in
+   action_toolbar.py. */
+#toolbar_actions QToolButton#selecting,
+#toolbar_actions QToolButton:hover,
+#toolbar_actions QToolButton:checked
+{
+    color:          palette(link);
+}
+
+/* In its menus the pointed-at row has the blue of the A button of the
+   Objects panel, and the chosen row is written in blue. */
+#toolbar_actions QMenu::item:selected
+{
+    background:     #1e4fb8;
+    color:          white;
+}
+
+#toolbar_actions QMenu::item:checked
+{
+    color:          palette(link);
+}
+
+#toolbar_actions QMenu::item:checked:selected
+{
+    color:          white;
 }
 
 /* the corners are see-through: theme.round_menus */

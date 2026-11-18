@@ -67,7 +67,7 @@ class TestActionToolbar(testing.PyMOLTestCase):
         self.assertEqual(hits, ["builder", "view"])
 
     def test_icons(self):
-        from pymol.Qt import QtCore, QtWidgets
+        from pymol.Qt import QtCore, QtGui, QtWidgets
         from pmg_qt.action_toolbar import ActionToolbar
 
         bar = ActionToolbar(
@@ -89,15 +89,28 @@ class TestActionToolbar(testing.PyMOLTestCase):
         IconOnly = QtCore.Qt.ToolButtonStyle.ToolButtonIconOnly
         self.assertEqual(
             sorted(b.toolTip() for b in buttons if b.toolButtonStyle() == IconOnly),
+            # the view actions; Palette and Background have their text
             [
-                "Background color",
-                "Colors of objects and chains",
                 "More view actions",
+                "Orient",
                 "Redo",
                 "Rock",
                 "Undo",
+                "Zoom on everything",
             ],
         )
+        # bolder and larger than the menu icons, and blue while hovered or
+        # checked; the text of the selection mode is styled by its name
+        self.assertEqual(bar.iconSize().width(), 20)
+        icon = bar.colors.icon()
+        Mode = QtGui.QIcon.Mode
+        normal = icon.pixmap(20, 20, Mode.Normal).toImage()
+        active = icon.pixmap(20, 20, Mode.Active).toImage()
+        self.assertNotEqual(normal, active)
+        self.assertEqual(bar.selecting.objectName(), "selecting")
+        from pmg_qt import icons
+
+        self.assertEqual(icons.LABELS["scenes"], "camera")
 
     def test_background(self):
         from unittest import mock
@@ -113,7 +126,10 @@ class TestActionToolbar(testing.PyMOLTestCase):
             menu = bar.background.menu()
             rows = {a.text(): a for a in menu.actions() if a.text()}
             names = [row[0] for row in action_toolbar.BACKGROUNDS if row]
-            self.assertEqual(list(rows), [*names, "Remember after restart"])
+            self.assertEqual(
+                list(rows),
+                [*names, "Ray trace with this background", "Remember after restart"],
+            )
 
             def color(key):
                 return cmd.get_color_tuple(cmd.get(key))
@@ -137,12 +153,23 @@ class TestActionToolbar(testing.PyMOLTestCase):
             self.assertNotEqual(pixel["White"], "#ffffff")
             self.assertEqual(pixel["Black"], "#000000")
 
-            # "Remember" keeps the four settings now and after each pick
+            # ray tracing with or without the background: one setting,
+            # the one Draw/Ray and Display > Background use
+            cmd.set("ray_opaque_background", 0)
+            rows["Ray trace with this background"].trigger()
+            self.assertEqual(cmd.get_setting_int("ray_opaque_background"), -1)
+            self.assertEqual(cmd.get_setting_int("opaque_background"), 1)
+            menu.aboutToShow.emit()
+            self.assertTrue(rows["Ray trace with this background"].isChecked())
+            rows["Ray trace with this background"].trigger()
+            self.assertEqual(cmd.get_setting_int("opaque_background"), 0)
+
+            # "Remember" keeps the settings now and after each pick
             del saved[:]
             rows["Remember after restart"].setChecked(True)
             rows["Studio"].trigger()
             self.assertEqual(len(saved), 2)
-            self.assertEqual(len(saved[1]), 4)
+            self.assertEqual(len(saved[1]), len(action_toolbar.BACKGROUND_SETTINGS))
             rows["Remember after restart"].setChecked(False)
             self.assertIsNone(saved[-1])
 
@@ -157,6 +184,87 @@ class TestActionToolbar(testing.PyMOLTestCase):
         self.assertTrue(bar.remember_background.isChecked())
         self.assertTrue(cmd.get_setting_boolean("bg_gradient"))
         self.assertAlmostEqual(color("bg_rgb_bottom")[0], 0xC8 / 255, 2)
+
+    def test_user_palette(self):
+        from unittest import mock
+        from pymol import CmdException, palettes
+        from pymol.Qt import QtCore
+        from pmg_qt import action_toolbar, theme
+        from pmg_qt.palette_dialog import PaletteDialog
+
+        role = QtCore.Qt.ItemDataRole.UserRole
+        stored = {}
+        self.addCleanup(cmd.reinitialize)
+        self.addCleanup(
+            lambda: [palettes.PALETTES.pop(n, None) for n in ("mine", "other")]
+        )
+        self.addCleanup(cmd.palette, "default")
+        with (
+            mock.patch.object(theme, "user_palettes", lambda: dict(stored)),
+            mock.patch.object(theme, "set_user_palettes", stored.update),
+            mock.patch.object(theme, "set_object_palette"),
+        ):
+            bar = action_toolbar.ActionToolbar(cmd, defaultdict(list))
+            view = bar.palettes
+            rows = {a.text(): a for a in bar.colors.menu().actions() if a.text()}
+            self.assertEqual(
+                list(rows), ["New palette...", "Edit palette...", "Delete palette"]
+            )
+            bar.colors.menu().aboutToShow.emit()
+            self.assertFalse(bar.edit_palette.isEnabled())  # a built-in is active
+
+            # what the dialog hands back is stored, listed and applied
+            cmd.fragment("ala")
+            bar._save_palette("mine", ["ff8800", "0088ff", "33cc66"])
+            self.assertEqual(stored, {"mine": ["ff8800", "0088ff", "33cc66"]})
+            names = [view.item(i).data(role) for i in range(view.count())]
+            self.assertEqual(names[-1], "mine")
+            self.assertEqual(view.item(view.count() - 1).text(), "Mine (yours)")
+            self.assertEqual(palettes.active, "mine")
+            self.assertEqual(cmd.count_atoms("elem C & color mine_01"), 3)
+            bar.colors.menu().aboutToShow.emit()
+            self.assertTrue(bar.edit_palette.isEnabled())
+            self.assertTrue(bar.delete_palette.isEnabled())
+
+            # edited with a new name: the old one is gone
+            stored.clear()
+            bar._save_palette("other", ["112233", "445566"], old="mine")
+            self.assertEqual(list(stored), ["other"])
+            self.assertNotIn("mine", palettes.PALETTES)
+            self.assertEqual(palettes.active, "other")
+
+            bar._delete_palette()
+            self.assertEqual(palettes.active, "default")
+            self.assertNotIn("other", palettes.PALETTES)
+
+        # the rules of a palette of the user
+        for name, colors in (
+            ("vivid", ["ff0000", "00ff00"]),
+            ("Bad Name", ["ff0000", "00ff00"]),
+            ("mine", ["ff0000"]),
+            ("mine", ["ff0000", "nothex"]),
+        ):
+            self.assertRaises(CmdException, palettes.define, name, colors)
+        self.assertRaises(CmdException, palettes.undefine, "vivid")
+
+        # the dialog: OK only with a free name and two colors
+        import shiboken6
+
+        dialog = PaletteDialog(None, "", (), taken=palettes.BUILTIN)
+        self.addCleanup(shiboken6.delete, dialog)
+        ok = dialog.box.button(dialog.box.StandardButton.Ok)
+        self.assertFalse(ok.isEnabled())
+        dialog.name.setText("vivid")
+        dialog._append("ff8800")
+        dialog._append("#0088ff")
+        self.assertFalse(ok.isEnabled())  # a built-in name
+        dialog.name.setText("mine")
+        self.assertTrue(ok.isEnabled())
+        dialog.list.setCurrentRow(1)
+        dialog._move(-1)
+        self.assertEqual(dialog.value(), ("mine", ["0088ff", "ff8800"]))
+        dialog._remove()
+        self.assertFalse(ok.isEnabled())
 
     def test_palette(self):
         from unittest import mock

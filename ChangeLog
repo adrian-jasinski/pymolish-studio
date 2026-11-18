@@ -4,6 +4,28 @@ CHANGE LOG
 
 2026-11-18 pymolish-studio
 
+	* 4.19.0
+
+	* Action toolbar
+	  - Palette and Background show their name. Zoom, Orient and
+	    Rock show only their icon.
+	  - Icons are 20 px with heavier lines; the text is regular
+	    weight. Scenes has a camera icon.
+	  - What is chosen is blue: the text of the selection mode, a
+	    checked button, the button under the pointer. In the menus
+	    of the bar the row under the pointer is blue and the
+	    chosen row is written in blue.
+	  - Background menu: new row "Ray trace with this background".
+	    It sets opaque_background and resets ray_opaque_background
+	    to -1. "Remember after restart" keeps it.
+	  - Palette menu: "New palette...", "Edit palette...", "Delete
+	    palette" for palettes of the user, kept between starts.
+	    New functions palettes.define(name, colors) and
+	    palettes.undefine(name).
+	  - icons.menu_icon takes size, stroke and accent.
+
+2026-11-18 pymolish-studio
+
 	* 4.18.0
 
 	* Movie timeline
