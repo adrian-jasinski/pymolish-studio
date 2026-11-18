@@ -18,6 +18,8 @@ Z* -------------------------------------------------------------------
 #include "os_gl.h"
 #include "os_std.h"
 
+#include <algorithm>
+
 #include "Base.h"
 #include "Seq.h"
 #include "main.h"
@@ -32,6 +34,44 @@ Z* -------------------------------------------------------------------
 #include "Executive.h"
 #include "Ortho.h"
 #include "CGO.h"
+
+/**
+ * Keeps the first visible column inside the sequence.
+ */
+static void SeqClampSkip(CSeq* I)
+{
+  I->NSkip = I->ScrollBarActive
+                 ? std::clamp(I->NSkip, 0, std::max(0, I->Size - I->VisSize))
+                 : 0;
+}
+
+/**
+ * Scroll state of the sequence viewer, for the scroll bar that the window
+ * puts on the strip under the rows. The core no longer draws a bar there,
+ * only the marks of the selected residues.
+ * @param offset new first visible column; negative to only read
+ * @param[out] state columns, visible columns, first visible column, then
+ * left, bottom, right, top of the strip in framebuffer pixels
+ * @return false if there is nothing to scroll
+ */
+bool SeqScroll(PyMOLGlobals* G, int offset, int* state)
+{
+  CSeq* I = G->Seq;
+  if (!I->NRow || !I->ScrollBarActive) {
+    return false;
+  }
+  if (offset >= 0 && offset != I->NSkip) {
+    I->NSkip = offset;
+    OrthoDirty(G);
+  }
+  SeqClampSkip(I);
+  int margin = DIP2PIXEL(I->ScrollBarMargin);
+  int values[] = {I->Size, I->VisSize, I->NSkip, I->rect.left + margin,
+      I->rect.bottom + margin, I->rect.right - margin,
+      I->rect.bottom + DIP2PIXEL(I->ScrollBarWidth)};
+  std::copy(std::begin(values), std::end(values), state);
+  return true;
+}
 
 static int SeqFindRowCol(PyMOLGlobals * G, int x, int y, int *row_num_ptr,
                          int *col_num_ptr, int fixed_row)
@@ -124,12 +164,8 @@ void CSeq::reshape(int width, int height)
     if(I->VisSize < 1)
       I->VisSize = 1;
     extra = I->Size - I->VisSize;
-    if(extra <= 0) {
-      I->ScrollBarActive = false;
-    } else {
-      I->ScrollBarActive = true;
-      m_ScrollBar.setLimits(I->Size, I->VisSize);
-    }
+    I->ScrollBarActive = extra > 0;
+    SeqClampSkip(I);
   }
 }
 
@@ -216,18 +252,18 @@ int CSeq::click(int button, int x, int y, int mod)
 
   switch(button) {
     case P_GLUT_BUTTON_SCROLL_FORWARD:
-      I->m_ScrollBar.moveBy(-1);
+      I->NSkip--;
+      SeqClampSkip(I);
       return 1;
     case P_GLUT_BUTTON_SCROLL_BACKWARD:
-      I->m_ScrollBar.moveBy(1);
+      I->NSkip++;
+      SeqClampSkip(I);
       return 1;
   }
 
-  if(I->ScrollBarActive) {
-    if((y - rect.bottom) < DIP2PIXEL(I->ScrollBarWidth)) {
-      pass = 1;
-      I->m_ScrollBar.click(button, x, y, mod);
-    }
+  // the strip under the rows belongs to the window's scroll bar
+  if(I->ScrollBarActive && (y - rect.bottom) < DIP2PIXEL(I->ScrollBarWidth)) {
+    pass = 1;
   }
   if(!pass) {
     if(SeqFindRowCol(G, x, y, &row_num, &col_num, -1)) {
@@ -287,16 +323,9 @@ void CSeq::draw(CGO* orthoCGO)
       }
       fill(orthoCGO);
     }
+    SeqClampSkip(I);
     if(I->ScrollBarActive) {
-      I->m_ScrollBar.setBox(rect.bottom + DIP2PIXEL(I->ScrollBarWidth),
-                            rect.left + DIP2PIXEL(I->ScrollBarMargin),
-                            rect.bottom + DIP2PIXEL(2),
-                            rect.right - DIP2PIXEL(I->ScrollBarMargin));
-      I->m_ScrollBar.draw(orthoCGO);
       y += DIP2PIXEL(I->ScrollBarWidth);
-      I->NSkip = static_cast<int>(I->m_ScrollBar.getValue());
-    } else {
-      I->NSkip = 0;
     }
     if(I->NRow) {               /* get current sequence sizes */
       int a, b;
@@ -691,8 +720,6 @@ void CSeq::draw(CGO* orthoCGO)
 	    }
           }
         }
-
-        I->m_ScrollBar.drawHandle(0.35F, orthoCGO);
       }
     }
   }
@@ -708,7 +735,6 @@ int SeqInit(PyMOLGlobals * G)
     I->TextColor[1] = 0.75;
     I->TextColor[2] = 0.75;
     OrthoAttach(G, I, cOrthoTool);
-    I->m_ScrollBar.setValue(0);
     return 1;
   } else
     return 0;

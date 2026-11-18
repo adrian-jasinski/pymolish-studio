@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-18 pymolish-studio
 
+	* 4.17.0
+
+	* Sequence viewer
+	  - The scroll bar under the sequence is a Qt scroll bar: a
+	    rounded, see-through handle that follows the theme of the
+	    desktop for dragging, clicking beside the handle, the mouse
+	    wheel and, after Tab, the arrow, Page and Home/End keys.
+	    The marks of the selected residues in the same strip show
+	    through it.
+	  - The core no longer draws a bar there or handles clicks on
+	    it; it keeps the first visible column and the marks. New
+	    internal call _cmd.seq_scroll for the window.
+
+2026-11-18 pymolish-studio
+
 	* 4.16.1
 
 	* Plugins: the last Tk stand-ins are removed

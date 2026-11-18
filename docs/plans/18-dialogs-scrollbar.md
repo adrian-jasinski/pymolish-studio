@@ -1,7 +1,7 @@
 # 18 — Dialog sizes and the scroll bar of the sequence viewer
 
-[Roadmap](../../PLAN.md) · Request 2026-11-18 · **18a done 2026-11-18 in
-4.15.1** (see "18a result"). 18b is decided: a Qt scroll bar, option B.
+[Roadmap](../../PLAN.md) · Request 2026-11-18 · **Done 2026-11-18: 18a in
+4.15.1, 18b in 4.17.0** (see "18a result" and "18b result").
 Two leftovers of [step 3](03-modern-ui.md): "spacing of the remaining
 dialogs" and "sequence viewer still drawn by the core".
 
@@ -122,10 +122,45 @@ look in the one file that draws every scroll bar of the viewport.**
   it is drawing; the suite and the sanitizer job must pass.
 - Commit: `ui(seq): flat scroll bar in the viewport`.
 
+### 18b result, 4.17.0
+
+**The user chose B, a Qt scroll bar.** Built as an overlay, not as a second
+widget under the viewport:
+
+- **Where:** a `QScrollBar` that is a child of the GL widget and sits
+  exactly on the strip the core leaves under the sequence rows. The plan
+  said "under the viewport"; with the sequence at the top of the viewport
+  that would have put the bar a whole window away from what it scrolls.
+- **The marks of the selection stay.** The core also draws, in that strip, a
+  mark for every selected residue along the whole sequence. The bar's track
+  is transparent and its handle see-through, so the marks show under it.
+  The table above did not know about the marks; an opaque bar would have
+  removed them.
+- **Core:** `CSeq` lost its `ScrollBar`; it keeps the first visible column
+  (`NSkip`) and clamps it. One call, `SeqScroll`, reads the state and the
+  box of the strip and sets the offset; `_cmd.seq_scroll` exposes it
+  without the API lock, like `get_movie_playing`, because the window calls
+  it after every frame from the thread that draws.
+- **Window:** `pymol_gl_widget.py` places the bar after each frame, so the
+  mouse wheel over the rows, a resize and a new object keep it right; it
+  hides when everything fits or the viewer is off.
+- **Keyboard:** Tab reaches the bar; arrows, Page Up/Down, Home and End
+  scroll, as on any Qt scroll bar.
+- `ScrollBar.cpp` stays for the core's movie panel, the scene buttons and
+  the old object list; it goes with them (steps 17 and 19).
+- Measured in the real window on WSLg at 150 % with 1oky (436 columns, 59
+  visible): bar at (3, 40) 629 x 19, range 0 to 377, page 59; setting the
+  bar to 188 moved the core to 188; setting the core to 7 moved the bar to
+  7; with `seq_view` off the bar is hidden. Two captures looked at.
+- Check: `testing/tests/api/seq_scroll.py` covers the call without a
+  window. The widget itself needs a GL context and has no test file.
+- Not tried: `seq_view_location` at the bottom, `seq_view_overlay`, 100 and
+  200 %.
+
 ## Questions
 
-1. Dialogs: A or B?
-2. Scroll bar: A (recommended), or go straight to B?
+1. Dialogs: A or B? **Not answered; A is built.**
+2. Scroll bar: A (recommended), or go straight to B? **Answer: B.**
 
 ## Skipped
 

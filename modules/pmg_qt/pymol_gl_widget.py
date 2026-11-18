@@ -11,6 +11,21 @@ Qt = QtCore.Qt
 from .keymapping import get_modifiers
 from .keymapping import get_wheel_button
 
+# A pill on a see-through track; grey reads on a black and on a white
+# viewport, whatever the theme of the window.
+SEQ_SCROLL_STYLE = """
+QScrollBar:horizontal { background: transparent; border: none; margin: 0; }
+QScrollBar::handle:horizontal {
+    background: rgba(128, 128, 128, 170); border-radius: 4px;
+    min-width: 32px; margin: 3px 0; }
+QScrollBar::handle:horizontal:hover, QScrollBar::handle:horizontal:pressed {
+    background: rgba(160, 160, 160, 230); }
+QScrollBar:horizontal:focus { border: 1px solid palette(highlight); }
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; }
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+    background: transparent; }
+"""
+
 class PyMOLGLWidget(QtWidgets.QOpenGLWidget):
     '''
     PyMOL OpenGL Widget
@@ -89,6 +104,18 @@ class PyMOLGLWidget(QtWidgets.QOpenGLWidget):
 
         # pinch-zoom
         self.grabGesture(Qt.GestureType.PinchGesture)
+
+        # The scroll bar of the sequence viewer. The core draws the rows and
+        # leaves a strip under them with marks for the selected residues;
+        # this bar sits on the strip and is see-through, so the marks show.
+        self.seq_scroll = bar = QtWidgets.QScrollBar(Qt.Orientation.Horizontal, self)
+        bar.setObjectName("seq_scroll")
+        bar.setAccessibleName("Scroll the sequence")
+        bar.setFocusPolicy(Qt.FocusPolicy.TabFocus)
+        bar.setCursor(Qt.CursorShape.ArrowCursor)
+        bar.setStyleSheet(SEQ_SCROLL_STYLE)
+        bar.hide()
+        bar.valueChanged.connect(self._seq_scrolled)
 
     def sizeHint(self):
         # default 640 + internal_gui, 480 + internal_feedback
@@ -197,7 +224,36 @@ class PyMOLGLWidget(QtWidgets.QOpenGLWidget):
 
     def paintGL(self):
         self.pymol.draw()
+        self._place_seq_scroll()
         self._timer.start(0)
+
+    def _seq_scrolled(self, value):
+        pymol._cmd.seq_scroll(self.cmd._COb, value)
+        self.update()
+
+    def _place_seq_scroll(self):
+        """After a frame: put the scroll bar on the strip the core left for
+        it, with the range and position the core has now (the mouse wheel
+        over the rows and a resize change them)."""
+        bar = self.seq_scroll
+        state = pymol._cmd.seq_scroll(self.cmd._COb, -1)
+        if not state:
+            bar.hide()
+            return
+        size, visible, first, left, bottom, right, top = (
+            v if i < 3 else v / self.fb_scale for i, v in enumerate(state)
+        )
+        with QtCore.QSignalBlocker(bar):
+            bar.setRange(0, size - visible)
+            bar.setPageStep(visible)
+            bar.setValue(first)
+        bar.setGeometry(
+            round(left),
+            round(self.height() - top),
+            round(right - left),
+            round(top - bottom),
+        )
+        bar.show()
 
     def resizeGL(self, w, h):
         self.pymol.reshape(int(w * self.fb_scale), int(h * self.fb_scale), True)
