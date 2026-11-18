@@ -199,13 +199,16 @@ Done in 4.19.2.
 | Split results in a group | yes | Twenty chains stay one row in the panel. |
 | DNA and RNA as two kinds | no | Old files name DNA residues A, C, G, T; a strand would be torn in two. |
 
-Questions:
+Answers of 2026-11-18:
 
-1. Should a second click on "select" add to the selection instead of
-   replacing it? Recommended: no.
-2. Should "split" also offer "by state" (today under more > state > split)?
-   Recommended: yes, and remove it there.
-3. Cholesterol from a crystal structure (`CLR`) counts as ligand, not as
+1. A click on "select" replaces the selection; it does not add. Stays.
+2. "split" has "by state" since 4.19.3, shown when the object has more
+   than one state; the row more > state > split is gone
+   (`test_select_and_split_rows`).
+
+Question:
+
+1. Cholesterol from a crystal structure (`CLR`) counts as ligand, not as
    membrane. Right?
 
 ## Skipped

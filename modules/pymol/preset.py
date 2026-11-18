@@ -357,6 +357,15 @@ def publication(selection="(all)", *, solv=False, _self=cmd):
 
 pub_no_solv = publication
 
+def publication_green(selection="(all)", _self=cmd):
+    '''
+    "publication" with each chain in shades of green, light to dark, in
+    place of the rainbow. Solvent in the selection is shown.
+    '''
+    publication(selection, solv=True, _self=_self)
+    util.shades("forest", "elem C and (%s) and not %s" % (selection, lig_sele),
+                _self=_self)
+
 def default(selection="(all)",_self=cmd):
     cmd=_self
     s, selection = _prepare(selection, _self=cmd)[:2]

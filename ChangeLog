@@ -4,6 +4,20 @@ CHANGE LOG
 
 2026-11-18 pymolish-studio
 
+	* 4.19.3
+
+	* Presets
+	  - New preset "publication green" (preset.publication_green):
+	    "publication" with each chain in shades of green, light at
+	    its start to dark at its end, in place of the rainbow.
+
+	* Action menu
+	  - "split" has "by state" for an object with more than one
+	    state. The row more > state > split is gone; it was the
+	    same command (split_states).
+
+2026-11-18 pymolish-studio
+
 	* 4.19.2
 
 	* Action menu (the A button of the Objects panel)

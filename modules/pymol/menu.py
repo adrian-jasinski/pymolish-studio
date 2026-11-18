@@ -751,6 +751,7 @@ def presets(self_cmd, sele):
               # the variants with solvent: from_menu decides whether it shows
               _preset('pretty', 'pretty_solv', sele),
               _preset('publication', 'pub_solv', sele),
+              _preset('publication green', 'publication_green', sele),
               _preset('glass', 'glass', sele),
               _preset('wire', 'wire', sele),
               _preset('illustration', 'illustration', sele),
@@ -797,8 +798,6 @@ def state(self_cmd, sele):
               [ 1, 'thaw'  ,
                   'cmd.unset("all_states","'+sele+'");'
                   'cmd.unset("state","'+sele+'")'        ],
-              [ 0, '', '' ],
-              [ 1, 'split'   ,'cmd.split_states("'+sele+'")' ],
               ]
 
 def movement(self_cmd, sele):
@@ -1238,7 +1237,8 @@ def split(self_cmd, sele):
     return [[ 2, 'Split:', '' ],
             [ 1, 'by chain', 'cmd.extract_chain("%s",group="%s_chains");cmd.disable("%s")' % (sele, sele, sele) ],
             [ 1, 'by type', 'cmd.split_types("%s",group="%s_types")' % (sele, sele) ],
-            ]
+            ] + ([[ 1, 'by state', 'cmd.split_states("%s")' % sele ]]
+                 if self_cmd.count_states(sele) > 1 else [])
 
 def mol_more(self_cmd, sele, group=0):
     return [[ 2, 'More:'     , ''                       ],

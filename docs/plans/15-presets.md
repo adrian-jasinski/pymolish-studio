@@ -4,7 +4,7 @@
 4.14.0, 15d in 4.14.3, 15f in 4.14.4.** 15b, 15c and 15e are open and wait for
 the user. **15g and 15h done 2026-11-18 in 4.14.5, 15i (visible objects, two
 presets for complexes) in 4.19.1, 15j (the light after "illustration") in
-4.19.2** (the last sections before "Skipped"). They change three decisions below: the looks are part of the
+4.19.2, 15k (publication green) in 4.19.3** (the last sections before "Skipped"). They change three decisions below: the looks are part of the
 one preset list, they leave the background alone, and three presets stop
 recoloring the protein.
 
@@ -402,12 +402,32 @@ Fixed in 4.19.2.
 - Not changed: the colors. "illustration" colors the protein in shades of
   blue; presets that keep the colors of the protein (classified,
   technical, ball and stick, the ligand presets) show those blues until a
-  coloring preset or the C menu changes them. Question: should the next
-  preset give back the colors from before "illustration"? It needs the
-  colors of every atom stored. Recommended: no; pick "pretty" or a palette.
+  coloring preset or the C menu changes them. The user's answer of
+  2026-11-18: the next preset does not give back the earlier colors.
 - Not kept across a session file: after loading a session saved with
   "illustration" on, the flat light stays until "standard light" is
   picked.
+
+## Request 2026-11-18, fourth: publication in shades of green (15k)
+
+Done in 4.19.3.
+
+- **Preset "publication green"** (`preset.publication_green`), the row
+  after "publication": the same cartoon (smooth loops, fancy helices, grey
+  inside), ligands as sticks, and the carbon atoms of the protein colored
+  with `util.shades("forest")`: along each chain from a light tint over
+  forest green to a dark shade. It is the coloring of C > spectrum >
+  shades > forest.
+- Checked ray traced and in the real window on 1N8Z.
+- Check: `testing/tests/api/preset.py` (`testPublicationGreen`), `menu.py`.
+
+| Option | Taken | Why |
+| --- | --- | --- |
+| Name "publication green" | yes | Says what differs. |
+| Name "publication 2" | no | Says nothing about the picture. |
+| Shades along each chain | yes | The request: spectrum, shades. |
+| One shade per chain | no | It is C > by chain > shades after any preset. |
+| A row per color (blue, orange, ...) | no | One was asked for; the C menu has the other seven. |
 
 ## Skipped
 

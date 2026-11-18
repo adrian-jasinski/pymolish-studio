@@ -214,7 +214,8 @@ class TestMenu(testing.PyMOLTestCase):
         labels = [row[1] for row in m if row[0] == 1]
         self.assertEqual(labels, [
             'default', 'classified', 'technical', 'ball and stick',
-            'b factor putty', 'pretty', 'publication', 'glass', 'wire',
+            'b factor putty', 'pretty', 'publication', 'publication green',
+            'glass', 'wire',
             'illustration', 'ligands',
             'ligand sites', 'protein interface', 'protein-protein interaction',
             'antibody and antigen', 'cartoon transparency',

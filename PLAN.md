@@ -79,7 +79,6 @@ recommended direction, not a claim that an implementation has passed tests.
 | 13 | 19: keep the shot list after a restart, as a new entry in the session file (recommended: yes; it changes PSE output)? Remove the 58 Program rows of the Movie menu that Add and Tour replace (recommended: yes)? Remove the keyframe strip the core draws under the viewport (recommended: not yet)? | [19-movie-timeline.md](docs/plans/19-movie-timeline.md), Options and Questions | 19 |
 | 14 | 17e: remove the menus the core draws in OpenGL (969 lines)? Since the window shows Qt menus, only a program that embeds the viewport through `pymol2` without the window still gets them. Recommended: yes, if no such program is in use. | [17-legacy-ui.md](docs/plans/17-legacy-ui.md), 17e and question 4 | 17e |
 | 15 | 20: blue hover in every menu of the program, not only in the toolbar's (recommended: yes)? Should Orient act only on what is visible, like Zoom since 4.19.1 (recommended: yes)? | [20-toolbar-look.md](docs/plans/20-toolbar-look.md), Options and Questions | Two lines |
-| 16 | 14d: should a second click on A > select add to the selection instead of replacing it (recommended: no)? Should "split" also offer "by state" and the row under more > state go (recommended: yes)? 15j: should the preset after "illustration" also give back the colors from before it (recommended: no)? | [14-menus.md](docs/plans/14-menus.md), 14d; [15-presets.md](docs/plans/15-presets.md), 15j | A few lines each |
 
 The user's to do, not decisions:
 

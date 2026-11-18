@@ -120,6 +120,12 @@ class TestGrouping(testing.PyMOLTestCase):
         cmd.do(select["protein"], echo=0)  # replaces the selection
         self.assertEqual(cmd.count_atoms("sele"), 10)
         split = {row[1]: row[2] for row in rows["split"] if row[0] == 1}
+        self.assertEqual(list(split), ["by chain", "by type"])  # one state
+        cmd.create("m3", "m3", 1, 2)
+        m3 = {row[1]: row[2] for row in menu.mol_action(cmd, "m3") if row[0] == 1}
+        cmd.do({row[1]: row[2] for row in m3["split"]}["by state"], echo=0)
+        self.assertIn("m3_0002", cmd.get_names())
+        self.assertNotIn("split", [row[1] for row in menu.state(cmd, "m3")])
         cmd.do(split["by chain"], echo=0)
         self.assertEqual(grouping.members("m2_chains"), ["m2_A", "m2_B"])
         self.assertNotIn("m2", cmd.get_names("objects", enabled_only=1))

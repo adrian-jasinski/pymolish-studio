@@ -139,6 +139,18 @@ class TestPreset(testing.PyMOLTestCase):
         self.assertTrue(cmd.get_setting_boolean('cartoon_smooth_loops', '1oky'))
         self.assertTrue(cmd.get_setting_boolean('cartoon_fancy_helices', '1oky'))
 
+    def testPublicationGreen(self):
+        cmd.load(self.datafile('1oky.pdb.gz'))
+        preset.publication_green('all')
+        self._assertPrettyReps()
+        self.assertTrue(cmd.get_setting_boolean('cartoon_fancy_helices', '1oky'))
+        stored.colors = set()
+        cmd.iterate('guide', 'stored.colors.add(color)')
+        self.assertGreater(len(stored.colors), 10)  # shades, not one color
+        for color in stored.colors:  # every one a green
+            r, g, b = cmd.get_color_tuple(color)
+            self.assertTrue(g > r and g > b, (r, g, b))
+
     def testPretty(self):
         cmd.load(self.datafile('1oky.pdb.gz'))
         preset.pretty('all')
