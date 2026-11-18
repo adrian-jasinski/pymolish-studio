@@ -744,7 +744,6 @@ def presets(self_cmd, sele):
               _preset('default', 'default', sele),
               _preset('classified', 'classified', sele),
               [ 0, '', '' ],
-              _preset('simple', 'simple', sele),
               _preset('technical', 'technical', sele),
               _preset('ball and stick', 'ball_and_stick', sele),
               _preset('b factor putty', 'b_factor_putty', sele),
@@ -763,12 +762,11 @@ def presets(self_cmd, sele):
               [ 1, 'cartoon transparency', cartoon_transparency(self_cmd, sele) ],
               [ 1, 'hide solvent' if preset.solvent else 'show solvent',
                 'preset.show_solvent(%d,"%s",_self=cmd)' % (not preset.solvent, sele) ],
-              ]
-
-def looks(self_cmd):
-    from . import preset
-    return [[ 2, 'Look:', '' ]] + [
-        [ 1, name, 'preset.look("%s",_self=cmd)' % name ] for name in preset.LOOKS ]
+              [ 0, '', '' ],
+              # light and outline of the whole scene, whatever the menu is on
+            ] + [
+              [ 1, 'standard light' if name == 'default' else name,
+                'preset.look("%s",_self=cmd)' % name ] for name in preset.LOOKS ]
 
 def hydrogens(self_cmd, sele):
    return [[ 2, 'Hydrogens:'       ,''                        ],

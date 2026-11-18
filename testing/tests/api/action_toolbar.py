@@ -57,8 +57,9 @@ class TestActionToolbar(testing.PyMOLTestCase):
 
         bar.presets.menu().aboutToShow.emit()
         rows = [a.text() for a in bar.presets.menu().actions()]
-        self.assertIn("simple", rows)
-        self.assertIn("figure", rows)  # the looks, below the presets
+        self.assertIn("technical", rows)
+        self.assertNotIn("simple", rows)
+        self.assertIn("figure", rows)  # the looks, last group of the list
 
         texts["Builder"].trigger()
         more = {a.text(): a for a in bar.more.menu().actions()}

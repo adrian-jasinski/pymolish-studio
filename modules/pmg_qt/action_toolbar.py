@@ -236,5 +236,5 @@ class ActionToolbar(QtWidgets.QToolBar):
     def _fill_presets(self):
         menu = self.presets.menu()
         menu.clear()
-        rows = menus.presets(self.cmd, "all") + [[0, "", ""]] + menus.looks(self.cmd)
+        rows = menus.presets(self.cmd, "all")
         fill_menu(menu, rows, self.cmd)

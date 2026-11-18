@@ -105,7 +105,8 @@ def _ball_and_stick_ligand(lig, _self=cmd):
     _self.set_bond("stick_color", "grey30", lig, lig)
     _self.set("sphere_scale", 0.18, lig)
     _self.set("sphere_scale", 0.13, lig + " & elem H")
-    _self.color("grey85", lig + " & elem C")
+    # not the guide atom of a modified residue: it colors the cartoon
+    _self.color("grey85", lig + " & elem C & !guide")
 
 def simple_no_solv(selection="(all)",_self=cmd):
     cmd=_self
@@ -127,8 +128,6 @@ def ligands(selection="(all)",_self=cmd):
         cmd.select(lig,s+" and "+lig_sele)
         cmd.select(near_solvent,s+" and ("+solvent+" within 4 of "+lig+")")
 
-        util.chainbow(host,_self=cmd)
-        util.cbc(lig,_self=cmd)
         util.cbac("(("+s+") and not elem C)",_self=cmd)
         cmd.hide("everything",s)
         cmd.show("cartoon",host)
@@ -209,8 +208,6 @@ def ligand_sites(selection="(all)",_self=cmd):
         cmd.flag("ignore",host,"clear")
         cmd.flag("ignore",lig+"|"+solvent,"set")
 
-        util.chainbow(host,_self=cmd)
-        util.cbc(lig,_self=cmd)
         util.cbac("(("+s+") and not elem C)",_self=cmd)
         cmd.hide("everything",s)
         cmd.show("cartoon",host)
@@ -297,8 +294,8 @@ def ligand_sites_dots(selection="(all)",_self=cmd):
 def technical(selection="(all)",_self=cmd):
     cmd=_self
     s, selection, polar_contacts = _prepare(selection, _self=cmd)
-    util.chainbow(s,_self=cmd)
-    util.cbc("("+lig_sele+" and ("+s+"))",_self=cmd)
+    # the protein keeps its colors: only ligands and non-carbon atoms
+    util.cbc("("+lig_sele+" and ("+s+") and not guide)",_self=cmd)
     util.cbac("(("+s+") and not elem C)",_self=cmd)
     cmd.show("nonbonded",s)
     cmd.show("lines","((("+s+") and not "+lig_sele+") extend 1)")
@@ -497,10 +494,11 @@ def show_solvent(show, selection='*', _self=cmd):
         _self.hide('everything', '(%s) & solvent' % (selection))
 
 
-# Looks: light, background and outline of the whole scene (global settings).
-# The outline is drawn in ray-traced images only.
-_outline = dict(bg_rgb='white', depth_cue=0, ray_trace_mode=1,
-                ray_trace_color='black', antialias=2, ray_opaque_background=1)
+# Looks: light and outline of the whole scene (global settings). They are
+# the last group of the preset menu. The outline is drawn in ray-traced
+# images only; its color is the default "front", which contrasts with the
+# background, so a look works on any background and sets none.
+_outline = dict(depth_cue=0, ray_trace_mode=1, antialias=2)
 LOOKS = {
     'default': {},
     # matte, the Rubber light of the Lighting plugin
@@ -526,7 +524,8 @@ LOOKS = {
 
 def look(name, _self=cmd):
     '''
-    Give the whole scene the light, background and outline of LOOKS[name].
+    Give the whole scene the light and outline of LOOKS[name]. The
+    background stays as it is.
     '''
     for key in {key for settings in LOOKS.values() for key in settings}:
         _self.unset(key)

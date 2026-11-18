@@ -208,23 +208,30 @@ class TestMenu(testing.PyMOLTestCase):
         cmd.load(self.datafile('1rx1.pdb'), sele)
         m = menu.presets(cmd, sele)
         d = self._to_dict(m)
-        self._eval_first(d['simple'])
-        # 15: ordered, one solvent row instead of twin rows, glass
+        self._eval_first(d['technical'])
+        # 15: ordered, one solvent row instead of twin rows, glass.
+        # 15g, 15h: no "simple"; the looks are the last group of the one list
         labels = [row[1] for row in m if row[0] == 1]
         self.assertEqual(labels, [
-            'default', 'classified', 'simple', 'technical', 'ball and stick',
+            'default', 'classified', 'technical', 'ball and stick',
             'b factor putty', 'pretty', 'publication', 'glass', 'wire',
             'illustration', 'ligands',
             'ligand sites', 'protein interface', 'cartoon transparency',
-            'show solvent'])
+            'show solvent',
+            'standard light', 'figure', 'soft', 'flat', 'comic', 'sketch',
+            'x-ray'])
+        self.assertEqual([row[1] for row in m if row[0] == 2], ['Preset:'])
         from pymol import preset
         self.addCleanup(setattr, preset, 'solvent', False)
         cmd.do(d['show solvent'], echo=0)
-        self.assertEqual(menu.presets(cmd, sele)[-1][1], 'hide solvent')
+        self.assertIn('hide solvent', [row[1] for row in menu.presets(cmd, sele)])
         cmd.do(d['glass'], echo=0)
         self.assertGreater(cmd.count_atoms('rep surface'), 0)
-        cmd.do(self._to_dict(menu.looks(cmd))['comic'], echo=0)
+        self.addCleanup(preset.look, 'default')
+        cmd.do(d['comic'], echo=0)
         self.assertEqual(cmd.get_setting_int('ray_trace_mode'), 3)
+        cmd.do(d['standard light'], echo=0)
+        self.assertEqual(cmd.get_setting_int('ray_trace_mode'), 0)
         # cartoon transparency lasts until the next preset
         cmd.do(self._to_dict(d['cartoon transparency'])['50%'], echo=0)
         self.assertEqual(cmd.get_setting_float('cartoon_transparency', sele), 0.5)

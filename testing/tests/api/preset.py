@@ -21,6 +21,22 @@ class TestPreset(testing.PyMOLTestCase):
         preset.simple('all')
         self._assertSimpleReps()
 
+    def _guideColors(self):
+        stored.colors = set()
+        cmd.iterate('guide', 'stored.colors.add(color)')
+        return stored.colors
+
+    def testKeepsProteinColors(self):
+        # 15h: the working presets leave the cartoon color alone
+        cmd.load(self.datafile('1oky.pdb.gz'))
+        cmd.color('yellow', 'polymer & elem C')
+        for name in ('technical', 'ligands', 'ligand_sites', 'ligand_cartoon',
+                     'ball_and_stick', 'classified'):
+            getattr(preset, name)('all')
+            self.assertEqual(self._guideColors(), {6}, name)
+        preset.pretty('all')  # a picture preset still colors
+        self.assertGreater(len(self._guideColors()), 10)
+
     def testTechnical(self):
         cmd.load(self.datafile('1oky.pdb.gz'))
         preset.technical('all')
@@ -117,7 +133,6 @@ class TestPreset(testing.PyMOLTestCase):
         # it picks the look flat: true colors, outlines on transparent things
         self.assertEqual(cmd.get_setting_int('ray_trace_mode'), 1)
         self.assertEqual(cmd.get_setting_float('ray_trace_trans_cutoff'), 1)
-        self.assertEqual(cmd.get_color_tuple(cmd.get('bg_rgb')), (1.0, 1.0, 1.0))
         preset.look('default')
         self.assertAlmostEqual(cmd.get_setting_float('ray_trace_trans_cutoff'), 0.05)
 
@@ -145,11 +160,18 @@ class TestPreset(testing.PyMOLTestCase):
         self.assertEqual(cmd.count_atoms('solvent & visible'), 0)
 
     def testLook(self):
+        # 15g: no look touches the background or its transparency
+        cmd.bg_color('grey50')
+        cmd.set('ray_opaque_background', 0)
+        self.addCleanup(cmd.reinitialize)
         for name in preset.LOOKS:  # every key is a setting
             preset.look(name)
+            self.assertEqual(cmd.get('bg_rgb'), 'grey50', name)
+            self.assertEqual(cmd.get_setting_int('ray_opaque_background'), 0, name)
+            # the outline contrasts with whatever the background is
+            self.assertEqual(cmd.get('ray_trace_color'), 'front', name)
         preset.look('figure')
         self.assertEqual(cmd.get_setting_int('ray_trace_mode'), 1)
-        self.assertEqual(cmd.get_color_tuple(cmd.get('bg_rgb')), (1.0, 1.0, 1.0))
         preset.look('comic')
         self.assertEqual(cmd.get_setting_int('ray_trace_mode'), 3)
         preset.look('sketch')
@@ -157,7 +179,6 @@ class TestPreset(testing.PyMOLTestCase):
         self.assertEqual(cmd.get_setting_int('antialias'), 2)
         preset.look('x-ray')  # a look replaces the one before it
         self.assertEqual(cmd.get_setting_int('ray_trace_mode'), 0)
-        self.assertEqual(cmd.get_color_tuple(cmd.get('bg_rgb')), (0.0, 0.0, 0.0))
         self.assertEqual(cmd.get_setting_float('ambient'), 1)
         preset.look('default')
         self.assertAlmostEqual(cmd.get_setting_float('ambient'), 0.14)

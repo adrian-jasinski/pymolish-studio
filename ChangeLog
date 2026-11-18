@@ -2,6 +2,28 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-18 pymolish-studio
+
+	* 4.14.5
+
+	* Presets and looks
+	  - Behavior change: preset.look no longer sets the background
+	    (bg_rgb, ray_opaque_background) or the outline color. The
+	    outline uses the default "front" color: black on a light
+	    background, white on a dark one. A ray-traced image has a
+	    transparent background again unless Display > Background >
+	    Opaque is on, as without a look.
+	  - Behavior change: preset.technical, preset.ligands and the
+	    ligand sites presets no longer color the protein. Ligand
+	    and non-carbon atoms are colored as before. The guide atom
+	    of a modified residue (a phosphoserine) keeps its color,
+	    so the cartoon has no patch there.
+	  - The preset menu is one list: the looks are its last group,
+	    without a caption of their own; "standard light" restores
+	    the default light. menu.looks is removed.
+	  - The row "simple" left the preset menu. preset.simple and
+	    preset.simple_no_solv still work when typed.
+
 2026-11-16 pymolish-studio
 
 	* 4.14.4

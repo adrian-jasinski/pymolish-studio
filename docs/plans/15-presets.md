@@ -2,9 +2,10 @@
 
 [Roadmap](../../PLAN.md) · Request 2026-11-16 · **15a done 2026-11-16 in
 4.14.0, 15d in 4.14.3, 15f in 4.14.4.** 15b, 15c and 15e are open and wait for
-the user. 15g and 15h were planned on 2026-11-18 (last section before
-"Skipped") and change two decisions below: looks leave the background alone,
-and three presets stop recoloring the protein.
+the user. **15g and 15h done 2026-11-18 in 4.14.5** (last section before
+"Skipped"). They change three decisions below: the looks are part of the
+one preset list, they leave the background alone, and three presets stop
+recoloring the protein.
 
 **The preset menu is ordered, has one solvent row instead of twin rows, a
 glass preset and a cartoon transparency row. Every preset but "simple" draws
@@ -196,7 +197,8 @@ except the first, which needs code.
 
 ## Request 2026-11-18: one menu or two, background, colors (15g, 15h)
 
-Planned, not built. The user asked why the menu has "Preset" and "Look",
+Done in 4.14.5; the result is under "Result" at the end of this section. The
+user asked why the menu has "Preset" and "Look",
 wants neither to change the background, wants the cartoon colors left alone
 in the working presets, and "simple" out of the menu.
 
@@ -226,7 +228,9 @@ reads like a preset.
 
 A can become C later without a change to `preset.py`.
 
-### 15g, looks keep the background. Planned.
+**Decided 2026-11-18: B, one list.**
+
+### 15g, looks keep the background.
 
 Facts read from the code:
 
@@ -259,7 +263,7 @@ Slice:
 - `ChangeLog`: `preset.look` no longer sets the background.
 - Commit: `ui(presets): looks keep the background; caption says what they set`.
 
-### 15h, presets keep the protein colors; "simple" leaves the menu. Planned.
+### 15h, presets keep the protein colors; "simple" leaves the menu.
 
 A cartoon takes its color from the carbon atoms, so "recoloring the cartoon"
 means a preset that colors the carbons of the protein.
@@ -300,10 +304,43 @@ preset. "default" resets the colors, and so does a click in the palette menu.
    coloring? Recommended: no. They are picture presets like illustration, and
    an interface needs chains in different colors. If yes: five more deleted
    lines, and pretty and publication then differ from each other only in the
-   shape of the cartoon.
+   shape of the cartoon. **Answer: they keep coloring.**
 2. "simple": remove only the menu row (recommended, as step 15 decided "no
    function is removed"), or also the functions `preset.simple` and
-   `simple_no_solv`? Scripts that call them would then fail.
+   `simple_no_solv`? Scripts that call them would then fail. **Answer: only
+   the row.**
+
+### Result, 4.14.5
+
+- **One list, without losing the combinations.** The looks are the last
+  group of `menu.presets`, under the one caption "Preset:", in the toolbar
+  and in A > preset. No other preset touches the light, so glass in the soft
+  light still works. The first row of the group reads "standard light" and
+  restores the default light; a second "default" row would have been
+  ambiguous. `menu.looks` is deleted.
+- **Ray traced on 1oky, every look on black and on white,** plus
+  illustration and glass in the soft light:
+
+  | Look | On black | On white |
+  | --- | --- | --- |
+  | figure, soft, flat, comic | White outline, same colors | Black outline, as before |
+  | sketch | White lines on black | Black lines on white, as before |
+  | x-ray, standard light | No outline, unchanged | Unchanged |
+  | illustration (preset) | White outline around the blue shades and the faint surface | As before |
+
+  The outline color comes from the default of `ray_trace_color`, "front".
+  No look is unusable on a dark background.
+- **A ray-traced PNG has a transparent background again** unless Display >
+  Background > Opaque is on: the looks used to force
+  `ray_opaque_background`, which is a background setting.
+- **Modified residues.** The first test run found that a phosphoserine of
+  1oky (a `hetatm` inside the chain) still got ligand colors, which leaves a
+  patch on the cartoon. The ligand coloring now skips guide atoms. In
+  `ligands` and `ligand sites` the line `util.cbc(lig)` was dead (every atom
+  it colored was colored again right after) and is deleted.
+- Checks: `testing/tests/api/preset.py` (`testKeepsProteinColors`,
+  `testLook`, `testIllustration`), `menu.py` (`testPresets`),
+  `action_toolbar.py`. Not checked in the real window.
 
 ## Skipped
 
