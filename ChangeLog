@@ -4,6 +4,30 @@ CHANGE LOG
 
 2026-11-18 pymolish-studio
 
+	* 4.16.1
+
+	* Plugins: the last Tk stand-ins are removed
+	  - Removed: pmg_qt.mimic_tk (fake tkMessageBox, tkFileDialog,
+	    tkinter.messagebox and tkinter.filedialog modules, and the
+	    import hook that served them), pmg_qt.mimic_pmg_tk (PMGApp,
+	    PmwMenuBar), pymol.plugins.legacysupport,
+	    pymol.plugins.get_pmgapp, pymol.gui.get_pmgapp,
+	    pymol.gui.createlegacypmgapp, PluginInfo.legacyinit and
+	    the empty "Legacy Plugins" submenu.
+	  - Behavior change: __init_plugin__(app) is called with None.
+	    A plugin that used app.menuBar or app.root, or that only
+	    has the Tk-era module function __init__(self), no longer
+	    adds its menu rows; its commands still load.
+	  - Behavior change: pymol.plugins.addmenuitem and
+	    addmenuitemqt both add to the one Plugin menu. The menu
+	    name "PluginQt" is still accepted.
+	  - New: pymol.plugins.ask and pymol.plugins.showinfo, the
+	    message boxes the Plugin Manager uses; without a GUI they
+	    print and ask answers yes, as before.
+	  - installPlugin moved to pymol.plugins.installation.
+
+2026-11-18 pymolish-studio
+
 	* 4.16.0
 
 	* Legacy menu rows

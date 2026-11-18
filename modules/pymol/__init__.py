@@ -105,14 +105,6 @@ def _init_internals(_pymol):
 
     _pymol._log_file = None
 
-    # This global will be non-None if an external gui
-    # exists. It mainly exists so that events which occur
-    # in the Python thread can be handed off to the
-    # external GUI thread through one or more FIFO Queues
-    # (global variable used for efficiency)
-
-    _pymol._ext_gui = None
-
     # lists of functions to call when saving and restoring pymol session objects
 
     _pymol._session_save_tasks = []

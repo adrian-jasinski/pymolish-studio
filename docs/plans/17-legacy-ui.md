@@ -1,6 +1,8 @@
 # 17 — Legacy menu rows and the old internal GUI
 
-[Roadmap](../../PLAN.md) · Request 2026-11-18 · **Planned, nothing built.**
+[Roadmap](../../PLAN.md) · Request 2026-11-18 · **17a done in 4.16.0, 17b in
+4.16.1** (2026-11-18, see "Result" before "Questions"). 17c is in progress;
+17d waits for step 19.
 The request answers the open question of [step 3](03-modern-ui.md): the old
 C++ panel is not needed any more.
 
@@ -116,18 +118,52 @@ step 3 may).
 mode still reaches them (`-x` keeps the Qt hook, `-c` draws nothing). If
 none does: one removal, 969 lines, and `internal_gui_mode` with it.
 
+## Result
+
+**17a, 4.16.0.** The five rows are gone from Display and Setting. The
+settings still work when typed. Real window: Display has 21 rows, none of
+them "Internal" or "Overlay".
+
+**17b, 4.16.1. The user chose the larger version: delete everything Tk.**
+
+| Deleted | Lines | What used it, and what it uses now |
+| --- | --- | --- |
+| `modules/pmg_qt/mimic_tk.py` | 128 | Fake `tkMessageBox`, `tkFileDialog`, `tkinter.messagebox`, `tkinter.filedialog` and an import hook that served them to every `import`. The Plugin Manager called them in six places: now `plugins.ask` and `plugins.showinfo` (Qt message box, or a printed line without a GUI). |
+| `modules/pmg_qt/mimic_pmg_tk.py` | 87 | `PMGApp` and `PmwMenuBar`, the object handed to `__init_plugin__(app)`. Every plugin menu row went through it: `plugins.addmenuitem` now adds to the Qt menu itself. |
+| `modules/pymol/plugins/legacysupport.py` | 101 | `installPlugin` moved to `installation.py`, the Plugin Manager row to `plugins/__init__.py`. |
+| `pymol.gui.get_pmgapp`, `createlegacypmgapp`, `pymol._ext_gui`, `PluginInfo.legacyinit`, the window's `createlegacypmgapp` | | The builder took `app.pymol.cmd` (now `cmd`), the volume panel `app.execute` (now a plain call), the pymolrc editor an unused argument. |
+| The "Legacy Plugins" submenu and the menu key `PluginQt` | | One Plugin menu. `addmenuitemqt(..., menuName='PluginQt')` is still accepted. |
+
+What stops working, on purpose: a plugin that calls `app.menuBar...` or
+`app.root`, or that only has the Tk-era module function `__init__(self)`.
+`__init_plugin__` now gets `None`. Its commands still load; the load prints
+"Unable to initialize plugin" if it touches `app`.
+
+Checks: `testing/tests/api/plugins.py` (`test_addmenuitem`: rows, one
+submenu for two "A|B" labels, the old menu name, no `get_pmgapp`, no
+`mimic_tk`). Real window on WSLg: Plugin menu with `-k` (one row,
+"Initialize Plugin System") and after it (Plugin Manager, APBS, Lighting
+Settings); all three open; Builder; a volume panel with `volume_color`; a
+start with the user's own `~/.pymol/startup/pymolish`.
+
+A build detail: `build/lib.*/` kept copies of the three deleted files and
+put them back into the installed package. They had to be deleted there by
+hand once.
+
 ## Questions
 
 1. `pymolish -x` after the removal: (A) it shows the viewport alone, with
    the object list one key away as a floating Objects panel (recommended);
    (B) `-x` goes away and prints a hint; (C) the panel code stays for `-x`
    only, which keeps all of it.
+   **Not answered; A is built in 17c.**
 2. The text console in the viewport (`internal_feedback`, `internal_prompt`,
    `overlay`): keep the code and only remove the rows (recommended: full
    screen and `-x` have no other command line), or plan its removal too?
+   **Not answered; the code stays.**
 3. Old-style plugins: only hide the empty submenu (recommended first), or
    delete the Tk shims, after which a plugin written for the Tk window no
-   longer adds its rows?
+   longer adds its rows? **Answer: delete everything Tk.**
 
 ## Deleted
 

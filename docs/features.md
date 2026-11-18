@@ -91,6 +91,8 @@ Each row was unused, outdated or had a better replacement.
 | --- | --- | --- |
 | PyQt5, PyQt6 and PySide2 support | 4.1.0 | PySide6 |
 | Tk GUI, Pmw and the Tk plugin manager | 4.3.0 | The Qt GUI. Plugins that build Tk windows no longer work. |
+| Stand-ins for Tk in plugins (`app.menuBar`, `app.root`, fake `tkMessageBox`), the "Legacy Plugins" menu | 4.16.1 | `pymol.plugins.addmenuitemqt`; see [Writing a plugin](plugins.md). |
+| Menu rows Internal GUI, Internal Prompt, Internal Feedback, Overlay | 4.16.0 | The settings of the same names, typed. |
 | GLUT GUI | 4.3.1 | The Qt GUI |
 | `chempy.fast` | 4.4.1 | Nothing; it was unused |
 | VTK-m isosurface backend | 4.4.2 | The internal marching cubes |

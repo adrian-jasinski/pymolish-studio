@@ -140,7 +140,7 @@ class PluginManager(QtCore.QObject):
         if not plugdir:
             return
         import sys, tempfile, shutil, os
-        from .legacysupport import tkMessageBox
+        from . import showinfo
         from .repository import guess
         tmpdir = tempfile.mkdtemp()
         try:
@@ -150,15 +150,15 @@ class PluginManager(QtCore.QObject):
                 installPluginFromFile(filename, None, plugdir)
         except:
             err = str(sys.exc_info()[1])
-            tkMessageBox.showinfo('Error', 'Could not install plugin ' + name + '\n\n' + err)
+            showinfo('Error', 'Could not install plugin ' + name + '\n\n' + err)
         finally:
             shutil.rmtree(tmpdir)
         self.reload_plugins()
 
     def info_repo_plugin(self):
         from . import PluginInfo
+        from . import showinfo
         from .installation import get_name_and_ext, extract_zipfile, zip_extensions
-        from .legacysupport import tkMessageBox
         items = self.form.l_repo_plugins.selectedItems()
         if len(items) == 0:
             return
@@ -177,7 +177,7 @@ class PluginManager(QtCore.QObject):
             info = PluginInfo(name, filename)
             self.show_plugin_info_dialog(info)
         except:
-            tkMessageBox.showinfo('Error', 'Could not get plugin info')
+            showinfo('Error', 'Could not get plugin info')
         finally:
             for tmpdir in tmpdirs:
                 shutil.rmtree(tmpdir)
@@ -299,7 +299,7 @@ class PluginManager(QtCore.QObject):
             info.autoload = False
 
     def installplugin(self):
-        from .legacysupport import installPlugin
+        from .installation import installPlugin
         installPlugin(self)
         self.reload_plugins()
 

@@ -142,7 +142,7 @@ class TextEditor(QtWidgets.QMainWindow):
         self.root.raise_()
 
 
-def edit_pymolrc(app=None):
+def edit_pymolrc():
     try:
         import pymol
         pymolrc_list = pymol.invocation.options.pymolrc
@@ -150,17 +150,17 @@ def edit_pymolrc(app=None):
         pymolrc_list = []
 
     if len(pymolrc_list or ()) < 2:
-        _edit_pymolrc(app, pymolrc_list)
+        _edit_pymolrc(pymolrc_list)
         return
 
     s, ok = QtWidgets.QInputDialog.getItem(
         None, 'Select pymolrc file', 'Active pymolrc files:', pymolrc_list)
 
     if ok:
-        _edit_pymolrc(app, [s])
+        _edit_pymolrc([s])
 
 
-def _edit_pymolrc(app, _list=()):
+def _edit_pymolrc(_list=()):
     try:
         pymolrc = _list[0]
     except (TypeError, IndexError):
