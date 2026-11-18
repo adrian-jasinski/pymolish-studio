@@ -1,6 +1,9 @@
 # 19 — Movie timeline
 
 [Roadmap](../../PLAN.md) · Request 2026-11-18 · **Planned, nothing built.**
+The user asked on the same day for more and new ways to edit a movie from
+the GUI: they are options D to I in "More ways to edit a movie", with a new
+order of slices. Not built on purpose: the request excluded this step.
 Replaces row 8 of the workspace table in [step 3](03-modern-ui.md)
 ("Timeline. Not planned").
 
@@ -57,6 +60,49 @@ A movie that was not built from scenes (hand-written `mview` on single
 frames, object motions) has no blocks to show. In A the panel then shows the
 keyframes as plain marks that can be played and scrubbed but not edited, and
 says so in one line. That part is B in small.
+
+## More ways to edit a movie (second request, 2026-11-18)
+
+Options A to C are three ways to show keyframes. These six are other ways
+to make and change a movie; each rests on a command the core already has,
+named in the last column. They combine: D is the editor, A becomes its
+picture, E and F fill it, G and H refine it, I ends it.
+
+| | Option | What the user does | What it is built on |
+| --- | --- | --- | --- |
+| D | **Shot list.** The movie as a table, one row per step: what (show a scene, turn, rock, nutate, zoom to a selection, play the states, hold), how long in seconds, how it starts (smooth or cut). | Type a duration, reorder rows by dragging or with Alt+Up and Alt+Down, copy and paste rows, delete a row. Every cell is reachable by keyboard. | `movie.add_scenes`, `add_roll`, `add_rock`, `add_nutate`, `add_state_loop`, `add_blank`, `mview store`. The table is rebuilt into the movie after each edit. |
+| E | **Record.** A Record button in the panel. | Move the molecule and press K, or click "Add view", at each pose worth keeping; the panel appends a shot of two seconds per pose. "Auto" adds a pose whenever the view has rested for half a second. Stop when done. | `mview store` on appended frames, `mview interpolate` and `smooth`. |
+| F | **Guided tour.** A movie from a list of places. | Pick selections or ligand sites from a list (every ligand, every chain, the current selections), choose "fly to, hold, orbit", press Create. | `orient` or `zoom` on each selection, `mview store`, `movie.add_roll` over the hold. |
+| G | **Effects lane.** Changes of the look over time, under a shot: fade a surface in or out, reveal the ligand, change a color, switch a label on. | Drop an effect on a shot and set what it acts on. | `mdo`: one command per frame that sets `transparency`, `cartoon_transparency` or shows a representation. Scenes alone can only cut between looks. `mdo` runs at playback, so long fades cost frame rate; to be measured before it ships. |
+| H | **Easing per transition.** | Pick linear, ease in and out, or hold then jump, on the line between two shots. | The arguments `power`, `bias` and `linear` of `mview`, which no menu offers today. |
+| I | **Export panel with an estimate.** | Choose a preset (GIF for a slide, MP4 720p, 1080p or 4K, PNG frames), draft or ray traced, loop or once. Before rendering it shows the number of frames, the time and the file size it expects. | `movie.produce` and `mpng`. The estimate times one frame and multiplies. |
+
+Compared with the commercial timeline: D, E, F and I do not exist there in
+this form. Its strength is free keyframes on many tracks, which is option
+B.
+
+**Recommended set and order:** D first (the cheapest editor, exact, and it
+works without a mouse), then A as the picture of the same list, then E and
+F, which only append rows to it, then I. G and H last: G needs a
+measurement and H is three numbers per transition.
+
+Slices in that order; they replace 19b and 19c below when the user picks
+this set:
+
+| Slice | Content |
+| --- | --- |
+| 19a | As below: `cmd.get_mview()`, the dock, a read-only strip with the playhead, the menu rows. |
+| 19b | The shot list (D): the table, add, edit, reorder and delete, rebuild of the movie after each edit. Test: every row type against `get_mview` and `count_frames`. |
+| 19c | The storyboard strip (A) over the same list: thumbnails, drag to reorder and to stretch. |
+| 19d | Record (E) and the guided tour (F). Test: three recorded poses give three keyframes at the expected frames; a tour of two selections gives the expected length. |
+| 19e | The export panel (I). Test: the estimate against a rendered 30-frame movie, within a factor of two. |
+| 19f | Easing (H), then the effects lane (G) after a frame-rate measurement with `testing/bench_gui.py`. |
+| 19g | The shorter Movie menu, and the core's movie panel goes (the old 19c and 19d). |
+
+One limit holds for all of them: the shot list is derived from the
+keyframes of the core, so a movie written by hand with commands the list
+does not know (object motions, `mdo` scripts of the user) is shown and
+played, but opens for editing only after "Start over from the scenes".
 
 ## Decisions
 
@@ -120,6 +166,8 @@ says so in one line. That part is B in small.
 
 ## Questions
 
+0. Which of D to I should be built, and is the recommended order right?
+   Recommended: D, A, E, F, I, then H and G.
 1. A, B or C?
 2. Open the timeline by itself when a movie gets frames (recommended), or
    only from the menu?
