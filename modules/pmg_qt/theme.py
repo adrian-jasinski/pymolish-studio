@@ -73,6 +73,20 @@ def set_object_palette(name):
     _settings().setValue("colors/palette", name)
 
 
+def background():
+    """The background kept by the toolbar's "Remember after restart" row:
+    the values of BACKGROUND_SETTINGS, or None when the row is off."""
+    values = _settings().value("colors/background")
+    return list(values) if values else None
+
+
+def set_background(values):
+    if values:
+        _settings().setValue("colors/background", list(values))
+    else:
+        _settings().remove("colors/background")
+
+
 def apply_ui_scale(environ=os.environ):
     """Call before QApplication exists: Qt reads the factor once, at startup.
     A factor the user exported wins over the saved one."""

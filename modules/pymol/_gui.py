@@ -457,15 +457,7 @@ class PyMOLDesktopGUI(object):
                 ('menu', 'Background', [
                     ('check', 'Opaque', 'opaque_background', 1),
                     ('check', 'Alpha Checker', 'show_alpha_checker', 1),
-                    ('separator',),
-                ] + [
-                    ('radio', lab, 'bg_rgb', val)
-                    for lab, val in [
-                        ('White', 0),           # white
-                        ('Light Grey', 134),    # grey80
-                        ('Grey', 104),          # grey50
-                        ('Black', 1),           # black
-                    ]
+                    # the colors: background button of the toolbar
                 ]),
                 ('menu', 'Color Space', [
                     ('command', 'CMYK (for publications)',  'space cmyk'),

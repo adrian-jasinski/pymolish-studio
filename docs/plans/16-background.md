@@ -1,6 +1,7 @@
 # 16 — Background menu and palette caption
 
-[Roadmap](../../PLAN.md) · Request 2026-11-18 · **Planned, nothing built.**
+[Roadmap](../../PLAN.md) · Request 2026-11-18 · **Done 2026-11-18 in 4.15.0.**
+What was tried and where the result differs from the plan is under "Result".
 
 **The palette menu gets a caption that says what it colors. A new toolbar
 button next to it sets the background: five plain colors, two blues and a
@@ -117,6 +118,46 @@ to add later.
    both places?
 4. A row "Other..." that opens the color dialog of Qt? Recommended: not now;
    `bg_color` takes any color when typed.
+
+## Result, 4.15.0
+
+Answers of 2026-11-18: delete the rows from Display > Background; do not
+remember the background by default, give the user a row to switch it on.
+Caption and "Other..." were not answered: caption A, no "Other..." row.
+
+**16b, what was tried.** 1oky, cartoon colored as a rainbow so every hue
+meets every background, ray traced once per candidate.
+
+| Candidate | Result | Verdict |
+| --- | --- | --- |
+| Black, Charcoal, Night blue, Slate, Night, Graphite, Steel | Every color of the rainbow stays readable | In |
+| Gray | Lower contrast for every color, none lost | In |
+| Light gray, White, Studio, Sky | Yellow gets pale, as on any light background; fog fades to the light color correctly | In |
+| PyMOL blue | The blue end of the rainbow comes close to the background | In: it is the core's own gradient |
+
+No banding in a gradient at 300 x 240.
+
+**Differences from the plan:**
+
+- **"Remember after restart" is a check row in the menu,** off by default.
+  When on, the four background settings are saved after each pick
+  (`QSettings` `colors/background`) and set again at the next start before
+  pymolrc; switching it off forgets them. A background typed with
+  `bg_color` is saved at the next pick or when the row is checked again.
+- **A gradient row also sets `bg_rgb`** to its top color. Fog and the
+  "front" color (labels, the outline of the looks) are derived from
+  `bg_rgb`, not from the gradient; without this a white gradient kept the
+  fog and outline of a black background.
+- **The row in use has a frame** in the highlight color, drawn into the
+  swatch when the menu opens.
+- **Rock is icon-only.** With the new button the bar was 965 px wide in a
+  940 px default window at 150 %, and the scale and More buttons fell into
+  the overflow. Without the text of Rock it is 919.
+
+Checks: `testing/tests/api/action_toolbar.py` (`test_background`,
+`test_palette`, `test_icons`). Real window on WSLg at 150 %: both menus
+captured, the toolbar width measured, and three starts in a row for
+"Remember": set, back after the restart, gone after switching it off.
 
 ## Skipped
 

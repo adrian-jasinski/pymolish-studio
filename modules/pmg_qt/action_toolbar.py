@@ -1,7 +1,7 @@
 """
 Action toolbar above the viewport: what a click selects, undo/redo, the view
-actions, presets, the object color palette, and on the right the panels, the
-render popup and the UI scale. Every button has a line icon; undo and redo
+actions, presets, the object color palette, the background, and on the right
+the panels, the render popup and the UI scale. Every button has a line icon; undo and redo
 show only that. Replaces the grid of quick buttons that sat next to the log.
 """
 
@@ -17,6 +17,63 @@ from .object_panel import SELECTING, fill_menu
 Qt = QtCore.Qt
 Style = Qt.ToolButtonStyle
 Popup = QtWidgets.QToolButton.ToolButtonPopupMode
+
+
+# Menu of the background button: name -> (top, bottom) as hex, bottom None
+# for a plain color; None starts a new group. Each was ray traced under a
+# rainbow-colored protein (docs/plans/16-background.md).
+BACKGROUNDS = (
+    ("Black", "000000", None),
+    ("Charcoal", "1E1E1E", None),
+    ("Gray", "808080", None),
+    ("Light gray", "CCCCCC", None),
+    ("White", "FFFFFF", None),
+    None,
+    ("Night blue", "0B1D33", None),
+    ("Slate", "2F3E55", None),
+    None,
+    ("PyMOL blue", "00004D", "333380"),
+    ("Night", "000000", "1B2A49"),
+    ("Graphite", "3A3A3A", "101010"),
+    ("Steel", "5A6B7D", "1E2630"),
+    ("Studio", "FFFFFF", "C8CDD4"),
+    ("Sky", "DCEBFA", "FFFFFF"),
+)
+# what a background is made of, and what "Remember after restart" saves
+BACKGROUND_SETTINGS = ("bg_rgb", "bg_gradient", "bg_rgb_top", "bg_rgb_bottom")
+
+
+def _caption(menu, text):
+    """A menu caption like the ones object_panel.fill_menu draws."""
+    title = QtWidgets.QWidgetAction(menu)
+    title.setDefaultWidget(QtWidgets.QLabel(text, objectName="menu_title"))
+    title.setEnabled(False)
+    menu.addAction(title)
+
+
+def _swatch(top, bottom, active, mark):
+    """Menu icon: the background as a square, with a frame in the color
+    `mark` when it is the one in use (Qt draws no check mark next to an
+    icon)."""
+    pixmap = QtGui.QPixmap(16, 16)
+    gradient = QtGui.QLinearGradient(0, 0, 0, 16)
+    gradient.setColorAt(0, QtGui.QColor("#" + top))
+    gradient.setColorAt(1, QtGui.QColor("#" + (bottom or top)))
+    painter = QtGui.QPainter(pixmap)
+    painter.fillRect(0, 0, 16, 16, gradient)
+    # a thin grey edge, so black shows on a dark menu and white on a light one
+    painter.setPen(
+        QtGui.QPen(mark if active else QtGui.QColor(128, 128, 128), 3 if active else 1)
+    )
+    painter.drawRect(
+        pixmap.rect().adjusted(1, 1, -2, -2)
+        if active
+        else pixmap.rect().adjusted(0, 0, -1, -1)
+    )
+    painter.end()
+    icon = QtGui.QIcon(pixmap)
+    icon.addPixmap(pixmap, QtGui.QIcon.Mode.Selected)  # else Qt tints it
+    return icon
 
 
 def _strip(colors):
@@ -79,6 +136,9 @@ class ActionToolbar(QtWidgets.QToolBar):
         self._action("Orient", lambda: cmd.orient(animate=1.0))
         self.rock = self._action("Rock", cmd.rock)
         self.rock.setCheckable(True)
+        # icon only since the background button came: with its text the bar
+        # does not fit the default window at 150 %
+        self.widgetForAction(self.rock).setToolButtonStyle(Style.ToolButtonIconOnly)
         self.rock.setChecked(bool(cmd.get_setting_int("rock")))
         setting_callbacks[index("rock")].append(lambda v: self.rock.setChecked(bool(v)))
 
@@ -113,6 +173,7 @@ class ActionToolbar(QtWidgets.QToolBar):
             (view.sizeHintForRow(0) + 4) * view.count(),  # 4: the spacing
         )
         menu = self.colors.menu()
+        _caption(menu, "Palette: colors of objects and chains")
         action = QtWidgets.QWidgetAction(menu)
         action.setDefaultWidget(view)
         menu.addAction(action)
@@ -128,6 +189,35 @@ class ActionToolbar(QtWidgets.QToolBar):
         saved = theme.object_palette()
         if pymol.invocation.options.pymolrc is not None and saved in palettes.PALETTES:
             cmd.palette(saved)
+
+        self.background = self._menu_button("Background", "Background color")
+        self.background.setToolButtonStyle(Style.ToolButtonIconOnly)
+        menu = self.background.menu()
+        _caption(menu, "Background:")
+        self._backgrounds = []  # (action, top, bottom)
+        for row in BACKGROUNDS:
+            if row is None:
+                menu.addSeparator()
+                continue
+            name, top, bottom = row
+            action = menu.addAction(name)
+            action.triggered.connect(
+                lambda _=False, t=top, b=bottom: self._set_background(t, b)
+            )
+            self._backgrounds.append((action, top, bottom))
+        menu.addSeparator()
+        self.remember_background = menu.addAction("Remember after restart")
+        self.remember_background.setCheckable(True)
+        self.remember_background.toggled.connect(self._save_background)
+        menu.aboutToShow.connect(self._show_background)
+        # as the palette above: before pymolrc, and not with -k
+        saved = theme.background()
+        if saved:
+            with QtCore.QSignalBlocker(self.remember_background):
+                self.remember_background.setChecked(True)
+            if pymol.invocation.options.pymolrc is not None:
+                for key, value in zip(BACKGROUND_SETTINGS, saved):
+                    cmd.set(key, value)
 
         spacer = QtWidgets.QWidget()
         spacer.setSizePolicy(
@@ -224,6 +314,42 @@ class ActionToolbar(QtWidgets.QToolBar):
                 ["default", *palettes.PALETTES].index(palettes.active)
             )
         QtCore.QTimer.singleShot(0, self.palettes.setFocus)  # for the keys
+
+    def _set_background(self, top, bottom):
+        cmd = self.cmd
+        # bg_rgb also with a gradient: fog and the "front" color follow it
+        cmd.set("bg_rgb", "0x" + top)
+        if bottom:
+            cmd.set("bg_rgb_top", "0x" + top)
+            cmd.set("bg_rgb_bottom", "0x" + bottom)
+        cmd.set("bg_gradient", int(bool(bottom)), quiet=0)
+        self._save_background()
+
+    def _save_background(self, *_):
+        """Keep the background of this moment for the next start, or forget
+        it. A background typed later is kept once a row is picked or the
+        check box is set again."""
+        keep = self.remember_background.isChecked()
+        theme.set_background(
+            [self.cmd.get(key) for key in BACKGROUND_SETTINGS] if keep else None
+        )
+
+    def _show_background(self):
+        cmd = self.cmd
+
+        def now(key):
+            return QtGui.QColor.fromRgbF(*cmd.get_color_tuple(cmd.get(key))).name()
+
+        gradient = cmd.get_setting_boolean("bg_gradient")
+        current = (
+            (now("bg_rgb_top"), now("bg_rgb_bottom"))
+            if gradient
+            else (now("bg_rgb"), None)
+        )
+        mark = self.palette().highlight().color()
+        for action, top, bottom in self._backgrounds:
+            row = ("#" + top.lower(), "#" + bottom.lower() if bottom else None)
+            action.setIcon(_swatch(top, bottom, row == current, mark))
 
     def _set_selecting(self, value):
         self.cmd.set("mouse_selection_mode", value, quiet=0)

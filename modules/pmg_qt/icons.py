@@ -48,6 +48,7 @@ LABELS = {
     "fragment+joint(s)": "puzzle",
     "actions": "zap",
     "color": "palette",
+    "background": "image",
     "preset": "sliders-horizontal",
     "label": "tag",
     "ss": "dna",

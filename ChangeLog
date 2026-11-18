@@ -4,6 +4,26 @@ CHANGE LOG
 
 2026-11-18 pymolish-studio
 
+	* 4.15.0
+
+	* Background menu and palette caption
+	  - New toolbar button after the palette: the background. Five
+	    plain colors, two blues and six gradients from top to
+	    bottom, each with a swatch; the one in use has a frame. A
+	    gradient row also sets bg_rgb to its top color, so fog and
+	    the "front" color follow.
+	  - "Remember after restart" in that menu, off by default. When
+	    on, the background is saved with each pick and set again
+	    at the next start, before pymolrc runs.
+	  - The four color rows of Display > Background are removed.
+	    "Opaque" and "Alpha Checker" stay there.
+	  - The palette menu has a caption: "Palette: colors of objects
+	    and chains".
+	  - The Rock button shows only its icon, so the toolbar still
+	    fits the default window at 150 %.
+
+2026-11-18 pymolish-studio
+
 	* 4.14.5
 
 	* Presets and looks

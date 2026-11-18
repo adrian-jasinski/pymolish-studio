@@ -1,7 +1,7 @@
 """
 Action toolbar: selection mode menu and label, rock state, zoom, presets
 menu, panel and More entries, an icon on every button, the palette menu, the
-UI scale menu.
+background menu, the UI scale menu.
 Headless (offscreen QApplication).
 """
 
@@ -84,13 +84,79 @@ class TestActionToolbar(testing.PyMOLTestCase):
             for b in bar.findChildren(QtWidgets.QToolButton)
             if b.objectName() != "qt_toolbar_ext_button"  # Qt's overflow arrow
         ]
-        self.assertEqual(len(buttons), 13)
+        self.assertEqual(len(buttons), 14)
         self.assertEqual([b.text() for b in buttons if b.icon().isNull()], [])
         IconOnly = QtCore.Qt.ToolButtonStyle.ToolButtonIconOnly
         self.assertEqual(
             sorted(b.toolTip() for b in buttons if b.toolButtonStyle() == IconOnly),
-            ["Colors of objects and chains", "More view actions", "Redo", "Undo"],
+            [
+                "Background color",
+                "Colors of objects and chains",
+                "More view actions",
+                "Redo",
+                "Rock",
+                "Undo",
+            ],
         )
+
+    def test_background(self):
+        from unittest import mock
+        from pmg_qt import action_toolbar, theme
+
+        self.addCleanup(cmd.reinitialize)
+        saved = []
+        with (
+            mock.patch.object(theme, "background", return_value=None),
+            mock.patch.object(theme, "set_background", saved.append),
+        ):
+            bar = action_toolbar.ActionToolbar(cmd, defaultdict(list))
+            menu = bar.background.menu()
+            rows = {a.text(): a for a in menu.actions() if a.text()}
+            names = [row[0] for row in action_toolbar.BACKGROUNDS if row]
+            self.assertEqual(list(rows), [*names, "Remember after restart"])
+
+            def color(key):
+                return cmd.get_color_tuple(cmd.get(key))
+
+            # every row sets what the table says; a plain row ends a gradient
+            for name, top, bottom in filter(None, action_toolbar.BACKGROUNDS):
+                rows[name].trigger()
+                rgb = tuple(int(top[i : i + 2], 16) / 255 for i in (0, 2, 4))
+                self.assertEqual(cmd.get_setting_boolean("bg_gradient"), bool(bottom))
+                for a, b in zip(color("bg_rgb_top" if bottom else "bg_rgb"), rgb):
+                    self.assertAlmostEqual(a, b, 2, name)
+            self.assertEqual(saved, [None] * len(names))  # nothing is kept
+
+            # the row in use is the only one with a frame: its icon differs
+            rows["White"].trigger()
+            menu.aboutToShow.emit()
+            pixel = {
+                n: rows[n].icon().pixmap(16, 16).toImage().pixelColor(2, 2).name()
+                for n in ("White", "Sky", "Black")
+            }
+            self.assertNotEqual(pixel["White"], "#ffffff")
+            self.assertEqual(pixel["Black"], "#000000")
+
+            # "Remember" keeps the four settings now and after each pick
+            del saved[:]
+            rows["Remember after restart"].setChecked(True)
+            rows["Studio"].trigger()
+            self.assertEqual(len(saved), 2)
+            self.assertEqual(len(saved[1]), 4)
+            rows["Remember after restart"].setChecked(False)
+            self.assertIsNone(saved[-1])
+
+        # the next start: applied only when a pymolrc may run (not -k)
+        with (
+            mock.patch.object(theme, "background", return_value=saved[1]),
+            mock.patch.object(theme, "object_palette", return_value="default"),
+            mock.patch.object(action_toolbar.pymol.invocation.options, "pymolrc", []),
+        ):
+            cmd.reinitialize()
+            bar = action_toolbar.ActionToolbar(cmd, defaultdict(list))
+        self.assertTrue(bar.remember_background.isChecked())
+        self.assertTrue(cmd.get_setting_boolean("bg_gradient"))
+        self.assertAlmostEqual(color("bg_rgb_bottom")[0], 0xC8 / 255, 2)
 
     def test_palette(self):
         from unittest import mock
@@ -106,6 +172,10 @@ class TestActionToolbar(testing.PyMOLTestCase):
         self.assertEqual(palettes.active, "default")
         view = bar.palettes
         role = Qt.ItemDataRole.UserRole
+        # 16a: the menu says what it colors, above the list
+        caption = bar.colors.menu().actions()[0].defaultWidget()
+        self.assertEqual(caption.text(), "Palette: colors of objects and chains")
+        self.assertEqual(caption.objectName(), "menu_title")
         names = [view.item(i).data(role) for i in range(view.count())]
         self.assertEqual(names, ["default", *palettes.PALETTES])
         self.assertEqual(view.item(2).text(), "Deep (white background)")
