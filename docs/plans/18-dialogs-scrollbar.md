@@ -1,6 +1,7 @@
 # 18 — Dialog sizes and the scroll bar of the sequence viewer
 
-[Roadmap](../../PLAN.md) · Request 2026-11-18 · **Planned, nothing built.**
+[Roadmap](../../PLAN.md) · Request 2026-11-18 · **18a done 2026-11-18 in
+4.15.1** (see "18a result"). 18b is decided: a Qt scroll bar, option B.
 Two leftovers of [step 3](03-modern-ui.md): "spacing of the remaining
 dialogs" and "sequence viewer still drawn by the core".
 
@@ -53,11 +54,38 @@ look in the one file that draws every scroll bar of the viewport.**
   Movie, Properties.
 - Commit: `fix(ui): dialogs open at the size of their content`.
 
+### 18a result, 4.15.1
+
+- **Fixed one level lower than planned,** in `pymol.Qt.utils.loadUi`, which
+  `load_form` and the APBS plugin both call. A `QUiLoader` subclass returns
+  the given widget for the top of the form, so layout, title and size land
+  on the dialog itself. This is what the function's docstring always said
+  ("load .ui file into widget") and what plugins written for PyQt expect.
+  The named children, layouts included, are set as attributes.
+- `load_form` then opens a form at least as large as its content needs. A
+  form without a size in its `.ui` file fits its content by itself.
+- The 'floating' panels, the plugin rows and the Draw/Ray popup use the same
+  loader and get the form's title and layout too.
+- **Found on the way:** Setting > Edit keyboard shortcuts did not open at
+  all. `shortcut_menu_gui.py` looked for the keys in `vars(Qt)`; in PySide6
+  they are members of `Qt.Key`. One line.
+- Measured in the real window on WSLg at 150 %: Plugin Manager 576 x 616
+  (all four tabs, title "Plugin Manager"), Fetch 300 x 364, Movie Export
+  255 x 436, Save PNG 283 x 196, Colors 364 x 329, Properties 400 x 500,
+  Advanced Settings 400 x 500, Shortcuts 700 x 700; none below its content.
+  The Draw/Ray popup is unchanged.
+- Check: `testing/tests/api/forms.py` loads every form.
+- Not opened in the real window: APBS, Lighting Settings, the volume editor,
+  the import dialogs for trajectories, maps and MTZ files. 100 and 200 %
+  were not tried.
+- `forms/shortcut_menu.ui` is loaded by nothing. Left in place: deleting a
+  file of `data` or `forms` is the user's call.
+
 ### Options
 
 | | Option | Note |
 | --- | --- | --- |
-| A | Fit the content, as above. | Recommended. One place. |
+| A | Fit the content, as above. Chosen (not answered, the recommendation). | Recommended. One place. |
 | B | A, and remember size and position of each dialog in `QSettings` (`saveGeometry`). | About six more lines in `load_form`. Useful if the user often resizes the same dialog; otherwise state that can go stale after a monitor change. |
 | C | Edit the sizes in the 23 `.ui` files. | Does not survive another UI scale. Not recommended. |
 

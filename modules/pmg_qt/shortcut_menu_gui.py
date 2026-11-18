@@ -13,11 +13,8 @@ QSI = QtGui.QStandardItem  # For brevity
 
 
 def get_shortcut_key_map():
-    shortcut_key_map = {}
-    for key, value in vars(Qt).items():
-        if isinstance(value, Qt.Key):
-            shortcut_key_map[value] = key.partition('_')[2]
-    return shortcut_key_map
+    # PySide6: the keys are members of the enum, not attributes of Qt
+    return {key: key.name.partition('_')[2] for key in Qt.Key}
 
 
 _SHORTCUT_KEY_MAP = get_shortcut_key_map()

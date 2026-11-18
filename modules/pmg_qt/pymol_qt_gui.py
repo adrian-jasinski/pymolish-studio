@@ -563,6 +563,11 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         uifile = os.path.join(os.path.dirname(__file__), 'forms', '%s.ui' % name)
         form = pymol.Qt.utils.loadUi(uifile, widget)
+        # The size in a .ui file is often smaller than the content needs:
+        # open at least that large. A form without a size fits its content
+        # by itself when it is shown.
+        if widget.testAttribute(Qt.WidgetAttribute.WA_Resized):
+            widget.resize(widget.sizeHint().expandedTo(widget.size()))
 
         if dialog == 'floating':
             dialog = QtWidgets.QDockWidget(widget.windowTitle(), self)

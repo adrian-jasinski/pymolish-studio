@@ -4,6 +4,22 @@ CHANGE LOG
 
 2026-11-18 pymolish-studio
 
+	* 4.15.1
+
+	* Dialogs
+	  - Fix: dialogs built from a .ui form open at the size their
+	    content needs, have the form's title and their content
+	    follows the edge of the window. The Plugin Manager opened
+	    too small, with the title "PyMOL" and cut-off tabs.
+	  - Behavior change: pymol.Qt.utils.loadUi(uifile, widget) sets
+	    the form up on the widget itself and returns the widget.
+	    Before, the form became a child of the widget, which then
+	    had no layout. The children are attributes as before.
+	  - Fix: Setting > Edit keyboard shortcuts opens again. Its
+	    module failed to import since the switch to PySide6.
+
+2026-11-18 pymolish-studio
+
 	* 4.15.0
 
 	* Background menu and palette caption

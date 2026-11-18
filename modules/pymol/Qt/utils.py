@@ -265,14 +265,30 @@ def getMonospaceFont(size=9):
 
 def loadUi(uifile, widget):
     """
-    Load .ui file into widget
+    Load .ui file into widget: the layout, title and size of the form become
+    the widget's own, and every named child an attribute. Returns the widget.
 
     @param uifile: filename
     @type uifile: str
     @type widget: QtWidgets.QWidget
     """
     from PySide6.QtUiTools import QUiLoader
-    return QUiLoader().load(uifile, widget)
+
+    class Loader(QUiLoader):
+        def createWidget(self, class_name, parent=None, name=""):
+            # Without this the form becomes a child of `widget`, which then
+            # has no layout: wrong size, no title, content that does not
+            # follow the edge.
+            if parent is None:
+                return widget
+            return super().createWidget(class_name, parent, name)
+
+    Loader().load(uifile)
+    for child in widget.findChildren(QtCore.QObject):
+        name = child.objectName()
+        if name and not hasattr(widget, name):
+            setattr(widget, name, child)
+    return widget
 
 
 class PopupOnException:
