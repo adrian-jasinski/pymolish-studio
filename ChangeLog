@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-18 pymolish-studio
 
+	* 4.16.0
+
+	* Legacy menu rows
+	  - Removed from the Display menu: Internal GUI, Internal
+	    Prompt, Internal Feedback and Overlay. Removed from the
+	    Setting menu: Overlay Text. The settings internal_gui,
+	    internal_prompt, internal_feedback and overlay still work
+	    when typed.
+
+2026-11-18 pymolish-studio
+
 	* 4.15.1
 
 	* Dialogs

@@ -415,17 +415,6 @@ class PyMOLDesktopGUI(object):
                     ]
                 ]),
                 ('separator',),
-                ('check', 'Internal GUI', 'internal_gui', 1),
-                ('check', 'Internal Prompt', 'internal_prompt', 1),
-                ('menu', 'Internal Feedback', [
-                    ('radio', str(val), 'internal_feedback', val)
-                    for val in [0, 1, 3, 5]
-                ]),
-                ('menu', 'Overlay', [
-                    ('radio', str(val), 'overlay', val)
-                    for val in [0, 1, 3, 5]
-                ]),
-                ('separator',),
                 ('check', 'Stereo', 'stereo', 1),
                 ('menu', 'Stereo Mode', [
                     ('command', 'Anaglyph Stereo', 'stereo anaglyph'),
@@ -770,7 +759,6 @@ class PyMOLDesktopGUI(object):
                 ('check', 'Auto-Remove Hydrogens', 'auto_remove_hydrogens', 1),
                 ('separator',),
                 ('check', 'Show Text (Esc)', 'text'),
-                ('check', 'Overlay Text', 'overlay'),
             ]),
             ('menu', 'Scene', [
                 ('command', 'Scenes', self.scene_panel_menu_dialog),
