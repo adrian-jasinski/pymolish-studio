@@ -24,6 +24,7 @@ Numbers in brackets are pymolish-studio versions; the
 | Menus | The right-click menu opens at the pointer as a normal menu, with icons (4.5.18). |
 | Shorter menus | The A menu of an object has 10 rows instead of 19; the less used ones are under "more". Right click on a row of the Objects panel gives Show as, Color, rename, duplicate and delete at once (4.13.0). |
 | Name | Title, About box and icon say pymolish-studio (4.8.0). |
+| Movie timeline | Movie > Timeline: the movie as a list of shots (scenes, views, zoom, turn, rock, nutate, states, hold) with a strip and a table; record views as you move, one-click tours, fades, export with an estimate (4.18.0). |
 | Sequence viewer | The scroll bar under the sequence is a rounded Qt scroll bar; the marks of the selection show through it (4.17.0). |
 | Background | The button after the palette sets the background: plain colors, two blues and six gradients. "Remember after restart" in the same menu keeps the choice (4.15.0). |
 | Object colors | The palette button in the toolbar shows the palettes as color strips. Picking one recolors the loaded objects, and new objects and "by chain" follow it. The choice is remembered (4.10.0, 4.13.1). |

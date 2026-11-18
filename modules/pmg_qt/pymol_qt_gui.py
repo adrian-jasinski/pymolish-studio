@@ -234,6 +234,11 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.scene_panel)
         self.scene_panel.hide()
 
+        from .timeline import TimelinePanel
+        self.timeline_panel = TimelinePanel(cmd, self)
+        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.timeline_panel)
+        self.timeline_panel.hide()
+
         '''
         # command completion
         completer = QtWidgets.QCompleter(cmd.kwhash.keywords, self)
@@ -407,6 +412,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         panels.addAction(self.ext_window.toggleViewAction())
         panels.addAction(self.object_panel.toggleViewAction())
         panels.addAction(self.scene_panel.toggleViewAction())
+        panels.addAction(self.timeline_panel.toggleViewAction())
         panels.addAction('Builder', self.open_builder_panel)
         panels.addSeparator()
         panels.addAction('Reset Layout', self.reset_layout)
@@ -932,6 +938,11 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.scene_panel.refresh()
         self.scene_panel.list.setFocus()
 
+    def timeline_panel_dialog(self):
+        self.timeline_panel.show()
+        self.timeline_panel.raise_()
+        self.timeline_panel.refresh()
+
     def show_about(self):
         QtWidgets.QMessageBox.about(
             self,
@@ -982,6 +993,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.feedback_timer.start(500)
         self.object_panel.poll()
         self.scene_panel.poll()
+        self.timeline_panel.poll()
 
     def doPrompt(self):
         self.doTypedCommand(self.command_get())

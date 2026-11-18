@@ -4,6 +4,36 @@ CHANGE LOG
 
 2026-11-18 pymolish-studio
 
+	* 4.18.0
+
+	* Movie timeline
+	  - New panel "Timeline" (Movie > Timeline, Display > Panels):
+	    the movie as a list of shots. A strip shows the shots as
+	    blocks as wide as they last, scenes with their thumbnail,
+	    and the playhead; click or drag on it to go to a moment.
+	    The table under it sets seconds, start (smooth, linear,
+	    cut) and an effect per shot. The panel opens by itself
+	    when a movie appears.
+	  - Shots: a scene, the view of now, zoom to a selection, turn
+	    360 degrees, rock, nutate, play the states, hold.
+	  - Record: while it is on, each view that comes to rest after
+	    you moved it is added as a shot. "Add view" adds one.
+	  - Tour: one click makes a movie that visits every scene, or
+	    flies to every ligand, chain or selection and turns once.
+	  - Effects: fade a surface or the cartoon in or out over a
+	    shot.
+	  - Export: MP4 in three sizes and GIF, drawn or ray traced,
+	    with the number of frames, the time and the size of the
+	    frames shown before rendering; "Copy as script".
+	  - New module pymol.shots (build, shot, tour, estimate,
+	    describe). The movie it builds is an ordinary one made
+	    with mset, mview and mdo; the shot list itself is not
+	    stored in a session file.
+	  - While the Timeline panel is open, the keyframe strip the
+	    core draws under the viewport (movie_panel) is off.
+
+2026-11-18 pymolish-studio
+
 	* 4.17.1
 
 	* The old internal GUI is removed

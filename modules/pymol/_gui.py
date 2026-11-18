@@ -21,6 +21,7 @@ class PyMOLDesktopGUI(object):
     file_save_wrl = None
     file_save_pov = None
     file_save_mpeg = None
+    timeline_panel_dialog = None
     file_save_mov = None
     file_save_mpng = None
     file_save_glb = None
@@ -241,6 +242,8 @@ class PyMOLDesktopGUI(object):
                 ('command', 'Make (pk1) Neutral [Ctrl-Shift-U]',    'alter pk1, formal_charge=0'),
             ]),
             ('menu', 'Movie', [
+                ('command', 'Timeline', self.timeline_panel_dialog),
+                ('separator',),
                 ('menu', 'Append', [
                     ('command', str(i) + ' second', lambda i=i: cmd.movie.add_blank(i))
                     for i in [.25, .5, 1, 2, 3, 4, 6, 8, 12, 18, 24, 30, 48, 60]

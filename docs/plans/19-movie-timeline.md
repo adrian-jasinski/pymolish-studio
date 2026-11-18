@@ -1,9 +1,9 @@
 # 19 — Movie timeline
 
-[Roadmap](../../PLAN.md) · Request 2026-11-18 · **Planned, nothing built.**
-The user asked on the same day for more and new ways to edit a movie from
-the GUI: they are options D to I in "More ways to edit a movie", with a new
-order of slices. Not built on purpose: the request excluded this step.
+[Roadmap](../../PLAN.md) · Request 2026-11-18 · **Built 2026-11-18 in 4.18.0:**
+the shot list (D), the strip (A), record (E), tours (F), effects (G), easing
+(H) and export with an estimate (I). What is built, what differs from the
+plan and what is still open is under "Result, 4.18.0".
 Replaces row 8 of the workspace table in [step 3](03-modern-ui.md)
 ("Timeline. Not planned").
 
@@ -164,8 +164,80 @@ played, but opens for editing only after "Start over from the scenes".
 - Title `remove: movie panel of the core`; suite, sanitizer job, PSE round
   trip, lines before and after.
 
+## Result, 4.18.0
+
+Request: "add movie timeline and other movie options". No option was
+named, so the recommended set was built, all of D to I with A as the
+picture of the list.
+
+| Part | Where | What it does |
+| --- | --- | --- |
+| Shot builder | `modules/pymol/shots.py` | `build(shots)` clears the movie and makes it again from the list with `mset`, `mview store` and `mdo`. Eight kinds: scene, view, zoom, turn, rock, nutate, states, hold. `tour`, `estimate`, `describe`. |
+| Panel | `modules/pmg_qt/timeline.py`, dock `dock_timeline` | Buttons Add, Add view, Record, Tour, Up, Down, Delete, Clear, Play, Export; the strip; the table (Shot, Target, Seconds, Start, Effect). |
+| Window | `pymol_qt_gui.py`, `_gui.py` | Movie > Timeline, Display > Panels > Timeline, polled from the window's timer. |
+
+**Where it differs from the plan:**
+
+- **The shot list is the model, not the keyframes of the core.** A turn or
+  a rock is several keyframes; reading them back as "one turn" would be a
+  guess. So the list lives in the panel and the movie is rebuilt from it
+  after every edit. Consequence: the list is gone after a restart or a
+  session load. The movie itself is in the session as always, plays and
+  scrubs in the panel, and "Add" starts a new list. Storing the list in the
+  session file would change what a PSE file contains: question 5.
+- **A movie made elsewhere is never replaced silently:** the first shot
+  added to it asks.
+- **No new core call.** `cmd.get_mview()` (slice 19a) was only needed to
+  draw keyframe marks for movies made elsewhere; the strip shows such a
+  movie as one block.
+- **The strip selects and scrubs; it does not drag.** Shots are reordered
+  with Up and Down (Alt+Up, Alt+Down) and stretched by typing seconds.
+- **Easing is the column "Start":** smooth (slow in and out), linear, or
+  cut. It is `power` of `mview`.
+- **Effects are four fades,** of the surface or the cartoon, in or out,
+  over the whole shot. They set a global setting from `mdo`.
+- **Templates are the Tour menu and the Add menu**, not a separate list.
+- **One timeline at a time:** opening the panel switches the core's
+  keyframe strip (`movie_panel`) off, closing it switches it on again.
+- **The Movie menu is unchanged** and the core's movie panel is not
+  removed: both wait for an answer (questions 6 and 7).
+
+**Measured in the real window** (WSLg, 150 %, software renderer, 1oky):
+
+- A movie of five shots, 840 frames: the strip with two scene thumbnails,
+  the playhead after a click, the table. One capture looked at.
+- Cost of a fade: stepping through frames with a surface shown gave 19.9
+  frames per second in a shot without an effect and 22.2 in the shot with
+  "fade in surface". No measurable cost on this structure; a much larger
+  surface was not tried.
+- Estimate for 1280 x 720, drawn: 840 frames, about 97 seconds, about
+  241 MB of PNG frames. No movie file was rendered in this check.
+
+Checks: `testing/tests/api/shots.py` (turn, scenes with flight and cut,
+rock, nutate, states, fade, clearing, tours, script, estimate) and
+`testing/tests/api/timeline.py` (add, edit, move, delete, seek, record, a
+movie replaced from outside, opening by itself).
+
+**Not done:**
+
+- Rendering through the Export presets was not run; they call the existing
+  `movie.produce`, which needs ffmpeg or ImageMagick on the machine.
+- Dragging on the strip, undo, object motions, keyframe marks for movies
+  made elsewhere.
+- In the default window the dock shares the bottom edge with the command
+  area, and its table shows two rows; it is meant to be made taller or
+  floated.
+
 ## Questions
 
+5. Keep the shot list after a restart? It would be one more entry in the
+   session file (PSE); older versions would ignore it. Recommended: yes,
+   but it changes file output, so it needs your word.
+6. Shorten the Movie menu? Program > Camera Loop, Scene Loop and State
+   Loop (58 rows) do what Add and Tour do now. Recommended: remove them.
+7. Remove the keyframe strip the core draws under the viewport (19g)? It
+   is the only editor for object motions and hand-made keyframes.
+   Recommended: keep it until someone misses nothing in the panel.
 0. Which of D to I should be built, and is the recommended order right?
    Recommended: D, A, E, F, I, then H and G.
 1. A, B or C?
