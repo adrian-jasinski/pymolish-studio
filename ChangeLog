@@ -4,6 +4,38 @@ CHANGE LOG
 
 2026-11-18 pymolish-studio
 
+	* 4.19.2
+
+	* Action menu (the A button of the Objects panel)
+	  - New row "select" for an object and a group: one row per
+	    chain and per kind of molecule that the object has
+	    (protein, nucleic, membrane, ligand, ions, solvent, other).
+	    A click makes it the selection "sele", in place of what was
+	    selected.
+	  - New row "split": "by chain" and "by type" make one object
+	    per chain or kind, <object>_<chain> or <object>_<kind>, in
+	    a group <object>_chains or <object>_types, and switch the
+	    object off.
+	  - The "preset" row is gone from the A menu of an object, a
+	    group, a selection and "all": presets are in the toolbar.
+	    The right-click menus of the viewport and the sequence
+	    viewer keep it, for a preset on a few atoms. The preset.*
+	    functions are unchanged.
+
+	* New command (cmd.* API): split_types selection [, group].
+	  One new object per kind of molecule; an atom goes to the
+	  first kind that matches, in the order above. "membrane" is a
+	  list of lipid residue names (POPC, POPE, DPPC, CHL1, ...).
+
+	* Presets
+	  - Fix: after "illustration" every other preset stayed flat
+	    and unshaded, because the light of the look "flat" stayed
+	    on. The next preset now switches it back to the standard
+	    light. A look picked from the list as such stays until
+	    another look is picked.
+
+2026-11-18 pymolish-studio
+
 	* 4.19.1
 
 	* Action toolbar

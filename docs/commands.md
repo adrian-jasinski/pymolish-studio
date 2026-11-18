@@ -16,6 +16,7 @@ replace the commands of the pymolish plugin; remove the plugin from
 | `copy_group group [, new_group [, suffix]]` | Copies a group with all members, groups inside it included. | `copy_group poses, backup, _bak` |
 | `sort_group group [, reverse]` | Sorts the members by name, ignoring case. | `sort_group poses` |
 | `extract_chain selection [, chains [, group]]` | Makes one new object per chain, `<object>_<chain>`. The source is not changed. | `extract_chain poses, A+B, poses_AB` |
+| `split_types [selection [, group]]` | Makes one new object per kind of molecule, `<object>_<kind>`: protein, nucleic, membrane, ligand, ions, solvent, other. The source is switched off. | `split_types 1abc` |
 
 | `cluster_ligands selection [, count [, cutoff [, prefix]]]` | Sorts objects into groups by where they are: by a distance cutoff, or into a given number of groups. | `cluster_ligands poses` |
 | `color_group_with_gradient selection [, color]` | Gives every object its own shade of one color, dark to light. | `color_group_with_gradient poses, orange` |

@@ -3,7 +3,8 @@
 [Roadmap](../../PLAN.md) · Request 2026-11-16 · **15a done 2026-11-16 in
 4.14.0, 15d in 4.14.3, 15f in 4.14.4.** 15b, 15c and 15e are open and wait for
 the user. **15g and 15h done 2026-11-18 in 4.14.5, 15i (visible objects, two
-presets for complexes) in 4.19.1** (the last sections before "Skipped"). They change three decisions below: the looks are part of the
+presets for complexes) in 4.19.1, 15j (the light after "illustration") in
+4.19.2** (the last sections before "Skipped"). They change three decisions below: the looks are part of the
 one preset list, they leave the background alone, and three presets stop
 recoloring the protein.
 
@@ -385,6 +386,28 @@ Done in 4.19.1.
 - Not covered: an antibody whose framework 2 differs from both patterns and
   whose chains are not named H and L (some mouse lambda chains); it then
   gets the interaction picture. T-cell receptors are not recognized.
+
+## Request 2026-11-18, third: after "illustration" the cartoon stays flat (15j)
+
+Fixed in 4.19.2.
+
+- **Cause:** "illustration" switches the look "flat" on (full ambient
+  light, no shading). A look is a set of global settings and no preset
+  switched it off, so every preset after it drew unshaded cartoons.
+- **Fix:** `preset.illustration` notes that it set the light; the next
+  preset (`_prepare`) goes back to the standard light. A look picked from
+  the list clears the note, so a look the user chose stays.
+- Checked in the real window: illustration, then pretty, on 1N8Z.
+- Check: `testing/tests/api/preset.py` (`testIllustrationLight`).
+- Not changed: the colors. "illustration" colors the protein in shades of
+  blue; presets that keep the colors of the protein (classified,
+  technical, ball and stick, the ligand presets) show those blues until a
+  coloring preset or the C menu changes them. Question: should the next
+  preset give back the colors from before "illustration"? It needs the
+  colors of every atom stored. Recommended: no; pick "pretty" or a palette.
+- Not kept across a session file: after loading a session saved with
+  "illustration" on, the flat light stays until "standard light" is
+  picked.
 
 ## Skipped
 

@@ -199,6 +199,7 @@ def get_auto_arg_list(self_cmd=cmd):
         'space'          : [ self_cmd.space_sc               , 'space'           , ''   ],
         'spectrum'       : aa_exp_e,
         'split_chains'   : aa_sel_e,
+        'split_types'    : aa_sel_e,
         'split_states'   : aa_obj_c,
         'super'          : aa_sel_c,
         'stereo'         : [ self_cmd.stereo_sc              , 'option'          , ''   ],

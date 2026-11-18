@@ -2,7 +2,9 @@
 
 [Roadmap](../../PLAN.md) · Request 2026-11-14 · **Done 2026-11-16 in 4.13.0**:
 14a in 4.10.1, 14b on 2026-11-14, 14c in 4.13.0. What 14c did, and where it
-left the draft, is under "14c result".
+left the draft, is under "14c result". **14d (select and split rows, presets
+out of the A menus) done 2026-11-18 in 4.19.2**, the last section before
+"Skipped".
 
 **The red squares are a rendering artifact, fixed in one line (14a, do it
 early). The real cleanup (14b, 14c) waits until steps 12 and 13 have added
@@ -163,6 +165,48 @@ The draft, as written before the work:
   the object, group and selection menus parses.
 - Report rows and `menu.py` lines before and after. Target: fewer of both.
 - Commit: `simplify(ui): merge duplicated action menus`.
+
+## Request 2026-11-18: select and split in the A menu, presets out (14d)
+
+Done in 4.19.2.
+
+- **"select"** in the A menu of an object and of a group: one row per chain
+  and one per kind of molecule, only those the object has. The list is
+  made when the submenu opens (`menu.select_part`). A click makes it the
+  selection `sele` and replaces what was selected.
+- **"split"**: "by chain" (`extract_chain` into the group `<object>_chains`)
+  and "by type" (new command `split_types` into `<object>_types`). Both
+  switch the object off, so the parts are what is seen. A second click
+  stops with "already exists" and changes nothing.
+- **Kinds** (`grouping.TYPES`, one table for select and split): protein
+  (`polymer.protein`), nucleic (`polymer.nucleic`), membrane (a list of 23
+  lipid residue names of CHARMM and GROMACS systems), ligand (`organic`),
+  ions (`inorganic`), solvent, other. An atom belongs to the first that
+  matches, so the parts of a split add up to the object.
+- **"preset" left the A menus** of object, group, selection and "all". The
+  right-click menus of the viewport and the sequence viewer keep it: there
+  a preset on one chain or residue has no other place.
+- The A menu of an object has 11 rows (was 10), of a group 14 (was 13).
+- Checked in the real window on 1N8Z (dark theme, 150 %): chains A, B, C
+  and protein, ligand, ions, solvent listed; both splits made their group.
+- Checks: `testing/tests/api/grouping.py` (`test_split_types`,
+  `test_select_and_split_rows`), `menu.py`.
+
+| Option | Taken | Why |
+| --- | --- | --- |
+| A row replaces the selection | yes | One click, one result. |
+| A row adds to the selection (chain A, then chain B) | no | Open question 1. |
+| Split results in a group | yes | Twenty chains stay one row in the panel. |
+| DNA and RNA as two kinds | no | Old files name DNA residues A, C, G, T; a strand would be torn in two. |
+
+Questions:
+
+1. Should a second click on "select" add to the selection instead of
+   replacing it? Recommended: no.
+2. Should "split" also offer "by state" (today under more > state > split)?
+   Recommended: yes, and remove it there.
+3. Cholesterol from a crystal structure (`CLR`) counts as ligand, not as
+   membrane. Right?
 
 ## Skipped
 

@@ -1206,7 +1206,6 @@ def sele_action(self_cmd, sele, picked=0):
               [ 0, ''               ,''                             ],
             ]) + [
               [ 1, 'modify', modify_sele(self_cmd, sele) ],
-              [ 1, 'preset'         ,presets(self_cmd, sele)         ],
               [ 1, 'find', find(self_cmd, sele) ],
               [ 1, 'align', sele_align(self_cmd, sele) ],
               [ 0, ''               ,''                             ],
@@ -1221,6 +1220,25 @@ def sele_action(self_cmd, sele, picked=0):
               [ 1, 'compute'        , compute(self_cmd, sele) ],
               ]
 
+
+def select_part(self_cmd, sele):
+    # only the chains and kinds of molecule that the object has
+    from pymol import grouping
+    fmt = "cmd.select('''%s''',enable=1)"
+    return [[ 2, 'Select:', '' ]] + [
+        [ 1, 'chain ' + (chain or '(no name)'),
+          fmt % ('(%s) & chain "%s"' % (sele, chain)) ]
+        for chain in self_cmd.get_chains(sele)
+    ] + [[ 0, '', '' ]] + [
+        [ 1, kind, fmt % part ] for kind, part in grouping.types(sele, self_cmd)
+    ]
+
+def split(self_cmd, sele):
+    # new objects in a group; the object itself is switched off
+    return [[ 2, 'Split:', '' ],
+            [ 1, 'by chain', 'cmd.extract_chain("%s",group="%s_chains");cmd.disable("%s")' % (sele, sele, sele) ],
+            [ 1, 'by type', 'cmd.split_types("%s",group="%s_types")' % (sele, sele) ],
+            ]
 
 def mol_more(self_cmd, sele, group=0):
     return [[ 2, 'More:'     , ''                       ],
@@ -1257,7 +1275,8 @@ def mol_action(self_cmd, sele, group=0):
             [ 0, ''             , ''                       ],
           ] if group else []) + [
             [ 1, 'clean'     , clean(self_cmd, sele)    ],
-            [ 1, 'preset'  ,   presets(self_cmd, sele)       ],
+            [ 1, 'select'    , lambda: select_part(self_cmd, sele) ],
+            [ 1, 'split'     , split(self_cmd, sele)    ],
             [ 1, 'find',     find(self_cmd, sele) ],
             [ 1, 'align',     mol_align(self_cmd, sele) ],
             [ 1, 'hydrogens' , hydrogens(self_cmd, sele)    ],
@@ -1451,7 +1470,6 @@ def ramp_color(self_cmd, sele):
 
 def all_action(self_cmd, sele):
     return [[ 2, 'Action:'     , ''                      ],
-              [ 1, 'preset'  , presets(self_cmd, "all")     ],
               [ 1, 'find', find(self_cmd, "all") ],
               [ 0, ''          ,''                                              ],
               [ 1, 'hydrogens' ,hydrogens(self_cmd, sele)     ],

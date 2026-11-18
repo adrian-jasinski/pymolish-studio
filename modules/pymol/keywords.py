@@ -287,6 +287,7 @@ def get_command_keywords(self_cmd=cmd):
         'spheroid'      : [ self_cmd.spheroid          , 0 , 0 , ''  , parsing.STRICT ],
         'splash'        : [ self_cmd.splash            , 0 , 0 , ''  , parsing.STRICT ],
         'split_chains'  : [ self_cmd.split_chains      , 0 , 0 , ''  , parsing.STRICT ],
+        'split_types'   : [ self_cmd.split_types       , 0 , 0 , ''  , parsing.STRICT ],
         'split_states'  : [ self_cmd.split_states      , 0 , 0 , ''  , parsing.STRICT ],
         '_special'      : [ self_cmd._special          , 0 , 0 , ''  , parsing.STRICT ],
         'stereo'        : [ self_cmd.stereo            , 0 , 0 , ''  , parsing.STRICT ],

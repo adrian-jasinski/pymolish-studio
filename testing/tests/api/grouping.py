@@ -90,6 +90,44 @@ class TestGrouping(testing.PyMOLTestCase):
         self.assertRaises(CmdException, cmd.extract_chain, "g", "Z")
         self.assertEqual(cmd.extract_chain("M1"), ["M1_"])  # blank chain
 
+    def test_split_types(self):
+        cmd.fab("AG", "c")
+        cmd.pseudoatom("c", resn="ZN", elem="Zn", hetatm=1)
+        cmd.pseudoatom("c", resn="POPC", name="C1", elem="C", hetatm=1)
+        cmd.pseudoatom("c", resn="HOH", name="O", elem="O", hetatm=1)
+        kinds = [kind for kind, _ in grouping.types("c")]
+        self.assertEqual(kinds, ["protein", "membrane", "ions", "solvent"])
+        made = cmd.split_types("c", "parts")
+        self.assertEqual(made, ["c_protein", "c_membrane", "c_ions", "c_solvent"])
+        self.assertEqual(grouping.members("parts"), made)
+        # every atom went to one object, and the source is switched off
+        self.assertEqual(
+            sum(cmd.count_atoms("%" + name) for name in made), cmd.count_atoms("%c")
+        )
+        self.assertNotIn("c", cmd.get_names("objects", enabled_only=1))
+        self.assertRaises(CmdException, cmd.split_types, "c")  # exists
+
+    def test_select_and_split_rows(self):
+        # the A menu of an object: chains and kinds that the object has
+        cmd.alter("m2 and name CA+CB", "chain='A'")
+        cmd.alter("m2 and not chain A", "chain='B'")
+        rows = {row[1]: row[2] for row in menu.mol_action(cmd, "m2") if row[0] == 1}
+        self.assertNotIn("preset", rows)
+        select = {row[1]: row[2] for row in rows["select"]() if row[0] == 1}
+        self.assertEqual(list(select), ["chain A", "chain B", "protein"])
+        cmd.do(select["chain A"], echo=0)
+        self.assertEqual(cmd.count_atoms("sele"), 2)
+        cmd.do(select["protein"], echo=0)  # replaces the selection
+        self.assertEqual(cmd.count_atoms("sele"), 10)
+        split = {row[1]: row[2] for row in rows["split"] if row[0] == 1}
+        cmd.do(split["by chain"], echo=0)
+        self.assertEqual(grouping.members("m2_chains"), ["m2_A", "m2_B"])
+        self.assertNotIn("m2", cmd.get_names("objects", enabled_only=1))
+        cmd.do(split["by type"], echo=0)
+        self.assertEqual(grouping.members("m2_types"), ["m2_protein"])
+        for m in (menu.sele_action(cmd, "m2"), menu.all_action(cmd, "all")):
+            self.assertNotIn("preset", [row[1] for row in m])
+
     def test_menu(self):
         rows = {row[1]: row[2] for row in menu.group_action(cmd, "g") if row[0] == 1}
         cmd.do(rows["sort members"], echo=0)

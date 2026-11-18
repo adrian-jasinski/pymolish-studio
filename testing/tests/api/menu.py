@@ -289,10 +289,10 @@ class TestMenu(testing.PyMOLTestCase):
 
         mol = labels(menu.mol_action(cmd, 'm1'))
         self.assertEqual(mol[:2], ['rename object', 'duplicate object'])
-        self.assertEqual(len(mol), 10)
+        self.assertEqual(len(mol), 11)
         group = labels(menu.group_action(cmd, 'g1'))
         self.assertEqual(group[:2], ['rename group', 'duplicate group'])
-        self.assertEqual(len(group), 13)
+        self.assertEqual(len(group), 14)
         more = self._to_dict(menu.mol_action(cmd, 'm1'))['more']
         self.assertIn('copy to object', labels(more))
         self.assertNotIn('copy to object', labels(self._to_dict(

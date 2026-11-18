@@ -29,6 +29,9 @@ lig_excl = "(resn MSE)"
 lig_sele = "((hetatm or not "+prot_and_dna_sele+") and not ("+solv_sele+"|"+ion_sele+"|"+lig_excl+"))"
 lig_and_solv_sele = "("+lig_sele+"|"+solv_sele+")"
 
+# "illustration" switched the look "flat" on: the next preset switches it off
+_lit_by_preset = False
+
 def get_sname_oname_dname(selection, _self=cmd):
     '''
     Get a named selection, object names and a distance (polar contacts) name
@@ -52,6 +55,8 @@ def _prepare(selection,polar_contacts=None,_self=cmd):
 
     s, selection, dname = get_sname_oname_dname(selection, _self=cmd)
 
+    if _lit_by_preset:
+        look('default', _self=cmd)
     cmd.cartoon("auto",s)
     cmd.hide("everything",s)
 
@@ -604,6 +609,8 @@ def illustration(selection='*', _self=cmd):
     _self.set('transparency', 0.85, s)
     _self.set('surface_color', 'white', selection)
     look('flat', _self=_self) # the picture is its outline
+    global _lit_by_preset
+    _lit_by_preset = True
 
     _self.delete(s)
 
@@ -668,6 +675,8 @@ def look(name, _self=cmd):
     Give the whole scene the light and outline of LOOKS[name]. The
     background stays as it is.
     '''
+    global _lit_by_preset
+    _lit_by_preset = False
     for key in {key for settings in LOOKS.values() for key in settings}:
         _self.unset(key)
     for key, value in LOOKS[name].items():

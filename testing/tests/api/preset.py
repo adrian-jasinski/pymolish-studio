@@ -222,6 +222,21 @@ class TestPreset(testing.PyMOLTestCase):
         preset.look('default')
         self.assertAlmostEqual(cmd.get_setting_float('ray_trace_trans_cutoff'), 0.05)
 
+    def testIllustrationLight(self):
+        # the flat light of "illustration" ends with the next preset; a
+        # look that was picked as such stays
+        cmd.fab('ACDEFG', 'm1')
+        self.addCleanup(preset.look, 'default')
+        preset.illustration('m1')
+        self.assertEqual(cmd.get_setting_float('ambient'), 1)
+        preset.pretty('m1')
+        self.assertAlmostEqual(cmd.get_setting_float('ambient'), 0.14)
+        self.assertEqual(cmd.get_setting_int('ray_trace_mode'), 0)
+        preset.illustration('m1')
+        preset.look('flat')
+        preset.pretty('m1')
+        self.assertEqual(cmd.get_setting_float('ambient'), 1)
+
     def testMenuSolvent(self):
         # one solvent row in the menu instead of "(with solvent)" twins
         cmd.load(self.datafile('1oky.pdb.gz'))

@@ -54,6 +54,7 @@ LABELS = {
     "ss": "dna",
     "clean": "sparkles",
     "select": "mouse-pointer-click",
+    "split": "scissors",
     "create object": "copy-plus",
     "copy to object": "copy",
     "duplicate": "copy",
