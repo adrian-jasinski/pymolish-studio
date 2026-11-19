@@ -25,9 +25,18 @@ def testDump():
     pytest.skip("TODO")
 
 
-@testing.requires('incentive')
 @testing.requires('no_edu') # ray
 def testFocalblur():
     cmd.viewport(100, 100)
     cmd.fragment('gly', 'm1')
-    cmd.focal_blur(4.0, 3)
+    view = cmd.get_view()
+    sharp = testing.get_imagearray()
+    with testing.mktemp('.png') as filename:
+        cmd.focal_blur(4.0, 3, filename=filename)
+        blurred = testing.get_imagearray(filename)
+    assert blurred.shape == sharp.shape
+    testing.assert_image_not_equal(sharp, blurred)
+    assert cmd.get_view() == view
+    # default: a temporary file; the result is the image on display
+    cmd.focal_blur(4.0, 2)
+    testing.assert_image_not_equal(sharp, testing.get_imagearray(prior=1))

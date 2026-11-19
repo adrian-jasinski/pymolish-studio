@@ -4,6 +4,22 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.36
+
+	* Focal blur (cmd.* API, was a stub of the commercial build)
+	  - focal_blur [aperture [, samples [, ray [, filename]]]] makes a
+	    picture in which only what is near the origin of rotation is
+	    sharp: "samples" images, each with the camera turned by up to
+	    "aperture" degrees around the origin, are averaged. The result
+	    is put on display, so "png" saves it; with a file name it is
+	    written there too. The view is as before afterwards.
+	  - ray=0 uses the picture of the viewport (8 samples of a small
+	    protein: 0.7 s), ray=1 ray traces every sample.
+	  - More samples give a smoother blur; with few, the copies show.
+	  - Step 21d.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.35
 
 	* Pi interactions (cmd.* API, was a stub of the commercial build)

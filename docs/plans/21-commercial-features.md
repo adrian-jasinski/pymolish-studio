@@ -150,6 +150,16 @@ arginine (the finder asks the core to assign them), several states.
 
 ### 21d — Focal blur
 
+**Done in 4.19.36.** 45 lines in `experimenting.py`, as planned: the camera
+positions lie on a sunflower pattern inside the aperture, `png` hands each
+image over in memory, `QImage` decodes and encodes, numpy averages. The
+result goes on display with `load_png` and `movie=0`; with the default the
+picture became a movie frame and the core's movie panel took 26 pixels from
+the viewport. Checked in the real window on WSLg (1rx1, 8 samples, 0.7 s)
+and ray traced (12 samples, 9 s). Not done: a blur that grows with the
+distance in depth only; turning the camera also blurs what is far to the
+side.
+
 - **Now:** `focal_blur` raises.
 - **Plan:** the published method of the command's own docstring (Underhaug,
   Vertrees, Holder): render `samples` images, each with the camera turned a
