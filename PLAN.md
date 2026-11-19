@@ -8,7 +8,9 @@ the request of that day: 15g, 15h and steps 16 to 19, all planned, none built.
 Extended 2026-11-19 at 4.19.26 with step 21: the stubs of the commercial
 build, removed or to rebuild. Checked again 2026-11-19 at 4.19.32: every
 shipped milestone left the table below for [PLAN-DONE.md](PLAN-DONE.md); the
-table lists only what is open. Same day, 4.19.33 to 4.19.37: 21a to 21e built.
+table lists only what is open. Same day, 4.19.33 to 4.19.40: 21a to 21e built,
+two slices of step 8 (the last dead product macros, 8c in `Executive.cpp`), one
+change of 1b after a new profile of the surface build.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
