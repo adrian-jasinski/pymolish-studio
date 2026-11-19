@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:learn.schrodinger.com)",
+      "Read(//home/adrian/.pymol/startup/**)",
+      "Bash(gh pr *)",
+      "Bash(git fetch *)",
+      "Bash(git rev-list *)",
+      "Bash(awk -F: '{print $1}')",
+      "Bash(awk 'NR>=243 && NR<=400' modules/pymol/_gui.py)",
+      "Read(//home/adrian/**)",
+      "Bash(git commit *)"
+    ]
+  }
+}
