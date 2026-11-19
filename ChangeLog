@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.12
+
+	* Testing
+	  - testing/compare.py runs the same workloads in pymolish and in
+	    upstream PyMOL 3 ($PYMOL_REF) and prints both side by side:
+	    loading small, big and huge (235k atoms) structures and 600
+	    files, building every representation, ray tracing, switching
+	    objects, trajectories, selections, align, PSE round trip, and
+	    with "-- gui" the GUI frame times. Exits 1 when a workload gives
+	    a different result. First run (32 CPUs, llvmpipe): every result
+	    and every ray-traced image the same, surface build 2x faster,
+	    PSE load 6x faster, GUI frame times equal within noise.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.11
 
 	* CI
