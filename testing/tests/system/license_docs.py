@@ -35,33 +35,30 @@ def read(name):
         return handle.read()
 
 
-class TestLicenseDocs(testing.PyMOLTestCase):
-    def test_links(self):
-        for name in DOCS:
-            targets = re.findall(r"\]\(([^)#\s]+)", read(name))
-            targets += re.findall(r'src="([^"]+)"', read(name))
-            for target in targets:
-                if "://" in target:
-                    continue
-                path = os.path.join(ROOT, os.path.dirname(name), target)
-                self.assertTrue(os.path.exists(path), "%s: %s" % (name, target))
+def test_links():
+    for name in DOCS:
+        targets = re.findall(r"\]\(([^)#\s]+)", read(name))
+        targets += re.findall(r'src="([^"]+)"', read(name))
+        for target in targets:
+            if "://" in target:
+                continue
+            path = os.path.join(ROOT, os.path.dirname(name), target)
+            assert os.path.exists(path), "%s: %s" % (name, target)
 
-    def test_upstream_notice(self):
-        tail = read("LICENSE")[-UPSTREAM_LENGTH:]
-        self.assertEqual(hashlib.sha256(tail.encode()).hexdigest(), UPSTREAM_SHA256)
-        self.assertIn("MIT License", read("LICENSE-MIT"))
 
-    def test_slogans(self):
-        for name in SLOGAN_FILES:
-            text = read(name)
-            self.assertNotRegex(text, r"(?i)pymolish(-studio)?\(TM\)", name)
-            if "PyMOL(TM)" in text:
-                self.assertIn(FOOTNOTE, text, name)
-            for slogan in SLOGANS:
-                if slogan in text:
-                    self.assertEqual(
-                        text.count(slogan),
-                        text.count("pymolish-studio. " + slogan),
-                        name,
-                    )
-        self.assertTrue(read("README.md").rstrip().endswith(FOOTNOTE))
+def test_upstream_notice():
+    tail = read("LICENSE")[-UPSTREAM_LENGTH:]
+    assert hashlib.sha256(tail.encode()).hexdigest() == UPSTREAM_SHA256
+    assert "MIT License" in read("LICENSE-MIT")
+
+
+def test_slogans():
+    for name in SLOGAN_FILES:
+        text = read(name)
+        assert not re.search(r"(?i)pymolish(-studio)?\(TM\)", text), name
+        if "PyMOL(TM)" in text:
+            assert FOOTNOTE in text, name
+        for slogan in SLOGANS:
+            if slogan in text:
+                assert text.count(slogan) == text.count("pymolish-studio. " + slogan), name
+    assert read("README.md").rstrip().endswith(FOOTNOTE)

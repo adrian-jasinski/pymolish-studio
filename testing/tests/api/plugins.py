@@ -5,6 +5,7 @@ and cmd.extend registration tracking. With a window: rows and submenus of
 the one Plugin menu.
 '''
 
+import pytest
 import os
 import shutil
 import tempfile
@@ -20,57 +21,56 @@ def __init_plugin__(app=None):
 '''
 
 
-class TestPlugins(testing.PyMOLTestCase):
+def test_headless_plugin_load():
+    tmp = tempfile.mkdtemp()
+    orig = plugins.get_startup_path(True)
+    try:
+        with open(os.path.join(tmp, 'pymolish_testplugin.py'), 'w') as f:
+            f.write(PLUGIN)
+        plugins.set_startup_path([tmp], autosave=False)
 
-    def test_headless_plugin_load(self):
-        tmp = tempfile.mkdtemp()
-        orig = plugins.get_startup_path(True)
-        try:
-            with open(os.path.join(tmp, 'pymolish_testplugin.py'), 'w') as f:
-                f.write(PLUGIN)
-            plugins.set_startup_path([tmp], autosave=False)
+        found = plugins.findPlugins([tmp])
+        assert 'pymolish_testplugin' in found
 
-            found = plugins.findPlugins([tmp])
-            self.assertIn('pymolish_testplugin', found)
+        info = plugins.PluginInfo('pymolish_testplugin',
+                                  found['pymolish_testplugin'],
+                                  'pymol.plugins.startup.pymolish_testplugin')
+        assert info.load()
+        assert info.loaded
+        assert '_pymolish_testplugin_hello' in info.commands
+        assert cmd.keyword['_pymolish_testplugin_hello'][0]() == 'hello'
+    finally:
+        plugins.set_startup_path(orig, autosave=False)
+        shutil.rmtree(tmp)
 
-            info = plugins.PluginInfo('pymolish_testplugin',
-                                      found['pymolish_testplugin'],
-                                      'pymol.plugins.startup.pymolish_testplugin')
-            self.assertTrue(info.load())
-            self.assertTrue(info.loaded)
-            self.assertIn('_pymolish_testplugin_hello', info.commands)
-            self.assertEqual(cmd.keyword['_pymolish_testplugin_hello'][0](), 'hello')
-        finally:
-            plugins.set_startup_path(orig, autosave=False)
-            shutil.rmtree(tmp)
 
-    def test_addmenuitem(self):
-        from unittest import mock
+def test_addmenuitem(request):
+    from unittest import mock
 
-        os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-        import shiboken6
-        from pymol.Qt import QtWidgets
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    import shiboken6
+    from pymol.Qt import QtWidgets
 
-        app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-        self.assertRaises(plugins.QtNotAvailableError, plugins.addmenuitemqt, 'x')
-        menu = QtWidgets.QMenu()
-        self.addCleanup(shiboken6.delete, menu)
-        window = mock.Mock(menudict={'Plugin': menu})
-        hits = []
-        with mock.patch.object(plugins, 'HAVE_QT', True), \
+    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+    pytest.raises(plugins.QtNotAvailableError, plugins.addmenuitemqt, 'x')
+    menu = QtWidgets.QMenu()
+    request.addfinalizer(lambda: shiboken6.delete(menu))
+    window = mock.Mock(menudict={'Plugin': menu})
+    hits = []
+    with mock.patch.object(plugins, 'HAVE_QT', True), \
                 mock.patch('pymol.gui.get_qtwindow', return_value=window):
-            plugins.addmenuitemqt('Test|One', lambda: hits.append(1))
-            # the menu name of the time when legacy plugins had their own
-            plugins.addmenuitem('Test|Two', lambda: hits.append(2), 'PluginQt')
-            plugins.addmenuitem('-')
-            plugins.addmenuitem('Flat', lambda: hits.append(3))
-        self.assertEqual([a.text() for a in menu.actions()], ['Test', '', 'Flat'])
-        sub = menu.actions()[0].menu()  # one submenu, not one per row
-        self.assertEqual([a.text() for a in sub.actions()], ['One', 'Two'])
-        sub.actions()[1].trigger()
-        menu.actions()[2].trigger()
-        self.assertEqual(hits, [2, 3])
-        # no Tk stand-ins are left
-        self.assertFalse(hasattr(plugins, 'get_pmgapp'))
-        import importlib.util
-        self.assertIsNone(importlib.util.find_spec('pmg_qt.mimic_tk'))
+        plugins.addmenuitemqt('Test|One', lambda: hits.append(1))
+        # the menu name of the time when legacy plugins had their own
+        plugins.addmenuitem('Test|Two', lambda: hits.append(2), 'PluginQt')
+        plugins.addmenuitem('-')
+        plugins.addmenuitem('Flat', lambda: hits.append(3))
+    assert [a.text() for a in menu.actions()] == ['Test', '', 'Flat']
+    sub = menu.actions()[0].menu()  # one submenu, not one per row
+    assert [a.text() for a in sub.actions()] == ['One', 'Two']
+    sub.actions()[1].trigger()
+    menu.actions()[2].trigger()
+    assert hits == [2, 3]
+    # no Tk stand-ins are left
+    assert not hasattr(plugins, 'get_pmgapp')
+    import importlib.util
+    assert importlib.util.find_spec('pmg_qt.mimic_tk') is None

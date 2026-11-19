@@ -4,6 +4,25 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.7
+
+	* Tests
+	  - All tests are pytest functions. The 162 files with unittest
+	    classes (166 classes, 854 methods) are rewritten: asserts in
+	    place of self.assert..., pytest.raises, pytest.approx,
+	    pytest.mark.parametrize in place of testing.foreach, fixtures
+	    in place of setUp and tearDown.
+	  - testing.py: PyMOLTestCase, foreach and requires_version are
+	    gone. The image and array checks are functions
+	    (testing.assert_image_has_color, testing.assert_array_equal,
+	    ...), testing.requires gives a pytest mark, and the clean
+	    session per test is the fixture clean_session in conftest.py.
+	  - Same tests as before: 913 pass. 325 are skipped, one more
+	    than before: testMAEchempy of test_atom_props.py had two
+	    cases that the old decorator order collapsed into one.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.6
 
 	* Tests

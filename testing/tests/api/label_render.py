@@ -26,27 +26,26 @@ def viewport_pixels():
     return rows[:, : image.width() * 3].reshape(image.height(), image.width(), 3)
 
 
-class TestLabelRender(testing.PyMOLTestCase):
-    @testing.requires("gui")
-    def test_label_has_its_own_color(self):
-        cmd.set("use_shaders", 1)
-        cmd.fragment("ala")
-        cmd.show_as("lines")
-        cmd.color("green")
-        cmd.set("label_color", "magenta")
-        cmd.set("label_size", 30)
-        cmd.label("name CA", "'HIH'")
-        cmd.orient()
+@testing.requires("gui")
+def test_label_has_its_own_color():
+    cmd.set("use_shaders", 1)
+    cmd.fragment("ala")
+    cmd.show_as("lines")
+    cmd.color("green")
+    cmd.set("label_color", "magenta")
+    cmd.set("label_size", 30)
+    cmd.label("name CA", "'HIH'")
+    cmd.orient()
 
-        for _ in range(3):  # the first frame can come before the glyph texture
-            cmd.turn("z", 1)  # an unchanged scene is not drawn again
-            r, g, b = viewport_pixels().astype(int).transpose(2, 0, 1)
-            magenta = (r > 150) & (b > 150) & (g < 100)
-            if magenta.any():
-                break
-        self.assertGreater(magenta.sum(), 50, "label not drawn in its color")
-        rows = magenta.any(axis=1).nonzero()[0]
-        cols = magenta.any(axis=0).nonzero()[0]
-        box = magenta[rows[0] : rows[-1] + 1, cols[0] : cols[-1] + 1]
-        # the strokes of "HIH" cover about a third of its box; blocks nearly all
-        self.assertLess(box.mean(), 0.6)
+    for _ in range(3):  # the first frame can come before the glyph texture
+        cmd.turn("z", 1)  # an unchanged scene is not drawn again
+        r, g, b = viewport_pixels().astype(int).transpose(2, 0, 1)
+        magenta = (r > 150) & (b > 150) & (g < 100)
+        if magenta.any():
+            break
+    assert magenta.sum() > 50, "label not drawn in its color"
+    rows = magenta.any(axis=1).nonzero()[0]
+    cols = magenta.any(axis=0).nonzero()[0]
+    box = magenta[rows[0] : rows[-1] + 1, cols[0] : cols[-1] + 1]
+    # the strokes of "HIH" cover about a third of its box; blocks nearly all
+    assert box.mean() < 0.6

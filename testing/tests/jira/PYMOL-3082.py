@@ -6,83 +6,83 @@ import os
 import sys
 from pymol import cmd, CmdException, testing, stored
 
-@testing.requires_version('1.8.2')
-class TestChempyAtom(testing.PyMOLTestCase):
-    def _assert_iterate_equal(self, sele, key, value):
-        stored.values = []
-        cmd.iterate(sele, 'stored.values.append(' + key + ')')
-        for v in stored.values:
-            self.assertEqual(v, value)
 
-    def test(self):
-        cmd.fragment('gly', 'm1')
+def _assert_iterate_equal(sele, key, value):
+    stored.values = []
+    cmd.iterate(sele, 'stored.values.append(' + key + ')')
+    for v in stored.values:
+        assert v == value
 
-        cmd.alter('*', 'chain = "ABC"')
-        cmd.alter('*', 'segi = "DEF"')
 
-        m = cmd.get_model()
+def test():
+    cmd.fragment('gly', 'm1')
 
-        self.assertEqual(m.atom[0].resn, "GLY")
-        self.assertEqual(m.atom[0].chain, "ABC")
-        self.assertEqual(m.atom[0].segi, "DEF")
+    cmd.alter('*', 'chain = "ABC"')
+    cmd.alter('*', 'segi = "DEF"')
 
-        cmd.alter('*', 'resn = ""')
-        cmd.alter('*', 'chain = ""')
-        cmd.alter('*', 'segi = ""')
-        cmd.alter('*', 'resi = "0"')
+    m = cmd.get_model()
 
-        m = cmd.get_model()
+    assert m.atom[0].resn == "GLY"
+    assert m.atom[0].chain == "ABC"
+    assert m.atom[0].segi == "DEF"
 
-        self.assertEqual(m.atom[0].resn, "")
-        self.assertEqual(m.atom[0].chain, "")
-        self.assertEqual(m.atom[0].segi, "")
-        self.assertEqual(m.atom[0].resi, "0")
-        self.assertEqual(m.atom[0].resi_number, 0)
+    cmd.alter('*', 'resn = ""')
+    cmd.alter('*', 'chain = ""')
+    cmd.alter('*', 'segi = ""')
+    cmd.alter('*', 'resi = "0"')
 
-        cmd.alter('*', 'resn = "UNK"')
-        cmd.alter('*', 'resi = "1A"')
+    m = cmd.get_model()
 
-        m = cmd.get_model()
+    assert m.atom[0].resn == ""
+    assert m.atom[0].chain == ""
+    assert m.atom[0].segi == ""
+    assert m.atom[0].resi == "0"
+    assert m.atom[0].resi_number == 0
 
-        self.assertEqual(m.atom[0].resn, "UNK")
-        self.assertEqual(m.atom[0].resi, "1A")
-        self.assertEqual(m.atom[0].resi_number, 1)
+    cmd.alter('*', 'resn = "UNK"')
+    cmd.alter('*', 'resi = "1A"')
 
-        if m.atom[0].has('ins_code'):  # not exported before 2.3
-            self.assertEqual(m.atom[0].ins_code, "A")
+    m = cmd.get_model()
 
-        cmd.delete('*')
-        cmd.load_model(m, 'm1')
+    assert m.atom[0].resn == "UNK"
+    assert m.atom[0].resi == "1A"
+    assert m.atom[0].resi_number == 1
 
-        self._assert_iterate_equal('*', 'resi', '1A')
-        self._assert_iterate_equal('*', 'resn', 'UNK')
+    if m.atom[0].has('ins_code'):  # not exported before 2.3
+        assert m.atom[0].ins_code == "A"
 
-        for a in m.atom:
-            a.ins_code = "B"
+    cmd.delete('*')
+    cmd.load_model(m, 'm1')
 
-        cmd.delete('*')
-        cmd.load_model(m, 'm1')
+    _assert_iterate_equal('*', 'resi', '1A')
+    _assert_iterate_equal('*', 'resn', 'UNK')
 
-        self._assert_iterate_equal('*', 'resi', '1B')
+    for a in m.atom:
+        a.ins_code = "B"
 
-        cmd.alter('*', 'resi = "2"')
+    cmd.delete('*')
+    cmd.load_model(m, 'm1')
 
-        m = cmd.get_model()
+    _assert_iterate_equal('*', 'resi', '1B')
 
-        self.assertEqual(m.atom[0].resi, "2")
+    cmd.alter('*', 'resi = "2"')
 
-        if m.atom[0].has('ins_code'):  # not exported before 2.3
-            self.assertEqual(m.atom[0].ins_code, "")
+    m = cmd.get_model()
 
-        for a in m.atom:
-            del a.resi_number  # pre 2.3
-            a.resi = "3C"
+    assert m.atom[0].resi == "2"
 
-            # >= 2.3 sets resi_number for resi
-            if a.resi_number == 3:
-                self.assertEqual(a.ins_code, 'C')
+    if m.atom[0].has('ins_code'):  # not exported before 2.3
+        assert m.atom[0].ins_code == ""
 
-        cmd.delete('*')
-        cmd.load_model(m, 'm1')
+    for a in m.atom:
+        del a.resi_number  # pre 2.3
+        a.resi = "3C"
 
-        self._assert_iterate_equal('*', 'resi', '3C')
+        # >= 2.3 sets resi_number for resi
+        if a.resi_number == 3:
+            assert a.ins_code == 'C'
+
+    cmd.delete('*')
+    cmd.load_model(m, 'm1')
+
+    _assert_iterate_equal('*', 'resi', '3C')
