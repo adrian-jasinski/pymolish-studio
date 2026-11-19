@@ -4,6 +4,22 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.6
+
+	* Tests
+	  - pytest runs every test file. Before, testing.py ran the 162
+	    files with unittest classes through unittest and the 18 files
+	    with pytest functions through pytest, and added the results.
+	    Same command, same 1237 tests (913 pass, 324 skipped on Linux).
+	    The exit code is now the one of pytest, no longer the number
+	    of failed tests.
+	  - Gone with the unittest runner: the options --xml, --out and
+	    --verbosity of testing.py, and the file testing/timings.tab
+	    that "timing" blocks appended to. timing(max=...) still fails a
+	    test that takes too long.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.5
 
 	* Quit

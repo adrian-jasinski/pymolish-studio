@@ -1,7 +1,9 @@
 PyMOL Testing Framework
 =======================
 
-This is a python unittest based testing framework for PyMOL.
+pytest runs every test file. Most tests are still written as unittest
+classes (`pymol.testing.PyMOLTestCase`), which pytest runs as they are; files
+named `test_*.py` hold plain pytest functions.
 
 *Notice: "gui" tests currently don't work with PyMOL 2.x, tests should be
 run with "pymolish -c ...".*
@@ -9,9 +11,14 @@ run with "pymolish -c ...".*
 How to Run Tests
 ----------------
 
-From the system command line:
+From the repository root:
 
-    pymolish -cq /path/to/pymol-testing/runall.pml
+    pymolish -ckqy testing/testing.py --run all
+    pymolish -ckqy testing/testing.py --run testing/tests/api/<file>.py
+
+The exit code is the one of pytest (0: all passed). Extra pytest options go
+into the environment variable `PYTEST_ADDOPTS`, for example
+`PYTEST_ADDOPTS="--durations=20"`.
 
 From the pymol command line:
 
@@ -40,8 +47,8 @@ Decorators
 Context Managers
 ----------------
 
-*    `PyMOLTestCase.timing(max=sec)`: Gives feedback on running time and
-     makes the test fail if it takes longer than `max` seconds.
+*    `PyMOLTestCase.timing(max=sec)`: Makes the test fail if it takes
+     longer than `max` seconds.
 *    `PyMOLTestCase.mktemp()`: Generates a temporary file name and deletes
      the file at context exit.
 

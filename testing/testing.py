@@ -60,7 +60,6 @@ if __name__ != 'pymol.testing':
     pymol.testing.cli()
 
 else:
-    import uuid
     import time
     import unittest
     import itertools
@@ -100,15 +99,12 @@ else:
 
     usage = 'pymolish [pymol options] %s [test options]' % (os.path.basename(__file__))
     parser = argparse.ArgumentParser("pymolish", usage=usage)
-    parser.add_argument('--xml', action='store_true')
     parser.add_argument('filenames', nargs='*', default=[])
-    parser.add_argument('--out', default=sys.stdout)
     parser.add_argument('--offline', action='store_true')
     parser.add_argument('--no-mmlibs', action='store_true', default=True)
     parser.add_argument('--with-mmlibs', action='store_false', dest='no_mmlibs')
     parser.add_argument('--no-undo', action='store_true', default=True)
     parser.add_argument('--with-undo', action='store_false', dest='no_undo')
-    parser.add_argument('--verbosity', type=int, default=2)
 
     have_dash_dash = __file__.startswith(sys.argv[0]) or '--run' in sys.argv
     cliargs = parser.parse_known_args(None if have_dash_dash else [])[0]
@@ -604,98 +600,22 @@ else:
             cmd.set('reflect', 0)
             cmd.set('direct', 0)
 
-    class PyMOLTestResult(unittest.runner.TextTestResult):
-        def addSuccess(self, test):
-            if not (self.showAll and test.timings):
-                return super(PyMOLTestResult, self).addSuccess(test)
-
-            unittest.result.TestResult.addSuccess(self, test)
-            msg = 'ok (%s)' % ', '.join(
-                    ('%s: %.3fs' % (m, t) if m else '%.3fs' % t)
-                    for (m, t) in test.timings)
-            self.stream.writeln(msg)
-
-            filename = os.getenv("PYMOLTESTTIMINGS",
-                    os.path.join(pymol_test_dir, "timings.tab"))
-
-            if filename in ("", "none"):
-                return
-
-            with open(filename, "a") as handle:
-                for i, (m, t) in enumerate(test.timings):
-                    version = cmd.get_version()
-                    buildinfo = version[3:] or [0, "", 0]
-                    print('\t'.join([
-                        '%f' % time.time(),
-                        '%012x' % uuid.getnode(),
-                        '%f' % t,
-                        type(test).__name__ + '.' + test._testMethodName,
-                        str(m or i),
-                        version[0],
-                        buildinfo[1],
-                        '%d' % buildinfo[2],
-                        platform.platform(),
-                        platform.node(),
-                    ]), file=handle)
-
-    def run_testfiles(filenames='all', verbosity=2, out=sys.stderr, **kwargs):
+    def run_testfiles(filenames='all', **kwargs):
         '''
 DESCRIPTION
 
-    Run one or multiple unit test files as a test suite.
+    Run one or more test files or directories with pytest.
 
 USAGE
 
-    run_testfiles file1 file2 ... [, verbosity [, out ]]
+    run_testfiles file1 file2 ...
         '''
         if filenames in ('all', ['all']):
             global run_all
             run_all = True
-            filenames = pathlib.Path(pymol_test_dir, 'tests').glob('**/*.py')
-        else:
-            filenames = [pathlib.Path(f).resolve() for f in filenames]
+            filenames = [os.path.join(pymol_test_dir, 'tests')]
 
-        unittest_files = []
-        pytest_files = []
-
-        # Glob all files
-        filenames = [f for filename in filenames
-                     for f in (filename.glob('**/*.py')
-                               if filename.is_dir() else [filename])]
-
-        # Separate pytest files from unittest files
-        for path in filenames:
-            if path.stem.startswith('test_') and \
-               path.parent.stem not in ("properties", "settings"):
-                pytest_files.append(path)
-                continue
-            unittest_files.append(path)
-
-        # Run unittest files
-        suite = unittest.TestSuite()
-        for path in unittest_files:
-            filename = str(path)
-            mod = import_from_file(filename)
-
-            # hacky: register working directory with test cases
-            dirname = os.path.abspath(os.path.dirname(filename))
-
-            suite.addTest(unittest.defaultTestLoader
-                    .loadTestsFromModule(mod))
-
-        if not 'xml' in kwargs:
-            kwargs['xml'] = False
-        if kwargs['xml']:
-            import xmlrunner
-            testresult = xmlrunner.XMLTestRunner(output=out, verbosity=int(verbosity)).run(suite)
-        else:
-            if isinstance(out, str):
-                out = open(out, 'w')
-            testresult = unittest.TextTestRunner(stream=out,
-                                                 resultclass=PyMOLTestResult, verbosity=int(verbosity)).run(suite)
-
-        # Run pytest files if any
-        pytest_nfail = pytest.main(['-v', *map(str, pytest_files)]) if pytest_files else 0
+        nfail = int(pytest.main(['-v', *map(str, filenames)]))
 
         while deferred_unlink:
             os.unlink(deferred_unlink.pop())
@@ -704,7 +624,7 @@ USAGE
             import subprocess
             subprocess.call(['rd', '/s', '/q', deferred_rmtree.pop()], shell=True)
 
-        return len(testresult.errors) + len(testresult.failures) + pytest_nfail
+        return nfail
 
     def cli():
         '''
