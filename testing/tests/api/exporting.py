@@ -194,7 +194,6 @@ def testSaveRef(format):
         ('mol2', 1.7),
         ('xyz',  1.8),
         ('mol',  1.831),
-        ('mae',  1.831),
         ('cif',  1.8),
 ])
 def testSaveState(format, pymol_version):
@@ -231,8 +230,8 @@ def testSaveState(format, pymol_version):
             rms = cmd.rms_cur('m1', 'm2', state, 1, matchmaker=m)
             assert rms == pytest.approx(0.00, abs=1e-2)
 
-        if format in ('mol', 'mae'):
-            # no multi support (mae: the VMD plugin reads one state)
+        if format in ('mol',):
+            # no multi support
             return
 
         # all states
@@ -252,7 +251,6 @@ def testSaveState(format, pymol_version):
         ('mol2', 1.7),
         ('xyz',  1.7),
         ('mol',  1.7),
-        ('mae',  1.831),
         ('cif',  1.8),
 ])
 def testSaveSelection(format, pymol_version):

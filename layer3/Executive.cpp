@@ -3812,9 +3812,6 @@ pymol::Result<ExecutiveLoadArgs> ExecutiveLoadPrepareArgs(PyMOLGlobals* G,
   case cLoadTypeDTR:
     args.plugin = "dtr";
     break;
-  case cLoadTypeCMS:
-    args.plugin = "mae";
-    break;
   default:
     if (plugin_arg) {
       args.plugin = plugin_arg;

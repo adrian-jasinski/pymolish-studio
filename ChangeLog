@@ -4,6 +4,30 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.24
+
+	* Removed
+	  - All Maestro file support (decided 2026-11-19): saving .mae
+	    (cmd.save, cmd.get_str('mae'), cmd.get_maestr, the Maestro
+	    row of the save dialog), the VMD plugin maeffplugin that read
+	    .mae and Desmond .cms files, and with it the Desmond .idx
+	    loader (cmd.load of an .idx file, which needs a .cms) and the
+	    automatic trajectory dialog after a .cms. Loading .mae, .cms
+	    or .idx now reports "unsupported file type"; saving .mae
+	    reports "File format not supported for export".
+	  - Kept: Desmond trajectories (.dtr) through load_traj, on a
+	    structure loaded from another format.
+	  - The APBS plugin's "prepwizard" method now asks Schrodinger's
+	    prepwizard for a PDB file instead of a Maestro file. Not
+	    tested: it needs a Schrodinger installation.
+
+	* Testing
+	  - The periodic-boundary tests (api/pbc.py) load the same Desmond
+	    trajectory on an mmCIF copy of its structure; expected values
+	    unchanged.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.23
 
 	* Documentation

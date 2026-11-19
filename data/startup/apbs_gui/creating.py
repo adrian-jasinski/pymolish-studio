@@ -197,7 +197,7 @@ ARGUMENTS
 
     tmpdir = tempfile.mkdtemp()
     infile = 'in.pdb'
-    outfile = 'out.mae'
+    outfile = 'out.pdb'
     args.extend([infile, outfile])
 
     try:

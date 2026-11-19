@@ -1335,37 +1335,6 @@ ARGUMENTS
             r = _cmd.load_coords(_self._COb, selection, coords, int(state)-1)
         return r
 
-    def load_idx(filename, object, state=0, quiet=1, zoom=-1, *, _self=cmd):
-        '''
-DESCRIPTION
-
-    Load a Desmond trajectory (including topology) from an IDX file.
-        '''
-        state, quiet, zoom = int(state), int(quiet), int(zoom)
-        dirname = os.path.dirname(filename)
-        data = {}
-
-        with open(filename) as handle:
-            for line in handle:
-                k, v = line.split('=', 1)
-                data[k.strip()] = v.strip()
-
-        if state == 0:
-            state = 1
-
-        oname = object
-        _self.delete(oname)
-        r = _self.load(
-                os.path.join(dirname, data['structure']), oname, state, quiet=quiet, zoom=0)
-
-        if not is_error(r):
-            _self.load_traj(
-                os.path.join(dirname, data['trajectory'], 'clickme.dtr'), oname, state)
-
-            auto_zoom(zoom, oname, _self=_self)
-
-        return r
-
     def load_mtz(filename, prefix='', amplitudes='', phases='', weights='None',
             reso_low=0, reso_high=0, quiet=1, *, _self=cmd):
         '''
@@ -1455,7 +1424,6 @@ EXAMPLE
         'aln': 'pymol.seqalign:load_aln_multi',
         'fasta': _processFASTA,
         'png': 'pymol.viewing:load_png',
-        'idx': load_idx,
         'pse': load_pse,
         'psw': load_pse,
         'ply': load_ply,

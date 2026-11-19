@@ -158,12 +158,6 @@ def testLoad_no_zoom():
     assert view == cmd.get_view()
 
 
-def testLoad_idx():
-    cmd.load(testing.datafile('desmond/Bace_mapper_20143_3a51a59_e85111a_solvent_11_replica0-out.idx'), state=1)
-    assert cmd.count_states() == 209
-    assert cmd.count_atoms() == 2482
-
-
 def testLoad_pqr():
     cmd.load(testing.datafile('example.pqr'))
     charges = []

@@ -107,7 +107,7 @@ enum cLoadType_t : int {
   cLoadTypeCIFStr = 61,
 
   cLoadTypeSpider = 62,
-  cLoadTypeCMS = 63,
+  /* 63 was cms */
   cLoadTypePlugin = 64,
 
   /* 65/66 were mae, maestr */
