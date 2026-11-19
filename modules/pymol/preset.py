@@ -28,6 +28,9 @@ solv_sele = "("+wat_sele+"|"+ion_sele+")"
 lig_excl = "(resn MSE)"
 lig_sele = "((hetatm or not "+prot_and_dna_sele+") and not ("+solv_sele+"|"+ion_sele+"|"+lig_excl+"))"
 lig_and_solv_sele = "("+lig_sele+"|"+solv_sele+")"
+# what a preset may color by element: a nucleic acid cartoon takes its
+# colors from P and the base nitrogens, so those keep theirs
+by_element = "(not elem C and not polymer.nucleic)"
 
 # "illustration" switched the look "flat" on: the next preset switches it off
 _lit_by_preset = False
@@ -78,6 +81,7 @@ def _prepare(selection,polar_contacts=None,_self=cmd):
     cmd.unset("cartoon_smooth_loops",selection)
     cmd.unset("cartoon_flat_sheets",selection)
     cmd.unset("cartoon_side_chain_helper",selection)
+    cmd.unset("cartoon_tube_radius",selection)
     if polar_contacts is None:
         polar_contacts = dname
         if polar_contacts in cmd.get_names('objects'):
@@ -134,7 +138,7 @@ def ligands(selection="(all)",_self=cmd):
         cmd.select(lig,s+" and "+lig_sele)
         cmd.select(near_solvent,s+" and ("+solvent+" within 4 of "+lig+")")
 
-        util.cbac("(("+s+") and not elem C)",_self=cmd)
+        util.cbac("(("+s+") and "+by_element+")",_self=cmd)
         cmd.hide("everything",s)
         cmd.show("cartoon",host)
         cmd.show("lines","("+s+" and byres ("+host+" within 5 of "+lig+"))")
@@ -189,7 +193,6 @@ def b_factor_putty(selection="(name CA+P)",_self=cmd):
     cmd.show("cartoon",s)
     cmd.set("cartoon_flat_sheets",0,selection)
     cmd.cartoon("putty",s)
-    cmd.spectrum("b",selection=s)
     cmd.delete(s)
 
 def ligand_cartoon(selection="(all)",_self=cmd):
@@ -214,7 +217,7 @@ def ligand_sites(selection="(all)",_self=cmd):
         cmd.flag("ignore",host,"clear")
         cmd.flag("ignore",lig+"|"+solvent,"set")
 
-        util.cbac("(("+s+") and not elem C)",_self=cmd)
+        util.cbac("(("+s+") and "+by_element+")",_self=cmd)
         cmd.hide("everything",s)
         cmd.show("cartoon",host)
         cmd.show("lines","("+s+" and byres ("+host+" within 5 of "+lig+"))")
@@ -302,7 +305,7 @@ def technical(selection="(all)",_self=cmd):
     s, selection, polar_contacts = _prepare(selection, _self=cmd)
     # the protein keeps its colors: only ligands and non-carbon atoms
     util.cbc("("+lig_sele+" and ("+s+") and not guide)",_self=cmd)
-    util.cbac("(("+s+") and not elem C)",_self=cmd)
+    util.cbac("(("+s+") and "+by_element+")",_self=cmd)
     cmd.show("nonbonded",s)
     cmd.show("lines","((("+s+") and not "+lig_sele+") extend 1)")
     cmd.show("sticks","("+lig_sele+" and ("+s+"))")
@@ -329,9 +332,10 @@ def pretty(selection="(all)", *, solv=False, _self=cmd):
         cmd.show("licorice", f"({lig_sele}|{wat_sele}) and ?{s}")
     else:
         cmd.show("sticks", f"({lig_sele}) and ?{s}")
-    util.cbc("("+lig_sele+" and ("+s+"))",_self=cmd)
+    # the protein keeps its colors: only ligands, not the guide atom of a
+    # modified residue
+    util.cbc("("+lig_sele+" and ("+s+") and not guide)",_self=cmd)
     util.cbac("("+lig_sele+" and ("+s+") and not elem C)",_self=cmd)
-    cmd.spectrum("count",selection="(elem C and ("+s+") and not "+lig_sele+")")
     cmd.set("cartoon_highlight_color",-1,selection)
     cmd.set("cartoon_fancy_helices",0,selection)
     cmd.set("cartoon_smooth_loops",0,selection)
@@ -394,9 +398,8 @@ def interface(selection='*', _self=cmd):
         '((chain "%s") around 4.5) ' % (chain)
         for chain in _self.get_chains(s))), 0)
 
-    # Color by chain, non-carbon by element
-    util.cbc(s, _self=_self)
-    _self.color('atomic', '?%s & !(elem C)' % (s))
+    # non-carbon by element, for the sticks
+    _self.color('atomic', '?%s & %s' % (s, by_element))
 
     # Change everything to cartoons
     _self.show_as('cartoon', s)
@@ -438,44 +441,21 @@ def _contacts(name, pairs, _self=cmd):
 
 def interaction(selection='*', _self=cmd):
     '''
-    Protein-protein interaction: every chain as cartoon in its own color
-    inside a faint surface of that color, the side chains that touch
-    another chain as sticks, and the polar contacts between chains as
-    dashes.
+    Protein-protein interaction: every chain as a surface, orange, and
+    white where it is within 4.5 A of another chain. The colors of the
+    atoms stay: the surface has its own.
     '''
-    from . import palettes
-    s, selection, dname = _prepare(selection, _self=_self)
-    units = _units(s, _self)
+    s = _prepare(selection, _self=_self)[0]
 
-    # one color per chain, also for its surface: the element colors of the
-    # sticks below would speckle it
-    colors = palettes.cycle()
-    for i, (unit, _) in enumerate(units):
-        color = str(colors[i % len(colors)])
-        _self.color(color, unit)
-        _self.set('surface_color', color, unit)
-
-    _self.show('cartoon', 'polymer & ?' + s)
-    _self.show('licorice', '(organic | inorganic) & ?' + s)
     _self.show('surface', 'polymer & ?' + s)
-    _self.set('transparency', 0.75, s)
+    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _self.color('atomic', '(organic | inorganic) & ?%s & !(elem C)' % (s))
+    _self.set('surface_color', 'orange', 'polymer & ?' + s)
+    for unit, _ in _units(s, _self):
+        _self.set('surface_color', 'white',
+                  'byres (%s within 4.5 of (polymer & ?%s & !%s))'
+                  % (unit, s, unit))
 
-    # atoms within 4.5 A of another chain
-    iface = _self.get_unused_name('_iface')
-    _self.select(iface, 'none')
-    for unit, _ in units:
-        _self.select(iface, '?%s | ((polymer & ?%s & !%s) within 4.5 of %s)'
-                     % (iface, s, unit, unit), 0)
-    _self.set('cartoon_side_chain_helper', 1, selection)
-    _self.show('sticks', 'byres ?' + iface)
-    _self.color('atomic', '((byres ?%s) | ((organic | inorganic) & ?%s)) & !(elem C)'
-                % (iface, s))
-    _contacts(dname, [
-        ('?%s & %s' % (iface, a), '?%s & %s' % (iface, b))
-        for i, (a, _) in enumerate(units) for b, _ in units[i + 1:]
-    ], _self)
-
-    _self.delete(iface)
     _self.delete(s)
 
 
@@ -488,10 +468,10 @@ _light_re = 'W[YFL][QLH]Q.[PSA]G'
 
 def antibody(selection='*', _self=cmd):
     '''
-    Antibody with its antigen: the heavy chain blue and the light chain
-    light blue, as cartoon; the antigen as a sand-colored surface with the
-    epitope in orange; the residues of the antibody that touch the antigen
-    as sticks; the polar contacts between the two as dashes.
+    Antibody with its antigen: the antibody as cartoon in the colors it
+    has; the antigen as a sand-colored surface with the epitope in orange;
+    the residues of the antibody that touch the antigen as sticks; the
+    polar contacts between the two as dashes.
 
     Antibody chains are found by the conserved start of framework 2 in
     their sequence; a chain named H or L fills a role that the sequences
@@ -520,14 +500,12 @@ def antibody(selection='*', _self=cmd):
 
     ab = '(%s)' % ' | '.join(heavy + light)
     ag = '(%s)' % (' | '.join(antigen) or 'none')
-    for units, color in ((heavy, 'skyblue'), (light, 'lightblue'), (antigen, 'wheat')):
-        for unit in units:
-            _self.color(color, unit)
     epitope = '(%s within 4.5 of %s)' % (ag, ab)
     paratope = '(%s within 4.5 of %s)' % (ab, ag)
-    _self.color('orange', 'byres ' + epitope)
-    # element colors only on what is drawn as sticks: the surface of the
-    # antigen stays sand and orange
+    # the surface has its own colors: the atoms keep theirs
+    _self.set('surface_color', 'wheat', ag)
+    _self.set('surface_color', 'orange', 'byres ' + epitope)
+    # element colors only on what is drawn as sticks
     _self.color('atomic', '((byres %s) | ((organic | inorganic) & ?%s)) & !(elem C)'
                 % (paratope, s))
 
@@ -567,13 +545,12 @@ def classified(selection='*', _self=cmd):
 
 def glass(selection='*', _self=cmd):
     '''
-    Cartoon and ligand sticks by chain, inside a transparent white surface
-    that gets denser toward its edges, like glass.
+    Cartoon and ligand sticks inside a transparent white surface that
+    gets denser toward its edges, like glass.
     '''
     s, selection = _prepare(selection, _self=_self)[:2]
 
-    util.cbc(s, _self=_self)
-    _self.color('atomic', '?%s & !(elem C)' % (s))
+    _self.color('atomic', '?%s & %s' % (s, by_element))
 
     _self.show('cartoon', 'polymer & ?' + s)
     _self.show('licorice', '(organic | inorganic) & ?' + s)
@@ -587,12 +564,11 @@ def glass(selection='*', _self=cmd):
 
 def wire(selection='*', _self=cmd):
     '''
-    Cartoon by chain as a wire mesh, and ligand sticks.
+    Cartoon as a wire mesh, and ligand sticks.
     '''
     s = _prepare(selection, _self=_self)[0]
 
-    util.cbc(s, _self=_self)
-    _self.color('atomic', '?%s & !(elem C)' % (s))
+    _self.color('atomic', '?%s & %s' % (s, by_element))
 
     _self.show('cartoon', 'polymer & ?' + s)
     _self.show('licorice', '(organic | inorganic) & ?' + s)
@@ -603,14 +579,27 @@ def wire(selection='*', _self=cmd):
     _self.delete(s)
 
 
-def illustration(selection='*', _self=cmd):
+def spring(selection='*', _self=cmd):
     '''
-    Cartoon in shades of blue inside a faint surface, and the look "flat":
-    ray traced, a colored line drawing like the pictures of proteinbase.
+    Cartoon as one thick round tube along the backbone, so that a helix
+    is a spring; and ligand sticks.
     '''
     s, selection = _prepare(selection, _self=_self)[:2]
 
-    util.shades('marine', 'polymer & ?' + s, _self=_self)
+    _self.cartoon('tube', s)
+    _self.set('cartoon_tube_radius', 0.8, selection)
+    _self.show('cartoon', 'polymer & ?' + s)
+    _self.show('licorice', '(organic | inorganic) & ?' + s)
+
+    _self.delete(s)
+
+
+def illustration(selection='*', _self=cmd):
+    '''
+    Cartoon inside a faint surface, and the look "flat": ray traced, a
+    colored line drawing like the pictures of proteinbase.
+    '''
+    s, selection = _prepare(selection, _self=_self)[:2]
 
     _self.show('cartoon', 'polymer & ?' + s)
     _self.show('licorice', '(organic | inorganic) & ?' + s)

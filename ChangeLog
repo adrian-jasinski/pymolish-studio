@@ -4,6 +4,34 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.29
+
+	* Presets
+	  - New preset "cartoon spring" (preset.spring): the cartoon as
+	    one thick round tube along the backbone (cartoon tube,
+	    cartoon_tube_radius 0.8), so that a helix is a spring.
+	  - The row "wire" reads "cartoon wire". preset.wire keeps its
+	    name.
+	  - No preset of the menu but "default" colors the cartoon any
+	    more. Changed: preset.pretty, publication, pretty_solv and
+	    pub_solv (no rainbow), glass, wire and interface (no colors
+	    by chain), b_factor_putty (no colors by B factor),
+	    illustration (no shades of blue), antibody (no chain
+	    colors; the sand and orange of the antigen are now colors
+	    of its surface, surface_color). The colors by element that
+	    some presets give to atoms other than carbon skip nucleic
+	    acids, whose cartoon is colored by P and the bases.
+	  - "protein-protein interaction" (preset.interaction) is now
+	    every chain as an opaque surface, orange, and white where
+	    it is within 4.5 A of another chain. The cartoon, the
+	    sticks and the polar contacts of the earlier picture are
+	    gone; "protein interface" still shows sticks.
+	  - The row "publication green" is gone: without its color it
+	    is "publication". preset.publication_green stays and still
+	    colors.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.28
 
 	* Documentation

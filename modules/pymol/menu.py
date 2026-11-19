@@ -751,9 +751,9 @@ def presets(self_cmd, sele):
               # the variants with solvent: from_menu decides whether it shows
               _preset('pretty', 'pretty_solv', sele),
               _preset('publication', 'pub_solv', sele),
-              _preset('publication green', 'publication_green', sele),
               _preset('glass', 'glass', sele),
-              _preset('wire', 'wire', sele),
+              _preset('cartoon wire', 'wire', sele),
+              _preset('cartoon spring', 'spring', sele),
               _preset('illustration', 'illustration', sele),
               [ 0, '', '' ],
               _preset('ligands', 'ligands', sele),
