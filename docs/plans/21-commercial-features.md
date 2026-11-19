@@ -171,6 +171,19 @@ side.
 
 ### 21e — Morphing
 
+**Done in 4.19.37, option A.** 110 lines in `modules/pymol/morphing.py`.
+States of one object are interpolated as they are; two objects are paired
+through the alignment object of `align` or `super`. The refinement uses the
+sculpting of the core with the mask for bonds, angles, pyramids, planes and
+lines only (`sculpt_field_mask` 0x1F), so that the restraints taken from
+the first conformation do not pull the intermediates back to it; the two
+ends are not touched. Measured on 1rx1 with one half turned by 60 degrees
+(1,268 atoms, 30 states): 0.02 s without refinement, 0.11 s with 3; mean
+bond length error half way 0.065 A, 0.012 A after 1, 0.007 A after 3,
+0.004 A after 10. Not looked at: clashes between the two halves on the
+way (the mask leaves van der Waals terms out), nucleic acids, the look
+of the movie in the window.
+
 - **Now:** `morph` raises for both methods.
 - **Options**
 

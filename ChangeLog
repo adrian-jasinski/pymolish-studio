@@ -4,6 +4,29 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.37
+
+	* Morphing (cmd.* API, was a stub of the commercial build)
+	  - morph name, sele1 [, sele2 [, state1 [, state2 [, refinement
+	    [, steps [, method [, match]]]]]]] creates an object whose
+	    states lead from one conformation to another: two states of
+	    one object, all states of one object (state1=0; back to the
+	    first unless state2=0), or two objects, whose atoms are
+	    paired by "align" or "super" (match). Atoms without a partner
+	    are left out. The conformations are not superposed.
+	  - The method is "linear", now the default: coordinates are
+	    interpolated on straight lines, then every intermediate state
+	    is sculpted (10 cycles per "refinement", local geometry only),
+	    which restores bond lengths, angles and planar groups. A 60
+	    degree hinge motion of a 159 residue protein in 30 states:
+	    0.1 s, mean bond length error half way 0.065 A without and
+	    0.007 A with the default refinement of 3.
+	  - method=rigimol is an error: RigiMOL belongs to the commercial
+	    PyMOL.
+	  - Step 21e.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.36
 
 	* Focal blur (cmd.* API, was a stub of the commercial build)
