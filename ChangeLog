@@ -4,6 +4,22 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.30
+
+	* Bundles
+	  - Fixed: the Windows bundle did not start ("Could not find the
+	    Qt platform plugin windows"). It shipped without any Qt
+	    plugin: PyInstaller's PySide6 hook could not import QtCore in
+	    the build environment (the copy of ICU that conda-forge
+	    installs as icuuc.dll, see 4.7.1) and only warned. The
+	    Windows job removes that copy before it builds the bundle.
+	  - A bundle without a Qt platform plugin now fails the build
+	    (packaging/pyinstaller.spec), on every system.
+	  - Qt translations and QML files are now pruned on Windows too
+	    (the path test used "/").
+
+2026-11-19 pymolish-studio
+
 	* 4.19.29
 
 	* Presets
