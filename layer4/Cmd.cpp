@@ -1687,10 +1687,6 @@ static PyObject* CmdGetCapabilities(PyObject*, PyObject*)
 #endif
     // object and atom level properties
     PySet_Add(caps, PConvToPyObject("properties"));
-#ifndef NO_MMLIBS
-    // mmlibs atom typing and stereochemistry, incentive feature PyMOL 1.4-1.8
-    PySet_Add(caps, PConvToPyObject("mmlibs"));
-#endif
   }
 
   Py_INCREF(caps);

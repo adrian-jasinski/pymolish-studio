@@ -1,7 +1,5 @@
 '''
 mmpymolx specific functionality
-
-See also: tests/jira/PYMOL-317.py (text_type test)
 '''
 
 from pymol import cmd, testing, stored
@@ -9,7 +7,6 @@ from pymol import cmd, testing, stored
 pytestmark = [testing.requires('incentive'), testing.requires('no_edu')]
 
 
-@testing.requires('mmlibs')
 def testStereo():
     cmd.fragment('ala')
     cmd.remove('hydro')
@@ -34,7 +31,6 @@ def testStereo():
     assert labels == ['R']
 
 
-@testing.requires('mmlibs')
 def testStereoPYMOL2782():
     # L-Cysteine has R configuration
     cmd.fragment('cys')

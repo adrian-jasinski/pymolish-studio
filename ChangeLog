@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.19
+
+	* Removed
+	  - Automatic atom typing through Schrodinger's mmlibs, which this
+	    program never had: the code behind "#ifndef NO_MMLIBS" and the
+	    macro itself, the stereo and text_type hooks of iterate, alter
+	    and label behind _PYMOL_IP_EXTRAS, the two CoordSet fields and
+	    two functions only those blocks called. 206 lines, none of
+	    them compiled before. Test PYMOL-317 and the test options
+	    --no-mmlibs and --with-mmlibs.
+	  - Unchanged: the atom property and selection keyword text_type,
+	    MOL2 atom types (cmd.assign_atom_types) and the keyword stereo.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.18
 
 	* Removed

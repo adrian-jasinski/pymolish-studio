@@ -122,10 +122,6 @@
 #define cLeftButSele "lb"
 #define cIndicateSele "indicate"
 
-#ifndef NO_MMLIBS
-#include "mmpymolx.h"
-#endif
-
 /**
  * Macro with error handling to get a selection ID from a non-empty expression.
  * @param expression Selection expression
@@ -6815,13 +6811,8 @@ const char* ExecutiveMapGenerate(PyMOLGlobals* G, const char* name,
      * cell[3], cell[4], cell[5], reso_high, reso_low, reflection_file,
      * amplitudes, phases, weights, tempFile); */
 
-#ifndef NO_MMLIBS
-  ok = !(primex_pymol_driver2(space_group, cell, reso_high, reso_low,
-      reflection_file, amplitudes, phases, weights, tempFile));
-#else
   PRINTFB(G, FB_Executive, FB_Errors)
   " Error: MTZ map loading not supported in this PyMOL build.\n" ENDFB(G);
-#endif
 
   if (!ok)
     return nullptr;

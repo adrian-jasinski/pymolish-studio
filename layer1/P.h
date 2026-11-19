@@ -59,8 +59,6 @@ Z* -------------------------------------------------------------------
 unsigned getExplicitValence(ObjectMolecule const* obj, size_t atm);
 unsigned getExplicitDegree(ObjectMolecule const* obj, size_t atm);
 
-int PLabelExprUsesVariable(PyMOLGlobals * G, const char *expr, const char *var);
-
 int PLabelAtomAlt(PyMOLGlobals * G, AtomInfoType * at, const char *model, const char *expr,
                   int index);
 

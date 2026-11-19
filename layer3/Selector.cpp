@@ -5573,37 +5573,6 @@ int SelectorMapCoulomb(PyMOLGlobals * G, int sele1, ObjectMapState * oMap,
 /*========================================================================*/
 int SelectorAssignAtomTypes(PyMOLGlobals * G, int sele, int state, int quiet, int format)
 {
-#ifndef NO_MMLIBS
-  CSelector *I = G->Selector;
-  int ok = true;
-
-  SelectorUpdateTable(G, state, -1);
-
-  if(ok) {
-    ObjectMolecule *prevobj = nullptr;
-    int a;
-    for(a = cNDummyAtoms; a < I->Table.size(); a++) {
-      int at = I->Table[a].atom;
-      ObjectMolecule *obj = I->Obj[I->Table[a].model];
-      int s = obj->AtomInfo[at].selEntry;
-      I->Table[a].index = 0;
-      if(SelectorIsMember(G, s, sele)) {
-	ObjectMoleculeInvalidateAtomType(obj, state);
-      }
-    }
-    for(a = cNDummyAtoms; a < I->Table.size(); a++) {
-      int at = I->Table[a].atom;
-      ObjectMolecule *obj = I->Obj[I->Table[a].model];
-      int s = obj->AtomInfo[at].selEntry;
-      I->Table[a].index = 0;
-      if(obj != prevobj && SelectorIsMember(G, s, sele)) {
-	ObjectMoleculeUpdateAtomTypeInfoForState(G, obj, state, 1, format);
-          prevobj = obj;
-      }
-    }
-  }
-  return 1;
-#else
   if (format != 1) {
     PRINTFB(G, FB_Selector, FB_Errors)
       " Error: assign_atom_types only supports format='mol2'\n" ENDFB(G);
@@ -5624,7 +5593,6 @@ int SelectorAssignAtomTypes(PyMOLGlobals * G, int sele, int state, int quiet, in
         getMOL2Type(obj, iter.getAtm()));
   }
   return 1;
-#endif
 }
 
 /*========================================================================*/
@@ -7901,13 +7869,9 @@ static pymol::Result<> SelectorSelect1(PyMOLGlobals * G, EvalElem * base, int qu
       if((matcher = WordMatcherNew(G, base[1].text(), &options, true))) {
         base_0_sele_a = &base[0].sele[cNDummyAtoms];
 
-#ifndef NO_MMLIBS
-#endif
         for(a = cNDummyAtoms; a < I_NAtom; a++) {
           auto& table_a = I->Table[a];
           auto ai = I->Obj[table_a.model]->AtomInfo + table_a.atom;
-#ifndef NO_MMLIBS
-#endif
           if((*base_0_sele_a = WordMatcherMatchAlpha(matcher, LexStr(G, ai->textType))))
 	    c++;
           base_0_sele_a++;
@@ -7949,12 +7913,8 @@ static pymol::Result<> SelectorSelect1(PyMOLGlobals * G, EvalElem * base, int qu
 
       if((matcher = WordMatcherNew(G, base[1].text(), &options, true))) {
         base_0_sele_a = &base[0].sele[cNDummyAtoms];
-#ifndef NO_MMLIBS
-#endif
         for(a = cNDummyAtoms; a < I_NAtom; a++) {
          auto& table_a = I->Table[a];
-#ifndef NO_MMLIBS
-#endif
           const char * mmstereotype =
             AtomInfoGetStereoAsStr(I->Obj[table_a.model]->AtomInfo + table_a.atom);
           if((*base_0_sele_a =
