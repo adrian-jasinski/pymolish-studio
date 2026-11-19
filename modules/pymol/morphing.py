@@ -39,6 +39,9 @@ def _matched(sele1, sele2, state1, state2, match, _self):
         return (tmp,
                 numpy.array([xyz1[k] for k in keys]),
                 numpy.array([xyz2[partner[k]] for k in keys]))
+    except BaseException:
+        _self.delete(tmp)
+        raise
     finally:
         _self.delete(aln)
 
