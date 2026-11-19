@@ -18,6 +18,12 @@ jobs:
       matrix:
         python-version: ["3.13", "3.14"]
 
+    env:
+      # compiler cache: an unchanged source file is not compiled again
+      CMAKE_C_COMPILER_LAUNCHER: ccache
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+
     steps:
     - uses: actions/checkout@v6
 
@@ -31,6 +37,7 @@ jobs:
         sudo apt-get update
         sudo apt-get --no-install-recommends install \
             catch2 \
+            ccache \
             libfreetype6-dev \
             libglew-dev \
             libglm-dev \
@@ -39,11 +46,21 @@ jobs:
             nlohmann-json3-dev \
             libpng-dev
 
+    - uses: actions/cache@v4
+      with:
+        path: .ccache
+        key: ccache-${{ runner.os }}-${{ matrix.python-version }}-${{ github.run_id }}
+        restore-keys: ccache-${{ runner.os }}-${{ matrix.python-version }}-
+
     - name: Build
+      # no build isolation: its temporary numpy path would change every
+      # compiler command and so miss the cache
       run: |
         pip install --upgrade pip
-        pip wheel -v --no-deps -w dist --config-settings testing=True --config-settings json=True .
+        pip install 'cmake>=3.13.3' 'numpy>=2.0' 'setuptools>=77.0.3'
+        pip wheel -v --no-build-isolation --no-deps -w dist --config-settings testing=True --config-settings json=True .
         pip install "$(ls dist/*.whl)[dev,chem,fix]"
+        ccache -s
       env:
         # the 3.13 job ships the preview artifacts, so it is a release build
         DEBUG: ${{ matrix.python-version != '3.13' && '1' || '' }}
@@ -87,6 +104,9 @@ jobs:
       LDFLAGS: -fsanitize=address,undefined
       # Python itself does not free everything at exit
       ASAN_OPTIONS: detect_leaks=0
+      CMAKE_C_COMPILER_LAUNCHER: ccache
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
 
     steps:
     - uses: actions/checkout@v6
@@ -101,6 +121,7 @@ jobs:
         sudo apt-get update
         sudo apt-get --no-install-recommends install \
             catch2 \
+            ccache \
             libfreetype6-dev \
             libglew-dev \
             libglm-dev \
@@ -109,10 +130,18 @@ jobs:
             nlohmann-json3-dev \
             libpng-dev
 
+    - uses: actions/cache@v4
+      with:
+        path: .ccache
+        key: ccache-sanitize-${{ github.run_id }}
+        restore-keys: ccache-sanitize-
+
     - name: Build
       run: |
         pip install --upgrade pip
-        pip install -v --config-settings testing=True --config-settings json=True '.[dev]'
+        pip install 'cmake>=3.13.3' 'numpy>=2.0' 'setuptools>=77.0.3'
+        pip install -v --no-build-isolation --config-settings testing=True --config-settings json=True '.[dev]'
+        ccache -s
 
     - name: Test
       # libstdc++ is preloaded too: python does not link it, and ASan aborts
@@ -182,6 +211,9 @@ jobs:
 
     env:
       MACOSX_DEPLOYMENT_TARGET: "12.0"
+      CMAKE_C_COMPILER_LAUNCHER: ccache
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
 
     steps:
     - uses: actions/checkout@v6
@@ -192,10 +224,20 @@ jobs:
         locked: false
         cache: false
 
+    - run: brew install ccache
+
+    - uses: actions/cache@v4
+      with:
+        path: .ccache
+        key: ccache-${{ runner.os }}-${{ matrix.python }}-${{ github.run_id }}
+        restore-keys: ccache-${{ runner.os }}-${{ matrix.python }}-
+
     - name: Build PyMOL
       run: |
-        pixi run -e ${{ matrix.python }} pip wheel -v --no-deps -w dist --config-settings testing=True --config-settings json=True .
+        pixi run -e ${{ matrix.python }} pip install 'cmake>=3.13.3' 'numpy>=2.0' 'setuptools>=77.0.3'
+        pixi run -e ${{ matrix.python }} pip wheel -v --no-build-isolation --no-deps -w dist --config-settings testing=True --config-settings json=True .
         pixi run -e ${{ matrix.python }} pip install "$(ls dist/*.whl)[dev,chem,fix]"
+        ccache -s
 
     - name: Test
       run: pixi run -e ${{ matrix.python }} pymolish -ckqy testing/testing.py --run all

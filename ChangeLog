@@ -4,6 +4,24 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.11
+
+	* CI
+	  - Compiler cache (ccache) in the Linux, sanitizer and macOS
+	    jobs: a source file that did not change is not compiled again.
+	    Measured on a test branch, build step with an empty cache and
+	    with the cache of the run before, same sources: Linux 172 s to
+	    24 s, sanitizer 272 s to 31 s, macOS 178 s to 41 s (278 of 279
+	    compiler calls from the cache). A commit that changes C++
+	    compiles what it changed.
+	  - These jobs build without pip's build isolation: its temporary
+	    numpy include path differs in every run and would miss the
+	    cache. cmake, numpy and setuptools are installed first.
+	  - Windows is unchanged: its Visual Studio generator does not
+	    take a compiler launcher.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.10
 
 	* Speed
