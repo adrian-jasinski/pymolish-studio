@@ -8,7 +8,7 @@ the request of that day: 15g, 15h and steps 16 to 19, all planned, none built.
 Extended 2026-11-19 at 4.19.26 with step 21: the stubs of the commercial
 build, removed or to rebuild. Checked again 2026-11-19 at 4.19.32: every
 shipped milestone left the table below for [PLAN-DONE.md](PLAN-DONE.md); the
-table lists only what is open.
+table lists only what is open. Same day, 4.19.33 to 4.19.37: 21a to 21e built.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -33,11 +33,11 @@ user's original numbers; the letters are milestones of the detailed plans.
 | none | **15** — [Presets and looks](docs/plans/15-presets.md) | 15b: the outline of the looks in the viewport (today only in ray-traced images). 15c: ChimeraX object colors as a palette. 15e: five more effects, tried and described. | The user picks or drops 15b, 15c and each effect of 15e. |
 | none | **17** — [Legacy menu rows and the old internal GUI](docs/plans/17-legacy-ui.md) | 17d: the panel list, after 19g. 17e: the menus the core draws in OpenGL (969 lines). | 17d and 17e each pass the suite, the sanitizer job and a PSE round trip. |
 | none | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | The shot list in the session file, a shorter Movie menu, removal of the core's movie panel (19g), dragging on the strip. | The user answers the three questions; 19g passes the suite and the sanitizer job. |
-| none | **21** — [Features of the commercial build](docs/plans/21-commercial-features.md) | To rebuild, smallest first: 21a STL export, 21b stereochemistry (a command, with rdkit), 21c pi interactions, 21d focal blur, 21e morphing, 21f three rendering details, 21g undo of more than the last move. | Each slice makes its old test pass under `pymolish -ckqyn`, then the `incentive` mark comes off. |
+| none | **21** — [Features of the commercial build](docs/plans/21-commercial-features.md) | 21f: three rendering details (smooth edges in the viewport, sphere modes 10 and 11, the background image in the session file). 21g: undo of more than the last move. Both wait for an answer. With the last of them the error "only in Incentive PyMOL", the test mark `incentive` and the option `-n` go. | Each slice makes its old test pass under `pymolish -ckqyn`, then the `incentive` mark comes off. |
 
 Steps 8, 5c, 15, 17, 19 and 21 never got an order number. What can be built
-without an answer, in this order: 21a to 21e, then 8c to 8g, and the items of
-1b that are not the surface thread, each on a quiet machine. Everything else
+without an answer: 8c to 8g, and the items of 1b that are not the surface
+thread, each on a quiet machine. Everything else
 in the table waits for an answer in "Waiting for the user": 1b's surface
 thread (1), 5c (4), 15 (5 to 7), 19 (13), 17d behind 19g, 17e (14), 21f (16),
 21g (17). GPU compute is not on the critical path.

@@ -1,7 +1,8 @@
 # 21 — Features of the commercial build: removed, kept, to rebuild
 
 [Roadmap](../../PLAN.md) · Request 2026-11-19 · **Removals done in 4.19.18
-to 4.19.26. The seven rebuilds are planned, none is built.** Answers of the
+to 4.19.26. 21a to 21e built in 4.19.33 to 4.19.37; 21f and 21g wait for
+an answer.** Answers of the
 user from 2026-11-19 are applied: all Maestro support removed, a command is
 enough for stereochemistry, stubs that break nothing else removed.
 
@@ -289,10 +290,15 @@ the rest. All five broke nothing, so all five are gone: `help_setting`,
 implementation and it works. Only a source comment still calls it
 proprietary.
 
-What still raises `IncentiveOnlyException` is exactly what 21a to 21e
-rebuild: `get_stlstr`, `read_stlstr`, `assign_stereo`, `pi_interactions`,
-`focal_blur`, `morph`. When the last of them is built, the exception, the
-test flags `incentive` and `properties` and the option `-n` go too.
+State at 4.19.37: no command raises `IncentiveOnlyException` any more.
+`read_stlstr` raises an ordinary error (reading STL stays skipped). What is
+left of the machinery: the exception class, its one user
+`incentive_format_not_available_func` in `importing.py`, the option `-n`
+(`incentive_product`), the test flags `incentive` and `properties`. Five
+test files still carry the mark, all for 21f and 21g: `settings.py`
+(`testAA`), `cgos/reps.py` (sphere modes), `jira/PYMOL-1571.py`,
+`jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`. All of it goes with the last of
+those two slices.
 
 ## Questions
 

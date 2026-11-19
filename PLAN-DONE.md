@@ -99,6 +99,7 @@ shipped.
 | 15 | 15f — wire, illustration, shades | Done 2026-11-16 (4.14.4). Preset wire: the cartoon as a wire mesh (`cartoon_debug` 3, already in the core). Preset illustration: shades of blue inside a faint outlined surface, with the look flat. `util.shades` and "shades" rows in the color menus. The look flat keeps colors as they are and outlines transparent things. |
 | 15 | 15j, 15k — light after illustration, publication green | Done 2026-11-18 (4.19.2, 4.19.3). The next preset after "illustration" goes back to the standard light. Preset "publication green"; its row left the menu again with 15l, the function stays. |
 | 21 | Removals | Done 2026-11-19 (4.19.18 to 4.19.26): [docs/plans/21-commercial-features.md](docs/plans/21-commercial-features.md). All Maestro file support, mmlibs atom typing, the MOE, `.vis` and `.phypo` stubs, MTZ maps, `help_setting`, `callout`, `desaturate`, the FreeMOL test. `clean` was already rebuilt in 4.12.1. |
+| 21 | 21a to 21e — rebuilt commands | Done 2026-11-19 (4.19.33 to 4.19.37). `save file.stl` (binary STL from the meshes of the USD export). `assign_stereo` with rdkit, and label > stereochemistry is back. `distance` modes 5 to 7 and `pi_interactions`: the finder was already in the core, only the call was missing. `focal_blur`: average of images of a turned camera. `morph`: linear interpolation, refined by sculpting. Each old test runs without the `incentive` mark. |
 
 ## Validation of the original draft, closed rows
 
