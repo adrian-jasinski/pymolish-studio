@@ -1,6 +1,6 @@
 # 1 — Performance and GPU
 
-[Roadmap](../../PLAN.md) · 1a done, 1b in progress; timings are in the Status sections and in [docs/baseline.md](../baseline.md)
+[Roadmap](../../PLAN.md) · 1a done, 1b in progress; timings are in the Status sections and the ChangeLog; comparison with upstream PyMOL 3 in [docs/benchmark.md](../benchmark.md)
 
 **Improve the operation a profile identifies.** Interactive graphics already use
 OpenGL. Loading, geometry generation, ray tracing, callbacks and GPU submission
@@ -8,13 +8,13 @@ are different workloads and need separate measurements.
 
 ## Status 2026-11-08
 
-1a done: headless baseline in `testing/bench.py`, numbers and first observations in [docs/baseline.md](../baseline.md). GUI frame latency not measured. 1b first change in 4.5.10: session load 0.92 s to 0.14 s (C unpickler with exact fallback), numbers in the baseline. Second change in 4.5.12: the surface build, which is 9.5 of the 15 s of "ray a surface", runs its dot-to-point loop in parallel (11.97 s to 9.66 s, identical geometry). The 1 sigma isosurface cost was traced to the ray tracer's voxel table, not the mesh, and left alone. Next candidates: triangulation (3.5 s) and refinement (1.9 s) of the surface build, `SolventDotNew` (1.5 s), GUI frame latency (never measured).
+1a done: headless baseline (then `testing/bench.py`, replaced in 4.19.13 by `testing/compare.py`). GUI frame latency not measured. 1b first change in 4.5.10: session load 0.92 s to 0.14 s (C unpickler with exact fallback), numbers in the ChangeLog. Second change in 4.5.12: the surface build, which is 9.5 of the 15 s of "ray a surface", runs its dot-to-point loop in parallel (11.97 s to 9.66 s, identical geometry). The 1 sigma isosurface cost was traced to the ray tracer's voxel table, not the mesh, and left alone. Next candidates: triangulation (3.5 s) and refinement (1.9 s) of the surface build, `SolventDotNew` (1.5 s), GUI frame latency (never measured).
 
 ## Status 2026-11-14
 
-Three more 1b changes, numbers in [docs/baseline.md](../baseline.md): the surface build of 1aon went from 9.44 s to 6.24 s with the same triangles (4.7.7 start-point search of the triangulation, 4.7.8 parallel solvent dots, 4.7.9 neighbor table sized first and filled in parallel). Ray tracing that surface at 800x600: 13.1 s to 9.0 s.
+Three more 1b changes, numbers in the ChangeLog: the surface build of 1aon went from 9.44 s to 6.24 s with the same triangles (4.7.7 start-point search of the triangulation, 4.7.8 parallel solvent dots, 4.7.9 neighbor table sized first and filled in parallel). Ray tracing that surface at 800x600: 13.1 s to 9.0 s.
 
-GUI frame time is now measured: `testing/bench_gui.py`. Main finding: under WSLg the GUI runs on Mesa's software renderer (50 to 120 ms per frame for 1aon); with `GALLIUM_DRIVER=d3d12` the same frames take 0.7 to 11 ms on the RTX 5070. Open decision: whether the app selects that driver itself on WSL. It draws lines 1 pixel wide, so the default would need `trilines` with it, and mesh lines stay thin.
+GUI frame time is now measured: `testing/compare.py -- gui`. Main finding: under WSLg the GUI runs on Mesa's software renderer (50 to 120 ms per frame for 1aon); with `GALLIUM_DRIVER=d3d12` the same frames take 0.7 to 11 ms on the RTX 5070. Open decision: whether the app selects that driver itself on WSL. It draws lines 1 pixel wide, so the default would need `trilines` with it, and mesh lines stay thin.
 
 Found while measuring, fixed in 4.7.10: atom labels were solid blocks in the GUI on every driver without `EXT_geometry_shader4` (all Mesa drivers). An upstream refactor of `RepLabel` had dropped the switch that turns shaders off for the fallback label path. Check: `testing/tests/api/label_render.py` (needs the GUI).
 
@@ -22,7 +22,7 @@ Next candidates: sticks on the GPU (11 ms per frame, p99 36 ms, 6 ms of it CPU),
 
 ## Status 2026-11-16
 
-1b change in 4.13.3, numbers in [docs/baseline.md](../baseline.md): the ray tracer's voxel table for the camera view (`MapSetupExpressPerp`) is counted first and filled in parallel, 0.68 s to 0.28 s for the 1aon surface; a ray of that surface 4.7 s to 4.2 s. Tracing is now 3.2 s of those 4.2 s (9x on 32 threads).
+1b change in 4.13.3, numbers in the ChangeLog: the ray tracer's voxel table for the camera view (`MapSetupExpressPerp`) is counted first and filled in parallel, 0.68 s to 0.28 s for the 1aon surface; a ray of that surface 4.7 s to 4.2 s. Tracing is now 3.2 s of those 4.2 s (9x on 32 threads).
 
 Next candidates: sticks on the GPU and surface draw submission (GUI, wait for a quiet machine and the driver decision), the two advancing-front passes of the triangulation (0.85 s and 0.82 s), thread scaling of the trace loop (9x on 16 cores / 32 threads), the zero-fill of the voxel list (0.17 s).
 

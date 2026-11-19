@@ -64,7 +64,7 @@ pip install --no-build-isolation --config-settings testing=True -e '.[dev]'
 | --- | --- |
 | Run all tests, no window | `pymolish -ckqy testing/testing.py --run all` |
 | Run one test file | `pymolish -ckqy testing/testing.py --run testing/tests/api/<file>.py` |
-| Measure performance, see [baseline.md](baseline.md) | `pymolish -ckqy testing/bench.py` |
+| Compare speed with upstream PyMOL 3, see [benchmark.md](benchmark.md) | `pymolish -ckqy testing/compare.py -- gui` |
 | Build a bundle into `dist/pymolish/` | `pyinstaller --noconfirm packaging/pyinstaller.spec` |
 
 Useful when a build misbehaves:

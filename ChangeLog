@@ -4,6 +4,18 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.14
+
+	* Removed
+	  - testing/bench.py and testing/bench_gui.py, which compared
+	    pymolish with older pymolish, and their tables in
+	    docs/baseline.md (steps 1a and 1b). testing/compare.py measures
+	    the same workloads against PyMOL 3 and replaces both; the old
+	    numbers stay in this ChangeLog. docs/baseline.md keeps the build
+	    loop, sizes and the other measurements.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.13
 
 	* Testing

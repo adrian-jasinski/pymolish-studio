@@ -177,7 +177,7 @@ wire, illustration, the solvent row and cartoon transparency came.
 **15b, outline in the viewport. Open, the user decides.**
 - A screen-space edge pass over the depth buffer after the scene is drawn,
   in `data/shaders/` and the Scene draw path of `layer1/`. New shader code,
-  to be measured with `testing/bench_gui.py` before and after.
+  to be measured with `testing/compare.py -- gui` before and after.
 
 **15c, ChimeraX object colors. Open, the user decides.**
 - One more entry in `palettes.PALETTES` (tan, sky blue, plum, light green,

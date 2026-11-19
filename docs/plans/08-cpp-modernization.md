@@ -29,7 +29,7 @@ tests and sanitizers. No from-scratch rewrite. Vendored C stays C.**
 
   About 3,800 sites plus the macros.
 - **Safety net today:** 167 Python test files, 23 Catch2 files,
-  `testing/bench.py`. No sanitizer build. Test coverage of the core was never
+  `testing/compare.py`. No sanitizer build. Test coverage of the core was never
   measured.
 
 ## Decisions
@@ -49,7 +49,7 @@ tests and sanitizers. No from-scratch rewrite. Vendored C stays C.**
   itself and can make it slower (`std::vector` zero-fills where `malloc` did
   not; `std::string` allocates inside loops). The two steps share an order
   instead: files are modernized in profile order, so a hot function is cleaned
-  just before or after it is optimized, and `bench.py` gates both.
+  just before or after it is optimized, and `compare.py` gates both.
 - **Delete first.** A line removed under step 2 is a line not modernized.
 - **Session layout is frozen.** Structs written by `pse_binary_dump`
   (`layer2/AtomInfoHistory.h`) keep their layout; PSE files must load and save
@@ -67,7 +67,7 @@ tests and sanitizers. No from-scratch rewrite. Vendored C stays C.**
 | 8d | VLA macros to `pymol::vla<T>` or `std::vector`; delete the macro layer when its last user is gone | Finishes upstream's migration; ends in a deletion. |
 | 8e | `ok` chains and `goto` cleanup to `pymol::Result` and early return | Needs 8c: early return is only safe once ownership is automatic. |
 | 8f | Function-like macros to `constexpr` / inline functions; C casts to named casts | Lowest value; do it only in files already open for another slice. |
-| 8g | `ov/` (3,700 lines of hand-written hash maps and string interning) to `std::unordered_map`, if `bench.py` is not slower | The one slice that deletes a directory. Measure before deciding. |
+| 8g | `ov/` (3,700 lines of hand-written hash maps and string interning) to `std::unordered_map`, if `compare.py` is not slower | The one slice that deletes a directory. Measure before deciding. |
 
 Inside a slice, go file by file in profile order: `Executive.cpp`,
 `Selector.cpp`, `ObjectMolecule.cpp`, `CGO.cpp`, `Ray.cpp`, `RepSurface.cpp`
@@ -97,8 +97,8 @@ first.
 
 ## Checks
 
-Every PR: the full Python suite, Catch2, the sanitizer job, `bench.py` within
-noise of the baseline in [docs/baseline.md](../baseline.md), and a PSE load and
+Every PR: the full Python suite, Catch2, the sanitizer job, `compare.py` within
+noise of the last run in [docs/benchmark.md](../benchmark.md), and a PSE load and
 save round trip. `layer1/` changes: real GUI.
 
 ## Status
@@ -262,7 +262,7 @@ after them.
 | --- | --- | --- |
 | 8h | Run the Catch2 tests in CI: add `pymolish --testing` to the Linux job. They are compiled today and never run. | It is a new check, not a change. |
 | 8i | Delete `#ifdef` branches for macros nothing defines. Neither `setup.py` nor any source defines `PURE_OPENGL_ES_2` (211 guards), `_PYMOL_NOPY` (145), `_WEBGL` (66), `_PYMOL_NO_RAY`, `_PYMOL_LIB`, `PYMOL_EVAL`, `WITH_UNUSED_FUNCTIONS`, `_PYMOL_EMBEDDED`, `PICKLETOOLS`, `_PYMOL_ACTIVEX`, `_PYMOL_INCENTIVE`, `_MACPYMOL_XCODE`. About 460 simple guards and at least 1,100 dead lines; compound conditions were not counted. One macro per PR, with `unifdef` (a tool on the development machine, not a dependency; not installed yet). | The compiler sees the same text: `g++ -E -P` output of every touched file is identical before and after, apart from `__LINE__` values. Then the suite. |
-| 8c to 8g | As planned above, file by file in profile order. | Suite, sanitizer job, `bench.py`, PSE round trip. |
+| 8c to 8g | As planned above, file by file in profile order. | Suite, sanitizer job, `compare.py`, PSE round trip. |
 
 8i comes before 8c because it removes lines that 8c to 8e would otherwise
 modernize, and because it is the only slice with a mechanical proof.
