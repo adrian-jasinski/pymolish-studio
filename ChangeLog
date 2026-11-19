@@ -4,6 +4,26 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.34
+
+	* Stereochemistry (cmd.* API, was a stub of the commercial build)
+	  - assign_stereo [selection [, state [, method]]] fills the atom
+	    property "stereo" with R or S, from the coordinates and bonds,
+	    with rdkit's CIP rules. Hydrogens and bond orders are not
+	    needed. After it, "label sele, stereo", "select stereo R" and
+	    "iterate" see the labels. The property does not follow an
+	    edit: run the command again.
+	  - Needs rdkit (pip install 'pymolish[chem]'; the downloadable
+	    builds have it). method=schrodinger is an error.
+	  - Label menu: "other properties > stereochemistry" is back. It
+	    runs assign_stereo, then labels.
+	  - Tests: mmpymolx.py went; its two cases are in
+	    stereochemistry.py. The test that needed a Schrodinger
+	    installation is deleted.
+	  - Step 21b.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.33
 
 	* STL export (cmd.* API, was a stub of the commercial build)

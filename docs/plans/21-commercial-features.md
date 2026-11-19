@@ -86,6 +86,16 @@ reading the file.
 
 ### 21b — Stereochemistry (R/S)
 
+**Done in 4.19.34, option A.** 25 lines in
+`modules/pymol/stereochemistry/__init__.py`: each object of the selection
+goes to rdkit as a MOL block, unsanitized (a PDB file has no bond orders or
+charges, and the CIP rules need neither), `AssignStereochemistryFrom3D`,
+labels back with `alter`. 1oky (2,475 atoms, 301 centers) takes 0.03 s.
+Label > other properties > stereochemistry is back. Not looked at: atoms
+with alternate coordinates (both copies go into the MOL block), and
+rdkit's newer, slower CIP labeler, which differs from the classic rules in
+rare cases.
+
 - **Now:** `assign_stereo` raises. The atom property and selection keyword
   `stereo` exist and are always empty.
 - **Options**

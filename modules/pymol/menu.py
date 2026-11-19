@@ -1525,6 +1525,8 @@ def label_props(self_cmd, sele):
               [ 0, ''               , ''                                  ],
               [ 1, 'text type'      , 'cmd.label("'+sele+'","text_type")'    ],
               [ 1, 'numeric type'   , 'cmd.label("'+sele+'","numeric_type")' ],
+              [ 0, ''               , ''                                  ],
+              [ 1, 'stereochemistry', 'cmd.assign_stereo("'+sele+'");cmd.label("'+sele+'","stereo")' ],
               ]
 
 def label_ids(self_cmd, sele):
