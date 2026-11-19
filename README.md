@@ -57,6 +57,12 @@ checksums.
 | See what is planned | [Roadmap](PLAN.md), [finished steps](PLAN-DONE.md), [ChangeLog](ChangeLog) |
 | Know what I may do with it | [Licenses](docs/licenses.md) |
 
+## Support the project
+
+pymolish-studio is free and built in spare time. If it is useful to you, you
+can [sponsor the work on GitHub Sponsors](https://github.com/sponsors/adrian-jasinski) 💖.
+Sponsorship pays for the time spent on new features, fixes and releases.
+
 ## License
 
 pymolish-studio. Contains PyMOL(TM) source code.
