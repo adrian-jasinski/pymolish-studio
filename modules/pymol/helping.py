@@ -86,18 +86,6 @@ USAGE
             print("Error: sorry no help available on that command.")
         return r
 
-    def help_setting(name, quiet=1, *, _self=cmd):
-        '''
-DESCRIPTION
-
-    Print documentation for a setting.
-
-USAGE
-
-    help_setting name
-        '''
-        raise pymol.IncentiveOnlyException()
-
     def commands():
         '''
 COMMANDS

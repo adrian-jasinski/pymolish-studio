@@ -203,39 +203,3 @@ EXAMPLES
     focal_blur 3.0, 50
         '''
         raise pymol.IncentiveOnlyException()
-
-    def callout(name, label, pos='', screen='auto', state=-1, color='front',
-            quiet=1, _self=cmd):
-        '''
-DESCRIPTION
-
-    Create a new screen-stabilized callout object.
-
-ARGUMENTS
-
-    name = str: object name
-
-    label = str: label text
-
-    pos = str or list: anchor in model space as 3-float coord list or atom
-    selection. If empty, don't draw an arrow. {default: }
-
-    screen = str or list: position on screen as 2-float list between [-1,-1]
-    (lower left) and [1,1] (upper right) or "auto" for smart placement.
-    {default: auto}
-        '''
-        raise pymol.IncentiveOnlyException()
-
-    def desaturate(selection="all", a=0.5, quiet=1, _self=cmd):
-        '''
-DESCRIPTION
-
-    Desaturate the colors in the given selection.
-
-ARGUMENTS
-
-    selection = str: atom selection {default: all}
-
-    a = float [0..1]: desaturation factor {default: 0.5}
-        '''
-        raise pymol.IncentiveOnlyException()

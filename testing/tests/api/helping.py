@@ -35,9 +35,3 @@ def testHelp_dedent():
     with patch('sys.stdout', new=StringIO()) as out:
         cmd.help('func_with_indented_help')
         assert 'USAGE\n\n    foo\n\nSEE' in out.getvalue()
-
-
-@testing.requires('incentive')
-def testHelpSetting():
-    out = cmd.help_setting('transparency')
-    assert 'controls surface transparency' in out

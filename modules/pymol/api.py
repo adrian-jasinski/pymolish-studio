@@ -446,7 +446,6 @@ from .helping import \
       api,                 \
       show_help,           \
       help,                \
-      help_setting,        \
       commands
 
 #--------------------------------------------------------------------
@@ -461,8 +460,6 @@ from .experimenting import \
       mem,                \
       spheroid,           \
       focal_blur,         \
-      callout,            \
-      desaturate,         \
       test
 
 from .internal import      \

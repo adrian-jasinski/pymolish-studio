@@ -537,24 +537,6 @@ def testLoadPLY():
     testing.assert_array_equal(e, [[-3.141,-3.036,-2.809], [15.920, 10.425, 8.680]], delta=1e-3)
 
 
-@pytest.mark.parametrize("load_object_props_default,object_props,truth", [
-        ['', '*',                   True],
-        ['', 'pdb_header',          True],
-        ['', 'x pdb_header y',      True],
-        ['', 'other',               False],
-        ['',                None,   False],
-        ['other',           None,   False],
-        ['pdb_header',      None,   True],
-        ['x pdb_header y',  None,   True],
-        ['*',               None,   True],
-        ])
-@testing.requires('incentive')
-def testPdbHeader(load_object_props_default, object_props, truth):
-    cmd.set('load_object_props_default', load_object_props_default)
-    cmd.load(testing.datafile('1rx1.pdb'), 'm1', object_props=object_props)
-    assert truth == ('pdb_header' in (cmd.get_property_list('m1') or ()))
-
-
 def testChemCompCartnUse():
     xyz_model = (1., 2., 3.)
     xyz_ideal = (4., 5., 6.)
