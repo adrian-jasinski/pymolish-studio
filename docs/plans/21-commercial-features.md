@@ -61,6 +61,14 @@ recommended one is marked.
 
 ### 21a — STL export
 
+**Done in 4.19.33, option A.** `RayRenderUSDA` got a second output: the
+meshes it already builds (tessellated solids, the scene's triangles) are
+written as binary STL facets, 60 lines in `layer1/USD.cpp`; `_cmd.get_stl`
+shares its body with `get_glb`. Checked besides the test: spheres, sticks
+and a surface of a fragment give closed meshes with unit normals that point
+outward (positive signed volume). Not checked: a slicer or another program
+reading the file.
+
 - **Now:** `save file.stl` and `cmd.get_stlstr` raise. Reading STL
   (`read_stlstr`) raises too.
 - **Options**

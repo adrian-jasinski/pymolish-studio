@@ -868,7 +868,6 @@ def testUSDZTransparentSausageDomes():
             assert color == (0.0, 0.0, 1.0)
 
 
-@testing.requires('incentive')
 def testSTL():
     cmd.fragment('gly')
     for rep in ['spheres', 'sticks', 'surface']:
@@ -879,3 +878,12 @@ def testSTL():
             # 80 bytes header
             # 4 bytes (uint32) number of triangles
             assert len(contents) > 84
+            # 50 bytes per triangle
+            ntri = int.from_bytes(contents[80:84], 'little')
+            assert ntri == (len(contents) - 84) // 50
+            assert (len(contents) - 84) % 50 == 0
+
+    cmd.delete('*')
+    with testing.mktemp('.stl') as filename:
+        with pytest.raises(pymol.CmdException):
+            cmd.save(filename)

@@ -1048,6 +1048,48 @@ private:
   std::vector<bool> m_reverse;
 };
 
+/// Number of binary STL facets of a mesh: a face of n corners is n - 2
+std::uint32_t StlFacetCount(const UsdMeshSource& mesh)
+{
+  std::uint32_t count = 0;
+  for (std::size_t face = 0; face < mesh.FaceCount(); ++face) {
+    count += std::max(mesh.FaceSize(face) - 2, 0);
+  }
+  return count;
+}
+
+/**
+ * Write the faces of a mesh as binary STL facets, each face as a triangle
+ * fan: 12 floats (facet normal, three corners) and a 2 byte attribute.
+ */
+// ponytail: writes the host's byte order, STL is little endian. Every
+// platform of the CI is; swap the bytes here if a big endian build appears.
+void StlWriteFacets(std::ostream& out, const UsdMeshSource& mesh)
+{
+  std::size_t corner = 0;
+  for (std::size_t face = 0; face < mesh.FaceCount(); ++face) {
+    const int size = mesh.FaceSize(face);
+    const float* first = mesh.Point(mesh.Index(corner));
+
+    for (int k = 1; k + 1 < size; ++k) {
+      float facet[12];
+      float edge1[3];
+      float edge2[3];
+      copy3f(first, facet + 3);
+      copy3f(mesh.Point(mesh.Index(corner + k)), facet + 6);
+      copy3f(mesh.Point(mesh.Index(corner + k + 1)), facet + 9);
+      subtract3f(facet + 6, facet + 3, edge1);
+      subtract3f(facet + 9, facet + 3, edge2);
+      cross_product3f(edge1, edge2, facet);
+      normalize3f(facet);
+      out.write(reinterpret_cast<const char*>(facet), sizeof(facet));
+      out.write("\0", 2);
+    }
+
+    corner += size;
+  }
+}
+
 /// Far end of a cylinder, sausage or cone, the near end being basis->Vertex
 void UsdSolidEnd(const CBasis* basis, const CPrimitive& primitive, float* end)
 {
@@ -1268,18 +1310,22 @@ void UsdWriteFitTransform(std::ostream& out, CRay* ray)
  * of an analytic prim. With `ar` the layer is meant for AR viewers instead:
  * solids keep their compact analytic prims where possible, and the scene is
  * scaled to fit within one meter.
+ *
+ * With `stl` the same meshes are written as a binary STL file instead (no
+ * colors, no transparency) and the VLA is resized to the file, or to 0 if
+ * there is nothing to export. `ar` must be false then.
  */
-void RayRenderUSDA(CRay* ray, char** vla_ptr, bool ar)
+void RayRenderUSDA(CRay* ray, char** vla_ptr, bool ar, bool stl)
 {
   const bool identity =
       SettingGetGlobal_i(ray->G, cSetting_geometry_export_mode) == 1;
 
   // Nothing to export, the caller reports a missing layer
-  if (!ray->NPrimitive) {
-    return;
-  }
-
-  if (!RayExpandPrimitives(ray) || !RayTransformFirst(ray, 0, identity)) {
+  if (!ray->NPrimitive || !RayExpandPrimitives(ray) ||
+      !RayTransformFirst(ray, 0, identity)) {
+    if (stl) {
+      VLASize(*vla_ptr, char, 0);
+    }
     return;
   }
 
@@ -1289,16 +1335,18 @@ void RayRenderUSDA(CRay* ray, char** vla_ptr, bool ar)
   UsdVLAStreamBuf buffer(vla_ptr, &count);
   std::ostream out(&buffer);
 
-  out << std::setprecision(9) << "#usda 1.0\n"
-      << "(\n"
-      << "    defaultPrim = \"PyMOLScene\"\n"
-      << "    documentation = \"Exported from PyMOL\"\n"
-      << "    metersPerUnit = " << (ar ? "1" : "1e-10") << "\n"
-      << "    upAxis = \"Y\"\n"
-      << ")\n"
-      << "\n"
-      << "def Xform \"PyMOLScene\"\n"
-      << "{\n";
+  if (!stl) {
+    out << std::setprecision(9) << "#usda 1.0\n"
+        << "(\n"
+        << "    defaultPrim = \"PyMOLScene\"\n"
+        << "    documentation = \"Exported from PyMOL\"\n"
+        << "    metersPerUnit = " << (ar ? "1" : "1e-10") << "\n"
+        << "    upAxis = \"Y\"\n"
+        << ")\n"
+        << "\n"
+        << "def Xform \"PyMOLScene\"\n"
+        << "{\n";
+  }
 
   if (ar) {
     UsdWriteFitTransform(out, ray);
@@ -1455,9 +1503,22 @@ void RayRenderUSDA(CRay* ray, char** vla_ptr, bool ar)
     }
   }
 
-  UsdWriteMesh(out, index, materials, "Solids", solids);
-
   const UsdSceneTriangles triangles(ray, basis);
+
+  if (stl) {
+    char header[80] = "binary STL written by pymolish-studio";
+    const std::uint32_t facets =
+        StlFacetCount(solids) + StlFacetCount(triangles);
+    out.write(header, sizeof(header));
+    out.write(reinterpret_cast<const char*>(&facets), sizeof(facets));
+    StlWriteFacets(out, solids);
+    StlWriteFacets(out, triangles);
+    out.flush();
+    VLASize(*vla_ptr, char, count);
+    return;
+  }
+
+  UsdWriteMesh(out, index, materials, "Solids", solids);
   UsdWriteMesh(out, index, materials, "Mesh", triangles);
 
   materials.Write(out);

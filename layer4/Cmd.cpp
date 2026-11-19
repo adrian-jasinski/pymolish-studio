@@ -2683,11 +2683,11 @@ static PyObject* CmdGetUSDA(PyObject* self, PyObject* args)
   return APIAutoNone(result);
 }
 
-#ifdef _HAVE_JSON
 /**
- * Return a GLB (binary glTF 2.0) bytes object or None on failure
+ * Return a binary file of the scene's geometry as a bytes object, or None if
+ * there is nothing to export
  */
-static PyObject *CmdGetGLB(PyObject * self, PyObject * args)
+static PyObject* SceneBytes(PyObject* self, PyObject* args, int mode)
 {
   PyMOLGlobals *G = nullptr;
   PyObject *result = nullptr;
@@ -2696,7 +2696,7 @@ static PyObject *CmdGetGLB(PyObject * self, PyObject * args)
   API_SETUP_ARGS(G, self, args, "O", &self);
   API_ASSERT(APIEnterNotModal(G));
 
-  SceneRay(G, 0, 0, cSceneRay_MODE_GLB,
+  SceneRay(G, 0, 0, mode,
       nullptr, &vla, 0.0F, 0.0F, false, nullptr, false, -1);
   APIExit(G);
 
@@ -2710,6 +2710,17 @@ static PyObject *CmdGetGLB(PyObject * self, PyObject * args)
   VLAFreeP(vla);
 
   return APIAutoNone(result);
+}
+
+static PyObject* CmdGetSTL(PyObject* self, PyObject* args)
+{
+  return SceneBytes(self, args, cSceneRay_MODE_STL);
+}
+
+#ifdef _HAVE_JSON
+static PyObject* CmdGetGLB(PyObject* self, PyObject* args)
+{
+  return SceneBytes(self, args, cSceneRay_MODE_GLB);
 }
 #endif // _HAVE_JSON
 
@@ -6438,6 +6449,7 @@ static PyMethodDef Cmd_methods[] = {
   {"get_title", CmdGetTitle, METH_VARARGS},
   {"get_type", CmdGetType, METH_VARARGS},
   {"get_usda", CmdGetUSDA, METH_VARARGS},
+  {"get_stl", CmdGetSTL, METH_VARARGS},
   {"get_unused_name", CmdGetUnusedName, METH_VARARGS},
   {"get_version", CmdGetVersion, METH_VARARGS},
   {"get_view", CmdGetView, METH_VARARGS},

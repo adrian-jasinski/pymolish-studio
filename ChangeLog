@@ -4,6 +4,22 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.33
+
+	* STL export (cmd.* API, was a stub of the commercial build)
+	  - "save file.stl" writes the geometry on display as a binary STL
+	    file: triangles only, no colors. Spheres, sticks and cones are
+	    tessellated as in the USD export (sphere_quality,
+	    stick_quality, cone_quality); surfaces, cartoons and meshes of
+	    triangles go out as they are. Coordinates are in Angstrom, in
+	    camera space, or in model space with geometry_export_mode 1.
+	  - An empty scene raises "no geometry to export". ASCII STL
+	    (binary=0) is not written. Reading STL is still not supported
+	    and now says so with an ordinary error.
+	  - Step 21a.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.32
 
 	* Show menu

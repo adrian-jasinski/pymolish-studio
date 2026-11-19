@@ -40,6 +40,7 @@ Z* -------------------------------------------------------------------
 #define cSceneRay_MODE_USDA 9
 #define cSceneRay_MODE_USDZ 10 // USDA for AR viewers
 #define cSceneRay_MODE_GLB 11
+#define cSceneRay_MODE_STL 12 // binary STL
 
 #define cSceneImage_Default -1
 #define cSceneImage_Normal 0

@@ -225,10 +225,29 @@ def get_stlstr(binary=1, quiet=0, _self=cmd):
     '''
 DESCRIPTION
 
-    STL geometry export
+    "get_stlstr" returns the geometry currently displayed as a binary STL
+    file (bytes): triangles only, no colors. Spheres and sticks are
+    tessellated as in "get_usda".
+
+USAGE
+
+    save filename.stl
+
+NOTES
+
+    Coordinates are in Angstrom, in camera space, or in the original model
+    space with geometry_export_mode=1.
     '''
-    raise pymol.IncentiveOnlyException(
-            "STL export not supported by this PyMOL build")
+    if not int(binary):
+        raise CmdException("ASCII STL is not written, only binary STL")
+
+    with _self.lockcm:
+        r = pymol._cmd.get_stl(_self._COb)
+
+    if r is None:
+        raise CmdException("no geometry to export", "Save-Error")
+
+    return r
 
 
 def read_stlstr(contents, object, state=0, zoom=-1, _self=cmd):
@@ -237,7 +256,6 @@ DESCRIPTION
 
     Load STL ASCII or binary content as a CGO object
     '''
-    raise pymol.IncentiveOnlyException(
-            "STL import not supported by this PyMOL build")
+    raise CmdException("STL import is not supported")
 
 

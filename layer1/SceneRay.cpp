@@ -482,6 +482,12 @@ bool SceneRay(PyMOLGlobals * G,
           RayRenderUSDA(ray, charVLA_ptr, mode == cSceneRay_MODE_USDZ);
         }
         break;
+      case cSceneRay_MODE_STL:
+        {
+          *charVLA_ptr = VLACalloc(char, 100000);
+          RayRenderUSDA(ray, charVLA_ptr, false, true);
+        }
+        break;
 
 #ifdef _HAVE_JSON
       case cSceneRay_MODE_GLB:  /* mode 11 is GLB (glTF 2.0 binary) */
