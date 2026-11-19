@@ -4,6 +4,18 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.10
+
+	* Speed
+	  - util.chainbow matches its selection against the atoms once.
+	    It did so three times for every chain, which shows with a long
+	    selection and many chains: the preset "publication green" on
+	    1aon (58,870 atoms, 21 chains) takes 0.34 s, down from 1.15 s.
+	    Same colors. With a plain object name there is nothing to gain
+	    (0.03 s before, 0.04 s now).
+
+2026-11-19 pymolish-studio
+
 	* 4.19.9
 
 	* Speed

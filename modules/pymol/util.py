@@ -817,11 +817,17 @@ def chainbow(selection='(all)', palette="rainbow", quiet=1, _self=cmd):
     '''
     Color all chains in rainbow
     '''
-    for model in _self.get_object_list('(' + selection + ')'):
-        for a in _self.get_chains('model %s & (%s)' % (model, selection)) or ['']:
-            _self.spectrum('count', palette,
-                    "(chain '%s' & model %s & (%s))" % (a, model, selection),
-                    byres=1, quiet=quiet)
+    # matched against all atoms once, not three times for every chain
+    atoms = _self.get_unused_name('_chainbow')
+    _self.select(atoms, selection, 0)
+    try:
+        for model in _self.get_object_list('?' + atoms):
+            for a in _self.get_chains('model %s & ?%s' % (model, atoms)) or ['']:
+                _self.spectrum('count', palette,
+                        "(chain '%s' & model %s & ?%s)" % (a, model, atoms),
+                        byres=1, quiet=quiet)
+    finally:
+        _self.delete(atoms)
 
 color_chains = cbc
 

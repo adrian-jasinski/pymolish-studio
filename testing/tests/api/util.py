@@ -258,8 +258,23 @@ def test_color_objs():
 
 
 def test_chainbow():
-    pymol.util.chainbow
-    pytest.skip("TODO")
+    # each chain gets the whole rainbow, residue by residue; what is not
+    # selected keeps its color
+    cmd.fab('ACDEFGHIK', 'm', chain='A')
+    cmd.fab('ACDEFGHIK', 'n', chain='B')
+    cmd.color('white')
+    pymol.util.chainbow('name CA & not (resn GLY | hetatm)')
+
+    def colors(selection):
+        found = []
+        cmd.iterate(selection, 'found.append(color)', space={'found': found})
+        return found
+
+    first = colors('m & name CA')
+    assert len(set(first)) == 9  # eight residues and the white glycine
+    assert first == colors('n & name CA')
+    assert set(colors('resn GLY')) == {cmd.get_color_index('white')}
+    assert not [n for n in cmd.get_names('all') if n.startswith('_chainbow')]
 
 
 def test_ray_shadows():
