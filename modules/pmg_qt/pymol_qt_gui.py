@@ -36,7 +36,6 @@ class PyMOLQtGUI(QtWidgets.QMainWindow, pymol._gui.PyMOLDesktopGUI):
 
     from pmg_qt.file_dialogs import (
             load_dialog,
-            load_mae_dialog,
             file_fetch_pdb,
             file_fetch_uniprot,
             file_fetch_fold,

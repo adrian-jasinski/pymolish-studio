@@ -17,7 +17,6 @@ struct ExecutiveLoadArgs {
   std::string plugin;
   std::string object_props;
   std::string atom_props;
-  bool mimic;
   int plugin_mask = 0;
 };
 
@@ -29,7 +28,7 @@ pymol::Result<ExecutiveLoadArgs> ExecutiveLoadPrepareArgs(PyMOLGlobals* G,
     int content_length, cLoadType_t content_format,
     const char* object_name_proposed, int state, int zoom, int discrete,
     int finish, int multiplex, int quiet, const char* plugin_arg,
-    const char* object_props, const char* atom_props, bool mimic = true);
+    const char* object_props, const char* atom_props);
 
 /**
  * Implementation of ExecutiveLoad

@@ -4,6 +4,27 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.18
+
+	* Removed
+	  - The leftovers of the commercial Maestro reader: the "mae" stub
+	    that raised IncentiveOnlyException, the Maestro load dialog, the
+	    load types mae and maestr (65, 66), the extension .maegz, the
+	    unused Python parser chempy.mae (chempy.io.mae) and the "mimic"
+	    option below cmd.load. 36 tests that needed the commercial
+	    reader, their 14 data files and one reference image.
+	  - Behavior change: "load file.mae" no longer raises. It reads the
+	    file through the VMD plugin that already reads Desmond .cms
+	    files: atoms, bonds and cell, no styles, labels or properties.
+	    A compressed .mae is not read. cmd.load still accepts "mimic"
+	    and ignores it.
+	  - Kept: saving .mae, loading .cms.
+
+	* Testing
+	  - properties/test_copy_props.py runs again, on an SDF file.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.17
 
 	* Testing

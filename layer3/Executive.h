@@ -110,10 +110,8 @@ enum cLoadType_t : int {
   cLoadTypeCMS = 63,
   cLoadTypePlugin = 64,
 
-  cLoadTypeMAE = 65,
-  cLoadTypeMAEStr = 66,
+  /* 65/66 were mae, maestr */
   cLoadTypePDBQT = 67,
-  /* 68 is Python-based MAE  */
   cLoadTypeVDBStr = 69,
 
 
@@ -218,8 +216,7 @@ pymol::Result<> ExecutiveLoad(PyMOLGlobals* G, const char* fname,
     const char* content, int content_length, cLoadType_t content_format,
     const char* object_name, int state, int zoom, int discrete, int finish,
     int multiplex, int quiet, const char* plugin,
-    const char* object_props = nullptr, const char* atom_props = nullptr,
-    bool mimic = true);
+    const char* object_props = nullptr, const char* atom_props = nullptr);
 
 int ExecutiveDebug(PyMOLGlobals* G, const char* name);
 

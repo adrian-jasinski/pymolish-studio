@@ -47,8 +47,6 @@ def load_dialog(parent, fname, **kwargs):
         load_traj_dialog(parent, fname)
     elif format in ('aln', 'fasta'):
         load_aln_dialog(parent, fname, format)
-    elif format == 'mae':
-        load_mae_dialog(parent, fname)
     elif format in ('ccp4', 'map'):
         load_map_dialog(parent, fname, 'ccp4')
     elif format == 'brix':
@@ -278,57 +276,6 @@ def load_aln_dialog(parent, filename, format):
     form.button_ok.clicked.connect(run)
     form.button_cancel.clicked.connect(cancel)
 
-    form._dialog.setModal(True)
-    form._dialog.show()
-
-
-def load_mae_dialog(parent, filename):
-    form = parent.load_form('load_mae')
-
-    form.input_object_name.setPlaceholderText(
-            pymol.importing.filename_to_objectname(filename))
-    form.input_object_props.setText(parent.cmd.get('load_object_props_default') or '*')
-    form.input_atom_props.setText(parent.cmd.get('load_atom_props_default') or '*')
-
-    def get_command(*args):
-        command = ('load \\\n    %s' % (filename))
-        name = form.input_object_name.text()
-        if name:
-            command += ', \\\n    ' + name
-        command += ', \\\n    mimic=' + ('1' if form.input_mimic.isChecked() else '0')
-        command += (
-                ', \\\n    object_props=%s'
-                ', \\\n    atom_props=%s' % (
-                    form.input_object_props.text(),
-                    form.input_atom_props.text()))
-        multiplex, discrete = [
-            (-2, -1),
-            (0, 0),
-            (0, 1),
-            (1, -1),
-        ][form.input_multiplex.currentIndex()]
-        if discrete != -1:
-            command += ', \\\n    discrete={}'.format(discrete)
-        if multiplex != -2:
-            command += ', \\\n    multiplex={}'.format(multiplex)
-        return command
-
-    def update_output_command(*args):
-        form.output_command.setText(get_command())
-
-    def run():
-        parent.cmd.do(get_command())
-        form._dialog.close()
-
-    # hook up events
-    form.input_multiplex.currentIndexChanged.connect(update_output_command)
-    form.input_mimic.stateChanged.connect(update_output_command)
-    form.input_object_name.textChanged.connect(update_output_command)
-    form.input_object_props.textChanged.connect(update_output_command)
-    form.input_atom_props.textChanged.connect(update_output_command)
-    form.button_ok.clicked.connect(run)
-
-    update_output_command()
     form._dialog.setModal(True)
     form._dialog.show()
 

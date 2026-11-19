@@ -5566,20 +5566,19 @@ static PyObject *CmdLoad(PyObject * self, PyObject * args)
   int multiplex;
   int zoom;
   Py_ssize_t bytes;
-  int mimic;
   const char* contents;
 
-  API_SETUP_ARGS(G, self, args, "Oszz#iiiiiii|zzzi", &self,
+  API_SETUP_ARGS(G, self, args, "Oszz#iiiiiii|zzz", &self,
                         &oname, &fname, &contents, &bytes, &frame, &type,
                         &finish, &discrete, &quiet, &multiplex, &zoom,
-                        &plugin, &object_props, &atom_props, &mimic);
+                        &plugin, &object_props, &atom_props);
   API_ASSERT(APIEnterNotModal(G));
 
   auto result = ExecutiveLoad(G,
                          fname, contents, bytes, type,
                          oname, frame, zoom,
                          discrete, finish, multiplex, quiet, plugin,
-                         object_props, atom_props, mimic);
+                         object_props, atom_props);
 
   OrthoRestorePrompt(G);
   APIExit(G);

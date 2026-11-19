@@ -1,38 +1,26 @@
-
 '''
-Testing atom properties for simple getting/setting and loading from sdf and mae files
+cmd.create(copy_properties=True) copies object and atom properties
 '''
 
-from pymol import cmd, testing, stored
-
-pytestmark = testing.requires('incentive')
+from pymol import cmd
 
 
 def testCopyObjectProperties():
-    cmd.load(testing.datafile('1molecule.mae'), 'test', object_props='*')
-    objs = cmd.get_object_list()
-    for obj in objs:
-        obj_copy = '%s_copy' % obj
-        cmd.create(obj_copy, obj, copy_properties=True)
-        props1 = cmd.get_property_list(obj)
-        props2 = cmd.get_property_list(obj_copy)
-        assert set(props1) == set(props2)
-        for prop in props1:
-            prop1 = cmd.get_property(prop, obj)
-            prop2 = cmd.get_property(prop, obj_copy)
-            assert prop1 == prop2
+    cmd.load('CID_6830.sdf', 'test', object_props='*')
+    cmd.create('test_copy', 'test', copy_properties=True)
+    props = cmd.get_property_list('test')
+    assert props
+    assert set(props) == set(cmd.get_property_list('test_copy'))
+    for prop in props:
+        assert cmd.get_property(prop, 'test') == cmd.get_property(prop, 'test_copy')
 
 
 def testCopyAtomProperties():
-    cmd.load(testing.datafile('1molecule.mae'), 'test', object_props='*', atom_props='*')
-    objs = cmd.get_object_list()
-    for obj in objs:
-        obj_copy = '%s_copy' % obj
-        cmd.create(obj_copy, obj, copy_properties=True)
-
-        stored.proplookup1 = {}
-        cmd.iterate(obj,  'stored.proplookup1[index] = property')
-        stored.proplookup2 = {}
-        cmd.iterate(obj_copy,  'stored.proplookup2[index] = property')
-        assert stored.proplookup1 == stored.proplookup2
-
+    cmd.load('CID_6830.sdf', 'test')
+    cmd.alter('test', 'p.foo = index')
+    cmd.create('test_copy', 'test', copy_properties=True)
+    props = {}
+    cmd.iterate('test test_copy', 'props.setdefault(model, {})[index] = p.all',
+                space={'props': props})
+    assert props['test'][1] == {'foo': 1}
+    assert props['test'] == props['test_copy']

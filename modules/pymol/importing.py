@@ -77,9 +77,6 @@ if True:
             format = 'rst'
         elif ext in ('o', 'dsn6', 'omap',):
             format = 'brix'
-        elif ext in ('maegz',):
-            zipped = 'gz'
-            format = 'mae'
         elif ext in ('ph4',):
             format = 'moe'
         elif ext in ('spi',):
@@ -565,8 +562,10 @@ ARGUMENTS
     the content should be loaded, or 0 for append {default:0}
 
     format = pdb, ccp4, etc. {default: use file extension}): format of
-    data file    
-    
+    data file
+
+    mimic: accepted and not used (it applied the styles of a Maestro file)
+
 EXAMPLES
 
     load 1dn2.pdb
@@ -692,7 +691,6 @@ SEE ALSO
                 'multiplex': multiplex,
                 'zoom': zoom,
                 'partial': partial,
-                'mimic': mimic,
                 'object_props': object_props,
                 'atom_props': atom_props,
                 '_self': _self,
@@ -1451,7 +1449,6 @@ EXAMPLE
         return _self.load_model(obj, object, state)
 
     loadfunctions = {
-        'mae': incentive_format_not_available_func,
         'pdbml': 'pymol.lazyio:load_pdbml',
         'cml': 'pymol.lazyio:load_cml',
         'mtz': load_mtz,

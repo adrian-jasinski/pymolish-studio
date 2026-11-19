@@ -158,15 +158,6 @@ def testLoad_no_zoom():
     assert view == cmd.get_view()
 
 
-@testing.requires('incentive')
-def testLoad_mimic():
-    filename = testing.datafile("repr.mae")
-    cmd.load(filename, "m0", mimic=0)
-    cmd.load(filename, "m1", mimic=1)
-    assert not cmd.get_setting_boolean("stick_ball", "m0.x_ballstick", state=1)
-    assert cmd.get_setting_boolean("stick_ball", "m1.x_ballstick", state=1)
-
-
 def testLoad_idx():
     cmd.load(testing.datafile('desmond/Bace_mapper_20143_3a51a59_e85111a_solvent_11_replica0-out.idx'), state=1)
     assert cmd.count_states() == 209

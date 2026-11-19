@@ -3687,11 +3687,11 @@ pymol::Result<> ExecutiveLoad(PyMOLGlobals* G, const char* fname,
     const char* content, int content_length, cLoadType_t content_format,
     const char* object_name_proposed, int state, int zoom, int discrete,
     int finish, int multiplex, int quiet, const char* plugin_arg,
-    const char* object_props, const char* atom_props, bool mimic)
+    const char* object_props, const char* atom_props)
 {
   auto res = ExecutiveLoadPrepareArgs(G, fname, content, content_length,
       content_format, object_name_proposed, state, zoom, discrete, finish,
-      multiplex, quiet, plugin_arg, object_props, atom_props, mimic);
+      multiplex, quiet, plugin_arg, object_props, atom_props);
   p_return_if_error(res);
   return ExecutiveLoad(G, res.result());
 }
@@ -3704,7 +3704,7 @@ pymol::Result<ExecutiveLoadArgs> ExecutiveLoadPrepareArgs(PyMOLGlobals* G,
     int content_length, cLoadType_t content_format,
     const char* object_name_proposed, int state, int zoom, int discrete,
     int finish, int multiplex, int quiet, const char* plugin_arg,
-    const char* object_props, const char* atom_props, bool mimic)
+    const char* object_props, const char* atom_props)
 {
   ExecutiveLoadArgs args;
   bool fname_null_ok = false;
@@ -3735,7 +3735,6 @@ pymol::Result<ExecutiveLoadArgs> ExecutiveLoadPrepareArgs(PyMOLGlobals* G,
   case cLoadTypePDBStr:
   case cLoadTypeVDBStr:
   case cLoadTypeCIFStr:
-  case cLoadTypeMAEStr:
   case cLoadTypeXPLORStr:
   case cLoadTypeCCP4Str:
   case cLoadTypeCCP4UnspecifiedStr:
@@ -3757,7 +3756,6 @@ pymol::Result<ExecutiveLoadArgs> ExecutiveLoadPrepareArgs(PyMOLGlobals* G,
   case cLoadTypePDBQT:
   case cLoadTypePDB:
   case cLoadTypeCIF:
-  case cLoadTypeMAE:
   case cLoadTypeXPLORMap:
   case cLoadTypeCCP4Map:
   case cLoadTypeCCP4Unspecified:
@@ -3860,7 +3858,6 @@ pymol::Result<ExecutiveLoadArgs> ExecutiveLoadPrepareArgs(PyMOLGlobals* G,
   args.quiet = quiet;
   args.object_props = object_props;
   args.atom_props = atom_props;
-  args.mimic = mimic;
   return args;
 }
 
@@ -3897,8 +3894,6 @@ pymol::Result<> ExecutiveLoad(PyMOLGlobals* G, ExecutiveLoadArgs const& args)
         discrete = -1;    /* content-dependent behavior... */
       case cLoadTypeSDF2: /* SDF files currently default to discrete */
       case cLoadTypeSDF2Str:
-      case cLoadTypeMAE: /* Let MAE handle itself */
-      case cLoadTypeMAEStr:
         break;
       default:
         discrete = 0;
@@ -3941,15 +3936,6 @@ pymol::Result<> ExecutiveLoad(PyMOLGlobals* G, ExecutiveLoadArgs const& args)
     p_return_if_error(res);
     obj = res.result();
   } break;
-  case cLoadTypeMAE:
-  case cLoadTypeMAEStr:
-#ifndef _PYMOL_IP_EXTRAS
-    return pymol::Error::make<pymol::Error::INCENTIVE_ONLY>(
-        "'mae' format not supported by this PyMOL build");
-#else
-#error ""
-#endif
-    break;
   case cLoadTypeTOP:
     if (origObj) {
       /* always reinitialize topology objects from scratch */
