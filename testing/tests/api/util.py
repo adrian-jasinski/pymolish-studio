@@ -300,6 +300,32 @@ def test_get_sasa_relative_subsele():
     assert r['1oky-frag', '', 'A', '86'] == pytest.approx(0.812, abs=1e-3)
 
 
+def test_get_sasa_relative_tripeptides():
+    # all residues are measured in one temporary object; the result is
+    # that of one object per residue with its bonded neighbors
+    cmd.load(testing.datafile('1oky-frag.pdb'), 'm')
+    subsele = 'sidechain guide'
+    r = cmd.get_sasa_relative('m', subsele=subsele)
+
+    def area(selection):
+        total = [0.0]
+        cmd.iterate(selection, 'total[0] += b', space={'total': total})
+        return total[0]
+
+    cmd.set('dot_solvent')
+    keys = sorted(r, key=lambda key: int(key[3]))
+    for key in (keys[0], keys[len(keys) // 2], keys[-1]):
+        residue = '/%s/%s/%s/`%s' % key
+        cmd.get_area('m', load_b=1)
+        inside = area('%s & (%s)' % (residue, subsele))
+        cmd.create('t', 'byres (%s extend 1)' % residue, zoom=0)
+        cmd.get_area('t', load_b=1)
+        alone = area('/t/%s/%s/`%s & (%s)' % (key[1:] + (subsele,)))
+        cmd.delete('t')
+        assert alone > 0
+        assert r[key] == pytest.approx(inside / alone, abs=1e-6)
+
+
 def test_ligand_zoom():
     pymol.util.ligand_zoom
     pytest.skip("TODO")

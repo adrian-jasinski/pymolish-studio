@@ -4,6 +4,23 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.8
+
+	* Speed
+	  - get_sasa_relative: the full exposure of all residues is
+	    measured in one pass. Before, each residue was copied into an
+	    object of its own with its bonded neighbors, with two
+	    selections over all atoms: 10 ms per residue in a large
+	    structure. 1aon (58,870 atoms): chain A, 526 residues, 5.6 s
+	    to 1.4 s; chains A and H, 12.3 s to 1.5 s. Small structures
+	    gain little (1rx1: 0.16 s to 0.11 s).
+	    The values are the same, with one exception in 3,921 residues
+	    compared: a value moved by 0.001, because the copies are
+	    measured at other coordinates and one surface dot fell on the
+	    other side of a neighbor's sphere.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.7
 
 	* Tests
