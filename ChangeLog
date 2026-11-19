@@ -4,6 +4,16 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.21
+
+	* Removed
+	  - The FreeMOL test (testing/tests/system/freemol_.py) and its test
+	    flag. It checked the helper programs apbs, mengine and
+	    mpeg_encode of the FreeMOL package, which is not part of this
+	    program, and was skipped on every run.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.20
 
 	* Removed

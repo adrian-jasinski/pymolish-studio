@@ -132,7 +132,6 @@ else:
             'undo': cliargs.no_undo,
             'no_run_all': run_all,
             'multicore': max_threads <= 1,
-            'freemol': True,  # not used since PyMOL 2.5
             'no_win64bit': is_win64bit,
             'multi_undo': 'multi_undo' not in get_capabilities(),
         }
