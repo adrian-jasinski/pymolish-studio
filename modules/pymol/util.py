@@ -94,7 +94,14 @@ ARGUMENTS
     orgSel = _self.get_unused_name("_org")
 
     orgN = _self.select(orgSel, sele, 0)
-    _self.create(tmpObj, "byobj ?%s & ! solvent" % (orgSel), zoom=0)
+    # the copy holds the atoms that can hide a dot of the selection, not the
+    # whole object: get_area builds the dots of all atoms of its object
+    reach = [0.0]
+    _self.iterate("byobj ?%s" % orgSel, "reach[0] = max(reach[0], vdw)",
+                  space={'reach': reach, 'max': max})
+    reach = 2 * (reach[0] + asa * _self.get_setting_float("solvent_radius"))
+    _self.create(tmpObj, "(byobj ?%s & ! solvent) & (?%s expand %f)" % (
+        orgSel, orgSel, reach + 0.1), zoom=0)
     tmpN = _self.select(tmpSel, '?%s in ?%s' % (tmpObj, orgSel), 0)
 
     try:

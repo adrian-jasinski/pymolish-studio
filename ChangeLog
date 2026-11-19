@@ -4,6 +4,18 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.9
+
+	* Speed
+	  - util.color_by_area (menu C > spectrum > area): the temporary
+	    copy that is measured holds the atoms in reach of the
+	    selection, no longer the whole object. 1aon (58,870 atoms),
+	    chain A: 5.0 s to 0.26 s; three chains: 5.6 s to 0.58 s. A
+	    whole small molecule gains little (1rx1: 0.12 s to 0.09 s).
+	    The colors are the same for every atom in the 7 cases compared.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.8
 
 	* Speed

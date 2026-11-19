@@ -31,6 +31,28 @@ def test_color_by_area(mode):
     assert colors != colors_mode_other
 
 
+@pytest.mark.parametrize("mode", ['molecular', 'solvent'])
+def test_color_by_area_part(mode):
+    # a part of an object is measured in a copy of the atoms around it;
+    # the colors are those of a measurement in the whole object
+    cmd.load(testing.datafile('1oky-frag.pdb'), 'm')
+    part = 'resi 86-95'
+
+    def colors(selection):
+        found = []
+        cmd.iterate(selection, 'found.append(color)', space={'found': found})
+        return found
+
+    pymol.util.color_by_area('m & ' + part, mode)
+    cmd.create('whole', 'm')
+    cmd.set('dot_solvent', mode == 'solvent', 'whole')
+    cmd.set('dot_density', 3, 'whole')
+    cmd.get_area('whole & ' + part, load_b=1)
+    cmd.spectrum('b', 'rainbow', 'whole & ' + part)
+    assert len(set(colors('m & ' + part))) > 10
+    assert colors('m & ' + part) == colors('whole & ' + part)
+
+
 def test_find_surface_residues():
     pymol.util.find_surface_residues
     pytest.skip("TODO")
