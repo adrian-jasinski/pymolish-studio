@@ -4,6 +4,31 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.16
+
+	* Performance
+	  - Surfaces of very large structures build faster. The grid that
+	    finds neighbors (MapType) was limited to hash_max^3 = one million
+	    cells; the surface dots of a ribosome are 3 to 10 million points
+	    in a 300 A box, so the cells grew and every search scanned more
+	    points. The grid may now have two cells per point when that is
+	    more than hash_max^3. Surface build, before / after: 4v6x (239306
+	    atoms) 48.6 s / 31.0 s, 1aon four times (235480 atoms) 34.4 s /
+	    23.2 s, 1jj2 9.9 s / 8.4 s; 1aon and smaller: no change. Peak
+	    memory the same (8.2 and 8.4 GB for 4v6x). The ray tracer's
+	    grids do not change (it sizes them itself below the limit).
+	  - Changed result: the dot clean-up and the triangulation pick
+	    among neighbors in the order the grid lists them, so where the
+	    grid changed, the surface is triangulated differently: 1aon
+	    34691 of 904807 triangles (3.8 %), 4v6x about 5 % and 1.3 % more
+	    triangles. Same area (1aon 740906 A^2); in a ray-traced
+	    800x600 image of 1aon 0.2 % of the pixels differ by more than
+	    32 of 255. Structures with fewer than 500000 surface dots (6vxx
+	    with 24621 atoms and smaller, tested) give the same surface
+	    byte for byte, as PyMOL 3.2 does.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.15
 
 	* Performance
