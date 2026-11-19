@@ -77,8 +77,6 @@ if True:
             format = 'rst'
         elif ext in ('o', 'dsn6', 'omap',):
             format = 'brix'
-        elif ext in ('ph4',):
-            format = 'moe'
         elif ext in ('spi',):
             format = 'spider'
         elif ext in ('pym', 'pyc',):
@@ -1465,9 +1463,4 @@ EXAMPLE
         'cc1': load_cc1,
         'pdb': read_pdbstr,
         'stl': 'pymol.lazyio:read_stlstr',
-
-        # Incentive
-        'vis': incentive_format_not_available_func,
-        'moe': incentive_format_not_available_func,
-        'phypo': incentive_format_not_available_func,
     }

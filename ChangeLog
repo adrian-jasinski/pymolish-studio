@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.20
+
+	* Removed
+	  - The stubs for three file formats of other vendors, which only
+	    raised IncentiveOnlyException: MOE (.moe, .ph4), Maestro
+	    surfaces and maps (.vis) and Phase pharmacophores (.phypo).
+	    Loading one now reports "unsupported file type". Six tests
+	    and their seven data files.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.19
 
 	* Removed
