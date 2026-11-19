@@ -1223,12 +1223,6 @@ float* OrthoGetOverlayColor(PyMOLGlobals* G)
 #ifdef JYMOL_EVAL
 #include "OrthoJyMolEvalMessage.h"
 #endif
-#ifdef PYMOL_EDU
-#include "OrthoEduMessage.h"
-#endif
-#ifdef PYMOL_COLL
-#include "OrthoCollMessage.h"
-#endif
 #ifdef AXPYMOL_EVAL
 #include "OrthoAxMessage.h"
 #endif
@@ -1667,12 +1661,6 @@ static void OrthoDrawMessages(PyMOLGlobals* G, CGO* orthoCGO)
 #endif
 #ifdef JYMOL_EVAL
   OrthoDrawEvalMessage(G);
-#endif
-#ifdef PYMOL_EDU
-  OrthoDrawEduMessage(G, orthoCGO);
-#endif
-#ifdef PYMOL_COLL
-  OrthoDrawCollMessage(G);
 #endif
 #ifdef AXPYMOL_EVAL
   OrthoDrawAxMessage(G);
@@ -2335,9 +2323,6 @@ void OrthoSplash(PyMOLGlobals* G)
 {
 
 /* BEGIN PROPRIETARY CODE SEGMENT (see disclaimer in "os_proprietary.h") */
-#ifdef _PYMOL_IP_SPLASH
-#include "OrthoIPSplash.h"
-#else
   if (G->Option->incentive_product) {
 #ifdef AXPYMOL_EVAL
     PRINTF
@@ -2400,7 +2385,6 @@ void OrthoSplash(PyMOLGlobals* G)
 
     PRINTF " Hit ESC anytime to toggle between text and graphics.\n\n" ENDF(G);
   }
-#endif
 }
 
 /*========================================================================*/

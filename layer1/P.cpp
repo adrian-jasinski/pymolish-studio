@@ -1771,13 +1771,8 @@ void PConvertOptions(CPyMOLOptions * rec, PyObject * options)
   rec->keep_thread_alive =
     PyInt_AsLong(PyObject_GetAttrString(options, "keep_thread_alive"));
   rec->quiet = PyInt_AsLong(PyObject_GetAttrString(options, "quiet"));
-#ifdef _PYMOL_IP_EXTRAS
-  rec->incentive_product = true;
-  PyObject_SetAttrString(options, "incentive_product", PyInt_FromLong(1));
-#else
   rec->incentive_product =
     PyInt_AsLong(PyObject_GetAttrString(options, "incentive_product"));
-#endif
   rec->multisample = PyInt_AsLong(PyObject_GetAttrString(options, "multisample"));
   rec->window_visible = PyInt_AsLong(PyObject_GetAttrString(options, "window_visible"));
   rec->read_stdin = PyInt_AsLong(PyObject_GetAttrString(options, "read_stdin"));

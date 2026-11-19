@@ -34,47 +34,6 @@ Z* -------------------------------------------------------------------
 #define PATH_SEP "/"
 #endif
 
-
-/* commercial product */
-
-#ifdef PYMOL_COMM
-#ifndef _PYMOL_IP_SPLASH
-#define _PYMOL_IP_SPLASH
-#endif
-#ifndef _PYMOL_IP_EXTRAS
-#define _PYMOL_IP_EXTRAS
-#endif
-#endif
-
-
-/* collaboration product (placarded) */
-
-#ifdef PYMOL_COLL
-#ifndef _PYMOL_IP_SPLASH
-#define _PYMOL_IP_SPLASH
-#endif
-#ifndef _PYMOL_IP_EXTRAS
-#define _PYMOL_IP_EXTRAS
-#endif
-#endif
-
-
-/* educational product (placarded) */
-
-#ifdef PYMOL_EDU
-#ifndef _PYMOL_IP_SPLASH
-#define _PYMOL_IP_SPLASH
-#endif
-#ifndef _PYMOL_IP_EXTRAS
-#define _PYMOL_IP_EXTRAS
-#endif
-#endif
-
-
-/* evaluation product (placarded) */
-
-
-
 /* END PROPRIETARY CODE SEGMENT */
 
 #include <stddef.h>

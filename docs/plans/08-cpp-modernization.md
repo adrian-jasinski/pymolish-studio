@@ -203,7 +203,17 @@ save round trip. `layer1/` changes: real GUI.
 **8i done 2026-11-16 in 4.14.2.** Two more macros of the same kind went in
 4.19.19 with [step 21](21-commercial-features.md): `NO_MMLIBS` (always
 defined) and the atom-typing blocks behind `_PYMOL_IP_EXTRAS` (never
-defined). Twelve `_PYMOL_IP_EXTRAS` guards in eight files are left.
+defined). The remaining guards went in 4.19.38: `_PYMOL_IP_EXTRAS` and
+`_PYMOL_IP_SPLASH`, and the three product macros that alone defined them
+(`PYMOL_COMM`, `PYMOL_COLL`, `PYMOL_EDU`): 100 lines in 10 files, same tool
+and same proof (195 translation units, two configurations, identical
+hashes), then the suite, Catch2 (137 cases) and a PSE round trip. The
+sanitizer job was not run for it: the compiler sees the same text. What the
+removal lays bare, not removed because it is not neutral:
+`_cmd.get_m2io_first_block_properties` always raises and has no caller
+(Maestro went in 4.19.24); two empty `auto_copy_images` branches in
+`Scene.cpp` and `SceneRay.cpp`; the macros `AXPYMOL_EVAL`, `JYMOL_EVAL` and
+`PYMOL_EVAL` next to them in `Ortho.cpp` were not surveyed.
 
 - 12 macros, one commit each (`59cc08ee` to `374acdcc`) and a last pass for
   conditions that name two of them: 2,207 lines gone from 97 files.

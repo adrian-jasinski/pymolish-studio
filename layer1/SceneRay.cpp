@@ -764,10 +764,6 @@ int SceneDeferRay(PyMOLGlobals * G,
         quiet, nullptr, show_timing, antialias);
     if ((mode == 0) && G->HaveGUI &&
         SettingGet<bool>(G, cSetting_auto_copy_images)) {
-#ifdef _PYMOL_IP_EXTRAS
-      PParse(G, "cmd._copy_image(quiet=0)");
-#else
-#endif
     }
   };
   OrthoDefer(G, std::move(deferred));

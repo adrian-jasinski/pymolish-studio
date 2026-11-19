@@ -2875,9 +2875,6 @@ static PyObject *CmdSplash(PyObject * self, PyObject * args)
     }
   } else {
     /* BEGIN PROPRIETARY CODE SEGMENT (see disclaimer in "os_proprietary.h") */
-#ifdef _PYMOL_IP_EXTRAS
-    result = 0;
-#endif
     /* END PROPRIETARY CODE SEGMENT */
   }
   return APIResultCode(result);
@@ -6278,11 +6275,8 @@ static PyObject* CmdM2ioFirstBlockProperties(PyObject* self, PyObject* args)
   Py_ssize_t length;
   if (!PyArg_ParseTuple(args, "s#", &contents, &length))
     return nullptr;
-#ifdef _PYMOL_IP_EXTRAS
-#else
   PyErr_SetNone(P_IncentiveOnlyException);
   return nullptr;
-#endif
 }
 
 static PyObject* CmdLookAt(PyObject* self, PyObject* args)

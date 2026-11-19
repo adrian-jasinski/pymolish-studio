@@ -1945,17 +1945,10 @@ static bool read_struct_conn_(PyMOLGlobals * G, const pymol::cif_data * data,
       name_dict[make_mm_atom_site_label(G, atInfo + i)] = idx;
   }
 
-#ifdef _PYMOL_IP_EXTRAS
-  bool metalc_as_zero = SettingGetGlobal_b(G, cSetting_cif_metalc_as_zero_order_bonds);
-#endif
-
   for (int i = 0; i < nrows; i++) {
     const char * type_id = col_type_id->as_s(i);
     if (strncasecmp(type_id, "covale", 6) &&
         strcasecmp(type_id, "modres") &&
-#ifdef _PYMOL_IP_EXTRAS
-        !(metalc_as_zero && strcasecmp(type_id, "metalc") == 0) &&
-#endif
         strcasecmp(type_id, "disulf"))
       // ignore non-covalent bonds (saltbr, hydrog)
       continue;
