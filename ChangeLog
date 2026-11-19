@@ -4,6 +4,18 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.28
+
+	* Documentation
+	  - Plan 21 and PLAN.md follow the decisions of 2026-11-19: all
+	    Maestro support removed (4.19.24), a command is enough for
+	    stereochemistry, the stubs outside the request removed
+	    (4.19.25, 4.19.26). The three rendering details are explained
+	    in plain words with their options; two questions remain
+	    (rendering details, size of undo).
+
+2026-11-19 pymolish-studio
+
 	* 4.19.27
 
 	* Brand
