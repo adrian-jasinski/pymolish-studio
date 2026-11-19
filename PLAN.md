@@ -22,7 +22,7 @@ user's original numbers; the letters are milestones of the detailed plans.
 
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
-| 5 | **1b** — [Performance and GPU](docs/plans/01-performance-gpu.md) | Renderer default on WSL, draw cost of sticks and surfaces, the two triangulation passes. One measured bottleneck per change. | Each change has before and after numbers. |
+| 5 | **1b** — [Performance and GPU](docs/plans/01-performance-gpu.md) | Large surfaces off the GUI thread (waits for the user), draw cost of sticks, lines as triangles on every driver, the two triangulation passes. One measured bottleneck per change. | Each change has before and after numbers. |
 | 5 | **3** — [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Rows moved by dragging, a picked atom selects its row, sequence viewer text and scene buttons still drawn by the core, spacing of the remaining dialogs. The removal of the old C++ panel moved to step 17 and the timeline to step 19; dialog sizes and the scroll bar of the sequence viewer shipped as step 18. | Each increment ships in a reviewable test build. |
 | none | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Next: 8c to 8g. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
 | none | **5c** — [Release builds without GitHub Actions](docs/plans/05-builds-binaries.md) | A proposal of 2026-11-16 inside finished step 5: Linux in podman, Windows on the host, macOS not possible off Apple hardware. Nothing is built yet. | The user accepts or drops the proposal. |
@@ -70,7 +70,7 @@ recommended direction, not a claim that an implementation has passed tests.
 
 | # | Decision | Where it is described | What it holds up |
 | --- | --- | --- | --- |
-| 1 | On WSL, should the app select the `d3d12` driver itself? Frames go from 50 to 120 ms down to 0.7 to 11 ms; lines are then 1 pixel wide, so `trilines` goes on with it and mesh lines stay thin. | [01-performance-gpu.md](docs/plans/01-performance-gpu.md), Status 2026-11-14 | The first open item of 1b |
+| 1 | A large surface freezes the window while it builds (4v6x 30 s, 1aon 5 s). Build it on a worker thread (A, recommended), make large surfaces coarser (B), or only announce the build in the status line (C)? | [01-performance-gpu.md](docs/plans/01-performance-gpu.md), Status 2026-11-19 | The next item of 1b |
 | 3 | Rights line for the icon and the logo: who made them, which license. | [09-icons-logo.md](docs/plans/09-icons-logo.md), `docs/licenses.md` | A complete license list; no code |
 | 4 | 5c: build the Linux and Windows bundles on the development machine, or stay with GitHub Actions now that the failing test is fixed (4.12.7)? | [05-builds-binaries.md](docs/plans/05-builds-binaries.md), 5c | 5c |
 | 5 | 15b: draw the black outline of the looks figure, soft, flat, comic and sketch in the viewport too? It needs a new edge pass in the shaders; today the outline appears only in ray-traced images. The preset illustration depends on it most: without the outline the viewport shows only flat blue shapes. | [15-presets.md](docs/plans/15-presets.md), Slices | 15b |

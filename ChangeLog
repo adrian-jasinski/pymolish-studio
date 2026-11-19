@@ -4,6 +4,27 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.17
+
+	* Testing
+	  - Benchmark against PyMOL 3.2 repeated with both programs on
+	    Python 3.14 (pymolish built into .venv314): docs/benchmark.md.
+	    Every result and ray-traced image the same. Surface 2 to 2.6
+	    times faster (4v6x 86 s to 33 s), session load 5 to 12 times,
+	    frames on WSL 2.5 to 10 times (GPU against CPU). The rows that
+	    looked slower before, "save PSE" and alter + iterate, are equal
+	    on the same Python.
+	  - testing/compare.py prints the Python version of each side and,
+	    for the GUI, the OpenGL driver each one drew with.
+
+	* Documentation
+	  - docs/install.md: what the app does on WSL and the two variables
+	    that change it. Plan 1 and PLAN.md: the WSL driver decision is
+	    done; the open question is now how to keep the window usable
+	    while a large surface builds.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.16
 
 	* Performance

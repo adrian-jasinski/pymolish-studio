@@ -26,6 +26,26 @@ Next candidates: sticks on the GPU (11 ms per frame, p99 36 ms, 6 ms of it CPU),
 
 Next candidates: sticks on the GPU and surface draw submission (GUI, wait for a quiet machine and the driver decision), the two advancing-front passes of the triangulation (0.85 s and 0.82 s), thread scaling of the trace loop (9x on 16 cores / 32 threads), the zero-fill of the voxel list (0.17 s).
 
+## Status 2026-11-19
+
+Measurements now run against upstream PyMOL 3.2 with `testing/compare.py`, both programs on Python 3.14 (`.venv314`); method, tables and reading in [docs/benchmark.md](../benchmark.md). Three things came out of it.
+
+Decision taken (the user, 2026-11-19): on WSL the app selects the GPU itself. Done in 4.19.15: `theme.prefer_gpu_on_wsl` sets `GALLIUM_DRIVER=d3d12` when `/dev/dxg` and `d3d12_dri.so` exist; the user's own `GALLIUM_DRIVER` or `LIBGL_ALWAYS_SOFTWARE` wins. Frames of 1aon on the integrated Radeon 610M: lines 54 ms to 5.7 ms, cartoon 46 ms to 9.8 ms, surface 114 ms to 24 ms, sticks 51 ms to 20 ms; the RTX 5070 (`MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA`) is 2 to 12 times faster again. That driver draws lines one pixel wide, so `CShaderMgr::Trilines` switches lines, ribbon, nonbonded and alignment objects to the triangle path when the driver's maximum line width is 1; mesh lines, dashes and cell outlines stay one pixel wide. Two costs of the driver, measured: the first frame of a small object takes 20 to 60 ms instead of 6 to 20 ms, and after new objects appear the driver needs 9 slower frames in proportion to their number (not visible below 20 objects; 150 objects: 9 frames of 100 to 300 ms; 600 files of lines: 14 s instead of 7 s to the first frame, then 75 ms per frame instead of 324 ms).
+
+1b change in 4.19.16: the neighbor grid (`MapType`) was capped at `hash_max`^3 = one million cells, too few for the 3 to 10 million surface dots of a ribosome. It may now have two cells per point. Surface build of 4v6x 48.6 s to 31.0 s, of 1aon four times 34.4 s to 23.2 s, same peak memory. The price: above 500000 surface dots the order-dependent dot clean-up and triangulation give a different, equivalent surface (1aon: 3.8 % of the triangles, same area, 0.2 % of the pixels of a ray-traced image). Reverting is one line in `MapGetSeparation`.
+
+Not problems after all: "save PSE" and `alter` + `iterate` were 10 to 25 % slower than PyMOL 3 only because PyMOL 3 ran on Python 3.14 and pymolish on 3.13; on the same Python they are equal. Loading 600 files costs what their atoms cost (3 to 8 us per atom from the first file to the last).
+
+Open, waits for the user ([PLAN.md](../../PLAN.md), "Waiting for the user"): a large surface still freezes the window while it builds (4v6x 30 s, 1aon 5 s). Options:
+
+| | Option | What the user sees | Cost |
+| --- | --- | --- | --- |
+| A | Build the surface on a worker thread (recommended) | The window stays usable; the surface appears when it is ready, the status line says it is being built. | `SurfaceJob` already separates its input (coordinates, atom records) from its result, so the job can leave the GUI thread; invalidation while a job runs and the headless path (which must still wait) need care. The largest of the three. |
+| B | Coarser surface above an atom count (`surface_quality` -1 above 100000 atoms) | Large structures get a rougher surface, sooner. Gain not measured yet. | A few lines; changes the look of large surfaces and of images made from them. |
+| C | Only say so: "building surface" in the status line before the build starts | The window still freezes, but explains itself. | A few lines. |
+
+Next candidates: sticks on the GPU (20 ms per frame of 1aon on the integrated GPU, the slowest representation there), lines as triangles on every driver (on llvmpipe 150 objects of lines draw in 35 ms as triangles and 75 ms as GL lines), the two advancing-front passes of the triangulation, `h_add` (1.6 s for 59k atoms, same as PyMOL 3).
+
 ## Evidence and corrections
 
 - Reuse [performance tests](../../testing/tests/performance), especially

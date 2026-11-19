@@ -39,6 +39,17 @@ pip install --config-settings json=True .
 pymolish
 ```
 
+### On WSL
+
+Under WSL (Windows Subsystem for Linux) pymolish draws on the graphics card
+of Windows by itself (4.19.15). It does so by setting `GALLIUM_DRIVER=d3d12`
+for Mesa when the variable is not set. Two variables change that:
+
+| To | Set before starting |
+| --- | --- |
+| Use the faster card of a laptop with two (Mesa takes the integrated one) | `MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA` (part of the card's name) |
+| Draw on the CPU as before, for example when the window stays black | `GALLIUM_DRIVER=llvmpipe` |
+
 ## Windows and macOS
 
 The native libraries come from conda-forge through

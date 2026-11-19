@@ -70,15 +70,17 @@ of those names (Nord frost and aurora, Dracula, Catppuccin Mocha).
 ## Speed
 
 Measured against upstream PyMOL 3.2 on the same machine, same workloads,
-2026-11-19. Method and all numbers: [benchmark.md](benchmark.md).
+both on Python 3.14, 2026-11-19. Method and all numbers:
+[benchmark.md](benchmark.md).
 
 | Work | PyMOL 3.2 | pymolish |
 | --- | --- | --- |
-| Build the surface of 1aon (59192 atoms) | 10.6 s | 4.9 s |
-| Build the surface of a ribosome, 4v6x (239306 atoms) | 86 s | 50 s |
-| Build the cartoon of the spike trimer 6vxx (24621 atoms) | 0.35 s | 0.20 s |
-| Load a session (`.pse`) of 10 structures, 455k atoms | 8.8 s | 1.8 s |
-| Ray-traced images, frame times while rotating | same | same |
+| Build the surface of 1aon (59192 atoms) | 10.4 s | 5.0 s |
+| Build the surface of a ribosome, 4v6x (239306 atoms) | 86 s | 33 s |
+| Build the cartoon of the spike trimer 6vxx (24621 atoms) | 0.33 s | 0.21 s |
+| Load a session (`.pse`) of 10 structures, 455k atoms | 9.1 s | 1.3 s |
+| A frame of the 1aon cartoon while rotating, on WSL | 44 ms (CPU) | 8 ms (GPU, 4.19.15) |
+| Ray-traced images | same | same |
 
 ## Getting it
 

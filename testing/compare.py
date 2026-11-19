@@ -11,7 +11,9 @@ with the same settings. Prints a markdown table (best of REPEAT runs, ratio
 pymolish / pymol3) and ray-traced image differences; the PNGs stay in the
 printed output directory for a look. Exit code 1 when a workload gives a
 different result (atom count, RMSD, selection size) in the two versions.
-For GUI rows under WSLg, set GALLIUM_DRIVER=d3d12 to use the GPU.
+On WSL pymolish draws on the GPU (Mesa d3d12) and PyMOL 3 on the CPU
+(llvmpipe); set GALLIUM_DRIVER to d3d12 or llvmpipe to give both the same.
+The driver each one used is printed above the GUI tables.
 
 Besides the single-object rows (1oky, 1aon, 1aon x4), STRUCTURES are timed
 one by one for load, cartoon, surface and a PSE round trip, and all of them
@@ -21,6 +23,7 @@ Results and the reading of them: docs/benchmark.md.
 
 import json
 import os
+import platform
 import statistics
 import subprocess
 import sys
@@ -342,6 +345,7 @@ def run_gui(out):
     from pymol.Qt import QtCore, QtWidgets
 
     gl = ctypes.CDLL("libGL.so.1")
+    gl.glGetString.restype = ctypes.c_char_p
     widget = pymol.gui.get_qtwindow().pymolwidget
     rows = {}
     tmp = os.path.dirname(out)
@@ -370,6 +374,8 @@ def run_gui(out):
 
     def measure():
         rows["_viewport"] = {"time": 0, "result": cmd.get_viewport()}
+        renderer = gl.glGetString(0x1F01).decode()  # GL_RENDERER
+        rows["_renderer"] = {"time": 0, "result": renderer}
         cmd.set("max_threads", os.cpu_count())
         reps("small", path("1oky.pdb.gz"), REPS)
         reps(
@@ -439,6 +445,7 @@ def run_gui(out):
 
 def write(out, rows):
     rows["_version"] = {"time": 0, "result": cmd.get_version()[0]}
+    rows["_python"] = {"time": 0, "result": platform.python_version()}
     with open(out, "w") as f:
         json.dump(rows, f)
 
@@ -600,7 +607,11 @@ def main(gui):
         print(f"{label}: CLI", file=sys.stderr)
         results[label] = run_worker(exe, "cli", os.path.join(tmp, label))
         results[label]["startup -ckq -d quit"] = {"time": startup(exe), "result": None}
-    print(f"\n{os.cpu_count()} CPUs, best of {REPEAT} (1 for slow rows), seconds\n")
+    print(
+        f"\n{os.cpu_count()} CPUs, best of {REPEAT} (1 for slow rows), seconds. Python: "
+        f"pymol3 {results['pymol3']['_python']['result']}, "
+        f"pymolish {results['pymolish']['_python']['result']}\n"
+    )
     bad += table(results["pymol3"], results["pymolish"], "s")
     bad += structure_table(results["pymol3"], results["pymolish"], "s")
 
@@ -622,7 +633,9 @@ def main(gui):
         print(
             f"\nGUI, viewport {gres['pymol3']['_viewport']['result']} vs "
             f"{gres['pymolish']['_viewport']['result']}, frame = draw + glFinish, "
-            f"{FRAMES} frames per median, ms\n"
+            f"{FRAMES} frames per median, ms. Drawn by: pymol3 "
+            f"{gres['pymol3']['_renderer']['result']}, pymolish "
+            f"{gres['pymolish']['_renderer']['result']}\n"
         )
         bad += table(gres["pymol3"], gres["pymolish"], "ms")
         bad += structure_table(gres["pymol3"], gres["pymolish"], "ms")
