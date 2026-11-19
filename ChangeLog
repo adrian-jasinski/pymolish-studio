@@ -17,6 +17,9 @@ CHANGE LOG
 	    --verbosity of testing.py, and the file testing/timings.tab
 	    that "timing" blocks appended to. timing(max=...) still fails a
 	    test that takes too long.
+	  - Removed testing/modules/xmlrunner, a vendored copy of
+	    unittest-xml-reporting (559 lines). Only the --xml option used
+	    it; pytest writes the same report with --junitxml.
 
 2026-11-19 pymolish-studio
 
