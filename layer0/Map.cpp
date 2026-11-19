@@ -27,6 +27,10 @@ Z* ------------------------------------------------------------------- */
 
 #include "pymol/algorithm.h"
 
+#include <algorithm>
+#include <cassert>
+#include <climits>
+
 float MapGetDiv(MapType* I)
 {
   return I->Div;
@@ -386,7 +390,11 @@ int MapSetupExpressPerp(MapType* I, const float* vert, float front,
       n += length;
     }
 
-  std::vector<int> e_list(n);
+  MapEList_t e_list(n); /* not zero-filled: the loop writes all of it */
+#ifndef NDEBUG
+  std::fill(e_list.begin(), e_list.end(), INT_MIN);
+#endif
+  e_list[0] = 0;
 #pragma omp parallel for schedule(dynamic) if (threads)
   for (int a = iMin0 - 1; a <= iMax0 + 1; a++)
     for (int b = iMin1 - 1; b <= iMax1 + 1; b++)
@@ -403,6 +411,7 @@ int MapSetupExpressPerp(MapType* I, const float* vert, float front,
                   *(p++) = i;
         *p = -1;
       }
+  assert(std::find(e_list.begin(), e_list.end(), INT_MIN) == e_list.end());
   I->EList = std::move(e_list);
   PRINTFB(G, FB_Map, FB_Blather)
   " MapSetupExpressPerp: %d rows in express table \n", n ENDFB(G);
@@ -454,7 +463,11 @@ int MapSetupExpress(MapType* I)
       n += length;
     }
 
-  std::vector<int> e_list(n);
+  MapEList_t e_list(n); /* not zero-filled: the loop writes all of it */
+#ifndef NDEBUG
+  std::fill(e_list.begin(), e_list.end(), INT_MIN);
+#endif
+  e_list[0] = 0;
 #pragma omp parallel for schedule(dynamic) if (threads)
   for (int a = I->iMin[0] - 1; a <= I->iMax[0]; a++)
     for (int b = I->iMin[1] - 1; b <= I->iMax[1]; b++)
@@ -470,6 +483,7 @@ int MapSetupExpress(MapType* I)
                 *(p++) = i;
         *p = -1;
       }
+  assert(std::find(e_list.begin(), e_list.end(), INT_MIN) == e_list.end());
   if (G->Interrupt)
     return false;
   I->EList = std::move(e_list);

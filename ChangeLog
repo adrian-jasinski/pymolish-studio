@@ -4,6 +4,23 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.40
+
+	* Performance
+	  - The list of neighbors of the lookup grid (MapType) is no longer
+	    filled with zeros before it is written: every element is
+	    written right after, on all cores. Surface build of 1aon
+	    (59,192 atoms, with a 16x16 ray): 5.35 to 5.60 s before, 5.05
+	    to 5.32 s after, in four paired runs about 0.3 s (5 to 7 %);
+	    the same triangles (the POV-Ray scene is identical byte for
+	    byte). No measurable change for 4v6x (36 s) and for a ray of
+	    the 1aon surface at 800x600 (3.4 to 4.1 s before and after).
+	  - Debug builds check that no element of the list is left
+	    unwritten.
+	  - Step 1b.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.39
 
 	* Core

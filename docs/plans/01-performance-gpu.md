@@ -46,6 +46,56 @@ Open, waits for the user ([PLAN.md](../../PLAN.md), "Waiting for the user"): a l
 
 Next candidates: sticks on the GPU (20 ms per frame of 1aon on the integrated GPU, the slowest representation there), lines as triangles on every driver (on llvmpipe 150 objects of lines draw in 35 ms as triangles and 75 ms as GL lines), the two advancing-front passes of the triangulation, `h_add` (1.6 s for 59k atoms, same as PyMOL 3).
 
+## Status 2026-11-19, later: a profile of the surface build
+
+No profiler is installed, so the main thread was sampled every 2 ms of wall
+time by a small preloaded library (a `SIGALRM` handler that keeps
+`backtrace()`), and the addresses were resolved with `nm`. 1aon as mmCIF
+(59,192 atoms), `show_as surface` and `ray 16, 16`, 6.3 s under the sampler:
+
+| Where | Seconds | Share |
+| --- | --- | --- |
+| Triangulation: `FollowActives` 1.44, `TriangleFill` 0.36, `TrianglePointsToSurface` 0.12, `TriangleActivateEdges` 0.08, `TriangleAdd` 0.07 | 2.1 | 33 % |
+| `SurfaceJobRun` itself (the dot loops inlined into it) | 0.73 | 12 % |
+| Memory fills in libc called from `MapSetupExpress` 0.34 and `MapSetupExpressPerp` 0.26 | 0.60 | 10 % |
+| `SurfaceJobEliminateCloseDots` | 0.33 | 6 % |
+| Ray of 16x16 (`triangle3fv`, `BasisMakeMap`, transforms) | about 0.6 | 10 % |
+| `RepSurface::recolor` | 0.15 | 3 % |
+
+By CPU time instead of wall time, 40 % of 11 s is libgomp: the 32 threads
+spin while they wait between the parallel loops. It costs no wall time
+here; it is why the fans start.
+
+1b change in 4.19.40, from the third row: the neighbor list `EList` was a
+`std::vector<int>` built with its size, which zero-fills it on one thread,
+and was then written completely by the parallel loop. It now has an
+allocator that leaves the ints uninitialized (`MapNoInitAllocator`, 20 lines
+in `Map.h`). Fastest of three builds per run:
+
+| | Before | After |
+| --- | --- | --- |
+| 1aon, surface build + ray 16x16 | 5.53 s (4.19.39), 5.35, 5.46 and 5.60 s (4.19.17 on Python 3.14) | 5.16, 5.05, 5.09, 5.32 s |
+| 1aon surface, ray 800x600 | 3.88, 3.84, 3.64, 4.00 s | 3.83, 3.54, 3.43, 4.07 s: inside the noise |
+| 4v6x, surface build + ray 16x16 | 35.6, 38.5 s | 35.7, 35.9 s: no measurable change |
+| Geometry of the 1aon surface (`get_povray`, 494 MB) | sha256 a988657cd9ae3448 | the same |
+
+The gain is about 0.3 s (5 to 7 %), less than the 0.6 s of the profile row:
+the pages are still touched for the first time, now by the loop that fills
+them. The last pair of each row was measured on a warm laptop.
+
+Check left behind: in a build without `NDEBUG` the list is filled with a
+marker first and an `assert` finds any element the loop did not write. Run
+in a sanitizer build of the working tree (address and undefined behavior,
+asserts on): the suite (909 passed, no report) and a surface of 1aon with a
+200x150 ray, which goes through both functions with millions of entries.
+
+Next candidates, from the table: the triangulation is now a third of the
+build and still one thread; `FollowActives` has the three passes inlined, so
+the next step there is a profile per pass (a build with `-g`, or timers).
+`SurfaceJobEliminateCloseDots` (0.33 s). The spinning of idle OpenMP threads
+(`OMP_WAIT_POLICY=passive` is the knob; its effect on wall time is not
+measured).
+
 ## Evidence and corrections
 
 - Reuse [performance tests](../../testing/tests/performance), especially
