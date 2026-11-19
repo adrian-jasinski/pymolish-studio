@@ -4,6 +4,18 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.22
+
+	* Testing
+	  - "clean" is this program's own since 4.12.1 (rdkit), so its two
+	    tests for the commercial build no longer wait for that build:
+	    jira/PYMOL-2985.py (clean must not depend on the atom order)
+	    runs wherever rdkit is installed; api/computing.py is removed,
+	    it expected the energy value of the commercial force field and
+	    api/cleanup.py covers the rest.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.21
 
 	* Removed
