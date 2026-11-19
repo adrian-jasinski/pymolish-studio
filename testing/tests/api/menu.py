@@ -1,3 +1,4 @@
+import pytest
 import pymol
 from pymol import menu, cmd, testing
 
@@ -347,6 +348,64 @@ def testConsolidated():
               menu.sele_action(cmd, 's1')):
         for command in commands(m):
             compile(command, 'menu', 'exec')
+
+
+def testShowHide():
+    # one list: a representation row shows it, its hover menu shows only
+    # it; the cartoon row has the styles; the rest is under "more"
+    cmd.fab('AAAAAAAA', 'm1', ss=1)
+    cmd.show_as('lines')
+    show = menu.mol_show(cmd, 'm1')
+    hide = _to_dict(menu.mol_hide(cmd, 'm1'))
+    rows = {row[1].strip(): row for row in show if row[0] == 1}
+    assert 'as' not in rows and 'valence' not in rows
+    assert list(rows)[-2:] == ['hydrogens', 'more']
+    assert len(rows) == 15 and len(hide) == 17
+    for more in (rows['more'][2], hide['more']):
+        assert {'cell', 'valence', 'flag ignore'} <= set(_to_dict(more))
+    for menu_ in (show, menu.mol_hide(cmd, 'm1'), menu.mol_as(cmd, 'm1')):
+        for row in menu_:
+            for command in row[2:]:
+                if isinstance(command, str):
+                    compile(command, 'menu', 'exec')
+
+    cmd.do(rows['sticks'][3], echo=0)
+    assert cmd.count_atoms('rep sticks') and cmd.count_atoms('rep lines')
+    assert [row[1] for row in rows['sticks'][2]] == ['only sticks']
+    cmd.do(rows['sticks'][2][0][2], echo=0)
+    assert not cmd.count_atoms('rep lines')
+
+    # hydrogens come back the way their neighbors are drawn
+    cmd.do(hide['hydrogens'][1][2], echo=0)
+    assert not cmd.count_atoms('hydro & rep sticks')
+    cmd.do(_to_dict(rows['hydrogens'][2])['polar'], echo=0)
+    assert cmd.count_atoms('hydro & rep sticks') == cmd.count_atoms(
+        'hydro & !(elem C extend 1)')
+    cmd.do(_to_dict(rows['hydrogens'][2])['all'], echo=0)
+    assert cmd.count_atoms('hydro & rep sticks') == cmd.count_atoms('hydro')
+    assert not cmd.count_atoms('rep lines | rep spheres')
+
+    # cartoon: the row is "default", the hover has the styles and "only"
+    styles = rows['cartoon'][2]
+    assert [row[1] for row in styles] == [
+        'default', 'wire', 'spring', '', 'only cartoon']
+    assert rows['cartoon'][3] == styles[0][2]
+
+    def style():
+        types = set()
+        cmd.iterate('m1 & name CA', 'types.add(cartoon)', space={'types': types})
+        return (types, cmd.get_setting_int('cartoon_debug'),
+                cmd.get('cartoon_tube_radius', 'm1'))
+
+    default = style()
+    cmd.do(styles[2][2], echo=0)
+    assert style()[0] == {4} and float(style()[2]) == pytest.approx(0.8)
+    assert cmd.count_atoms('rep cartoon')
+    cmd.do(styles[1][2], echo=0)
+    assert style()[1] == 3 and style()[2] == default[2]
+    cmd.do(rows['cartoon'][3], echo=0)
+    assert style() == default
+    assert cmd.count_atoms('rep sticks')  # show, not "as"
 
 
 def testExclude():

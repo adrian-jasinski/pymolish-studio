@@ -4,6 +4,33 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.31
+
+	* Show and hide menus (S and H of the Objects panel, the same
+	  menus of a right click in the viewport and the sequence viewer)
+	  - Show: the submenu "as" is gone. Every representation row now
+	    does both: a click (or Enter) on the row shows it, its hover
+	    menu has "only <representation>", the old "as". The right
+	    click menu of a row of the Objects panel keeps "Show as".
+	  - Show: the cartoon row has the styles default, wire and spring
+	    in its hover menu; a click on the row is "default". New
+	    function preset.cartoon_style(style, selection); the presets
+	    wire and spring use it. "wire" stays a global setting
+	    (cartoon_debug).
+	  - Show: new submenu "hydrogens" (all, polar). A hydrogen is
+	    shown the way the atom it is bound to is drawn (lines, sticks
+	    or spheres).
+	  - Show: cell, organic, main chain, side chain, disulfides,
+	    valence and flag ignore moved into "more". 15 rows, was 21.
+	  - Hide: cell, main chain, side chain, unselected, valence and
+	    flag ignore moved into "more". 17 rows, was 22.
+	  - A menu list row may have a fourth entry, the command of a row
+	    that also has a submenu (pmg_qt.object_panel.fill_menu). The
+	    menus the core draws itself ignore it and only open the
+	    submenu.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.30
 
 	* Bundles

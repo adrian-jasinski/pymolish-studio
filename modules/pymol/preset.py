@@ -528,6 +528,26 @@ def cartoon_transparency(value, selection='*', _self=cmd):
         _self.set('cartoon_transparency', value, name)
 
 
+def cartoon_style(style, selection='*', _self=cmd):
+    '''
+    The cartoon rows of the show menu: shows the cartoon of the selection
+    as "default", as "wire" (a wire mesh) or as "spring" (one thick round
+    tube along the backbone, so that a helix is a spring).
+    '''
+    names = ' '.join(_self.get_object_list(selection) or ())
+    if not names:
+        return
+    _self.cartoon('tube' if style == 'spring' else 'auto', selection)
+    # global, the cartoon builder reads no other level: line strips
+    # instead of triangle strips
+    _self.set('cartoon_debug', 3 if style == 'wire' else 0)
+    if style == 'spring':
+        _self.set('cartoon_tube_radius', 0.8, names)
+    else:
+        _self.unset('cartoon_tube_radius', names)
+    _self.show('cartoon', selection)
+
+
 def classified(selection='*', _self=cmd):
     '''
     Equivalent of "auto_show_classified" setting. Sets representations
@@ -570,11 +590,8 @@ def wire(selection='*', _self=cmd):
 
     _self.color('atomic', '?%s & %s' % (s, by_element))
 
-    _self.show('cartoon', 'polymer & ?' + s)
+    cartoon_style('wire', 'polymer & ?' + s, _self=_self)
     _self.show('licorice', '(organic | inorganic) & ?' + s)
-    # global, the cartoon builder reads no other level: line strips
-    # instead of triangle strips
-    _self.set('cartoon_debug', 3)
 
     _self.delete(s)
 
@@ -584,11 +601,9 @@ def spring(selection='*', _self=cmd):
     Cartoon as one thick round tube along the backbone, so that a helix
     is a spring; and ligand sticks.
     '''
-    s, selection = _prepare(selection, _self=_self)[:2]
+    s = _prepare(selection, _self=_self)[0]
 
-    _self.cartoon('tube', s)
-    _self.set('cartoon_tube_radius', 0.8, selection)
-    _self.show('cartoon', 'polymer & ?' + s)
+    cartoon_style('spring', 'polymer & ?' + s, _self=_self)
     _self.show('licorice', '(organic | inorganic) & ?' + s)
 
     _self.delete(s)
