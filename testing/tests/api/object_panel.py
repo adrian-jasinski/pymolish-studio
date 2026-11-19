@@ -87,7 +87,7 @@ def test_row_with_submenu_and_command():
     cmd.fragment("ala")
     cmd.show_as("lines")
     popup = QtWidgets.QMenu()
-    only = [[1, "only sticks", 'cmd.show_as("sticks","ala")']]
+    only = [[1, "only", 'cmd.show_as("sticks","ala")']]
     fill_menu(
         popup,
         [[1, "sticks", only, 'cmd.show("sticks","ala")'], [1, "more", only]],

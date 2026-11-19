@@ -351,8 +351,8 @@ def testConsolidated():
 
 
 def testShowHide():
-    # one list: a representation row shows it, its hover menu shows only
-    # it; the cartoon row has the styles; the rest is under "more"
+    # one list: a representation row shows it; the cartoon row has the
+    # styles in its hover menu; the rest is under "more"
     cmd.fab('AAAAAAAA', 'm1', ss=1)
     cmd.show_as('lines')
     show = menu.mol_show(cmd, 'm1')
@@ -369,11 +369,11 @@ def testShowHide():
                 if isinstance(command, str):
                     compile(command, 'menu', 'exec')
 
-    cmd.do(rows['sticks'][3], echo=0)
+    # only the cartoon row has a submenu
+    assert [name for name, row in rows.items() if len(row) > 3] == ['cartoon']
+    cmd.do(rows['sticks'][2], echo=0)
     assert cmd.count_atoms('rep sticks') and cmd.count_atoms('rep lines')
-    assert [row[1] for row in rows['sticks'][2]] == ['only sticks']
-    cmd.do(rows['sticks'][2][0][2], echo=0)
-    assert not cmd.count_atoms('rep lines')
+    cmd.hide('lines')
 
     # hydrogens come back the way their neighbors are drawn
     cmd.do(hide['hydrogens'][1][2], echo=0)
@@ -385,10 +385,9 @@ def testShowHide():
     assert cmd.count_atoms('hydro & rep sticks') == cmd.count_atoms('hydro')
     assert not cmd.count_atoms('rep lines | rep spheres')
 
-    # cartoon: the row is "default", the hover has the styles and "only"
+    # cartoon: the row is "default", the hover has the styles
     styles = rows['cartoon'][2]
-    assert [row[1] for row in styles] == [
-        'default', 'wire', 'spring', '', 'only cartoon']
+    assert [row[1] for row in styles] == ['default', 'wire', 'spring']
     assert rows['cartoon'][3] == styles[0][2]
 
     def style():

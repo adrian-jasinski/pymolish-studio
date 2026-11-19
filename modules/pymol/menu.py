@@ -204,30 +204,15 @@ def show_hydro(self_cmd, sele):
             [ 1, 'polar', show('hydro & !(elem C extend 1)') ],
             ]
 
-def show_rep(sele, show, only):
-    '''
-    A representation row of the show menu: a click on the row shows the
-    representation, its hover menu shows only it. The row's own command is
-    the fourth entry. The cartoon row also has the cartoon styles.
-    '''
-    # ponytail: only the Qt menus can click a row that has a submenu; the
-    # menus the core draws (pymol2 without the window) open the submenu.
-    # If step 17e keeps those, put the plain row into the hover menu too.
-    if show[0] != 1:
-        return show
-    label, command = show[1:]
-    hover = [[ 1, 'only ' + label.strip(), only[2] ]]
-    if label == 'cartoon':
-        styles = [[ 1, style, 'preset.cartoon_style("%s","%s",_self=cmd)' % (style, sele) ]
-                  for style in ('default', 'wire', 'spring')]
-        command = styles[0][2]
-        hover = styles + [[ 0, '', '' ]] + hover
-    return [ 1, label, hover, command ]
-
 def mol_show(self_cmd, sele):
-    reps = [show_rep(sele, show, only) for show, only in zip(
-        rep_action(self_cmd, sele, 'show'),
-        rep_action(self_cmd, sele, 'show_as'))]
+    reps = rep_action(self_cmd, sele, 'show')
+    # the cartoon row has a submenu and, as fourth entry, a command of its
+    # own: a click shows the default cartoon, the hover menu has the styles
+    styles = [[ 1, style, 'preset.cartoon_style("%s","%s",_self=cmd)' % (style, sele) ]
+              for style in ('default', 'wire', 'spring')]
+    for row in reps:
+        if row[1] == 'cartoon':
+            row[2:] = [styles, styles[0][2]]
     return (
         [[ 2, 'Show:'      , ''                               ]]
         + reps +
