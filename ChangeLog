@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.13
+
+	* Testing
+	  - testing/compare.py also times ten structures from RCSB (327 to
+	    239306 atoms: proteins, a nucleosome, two ribosomes) one by one
+	    for load, cartoon, surface and a PSE round trip, all ten in one
+	    session, and the first GUI frames of cartoon and surface. They
+	    are downloaded once into ~/.cache/pymolish-compare.
+	  - docs/benchmark.md: how to run it, the run of 2026-11-19 against
+	    PyMOL 3.2 and what to improve next. Surface 2x faster, session
+	    load 6 to 9x, drawing unchanged, all results and images the
+	    same. docs/features.md "Speed" now shows these numbers.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.12
 
 	* Testing

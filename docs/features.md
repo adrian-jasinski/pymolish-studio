@@ -69,14 +69,16 @@ of those names (Nord frost and aurora, Dracula, Catppuccin Mocha).
 
 ## Speed
 
-Each change was measured before and after on the same machine. Method and all
-numbers: [baseline.md](baseline.md).
+Measured against upstream PyMOL 3.2 on the same machine, same workloads,
+2026-11-19. Method and all numbers: [benchmark.md](benchmark.md).
 
-| Work | Before | After | Version |
-| --- | --- | --- | --- |
-| Load a 17 MB session (`.pse`) | 0.92 s | 0.14 s | 4.5.10 |
-| Build the surface of 1aon (58870 atoms), with a small ray | 11.97 s | 9.66 s | 4.5.12 |
-| The same surface build | 9.44 s | 6.24 s | 4.7.7 to 4.7.9 |
+| Work | PyMOL 3.2 | pymolish |
+| --- | --- | --- |
+| Build the surface of 1aon (59192 atoms) | 10.6 s | 4.9 s |
+| Build the surface of a ribosome, 4v6x (239306 atoms) | 86 s | 50 s |
+| Build the cartoon of the spike trimer 6vxx (24621 atoms) | 0.35 s | 0.20 s |
+| Load a session (`.pse`) of 10 structures, 455k atoms | 8.8 s | 1.8 s |
+| Ray-traced images, frame times while rotating | same | same |
 
 ## Getting it
 

@@ -12,6 +12,11 @@ pymolish / pymol3) and ray-traced image differences; the PNGs stay in the
 printed output directory for a look. Exit code 1 when a workload gives a
 different result (atom count, RMSD, selection size) in the two versions.
 For GUI rows under WSLg, set GALLIUM_DRIVER=d3d12 to use the GPU.
+
+Besides the single-object rows (1oky, 1aon, 1aon x4), STRUCTURES are timed
+one by one for load, cartoon, surface and a PSE round trip, and all of them
+together in one PSE. They are downloaded once from RCSB into CACHE.
+Results and the reading of them: docs/benchmark.md.
 """
 
 import json
@@ -37,6 +42,21 @@ SMALL = (
     "1rna.cif",
     "1pup.cif",
 )
+# 327 to 239306 atoms: small proteins, a GPCR, hemoglobin, an antibody, a
+# nucleosome (DNA), the spike trimer, GroEL, two ribosomes (RNA)
+STRUCTURES = (
+    "1crn",
+    "1ubq",
+    "2rh1",
+    "4hhb",
+    "1hzh",
+    "1aoi",
+    "6vxx",
+    "1aon",
+    "1jj2",
+    "4v6x",
+)
+CACHE = os.path.expanduser("~/.cache/pymolish-compare")
 # argv is pymol's own without "--" and the script's after it
 SCRIPT = os.path.abspath(next(a for a in sys.argv if a.endswith(".py")))
 DATA = os.path.join(os.path.dirname(SCRIPT), "data")
@@ -199,7 +219,66 @@ def cli_workloads(tmp):
         ),
         ("load PSE (big, cartoon)", None, lambda: cmd.load(pse), atoms, REPEAT),
     ]
+    for i, pdb in enumerate(STRUCTURES):
+        f, pse_i = cached(pdb), os.path.join(tmp, f"{pdb}.pse")
+        repeat = REPEAT if i < 6 else 1  # the last four have 24k to 239k atoms
+        load = lambda f=f: cmd.load(f)
+        w += [
+            (f"{pdb}/load", None, load, atoms, repeat),
+            (
+                f"{pdb}/cartoon",
+                load,
+                lambda: (cmd.show_as("cartoon"), cmd.ray(16, 16)),
+                None,
+                repeat,
+            ),
+            (
+                f"{pdb}/surface",
+                load,
+                lambda: (cmd.show_as("surface"), cmd.ray(16, 16)),
+                None,
+                repeat,
+            ),
+            (
+                f"{pdb}/save PSE",
+                lambda load=load: (load(), cmd.show_as("cartoon")),
+                lambda pse_i=pse_i: cmd.save(pse_i),
+                None,
+                repeat,
+            ),
+            (
+                f"{pdb}/load PSE",
+                None,
+                lambda pse_i=pse_i: cmd.load(pse_i),
+                atoms,
+                repeat,
+            ),
+        ]
+    pse_all = os.path.join(tmp, "all.pse")
+    load_all = lambda: [cmd.load(cached(p)) for p in STRUCTURES]
+    w += [
+        (f"all {len(STRUCTURES)}/load", None, load_all, atoms, 1),
+        (
+            f"all {len(STRUCTURES)}/cartoon",
+            load_all,
+            lambda: (cmd.show_as("cartoon"), cmd.ray(16, 16)),
+            None,
+            1,
+        ),
+        (
+            f"all {len(STRUCTURES)}/save PSE",
+            lambda: (load_all(), cmd.show_as("cartoon")),
+            lambda: cmd.save(pse_all),
+            None,
+            1,
+        ),
+        (f"all {len(STRUCTURES)}/load PSE", None, lambda: cmd.load(pse_all), atoms, 1),
+    ]
     return w
+
+
+def cached(pdb):
+    return os.path.join(CACHE, f"{pdb}.cif.gz")
 
 
 def switch_setup():
@@ -299,6 +378,15 @@ def run_gui(out):
             ("lines", "sticks", "spheres", "cartoon", "surface"),
         )
         reps("huge", os.path.join(tmp, "huge.cif"), ("lines", "spheres", "cartoon"))
+
+        for pdb in STRUCTURES:
+            cmd.reinitialize()
+            cmd.load(cached(pdb))
+            for rep in ("cartoon", "surface"):
+                cmd.show_as(rep)
+                row(f"{pdb}/{rep} first frame", frame())
+            samples = [(cmd.turn("y", 3), frame())[1] for _ in range(FRAMES // 3)]
+            row(f"{pdb}/surface frame (median)", statistics.median(samples))
 
         cmd.reinitialize()
         switch_setup()
@@ -425,7 +513,7 @@ def table(ref, new, unit):
     )
     print("| --- | --- | --- | --- | --- |")
     for name, r in ref.items():
-        if name.startswith("_") or name not in new:
+        if name.startswith("_") or "/" in name or name not in new:
             continue
         n = new[name]
         same = r["result"] == n["result"]
@@ -442,6 +530,48 @@ def table(ref, new, unit):
             f"{n['time'] / max(r['time'], 1e-9):.2f} | {result} |"
         )
     return bad
+
+
+def structure_table(ref, new, unit):
+    """One line per structure, one column per workload: pymol3 / pymolish (ratio)."""
+    bad = []
+    names = [n for n in ref if "/" in n and n in new]
+    pdbs = list(dict.fromkeys(n.split("/")[0] for n in names))
+    kinds = list(dict.fromkeys(n.split("/")[1] for n in names))
+    scale, digits = (1e3, 0) if unit == "ms" else (1, 3)
+    print(f"\n{unit}, pymol3 / pymolish (ratio)\n")
+    print("| Structure | " + " | ".join(kinds) + " |")
+    print("| --- " * (len(kinds) + 1) + "|")
+    for pdb in pdbs:
+        cells = []
+        for kind in kinds:
+            r, n = ref.get(f"{pdb}/{kind}"), new.get(f"{pdb}/{kind}")
+            if not r or not n:
+                cells.append("")
+                continue
+            if r["result"] != n["result"]:
+                bad.append(f"{pdb}/{kind}")
+            cells.append(
+                f"{r['time'] * scale:.{digits}f} / {n['time'] * scale:.{digits}f}"
+                f" ({n['time'] / max(r['time'], 1e-9):.2f})"
+                + ("" if r["result"] == n["result"] else " **DIFF**")
+            )
+        load = ref.get(f"{pdb}/load")
+        atoms = f" ({load['result']} atoms)" if load else ""
+        print(f"| {pdb}{atoms} | " + " | ".join(cells) + " |")
+    return bad
+
+
+def fetch_structures():
+    import urllib.request
+
+    os.makedirs(CACHE, exist_ok=True)
+    for pdb in STRUCTURES:
+        if not os.path.exists(cached(pdb)):
+            print(f"downloading {pdb}", file=sys.stderr)
+            urllib.request.urlretrieve(
+                f"https://files.rcsb.org/download/{pdb}.cif.gz", cached(pdb)
+            )
 
 
 def startup(exe):
@@ -462,6 +592,7 @@ def main(gui):
     new = os.path.join(os.path.dirname(sys.executable), "pymolish")
     tmp = tempfile.mkdtemp(prefix="pymol-compare-")
     print(f"Inputs and outputs: {tmp}", file=sys.stderr)
+    fetch_structures()
     make_inputs(tmp)
     bad = []
     results = {}
@@ -471,6 +602,7 @@ def main(gui):
         results[label]["startup -ckq -d quit"] = {"time": startup(exe), "result": None}
     print(f"\n{os.cpu_count()} CPUs, best of {REPEAT} (1 for slow rows), seconds\n")
     bad += table(results["pymol3"], results["pymolish"], "s")
+    bad += structure_table(results["pymol3"], results["pymolish"], "s")
 
     print(
         "\n| Ray-traced 1oky, 480x360 | mean abs diff (0..255) | pixels off by > 32 |"
@@ -493,6 +625,7 @@ def main(gui):
             f"{FRAMES} frames per median, ms\n"
         )
         bad += table(gres["pymol3"], gres["pymolish"], "ms")
+        bad += structure_table(gres["pymol3"], gres["pymolish"], "ms")
 
     print(f"\nImages and logs: {tmp}")
     if bad:
