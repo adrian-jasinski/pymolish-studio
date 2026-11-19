@@ -2,6 +2,20 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-19 pymolish-studio
+
+	* 4.19.5
+
+	* Quit
+	  - Fix: closing the Qt application before a headless quit (4.19.4)
+	    could crash by itself: PySide6 deletes the remaining widgets in
+	    an order that changes from run to run (3 of 7 runs of the test
+	    suite on Linux, in the order pytest runs the files). "quit" now
+	    flushes the output and ends the process without any teardown of
+	    the libraries, with or without a GUI; the GUI already did that.
+	    On Windows this needs TerminateProcess: _Exit still unloads the
+	    DLLs there.
+
 2026-11-18 pymolish-studio
 
 	* 4.19.4

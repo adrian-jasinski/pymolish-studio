@@ -117,8 +117,8 @@ class TestCommanding(testing.PyMOLTestCase):
         pass
 
     def testQuit(self):
-        # a headless script with a Qt application and a live widget: quit
-        # closes the application and the exit code still arrives
+        # a headless script with a Qt application and a live widget: the
+        # exit code of quit arrives
         with testing.mktemp('.py') as filename:
             with open(filename, 'w') as handle:
                 handle.write(
