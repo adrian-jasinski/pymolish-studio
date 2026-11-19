@@ -686,7 +686,7 @@ DESCRIPTION
 
 ARGUMENTS
 
-    format = str: pdb|cif|sdf|mol|mol2|mae|pqr|xyz
+    format = str: pdb|cif|sdf|mol|mol2|pqr|xyz
 
     selection = str: atom selection {default: all}
 
@@ -1001,9 +1001,6 @@ SEE ALSO
     def get_pqrstr(selection, state=-1, ref='', ref_state=-1, quiet=1, *, _self=cmd):
         return _self.get_str('pqr', selection, state, ref, ref_state, -1, quiet)
 
-    def get_maestr(selection, state=-1, ref='', ref_state=-1, quiet=1, *, _self=cmd):
-        return _self.get_str('mae', selection, state, ref, ref_state, -1, quiet)
-
     def get_ccp4str(name, state=1, quiet=1, format='ccp4', *, _self=cmd):
         ftype = getattr(loadable, format, -1)
         with _self.lockcm:
@@ -1098,7 +1095,6 @@ SEE ALSO
         'pqr': get_str,
         'sdf': get_str,
         'mol2': get_str,
-        'mae': get_str,
         'mol': get_str,
         'bcif': get_bytes,
 

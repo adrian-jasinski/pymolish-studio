@@ -5,6 +5,8 @@ at 4.12.6 (`f30d3525`) against the code, the detailed plans and the git log; the
 user's decisions of that day are applied (4.12.8 to 4.13.0) and listed in
 [PLAN-DONE.md](PLAN-DONE.md). Extended 2026-11-18 at 4.14.4 (`6125122a`) with
 the request of that day: 15g, 15h and steps 16 to 19, all planned, none built.
+Extended 2026-11-19 at 4.19.26 with step 21: the stubs of the commercial
+build, removed or to rebuild.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -22,15 +24,16 @@ user's original numbers; the letters are milestones of the detailed plans.
 
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
-| 5 | **1b** — [Performance and GPU](docs/plans/01-performance-gpu.md) | Renderer default on WSL, draw cost of sticks and surfaces, the two triangulation passes. One measured bottleneck per change. | Each change has before and after numbers. |
+| 5 | **1b** — [Performance and GPU](docs/plans/01-performance-gpu.md) | Large surfaces off the GUI thread (waits for the user), draw cost of sticks, lines as triangles on every driver, the two triangulation passes. One measured bottleneck per change. | Each change has before and after numbers. |
 | 5 | **3** — [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Rows moved by dragging, a picked atom selects its row, sequence viewer text and scene buttons still drawn by the core, spacing of the remaining dialogs. The removal of the old C++ panel moved to step 17 and the timeline to step 19; dialog sizes and the scroll bar of the sequence viewer shipped as step 18. | Each increment ships in a reviewable test build. |
-| none | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Next: 8c to 8g. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `bench.py` and a PSE round trip. |
+| none | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Next: 8c to 8g. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
 | none | **5c** — [Release builds without GitHub Actions](docs/plans/05-builds-binaries.md) | A proposal of 2026-11-16 inside finished step 5: Linux in podman, Windows on the host, macOS not possible off Apple hardware. Nothing is built yet. | The user accepts or drops the proposal. |
-| none | **15** — [Presets and looks](docs/plans/15-presets.md) | 15b: the outline of the looks in the viewport (today only in ray-traced images). 15c: ChimeraX object colors as a palette. 15e: five more effects, tried and described. 15a (ordered menu, solvent row, glass, looks) shipped in 4.14.0, 15d (cartoon everywhere, ligand balls and sticks, cartoon transparency, comic and sketch) in 4.14.3, 15f (wire, illustration, shades of one color) in 4.14.4. 15g and 15h (one list, looks keep the background, working presets keep the protein colors) in 4.14.5. | The user picks or drops 15b, 15c and each effect of 15e. |
+| none | **15** — [Presets and looks](docs/plans/15-presets.md) | 15b: the outline of the looks in the viewport (today only in ray-traced images). 15c: ChimeraX object colors as a palette. 15e: five more effects, tried and described. 15a (ordered menu, solvent row, glass, looks) shipped in 4.14.0, 15d (cartoon everywhere, ligand balls and sticks, cartoon transparency, comic and sketch) in 4.14.3, 15f (wire, illustration, shades of one color) in 4.14.4. 15g and 15h (one list, looks keep the background, working presets keep the protein colors) in 4.14.5. 15l (cartoon spring, no preset colors the cartoon, two-color interaction surface) in 4.19.29. | The user picks or drops 15b, 15c and each effect of 15e. |
 | none | **17** — [Legacy menu rows and the old internal GUI](docs/plans/17-legacy-ui.md) | 17a (the legacy menu rows) shipped in 4.16.0, 17b (the last Tk stand-ins and the Legacy Plugins menu) in 4.16.1. 17c (the C++ code of the panel, 2,694 lines) in 4.17.1. Open: 17d, the panel list, after step 19d; 17e, the menus the core draws in OpenGL. | 17d and 17e each pass the suite, the sanitizer job and a PSE round trip. |
 | none | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | Built in 4.18.0: the Timeline panel with a shot list, a strip, record, tours, fades, easing and export with an estimate, on a new module `pymol.shots`. Open: keeping the shot list in the session file, a shorter Movie menu, removal of the core's movie panel (19g), dragging on the strip. | The user answers the three questions; 19g passes the suite and the sanitizer job. |
+| none | **21** — [Features of the commercial build](docs/plans/21-commercial-features.md) | Removed in 4.19.18 to 4.19.26: all Maestro file support, mmlibs atom typing, the MOE, `.vis` and `.phypo` stubs, MTZ maps, `help_setting`, `callout`, `desaturate`, the FreeMOL test; `clean` was already rebuilt. To rebuild, smallest first: 21a STL export, 21b stereochemistry (a command, with rdkit), 21c pi interactions, 21d focal blur, 21e morphing, 21f three rendering details, 21g undo of more than the last move. | Each slice makes its old test pass under `pymolish -ckqyn`, then the `incentive` mark comes off. |
 
-Steps 8, 5c, 15, 17 and 19 never got an order number. Steps 16 (4.15.0) and
+Steps 8, 5c, 15, 17, 19 and 21 never got an order number. Steps 16 (4.15.0) and
 18 (4.15.1, 4.17.0) shipped and moved to [PLAN-DONE.md](PLAN-DONE.md). Suggested order for the
 request of 2026-11-18, smallest and most visible first: 15g with 15h, 16,
 18a, 17a with 17b, 18b, 19a to 19c, then the removals 17c, 19d, 17d, 17e. GPU compute is not on the critical
@@ -70,7 +73,7 @@ recommended direction, not a claim that an implementation has passed tests.
 
 | # | Decision | Where it is described | What it holds up |
 | --- | --- | --- | --- |
-| 1 | On WSL, should the app select the `d3d12` driver itself? Frames go from 50 to 120 ms down to 0.7 to 11 ms; lines are then 1 pixel wide, so `trilines` goes on with it and mesh lines stay thin. | [01-performance-gpu.md](docs/plans/01-performance-gpu.md), Status 2026-11-14 | The first open item of 1b |
+| 1 | A large surface freezes the window while it builds (4v6x 30 s, 1aon 5 s). Build it on a worker thread (A, recommended), make large surfaces coarser (B), or only announce the build in the status line (C)? | [01-performance-gpu.md](docs/plans/01-performance-gpu.md), Status 2026-11-19 | The next item of 1b |
 | 3 | Rights line for the icon and the logo: who made them, which license. | [09-icons-logo.md](docs/plans/09-icons-logo.md), `docs/licenses.md` | A complete license list; no code |
 | 4 | 5c: build the Linux and Windows bundles on the development machine, or stay with GitHub Actions now that the failing test is fixed (4.12.7)? | [05-builds-binaries.md](docs/plans/05-builds-binaries.md), 5c | 5c |
 | 5 | 15b: draw the black outline of the looks figure, soft, flat, comic and sketch in the viewport too? It needs a new edge pass in the shaders; today the outline appears only in ray-traced images. The preset illustration depends on it most: without the outline the viewport shows only flat blue shapes. | [15-presets.md](docs/plans/15-presets.md), Slices | 15b |
@@ -79,6 +82,8 @@ recommended direction, not a claim that an implementation has passed tests.
 | 13 | 19: keep the shot list after a restart, as a new entry in the session file (recommended: yes; it changes PSE output)? Remove the 58 Program rows of the Movie menu that Add and Tour replace (recommended: yes)? Remove the keyframe strip the core draws under the viewport (recommended: not yet)? | [19-movie-timeline.md](docs/plans/19-movie-timeline.md), Options and Questions | 19 |
 | 14 | 17e: remove the menus the core draws in OpenGL (969 lines)? Since the window shows Qt menus, only a program that embeds the viewport through `pymol2` without the window still gets them. Recommended: yes, if no such program is in use. | [17-legacy-ui.md](docs/plans/17-legacy-ui.md), 17e and question 4 | 17e |
 | 15 | 20: blue hover in every menu of the program, not only in the toolbar's (recommended: yes)? Should Orient act only on what is visible, like Zoom since 4.19.1 (recommended: yes)? | [20-toolbar-look.md](docs/plans/20-toolbar-look.md), Options and Questions | Two lines |
+| 16 | 21f: which rendering details, and how? Smooth edges in the viewport: FXAA shader (recommended), multisampling, or leave. Sphere modes 10 and 11 (cubes, tetrahedra): build, or cap the setting at 9 (recommended). Background image stored inside the session file (recommended; it changes what a PSE contains), or leave. | [21-commercial-features.md](docs/plans/21-commercial-features.md), 21f | 21f |
+| 17 | 21g: undo by snapshots for edits plus the coordinate ring for moves (C, recommended), or coordinates only, as today, for now? | [21-commercial-features.md](docs/plans/21-commercial-features.md), 21g | 21g |
 
 The user's to do, not decisions:
 

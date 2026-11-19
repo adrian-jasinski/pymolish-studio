@@ -66,10 +66,6 @@ Z* -------------------------------------------------------------------
 #include <unordered_map>
 #include <vector>
 
-#ifndef NO_MMLIBS
-#include "mmpymolx.h"
-#endif
-
 static
 CoordSet *ObjectMoleculeMMDStr2CoordSet(PyMOLGlobals * G, const char *buffer,
                                         AtomInfoType ** atInfoPtr, const char **restart);
@@ -9977,10 +9973,6 @@ bool ObjectMoleculeSeleOp(ObjectMolecule * I, int sele, ObjectMoleculeOpRec * op
     default:
       {
         int inv_flag;
-#ifdef _PYMOL_IP_EXTRAS
-	int use_stereo = 0, use_text_type = 0;
-#endif
-
         switch (op->code) {
         case OMOP_INVA:
           /* set up an important optimization... */
@@ -9994,26 +9986,6 @@ bool ObjectMoleculeSeleOp(ObjectMolecule * I, int sele, ObjectMoleculeOpRec * op
         use_matrices = SettingGet_i(I->G, I->Setting.get(), nullptr, cSetting_matrix_mode);
         if(use_matrices<0) use_matrices = 0;
         ai = I->AtomInfo.data();
-
-#ifdef _PYMOL_IP_EXTRAS
-        // use stereo or text_type ?
-        // only do this for "label2" command (better logic in WrapperObjectSubScript)
-	if (op->code == OMOP_LABL && op->i2 == cExecutiveLabelEvalAlt) {
-	  use_stereo = PLabelExprUsesVariable(G, op->s1, "stereo");
-	  use_text_type = PLabelExprUsesVariable(G, op->s1, "text_type");
-	}
-
-#ifdef NO_MMLIBS
-        if (use_stereo) {
-          PRINTFB(G, FB_ObjectMolecule, FB_Warnings)
-            " NO_MMLIBS-Warning: stereochemistry not supported in this PyMOL build.\n" ENDFB(G);
-        }
-        if (use_text_type) {
-          PRINTFB(G, FB_ObjectMolecule, FB_Warnings)
-            " NO_MMLIBS-Warning: automatic 'text_type' assignment not supported in this PyMOL build.\n" ENDFB(G);
-        }
-#endif
-#endif
 
         for(a = 0; a < I->NAtom; a++) {
           switch (op->code) {
@@ -10877,26 +10849,6 @@ void ObjectMolecule::invalidate(cRep_t rep, cRepInv_t level, int state)
 
 }
 
-void ObjectMoleculeInvalidateAtomType(ObjectMolecule *I, int state){
-  CoordSet *cset = 0;
-  int ai, atm;
-  AtomInfoType *at;
-  cset = I->CSet[state];
-  if (state < 0){
-    for (ai=0; ai < I->NAtom; ai++){
-      at = &I->AtomInfo[ai];
-      at->textType = 0;
-    }
-  } else {
-    for (ai=0; ai < cset->NIndex; ai++){
-      atm = cset->IdxToAtm[ai];
-      if (atm>=0){
-	at = &I->AtomInfo[ai];
-	at->textType = 0;
-      }
-    }
-  }
-}
 
 /*========================================================================*/
 int ObjectMoleculeMoveAtom(ObjectMolecule * I, int state, int index, const float *v, int mode,
@@ -11815,9 +11767,6 @@ CoordSet *ObjectMoleculeMMDStr2CoordSet(PyMOLGlobals * G, const char *buffer,
   *restart = *p ? p : nullptr;
   return (cset);
 }
-
-#ifdef _PYMOL_IP_EXTRAS
-#endif
 
 CPythonVal* ObjectMoleculeGetProperty(
     ObjectMolecule* I, const char* propname, int state, int quiet)

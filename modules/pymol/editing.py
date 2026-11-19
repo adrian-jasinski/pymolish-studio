@@ -1586,7 +1586,7 @@ NOTES
     GLUM, LYSP and the histidine names below). Any charge the input file
     supplied for one of those atoms is overwritten, and the new value
     persists on the object, so it is written out by formats which store
-    formal charges (PDB, mmCIF, mae). Writing a charge also discards any
+    formal charges (PDB, mmCIF). Writing a charge also discards any
     manual chemistry correction ("set_geometry") on that atom. All other
     atoms are left alone.
 

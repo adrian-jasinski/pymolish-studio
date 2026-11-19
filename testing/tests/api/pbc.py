@@ -5,12 +5,13 @@ Tests for periodic boundary condition tools
 import pytest
 from pymol import cmd, testing
 
-filename = "desmond/Bace_mapper_20143_3a51a59_e85111a_solvent_11_replica0-out.idx"
+stem = "desmond/Bace_mapper_20143_3a51a59_e85111a_solvent_11_replica0"
 ligsele = "segi C2"
 
 
 def _load_traj():
-    cmd.load(testing.datafile(filename), "m1")
+    cmd.load(testing.datafile(stem + "-out.cif"), "m1")
+    cmd.load_traj(testing.datafile(stem + "_trj/clickme.dtr"), "m1", state=1)
     assert cmd.count_states() == 209
 
 

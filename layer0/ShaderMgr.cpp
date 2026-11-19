@@ -1438,6 +1438,15 @@ GLfloat *CShaderMgr::GetLineWidthRange() {
   return line_width_range;
 }
 
+/**
+ * Lines as triangles: by setting, or because the driver draws every line
+ * one pixel wide (Mesa d3d12, the default on WSL).
+ */
+bool CShaderMgr::Trilines() const
+{
+  return SettingGetGlobal_b(G, cSetting_trilines) || line_width_range[1] == 1.f;
+}
+
 #ifndef _PYMOL_NO_AA_SHADERS
 #endif
 

@@ -60,6 +60,26 @@ def test_prefer_x11_on_wsl():
         assert "QT_QPA_PLATFORM" not in env
 
 
+def test_prefer_gpu_on_wsl():
+    from pmg_qt import theme
+
+    gpu = {"/dev/dxg", "/usr/lib64/dri/d3d12_dri.so"}.__contains__
+    env = {"WSL_DISTRO_NAME": "Ubuntu"}
+    theme.prefer_gpu_on_wsl(env, gpu)
+    assert env["GALLIUM_DRIVER"] == "d3d12"
+    env = {"WSL_DISTRO_NAME": "Ubuntu", "GALLIUM_DRIVER": "llvmpipe"}
+    theme.prefer_gpu_on_wsl(env, gpu)
+    assert env["GALLIUM_DRIVER"] == "llvmpipe"  # the user's choice wins
+    for env, exists in (
+        ({}, gpu),  # not WSL
+        ({"WSL_DISTRO_NAME": "Ubuntu", "LIBGL_ALWAYS_SOFTWARE": "1"}, gpu),
+        ({"WSL_DISTRO_NAME": "Ubuntu"}, {"/dev/dxg"}.__contains__),  # no driver
+        ({"WSL_DISTRO_NAME": "Ubuntu"}, {"/usr/lib/dri/d3d12_dri.so"}.__contains__),
+    ):
+        theme.prefer_gpu_on_wsl(env, exists)
+        assert "GALLIUM_DRIVER" not in env
+
+
 def test_syntax_colors_readable_on_dark():
     from pmg_qt.syntax import readable
 

@@ -36,7 +36,6 @@ class PyMOLQtGUI(QtWidgets.QMainWindow, pymol._gui.PyMOLDesktopGUI):
 
     from pmg_qt.file_dialogs import (
             load_dialog,
-            load_mae_dialog,
             file_fetch_pdb,
             file_fetch_uniprot,
             file_fetch_fold,
@@ -1261,6 +1260,7 @@ def execapp():
     # Qt 6 always follows the OS scale; this adds the user's UI scale (toolbar)
     theme.apply_ui_scale()
     theme.prefer_x11_on_wsl()
+    theme.prefer_gpu_on_wsl()
 
     # fix Windows taskbar icon
     if pymol.IS_WINDOWS:

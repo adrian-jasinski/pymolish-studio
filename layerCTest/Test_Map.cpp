@@ -39,6 +39,22 @@ static void check_neighbor_lists(PyMOLGlobals* G, int n)
   REQUIRE(repeated == 0);
 }
 
+TEST_CASE("MapGetSeparation: cells for many vertices", "[Map]")
+{
+  PyMOLInstance pymol;
+  const float mn[3] = {0, 0, 0}, mx[3] = {400, 400, 400};
+  float diagonal[3];
+  // 400^3 cells of 1 A do not fit hash_max^3 = 100^3: cells of 4 A
+  REQUIRE(MapGetSeparation(pymol.G(), 1.F, mx, mn, diagonal) ==
+          Approx(4.F).epsilon(0.02));
+  // 4 million vertices get 8 million cells: 2 A
+  REQUIRE(MapGetSeparation(pymol.G(), 1.F, mx, mn, diagonal, 4000000) ==
+          Approx(2.F).epsilon(0.02));
+  // never below the range
+  REQUIRE(MapGetSeparation(pymol.G(), 1.F, mx, mn, diagonal, 400000000) ==
+          Approx(1.F).epsilon(0.02));
+}
+
 TEST_CASE("MapSetupExpress lists every neighbor", "[Map]")
 {
   PyMOLInstance pymol;

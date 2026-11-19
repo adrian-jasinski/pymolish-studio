@@ -28,7 +28,6 @@ if True:
           safe_list_eval, safe_alpha_list_eval, \
           DEFAULT_ERROR, DEFAULT_SUCCESS, is_ok, is_error, \
           is_tuple
-    import tempfile
     import sys
 
     from chempy import fragments
@@ -73,13 +72,6 @@ if True:
         }
 
     group_action_sc =  Shortcut(group_action_dict.keys())
-
-    # must correspond to the driver's constants
-    reflection_format_dict = {
-        "cns" : 1,
-        "mtz" : 2,
-        "cif" : 3
-        }
 
     def group(name, members="", action='auto', quiet=1,_self=cmd):
         '''
@@ -172,121 +164,6 @@ SEE ALSO
     '''
         with _self.lockcm:
             return _cmd.group(_self._COb, "", str(members), 7, int(quiet))
-
-    def map_generate(name, reflection_file, amplitudes, phases, weights="None",
-                     reso_low=50.0, reso_high=1.0,quiet=1,zoom=1,_self=cmd):
-        '''
-
-DESCRIPTION
-
-    "map_generate" generates a map object from a PDB object or selection and
-    reflection data.
-
-    Experimental use with caution.
-    
-USAGE
-
-    map_generate name, reflection_file, amplitudes, phases, weights [,
-        reso_low [, reso_high ]]
-
-ARGUMENTS
-
-    name = string: name of the map object to create or modify
-	
-    reflection_file = string: name of reflection file on disk; if None, then
-                      PyMOL attempts to download the CIF file from the PDB.
-                      Default = None; attempt to download from PDB.
-
-    amplitudes = string: fully qualified apmlitudes column name.  Properly 
-                 qualified names are: project/crysta/column.  For example,
-                 KINASE/cryastl1/FWT.
-
-    phases = string:  fully qualified phases column name.  Properly 
-             qualified names are: project/crystal/column.  For example,
-             KINASE/crystal1/DELPHWT.
-
-    weights = string: fully qualified phases column name.  Properly 
-              qualified names are: project/crystal/column.  For example,
-              KINASE/crystal1/FOM.
-
-    reso_low = float : minimum resolution; if set to equal max_reso, then
-               reso_low and reso_high will be read from the reflection file.
-
-    reso_high = float : maximum resolution; if set to equal min_reso then
-               reso_low and reso_high will be read from the reflection file.
-    
-NOTES
-
-    This function can be used to synthesize x-ray maps from the reflection data.
-    Supported reflection file formats are "mtz".  Other formats coming soon.
-
-    New in PyMOL v1.4 for Mac and Linux.
-    
-    '''
-        quiet = int(quiet)
-        r = DEFAULT_ERROR
-        try:
-            _self.lock(_self)
-            if not os.path.isfile(reflection_file):
-                print(" MapGenerate-Error: Could not find file '%s'.\n Please check the filename and try again." % reflection_file)
-                raise pymol.CmdException
-
-            # TODO: work for CIF, MTZ, and CNS
-            from . import headering
-            mtzFile = headering.MTZHeader(reflection_file)
-
-            # FORMAT: crystal/dataset/column
-            _, datasetName, ampColName = ('//' + amplitudes).rsplit('/', 2)
-
-            # if datasetName is empty, take any dataset that has ampColName
-            for dataset in list(mtzFile.datasets.values()):
-                if (not datasetName or dataset["name"] == datasetName) and \
-                        ampColName in dataset["cols"]:
-                    break
-            else:
-                raise pymol.CmdException("no dataset found")
-
-            cellX, cellY, cellZ = dataset['x'], dataset['y'], dataset['z']
-            cellAlpha, cellBeta, cellGamma = dataset['alpha'], dataset['beta'], dataset['gamma']
-            if reso_low==reso_high:
-                reso_low, reso_high = mtzFile.reso_min, mtzFile.reso_max
-            space_group = mtzFile.space_group
-
-            phases = phases.rsplit('/', 1)[-1]
-            if not phases:
-                raise pymol.CmdException("phase name missing")
-
-            if weights and weights!="None":
-                weights = weights.rsplit('/', 1)[-1]
-                if not weights:
-                    raise pymol.CmdException("Improperly formatted weights name")
-
-            tempFile = tempfile.NamedTemporaryFile(delete=False)
-            tempFileName = tempFile.name
-            tempFile.close()
-
-            r = _cmd.map_generate(_self._COb,str(name),str(reflection_file),str(tempFileName),
-                              str(ampColName),str(phases),
-                              str(weights),float(reso_low),float(reso_high),str(space_group),
-                              float(cellX), float(cellY), float(cellZ),
-                              float(cellAlpha), float(cellBeta), float(cellGamma),
-                              int(quiet),int(zoom))
-            if r is not None:
-                if not quiet:
-                    print("Loading map '%s'" % (name))
-                r = _self.load(r, name, format="ccp4", finish=1)
-            else:
-                print(' Error: Map generation failed')
-
-            os.remove(tempFileName)
-
-        except ImportError:
-            print(" MapGenerate-Error: Cannot import headering module.  Cannot read MTZ file or make map.")
-        finally:
-            _self.unlock(r,_self)
-        if _self._raising(r,_self): raise pymol.CmdException
-
-        return name
 
     def map_new(name, type='gaussian', grid=None, selection="(all)",
                 buffer=None, box=None, state=0, quiet=1, zoom=0,

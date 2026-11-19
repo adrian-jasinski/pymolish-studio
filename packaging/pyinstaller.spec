@@ -57,9 +57,13 @@ a = Analysis(
 # Qt pieces PyMOL never loads; PySide6 hooks still collect them
 # (DBus stays: the Linux xcb platform plugin links it)
 PRUNE = ('Qt6Quick', 'Qt6Qml', 'Qt6Pdf', 'Qt6VirtualKeyboard', 'Qt6Network',
-         'Qt6Designer', 'Qt/qml/', 'Qt/translations/', 'QtNetwork')
+         'Qt6Designer', 'qml' + os.sep, 'translations' + os.sep, 'QtNetwork')
 a.binaries = [b for b in a.binaries if not any(k in b[0] for k in PRUNE)]
 a.datas = [d for d in a.datas if not any(k in d[0] for k in PRUNE)]
+# the PySide6 hook only warns when it cannot import QtCore, and then collects
+# no plugin: such a bundle builds, passes headless and cannot open a window
+assert any(os.path.join('plugins', 'platforms') in b[0] for b in a.binaries), \
+    'no Qt platform plugin collected: see the PySide6 hook warnings above'
 
 pyz = PYZ(a.pure)
 exe = EXE(pyz, a.scripts, exclude_binaries=True, name='pymolish', console=True,

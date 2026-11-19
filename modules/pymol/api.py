@@ -14,7 +14,6 @@ from .importing import \
       load_embedded,      \
       load_map,           \
       load_model,         \
-      load_mtz,           \
       load_object,        \
       load_traj,          \
       load_raw,           \
@@ -43,7 +42,6 @@ from .creating import \
       isomesh,            \
       isosurface,         \
       join_states,        \
-      map_generate,        \
       map_new,            \
       pseudoatom,         \
       set_raw_alignment,  \
@@ -446,7 +444,6 @@ from .helping import \
       api,                 \
       show_help,           \
       help,                \
-      help_setting,        \
       commands
 
 #--------------------------------------------------------------------
@@ -461,8 +458,6 @@ from .experimenting import \
       mem,                \
       spheroid,           \
       focal_blur,         \
-      callout,            \
-      desaturate,         \
       test
 
 from .internal import      \

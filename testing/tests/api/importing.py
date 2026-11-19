@@ -158,21 +158,6 @@ def testLoad_no_zoom():
     assert view == cmd.get_view()
 
 
-@testing.requires('incentive')
-def testLoad_mimic():
-    filename = testing.datafile("repr.mae")
-    cmd.load(filename, "m0", mimic=0)
-    cmd.load(filename, "m1", mimic=1)
-    assert not cmd.get_setting_boolean("stick_ball", "m0.x_ballstick", state=1)
-    assert cmd.get_setting_boolean("stick_ball", "m1.x_ballstick", state=1)
-
-
-def testLoad_idx():
-    cmd.load(testing.datafile('desmond/Bace_mapper_20143_3a51a59_e85111a_solvent_11_replica0-out.idx'), state=1)
-    assert cmd.count_states() == 209
-    assert cmd.count_atoms() == 2482
-
-
 def testLoad_pqr():
     cmd.load(testing.datafile('example.pqr'))
     charges = []
@@ -550,24 +535,6 @@ def testLoadPLY():
     cmd.load(testing.datafile("test_PHE_pentamer.ply.gz"))
     e = cmd.get_extent('test_PHE_pentamer')
     testing.assert_array_equal(e, [[-3.141,-3.036,-2.809], [15.920, 10.425, 8.680]], delta=1e-3)
-
-
-@pytest.mark.parametrize("load_object_props_default,object_props,truth", [
-        ['', '*',                   True],
-        ['', 'pdb_header',          True],
-        ['', 'x pdb_header y',      True],
-        ['', 'other',               False],
-        ['',                None,   False],
-        ['other',           None,   False],
-        ['pdb_header',      None,   True],
-        ['x pdb_header y',  None,   True],
-        ['*',               None,   True],
-        ])
-@testing.requires('incentive')
-def testPdbHeader(load_object_props_default, object_props, truth):
-    cmd.set('load_object_props_default', load_object_props_default)
-    cmd.load(testing.datafile('1rx1.pdb'), 'm1', object_props=object_props)
-    assert truth == ('pdb_header' in (cmd.get_property_list('m1') or ()))
 
 
 def testChemCompCartnUse():

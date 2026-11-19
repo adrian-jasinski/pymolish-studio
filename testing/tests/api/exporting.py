@@ -194,7 +194,6 @@ def testSaveRef(format):
         ('mol2', 1.7),
         ('xyz',  1.8),
         ('mol',  1.831),
-        ('mae',  1.831),
         ('cif',  1.8),
 ])
 def testSaveState(format, pymol_version):
@@ -214,9 +213,6 @@ def testSaveState(format, pymol_version):
     n_states = cmd.count_states('m1')
 
     with testing.mktemp('.' + format) as filename:
-        if format == 'mae' and not pymol.invocation.options.incentive_product:
-            format = 'cms'
-
         # explicit
         for state in range(1, n_states + 1):
             cmd.delete('m2')
@@ -234,7 +230,7 @@ def testSaveState(format, pymol_version):
             rms = cmd.rms_cur('m1', 'm2', state, 1, matchmaker=m)
             assert rms == pytest.approx(0.00, abs=1e-2)
 
-        if format in ('mol', 'cms'):
+        if format in ('mol',):
             # no multi support
             return
 
@@ -255,7 +251,6 @@ def testSaveState(format, pymol_version):
         ('mol2', 1.7),
         ('xyz',  1.7),
         ('mol',  1.7),
-        ('mae',  1.831),
         ('cif',  1.8),
 ])
 def testSaveSelection(format, pymol_version):
@@ -274,9 +269,6 @@ def testSaveSelection(format, pymol_version):
         cmd.save(filename, 'elem O+N')
         if testing.PYMOL_VERSION_TUPLE < (1, 8):
             cmd.set('raise_exceptions', 1)
-
-        if format == 'mae' and not pymol.invocation.options.incentive_product:
-            format = 'cms'
 
         cmd.delete('*')
         cmd.load(filename, 'm2', discrete=1, format=format) # avoid merging of atoms

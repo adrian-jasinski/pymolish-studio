@@ -90,7 +90,7 @@ int* MapLocusEStart(MapType* map, const float* v);
 void MapCacheReset(MapCacheType& M);
 
 float MapGetSeparation(PyMOLGlobals* G, float range, const float* mx,
-    const float* mn, float* diagonal);
+    const float* mn, float* diagonal, int nVert = 0);
 float MapGetDiv(MapType* I);
 
 /* special routines for raytracing */

@@ -181,7 +181,14 @@ jobs:
 
     - name: Build standalone bundle
       if: matrix.python == 'py313'
-      run: pixi run -e ${{ matrix.python }} pyinstaller --noconfirm packaging/pyinstaller.spec
+      # conda-forge icu puts a copy of icuuc78.dll under the name of the ICU
+      # of Windows, icuuc.dll, which only Qt6Core.dll imports. PyInstaller's
+      # PySide6 hook imports QtCore without the workaround in pymol.Qt, fails
+      # on that copy and then collects no Qt plugin: the bundle cannot open a
+      # window. Removed after Test, which so still covers the workaround.
+      run: |
+        Remove-Item .pixi\envs\${{ matrix.python }}\Library\bin\icuuc.dll
+        pixi run -e ${{ matrix.python }} pyinstaller --noconfirm packaging/pyinstaller.spec
 
     - name: Pack bundle
       if: matrix.python == 'py313'

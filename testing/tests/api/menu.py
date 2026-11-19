@@ -241,8 +241,8 @@ def testPresets(request):
     labels = [row[1] for row in m if row[0] == 1]
     assert labels == [
         'default', 'classified', 'technical', 'ball and stick',
-        'b factor putty', 'pretty', 'publication', 'publication green',
-        'glass', 'wire',
+        'b factor putty', 'pretty', 'publication',
+        'glass', 'cartoon wire', 'cartoon spring',
         'illustration', 'ligands',
         'ligand sites', 'protein interface', 'protein-protein interaction',
         'antibody and antigen', 'cartoon transparency',

@@ -152,7 +152,7 @@ static int RepNonbondedCGOGenerate(RepNonbonded * I, RenderInfo * info)
         I->shaderCGO_has_cylinders = true;
         convertcgo = tmpCGO;
       } else {
-        bool trilines = SettingGetGlobal_b(G, cSetting_trilines);
+        bool trilines = G->ShaderMgr->Trilines();
         CGO *tmpCGO = CGONew(G), *tmp2CGO;
         int shader = trilines ? GL_TRILINES_SHADER : GL_LINE_SHADER;
 

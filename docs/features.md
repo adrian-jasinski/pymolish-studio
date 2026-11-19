@@ -30,9 +30,10 @@ Numbers in brackets are pymolish-studio versions; the
 | Background | The button after the palette sets the background: plain colors, two blues and six gradients. "Remember after restart" in the same menu keeps the choice (4.15.0). |
 | Own palettes | Palette menu > New palette: a name and a list of colors; listed with the others and kept between starts (4.19.0). |
 | Object colors | The palette button in the toolbar shows the palettes as color strips. Picking one recolors the loaded objects, and new objects and "by chain" follow it. The choice is remembered (4.10.0, 4.13.1). |
-| Complex presets | Presets > "protein-protein interaction" and "antibody and antigen": chains in their own colors, the contact residues as sticks, polar contacts as dashes; for an antibody the antigen as a surface with the epitope in orange (4.19.1). A preset from the toolbar acts on the objects that are switched on. |
-| Green publication preset | Presets > "publication green": the publication picture with each chain in shades of green, light to dark, in place of the rainbow (4.19.3). |
-| Presets and looks | The Presets button lists the presets in order, with one "show solvent" / "hide solvent" row and a glass preset (cartoon inside a transparent surface). The last group of the same list sets light and outline for the whole scene: standard light, figure, soft, flat, comic, sketch and x-ray. They leave the background alone; the outline is black on a light background and white on a dark one, and appears in ray-traced images (4.14.0, 4.14.5). technical and the ligand presets keep the colors of the protein (4.14.5). Every preset draws the protein as cartoon; the ligand presets draw the ligand as balls on thin sticks; a "cartoon transparency" row makes the cartoon see-through until the next preset (4.14.3). Presets wire (the cartoon as a wire mesh) and illustration (shades of blue inside a faint outlined surface, a colored line drawing when ray traced); "shades" in the color menus colors a chain, or the chains, in shades of one color (4.14.4). |
+| Complex presets | Presets > "protein-protein interaction": every chain as an orange surface, white where it touches another chain (4.19.29). "antibody and antigen": the antibody as cartoon, the residues that touch the antigen as sticks, polar contacts as dashes, the antigen as a sand surface with the epitope in orange (4.19.1). A preset from the toolbar acts on the objects that are switched on. |
+| Presets keep the colors | No preset but "default" changes the color of the cartoon: color the chains first, then pick any preset (4.19.29). |
+| Cartoon spring and wire | Presets > "cartoon spring": the cartoon as one thick round tube, a helix as a spring (4.19.29). "cartoon wire": the cartoon as a wire mesh (4.14.4). |
+| Presets and looks | The Presets button lists the presets in order, with one "show solvent" / "hide solvent" row and a glass preset (cartoon inside a transparent surface). The last group of the same list sets light and outline for the whole scene: standard light, figure, soft, flat, comic, sketch and x-ray. They leave the background alone; the outline is black on a light background and white on a dark one, and appears in ray-traced images (4.14.0, 4.14.5). technical and the ligand presets keep the colors of the protein (4.14.5). Every preset draws the protein as cartoon; the ligand presets draw the ligand as balls on thin sticks; a "cartoon transparency" row makes the cartoon see-through until the next preset (4.14.3). Presets cartoon wire (the cartoon as a wire mesh) and illustration (the cartoon inside a faint outlined surface, a colored line drawing when ray traced); "shades" in the color menus colors a chain, or the chains, in shades of one color (4.14.4). |
 
 ### Object color palettes
 
@@ -69,14 +70,18 @@ of those names (Nord frost and aurora, Dracula, Catppuccin Mocha).
 
 ## Speed
 
-Each change was measured before and after on the same machine. Method and all
-numbers: [baseline.md](baseline.md).
+Measured against upstream PyMOL 3.2 on the same machine, same workloads,
+both on Python 3.14, 2026-11-19. Method and all numbers:
+[benchmark.md](benchmark.md).
 
-| Work | Before | After | Version |
-| --- | --- | --- | --- |
-| Load a 17 MB session (`.pse`) | 0.92 s | 0.14 s | 4.5.10 |
-| Build the surface of 1aon (58870 atoms), with a small ray | 11.97 s | 9.66 s | 4.5.12 |
-| The same surface build | 9.44 s | 6.24 s | 4.7.7 to 4.7.9 |
+| Work | PyMOL 3.2 | pymolish |
+| --- | --- | --- |
+| Build the surface of 1aon (59192 atoms) | 10.4 s | 5.0 s |
+| Build the surface of a ribosome, 4v6x (239306 atoms) | 86 s | 33 s |
+| Build the cartoon of the spike trimer 6vxx (24621 atoms) | 0.33 s | 0.21 s |
+| Load a session (`.pse`) of 10 structures, 455k atoms | 9.1 s | 1.3 s |
+| A frame of the 1aon cartoon while rotating, on WSL | 44 ms (CPU) | 8 ms (GPU, 4.19.15) |
+| Ray-traced images | same | same |
 
 ## Getting it
 

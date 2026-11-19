@@ -344,7 +344,7 @@ def download_chem_comp(resn, quiet=1, _self=cmd):
     return filename
 
 def _load(oname,finfo,state,ftype,finish,discrete,
-          quiet=1,multiplex=0,zoom=-1,mimic=1,
+          quiet=1,multiplex=0,zoom=-1,
           plugin='',
           object_props=None,
           atom_props=None, _self=cmd):
@@ -363,7 +363,7 @@ def _load(oname,finfo,state,ftype,finish,discrete,
                           int(state) - 1, int(ftype),
                           int(finish),int(discrete),int(quiet),
                           int(multiplex),int(zoom), plugin,
-                          object_props, atom_props, int(mimic))
+                          object_props, atom_props)
     else:
         try:
             x = chempy.io.pkl.fromFile(finfo)

@@ -44,7 +44,6 @@
       <item><property name="text"><string notr="true">pdbqt</string></property></item>
       <item><property name="text"><string notr="true">pqr</string></property></item>
       <item><property name="text"><string notr="true">xyz</string></property></item>
-      <item><property name="text"><string notr="true">mae</string></property></item>
      </widget>
     </item>
     <item row="2" column="0">

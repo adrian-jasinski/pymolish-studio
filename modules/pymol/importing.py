@@ -77,11 +77,6 @@ if True:
             format = 'rst'
         elif ext in ('o', 'dsn6', 'omap',):
             format = 'brix'
-        elif ext in ('maegz',):
-            zipped = 'gz'
-            format = 'mae'
-        elif ext in ('ph4',):
-            format = 'moe'
         elif ext in ('spi',):
             format = 'spider'
         elif ext in ('pym', 'pyc',):
@@ -565,8 +560,10 @@ ARGUMENTS
     the content should be loaded, or 0 for append {default:0}
 
     format = pdb, ccp4, etc. {default: use file extension}): format of
-    data file    
-    
+    data file
+
+    mimic: accepted and not used (it applied the styles of a Maestro file)
+
 EXAMPLES
 
     load 1dn2.pdb
@@ -692,7 +689,6 @@ SEE ALSO
                 'multiplex': multiplex,
                 'zoom': zoom,
                 'partial': partial,
-                'mimic': mimic,
                 'object_props': object_props,
                 'atom_props': atom_props,
                 '_self': _self,
@@ -1339,69 +1335,6 @@ ARGUMENTS
             r = _cmd.load_coords(_self._COb, selection, coords, int(state)-1)
         return r
 
-    def load_idx(filename, object, state=0, quiet=1, zoom=-1, *, _self=cmd):
-        '''
-DESCRIPTION
-
-    Load a Desmond trajectory (including topology) from an IDX file.
-        '''
-        state, quiet, zoom = int(state), int(quiet), int(zoom)
-        dirname = os.path.dirname(filename)
-        data = {}
-
-        with open(filename) as handle:
-            for line in handle:
-                k, v = line.split('=', 1)
-                data[k.strip()] = v.strip()
-
-        if state == 0:
-            state = 1
-
-        oname = object
-        _self.delete(oname)
-        r = _self.load(
-                os.path.join(dirname, data['structure']), oname, state, quiet=quiet, zoom=0)
-
-        if not is_error(r):
-            _self.load_traj(
-                os.path.join(dirname, data['trajectory'], 'clickme.dtr'), oname, state)
-
-            auto_zoom(zoom, oname, _self=_self)
-
-        return r
-
-    def load_mtz(filename, prefix='', amplitudes='', phases='', weights='None',
-            reso_low=0, reso_high=0, quiet=1, *, _self=cmd):
-        '''
-DESCRIPTION
-
-    Load a MTZ file as two map objects (fofc, 2fofc) or if amplitudes and
-    phases column names are given, as one map object.
-
-USAGE
-
-    load_mtz filename [, prefix [, amplitudes, phases [, weights
-        [, reso_low [, reso_high ]]]]]
-
-ARGUMENTS
-
-    filename = str: filename
-
-    prefix = str: object name or prefix {default: filename without extension}
-
-    amplitudes = str: amplitudes column name, guess if blank {default: }
-
-    phases = str: phases column name, required if amplitudes are given {default: }
-
-    weights = str: weights column name, optional {default: None}
-
-    reso_low = float: minimum resolution {default: 0, read from file}
-
-    reso_high = float: maximum resolution {default: 0, read from file}
-
-        '''
-        raise pymol.IncentiveOnlyException()
-
     def loadall(pattern, group='', quiet=1, _self=cmd, **kwargs):
         '''
 DESCRIPTION
@@ -1451,16 +1384,13 @@ EXAMPLE
         return _self.load_model(obj, object, state)
 
     loadfunctions = {
-        'mae': incentive_format_not_available_func,
         'pdbml': 'pymol.lazyio:load_pdbml',
         'cml': 'pymol.lazyio:load_cml',
-        'mtz': load_mtz,
         'py': lambda filename, _self: _self.do("_ run %s" % filename),
         'pml': lambda filename, _self: _self.do("_ @%s" % filename),
         'aln': 'pymol.seqalign:load_aln_multi',
         'fasta': _processFASTA,
         'png': 'pymol.viewing:load_png',
-        'idx': load_idx,
         'pse': load_pse,
         'psw': load_pse,
         'ply': load_ply,
@@ -1468,9 +1398,4 @@ EXAMPLE
         'cc1': load_cc1,
         'pdb': read_pdbstr,
         'stl': 'pymol.lazyio:read_stlstr',
-
-        # Incentive
-        'vis': incentive_format_not_available_func,
-        'moe': incentive_format_not_available_func,
-        'phypo': incentive_format_not_available_func,
     }

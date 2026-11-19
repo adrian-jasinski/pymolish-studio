@@ -358,8 +358,6 @@ ObjectMolecule *ObjectMoleculeReadPDBStr(PyMOLGlobals * G, ObjectMolecule * obj,
 
 int ObjectMoleculeExtendIndices(ObjectMolecule * I, int state);
 
-void ObjectMoleculeInvalidateAtomType(ObjectMolecule *I, int state);
-
 /**
  * Renders the positions of the indicators based for the selection in this object
  * @param I ObjectMolecule whose selections are rendered
@@ -507,14 +505,6 @@ struct CoordSet *ObjectMoleculePDBStr2CoordSet(PyMOLGlobals * G,
                                                const char **next_pdb,
                                                PDBInfoRec * pdb_info,
                                                int quiet, int *model_number);
-
-#ifndef NO_MMLIBS
-int ObjectMoleculeUpdateAtomTypeInfoForState(PyMOLGlobals * G, ObjectMolecule * obj, int state, int initialize, int format);
-#endif
-
-#ifdef _PYMOL_IP_EXTRAS
-int ObjectMoleculeUpdateMMStereoInfoForState(PyMOLGlobals * G, ObjectMolecule * obj, int state, int initialize=1);
-#endif
 
 PyObject* ObjectMoleculeGetProperty(
     ObjectMolecule* I, const char* propname, int state, int quiet);

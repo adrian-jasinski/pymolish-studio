@@ -24,47 +24,55 @@ def testSimple():
     _assertSimpleReps()
 
 
-def _guideColors():
-    stored.colors = set()
-    cmd.iterate('guide', 'stored.colors.add(color)')
-    return stored.colors
-
-
-def testKeepsProteinColors():
-    # 15h: the working presets leave the cartoon color alone
+def testKeepsCartoonColors(request):
+    # 15l: no row of the menu but "default" colors the cartoon, of a
+    # protein (guide atoms) or of a nucleic acid (P and the bases)
+    from pymol import menu
     cmd.load(testing.datafile('1oky.pdb.gz'))
-    cmd.color('yellow', 'polymer & elem C')
-    for name in ('technical', 'ligands', 'ligand_sites', 'ligand_cartoon',
-                 'ball_and_stick', 'classified'):
-        getattr(preset, name)('all')
-        assert _guideColors() == {6}, name
-    preset.pretty('all')  # a picture preset still colors
-    assert len(_guideColors()) > 10
+    cmd.fab('ACDEFGHIK', 'pep', chain='B')
+    cmd.load(testing.datafile('1bna.cif'), 'dna')
+    cmd.color('yellow')
+    request.addfinalizer(lambda: preset.look('default'))
+    request.addfinalizer(lambda: setattr(preset, 'solvent', False))
+    rows = menu.presets(cmd, 'all') + menu.preset_ligand_sites(cmd, 'all')
+    ran = 0
+    for row in rows:
+        if row[0] == 1 and isinstance(row[2], str) and row[1] != 'default':
+            cmd.do(row[2], echo=0)
+            assert _colors('guide | (dna & polymer)') == {6}, row[1]
+            ran += 1
+    assert ran > 20
+    preset.default('all')  # the reset still colors
+    assert len(_colors('dna & polymer')) > 1
+
+
+def _surfaceColors(selection):
+    stored.surface = set()
+    cmd.iterate(selection, 'stored.surface.add(s.surface_color)')
+    return stored.surface
 
 
 def testInteraction():
-    # two chains in two objects, built on top of each other: all touch
+    # two chains in two objects, built on top of each other: all touch;
+    # a third far away touches nothing
+    index = cmd.get_color_index
     cmd.fab('ACDEFGHIK', 'one', chain='A')
     cmd.fab('LMNPQRSTV', 'two', chain='A')
+    cmd.fab('ACDEFGHIK', 'far', chain='A')
+    cmd.translate([100, 0, 0], 'far')
+    before = _colors('all')
     preset.interaction('all')
-    assert cmd.count_atoms('rep cartoon') == cmd.count_atoms('polymer')
     assert cmd.count_atoms('rep surface') == cmd.count_atoms('polymer')
-    assert cmd.count_atoms('rep sticks') > 0
-    # one color per chain and object, the same for its surface
-    colors = {name: _colors(name + ' & guide') for name in ('one', 'two')}
-    assert [len(c) for c in colors.values()] == [1, 1]
-    assert colors['one'] != colors['two']
-    stored.surface = set()
-    cmd.iterate('one', 'stored.surface.add(s.surface_color)')
-    assert stored.surface == colors['one']
-    assert 'polar_contacts' in cmd.get_names('all')
+    assert cmd.count_atoms('rep cartoon | rep sticks') == 0
+    # the surface: orange, white where chains touch; the atoms keep theirs
+    assert _surfaceColors('one | two') == {index('white'), index('orange')}
+    assert _surfaceColors('far') == {index('orange')}
+    assert _colors('all') == before
     assert '_p_tmp' not in cmd.get_names('all')
-    # the next preset undoes surface, sticks and the surface colors
+    # the next preset undoes the surface and its colors
     preset.pretty('all')
-    assert cmd.count_atoms('rep surface | rep sticks') == 0
-    stored.surface = set()
-    cmd.iterate('one', 'stored.surface.add(s.surface_color)')
-    assert stored.surface == {None}
+    assert cmd.count_atoms('rep surface') == 0
+    assert _surfaceColors('all') == {None}
 
 
 def _colors(selection):
@@ -79,14 +87,15 @@ def testAntibody():
     cmd.fab('AAWVRQAPGKGLEW', 'm', chain='X')
     cmd.fab('AAWYQQKPGKAPKL', 'm2', chain='Y')
     cmd.fab('ACDEFGHIKLMNPQ', 'ag', chain='Z')
+    before = _colors('guide')
     preset.antibody('all')
-    assert _colors('m & guide') == {index('skyblue')}
-    assert _colors('m2 & guide') == {index('lightblue')}
+    assert _colors('guide') == before  # 15l: the cartoon keeps its colors
     # the antigen: a surface, sand with the epitope in orange
     assert cmd.count_atoms('rep surface') == cmd.count_atoms('ag')
     assert cmd.count_atoms('rep cartoon') == cmd.count_atoms('m | m2')
-    assert _colors('ag') <= {index('wheat'), index('orange')}
-    assert index('orange') in _colors('ag')
+    assert _surfaceColors('ag') <= {index('wheat'), index('orange')}
+    assert index('orange') in _surfaceColors('ag')
+    assert _surfaceColors('m | m2') == {None}
     assert cmd.count_atoms('rep sticks & (m | m2)') > 0
 
     # without the motif: the chains named H and L
@@ -95,8 +104,7 @@ def testAntibody():
     cmd.fab('ACDEFGHIK', 'l', chain='L')
     cmd.fab('ACDEFGHIK', 'ag', chain='A')
     preset.antibody('all')
-    assert _colors('h & guide') == {index('skyblue')}
-    assert _colors('l & guide') == {index('lightblue')}
+    assert cmd.count_atoms('rep cartoon') == cmd.count_atoms('h | l')
     assert cmd.count_atoms('rep surface') == cmd.count_atoms('ag')
 
     # no antibody at all: the interaction picture
@@ -236,15 +244,29 @@ def testWire():
     assert cmd.get_setting_int('cartoon_debug') == 0
 
 
+def testSpring():
+    cmd.fab('ACDEFGHIK', 'm1', ss=1)
+    cmd.fab('ACDEFGHIK', 'm2', ss=1)
+    preset.spring('all')
+    assert cmd.count_atoms('rep cartoon & guide') == cmd.count_atoms('guide')
+    stored.types = set()
+    cmd.iterate('guide', 'stored.types.add(cartoon)')
+    assert stored.types == {4}  # tube
+    for name in ('m1', 'm2'):
+        assert cmd.get_setting_float('cartoon_tube_radius', name) == pytest.approx(0.8)
+    preset.pretty('all')  # the next preset undoes it
+    stored.types = set()
+    cmd.iterate('guide', 'stored.types.add(cartoon)')
+    assert 4 not in stored.types
+    assert cmd.get_setting_float('cartoon_tube_radius', 'm1') == pytest.approx(0.5)
+
+
 def testIllustration(request):
     cmd.load(testing.datafile('1oky.pdb.gz'))
     request.addfinalizer(lambda: preset.look('default'))
     preset.illustration('all')
     assert cmd.count_atoms('rep surface') == cmd.count_atoms('polymer')
     assert cmd.count_atoms('rep cartoon & guide') == cmd.count_atoms('guide')
-    stored.colors = set()
-    cmd.iterate('guide', 'stored.colors.add(color)')
-    assert len(stored.colors) > 10  # shades of one color
     # it picks the look flat: true colors, outlines on transparent things
     assert cmd.get_setting_int('ray_trace_mode') == 1
     assert cmd.get_setting_float('ray_trace_trans_cutoff') == 1

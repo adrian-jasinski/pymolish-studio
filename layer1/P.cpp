@@ -138,42 +138,6 @@ static int label_next_token(WordType dst, const char **expr)
   return (q != dst);
 }
 
-int PLabelExprUsesVariable(PyMOLGlobals * G, const char *expr, const char *var)
-{
-  char ch, quote = 0;
-  int escaped = false;
-  while((ch = *(expr++))) {
-    if(!quote) {
-      if(ch == '\'') {
-        quote = ch;
-      } else if(ch == '"') {
-        quote = ch;
-      } else if((ch < 33) || (ch == '+') || (ch == '(') || (ch == ')')) {
-        /* nop */
-      } else if(ch > 32) {
-        WordType tok;
-        expr--;
-        if(label_next_token(tok, &expr)) {
-          if(!strcmp(tok, var)) {
-	    return 1;
-	  }
-	}
-      }
-    } else {
-      if(ch == quote) {
-        quote = 0;
-      } else if(ch == '\\') {
-        if(!escaped) {
-          escaped = true;
-        } else {
-          escaped = false;
-        }
-      }
-    }
-  }
-  return 0;
-}
-
 int PLabelAtomAlt(PyMOLGlobals * G, AtomInfoType * at, const char *model, const char *expr, int index)
 {
   /* alternate C implementation which bypasses Python expressions -- works
@@ -761,23 +725,6 @@ PyObject * WrapperObjectSubScript(PyObject *obj, PyObject *key){
   auto const ap = PyMOL_GetAtomPropertyInfo(G->PyMOL, aprop);
 
   if (ap) {
-#ifdef _PYMOL_IP_EXTRAS
-    switch (ap->id) {
-    case ATOM_PROP_STEREO:
-      if (ObjectMoleculeUpdateMMStereoInfoForState(G, wobj->obj, wobj->state - 1) < 0) {
-        PyErr_SetString(P_CmdException,
-            "please install rdkit or set SCHRODINGER variable");
-        return nullptr;
-      }
-      break;
-    case ATOM_PROP_TEXT_TYPE:
-#ifndef NO_MMLIBS
-      ObjectMoleculeUpdateAtomTypeInfoForState(G, wobj->obj, wobj->state - 1, 1, 0);
-#endif
-      break;
-    }
-#endif
-
     switch (ap->Ptype){
     case cPType_string:
       ret = PyUnicode_FromString(
@@ -938,19 +885,6 @@ int WrapperObjectAssignSubScript(PyObject *obj, PyObject *key, PyObject *val){
           PyExc_TypeError, "Use alter/alter_state to modify values");
       return -1;
     }
-
-#ifdef _PYMOL_IP_EXTRAS
-    if (wobj->cs) {
-      switch (ap->id) {
-      case ATOM_PROP_STEREO:
-        wobj->cs->validMMStereo = MMPYMOLX_PROP_STATE_USER;
-        break;
-      case ATOM_PROP_TEXT_TYPE:
-        wobj->cs->validTextType = MMPYMOLX_PROP_STATE_USER;
-        break;
-      }
-    }
-#endif
 
     bool changed = false;
 

@@ -10,7 +10,6 @@ class PyMOLDesktopGUI(object):
     '''Superclass for PyMOL Desktop Applications'''
 
     file_open = None
-    file_autoload_mtz = None
     file_fetch_pdb = None
     session_save = None
     session_save_as = None

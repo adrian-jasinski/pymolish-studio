@@ -9,27 +9,6 @@ from pymol.Qt.utils import PopupOnException
 import urllib.request as urllib
 
 
-def _get_cms_traj_file(fname):
-    """For a .cms file, get the filename of the corresponding trajectory file.
-    Return None if no such trajecotry file is found.
-    """
-    candidates = []
-
-    # 2) By filename conventions
-    stem = fname[:-8] if fname.endswith("-out.cms") else fname[:-4]
-    candidates += [
-        (stem + '_trj', 'clickme.dtr'),
-        (stem + '.xtc',),
-    ]
-
-    for components in candidates:
-        traj = os.path.join(*components)
-        if os.path.exists(traj):
-            return traj
-
-    return None
-
-
 def load_dialog(parent, fname, **kwargs):
     '''
     Load a file into PyMOL. May show a file format specific options
@@ -47,14 +26,10 @@ def load_dialog(parent, fname, **kwargs):
         load_traj_dialog(parent, fname)
     elif format in ('aln', 'fasta'):
         load_aln_dialog(parent, fname, format)
-    elif format == 'mae':
-        load_mae_dialog(parent, fname)
     elif format in ('ccp4', 'map'):
         load_map_dialog(parent, fname, 'ccp4')
     elif format == 'brix':
         load_map_dialog(parent, fname, 'o')
-    elif format == 'mtz':
-        load_mtz_dialog(parent, fname)
     else:
         if format in ('pse', 'psw') and not ask_partial(parent, kwargs, fname):
             return
@@ -67,12 +42,6 @@ def load_dialog(parent, fname, **kwargs):
         except BaseException as e:
             QtWidgets.QMessageBox.critical(parent, "Error", str(e))
             return
-
-        # auto-load desmond trajectory
-        if fname.endswith('.cms'):
-            traj = _get_cms_traj_file(fname)
-            if traj:
-                load_traj_dialog(parent, traj)
 
     return True
 
@@ -148,57 +117,6 @@ def load_traj_dialog(parent, filename):
     form._dialog.setModal(True)
     form._dialog.show()
 
-
-def load_mtz_dialog(parent, filename):
-    from pymol import headering
-
-    _fileData = headering.MTZHeader(filename)
-
-    FCols = _fileData.getColumnsOfType("F") + \
-            _fileData.getColumnsOfType("G")
-    PCols = _fileData.getColumnsOfType("P")
-    WCols = _fileData.getColumnsOfType("W") + \
-            _fileData.getColumnsOfType("Q")
-    _2FC, _2PC, _looksLike = _fileData.guessCols("2FoFc")
-    _FC, _PC, _looksLike = _fileData.guessCols("FoFc")
-
-    form = parent.load_form('load_mtz')
-    form.input_amplitudes.addItems(FCols)
-    form.input_phases.addItems(PCols)
-    form.input_weights.addItem("")
-    form.input_weights.addItems(WCols)
-    form.input_prefix.setFocus(),
-
-    for col in [_2FC, _FC]:
-        if col in FCols:
-            form.input_amplitudes.setCurrentIndex(FCols.index(col))
-            break
-    for col in [_2PC, _PC]:
-        if col in PCols:
-            form.input_phases.setCurrentIndex(PCols.index(col))
-            break
-
-    if _fileData.reso_min is not None:
-        form.input_reso_min.setValue(_fileData.reso_min)
-    if _fileData.reso_max is not None:
-        form.input_reso_max.setValue(_fileData.reso_max)
-
-    def run():
-        try:
-            parent.cmd.load_mtz(filename,
-                    form.input_prefix.text(),
-                    form.input_amplitudes.currentText(),
-                    form.input_phases.currentText(),
-                    form.input_weights.currentText(),
-                    form.input_reso_min.value(),
-                    form.input_reso_max.value(),
-                    quiet=0)
-        except BaseException as e:
-            QtWidgets.QMessageBox.critical(parent, "Error", str(e))
-
-    form._dialog.accepted.connect(run)
-    form._dialog.setModal(True)
-    form._dialog.show()
 
 
 def load_aln_dialog(parent, filename, format):
@@ -278,57 +196,6 @@ def load_aln_dialog(parent, filename, format):
     form.button_ok.clicked.connect(run)
     form.button_cancel.clicked.connect(cancel)
 
-    form._dialog.setModal(True)
-    form._dialog.show()
-
-
-def load_mae_dialog(parent, filename):
-    form = parent.load_form('load_mae')
-
-    form.input_object_name.setPlaceholderText(
-            pymol.importing.filename_to_objectname(filename))
-    form.input_object_props.setText(parent.cmd.get('load_object_props_default') or '*')
-    form.input_atom_props.setText(parent.cmd.get('load_atom_props_default') or '*')
-
-    def get_command(*args):
-        command = ('load \\\n    %s' % (filename))
-        name = form.input_object_name.text()
-        if name:
-            command += ', \\\n    ' + name
-        command += ', \\\n    mimic=' + ('1' if form.input_mimic.isChecked() else '0')
-        command += (
-                ', \\\n    object_props=%s'
-                ', \\\n    atom_props=%s' % (
-                    form.input_object_props.text(),
-                    form.input_atom_props.text()))
-        multiplex, discrete = [
-            (-2, -1),
-            (0, 0),
-            (0, 1),
-            (1, -1),
-        ][form.input_multiplex.currentIndex()]
-        if discrete != -1:
-            command += ', \\\n    discrete={}'.format(discrete)
-        if multiplex != -2:
-            command += ', \\\n    multiplex={}'.format(multiplex)
-        return command
-
-    def update_output_command(*args):
-        form.output_command.setText(get_command())
-
-    def run():
-        parent.cmd.do(get_command())
-        form._dialog.close()
-
-    # hook up events
-    form.input_multiplex.currentIndexChanged.connect(update_output_command)
-    form.input_mimic.stateChanged.connect(update_output_command)
-    form.input_object_name.textChanged.connect(update_output_command)
-    form.input_object_props.textChanged.connect(update_output_command)
-    form.input_atom_props.textChanged.connect(update_output_command)
-    form.button_ok.clicked.connect(run)
-
-    update_output_command()
     form._dialog.setModal(True)
     form._dialog.show()
 
@@ -542,7 +409,6 @@ def file_save(parent):
         'PQR (*.pqr)',
         'MOL2 (*.mol2)',
         'MDL SD (*.sdf *.mol)',
-        'Maestro (*.mae)',
         'MacroModel (*.mmd *.mmod *.dat)',
         'ChemPy Pickle (*.pkl)',
         'XYZ (*.xyz)',

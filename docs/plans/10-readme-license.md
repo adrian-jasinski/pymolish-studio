@@ -158,6 +158,8 @@ Differences from the plan above:
   a transparent background and does not show on a dark page. The icon reads
   on both. The logo also spells the name "PyMOLish": see the name question
   under [Wording](#wording) before using it in public.
+  Changed in 4.19.27 at the user's request: the README shows the logo;
+  `docs/img/logo-dark.png` is the copy with light text for dark pages.
 - **`pyproject.toml`:** `license` is the SPDX expression
   `LicenseRef-Open-Source-PyMOL AND MIT` with `license-files`; this needs
   setuptools 77, so the build floor went from 69.2.0 to 77.0.3. Homepage and

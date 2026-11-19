@@ -122,10 +122,6 @@
 #define cLeftButSele "lb"
 #define cIndicateSele "indicate"
 
-#ifndef NO_MMLIBS
-#include "mmpymolx.h"
-#endif
-
 /**
  * Macro with error handling to get a selection ID from a non-empty expression.
  * @param expression Selection expression
@@ -3687,11 +3683,11 @@ pymol::Result<> ExecutiveLoad(PyMOLGlobals* G, const char* fname,
     const char* content, int content_length, cLoadType_t content_format,
     const char* object_name_proposed, int state, int zoom, int discrete,
     int finish, int multiplex, int quiet, const char* plugin_arg,
-    const char* object_props, const char* atom_props, bool mimic)
+    const char* object_props, const char* atom_props)
 {
   auto res = ExecutiveLoadPrepareArgs(G, fname, content, content_length,
       content_format, object_name_proposed, state, zoom, discrete, finish,
-      multiplex, quiet, plugin_arg, object_props, atom_props, mimic);
+      multiplex, quiet, plugin_arg, object_props, atom_props);
   p_return_if_error(res);
   return ExecutiveLoad(G, res.result());
 }
@@ -3704,7 +3700,7 @@ pymol::Result<ExecutiveLoadArgs> ExecutiveLoadPrepareArgs(PyMOLGlobals* G,
     int content_length, cLoadType_t content_format,
     const char* object_name_proposed, int state, int zoom, int discrete,
     int finish, int multiplex, int quiet, const char* plugin_arg,
-    const char* object_props, const char* atom_props, bool mimic)
+    const char* object_props, const char* atom_props)
 {
   ExecutiveLoadArgs args;
   bool fname_null_ok = false;
@@ -3735,7 +3731,6 @@ pymol::Result<ExecutiveLoadArgs> ExecutiveLoadPrepareArgs(PyMOLGlobals* G,
   case cLoadTypePDBStr:
   case cLoadTypeVDBStr:
   case cLoadTypeCIFStr:
-  case cLoadTypeMAEStr:
   case cLoadTypeXPLORStr:
   case cLoadTypeCCP4Str:
   case cLoadTypeCCP4UnspecifiedStr:
@@ -3757,7 +3752,6 @@ pymol::Result<ExecutiveLoadArgs> ExecutiveLoadPrepareArgs(PyMOLGlobals* G,
   case cLoadTypePDBQT:
   case cLoadTypePDB:
   case cLoadTypeCIF:
-  case cLoadTypeMAE:
   case cLoadTypeXPLORMap:
   case cLoadTypeCCP4Map:
   case cLoadTypeCCP4Unspecified:
@@ -3818,9 +3812,6 @@ pymol::Result<ExecutiveLoadArgs> ExecutiveLoadPrepareArgs(PyMOLGlobals* G,
   case cLoadTypeDTR:
     args.plugin = "dtr";
     break;
-  case cLoadTypeCMS:
-    args.plugin = "mae";
-    break;
   default:
     if (plugin_arg) {
       args.plugin = plugin_arg;
@@ -3860,7 +3851,6 @@ pymol::Result<ExecutiveLoadArgs> ExecutiveLoadPrepareArgs(PyMOLGlobals* G,
   args.quiet = quiet;
   args.object_props = object_props;
   args.atom_props = atom_props;
-  args.mimic = mimic;
   return args;
 }
 
@@ -3897,8 +3887,6 @@ pymol::Result<> ExecutiveLoad(PyMOLGlobals* G, ExecutiveLoadArgs const& args)
         discrete = -1;    /* content-dependent behavior... */
       case cLoadTypeSDF2: /* SDF files currently default to discrete */
       case cLoadTypeSDF2Str:
-      case cLoadTypeMAE: /* Let MAE handle itself */
-      case cLoadTypeMAEStr:
         break;
       default:
         discrete = 0;
@@ -3941,15 +3929,6 @@ pymol::Result<> ExecutiveLoad(PyMOLGlobals* G, ExecutiveLoadArgs const& args)
     p_return_if_error(res);
     obj = res.result();
   } break;
-  case cLoadTypeMAE:
-  case cLoadTypeMAEStr:
-#ifndef _PYMOL_IP_EXTRAS
-    return pymol::Error::make<pymol::Error::INCENTIVE_ONLY>(
-        "'mae' format not supported by this PyMOL build");
-#else
-#error ""
-#endif
-    break;
   case cLoadTypeTOP:
     if (origObj) {
       /* always reinitialize topology objects from scratch */
@@ -6807,40 +6786,6 @@ pymol::Result<> ExecutiveMapSet(PyMOLGlobals* G, const char* name,
   TrackerDelList(I_Tracker, list_id);
 
   return {};
-}
-
-const char* ExecutiveMapGenerate(PyMOLGlobals* G, const char* name,
-    const char* reflection_file, const char* tempFile, char* amplitudes,
-    const char* phases, const char* weights, double reso_low, double reso_high,
-    const char* space_group, double cell[6], int quiet, int zoom)
-{
-  /* FIXME: this should be returned in memory!! */
-  /* In the meantime, use mkstemp and load in Python */
-  int ok;
-
-  ok = 0;
-
-  if (weights && (!strncmp(weights, "None", 4)))
-    weights = nullptr;
-
-    /* printf("Passing to primex driver: space_group=%s, cell=[%f %f %f %f %f
-     * %f], reso_high=%f, rseo_low=%f, refl_file=%s, ampl=%s, phases=%s,
-     * weights=%s, map_file=%s", space_group, cell[0], cell[1], cell[2],
-     * cell[3], cell[4], cell[5], reso_high, reso_low, reflection_file,
-     * amplitudes, phases, weights, tempFile); */
-
-#ifndef NO_MMLIBS
-  ok = !(primex_pymol_driver2(space_group, cell, reso_high, reso_low,
-      reflection_file, amplitudes, phases, weights, tempFile));
-#else
-  PRINTFB(G, FB_Executive, FB_Errors)
-  " Error: MTZ map loading not supported in this PyMOL build.\n" ENDFB(G);
-#endif
-
-  if (!ok)
-    return nullptr;
-  else
-    return (const char*) tempFile;
 }
 
 pymol::Result<> ExecutiveMapNew(PyMOLGlobals* G, const char* name, int type,

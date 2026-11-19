@@ -1469,53 +1469,6 @@ static PyObject *CmdRampNew(PyObject * self, PyObject * args)
   return APIResult(G, result);
 }
 
-/* Synthesize a map from possibly weighted coefficients */
-/* See MapCalculate for the actual calculation */
-static PyObject * CmdMapGenerate(PyObject * self, PyObject * args)
-{
-  PyMOLGlobals * G = nullptr;
-  int ok = false;
-
-  char * name, * reflection_file, * tempFile, * amplitudes, * phases, * weights, *space_group;
-  const char * cResult = nullptr;
-  int  quiet, zoom;
-  double reso_high, reso_low, cell[6];
-
-
-  ok = PyArg_ParseTuple(args, "Ossssszddsddddddii", &self, &name, &reflection_file, &tempFile,
-			&amplitudes, &phases, &weights, &reso_low, &reso_high,
-			&space_group, &cell[0], &cell[1], &cell[2], &cell[3], &cell[4],
-			&cell[5],&quiet, &zoom);
-
-  if(ok) {
-    API_SETUP_PYMOL_GLOBALS;
-    ok = (G != nullptr);
-  } else {
-    API_HANDLE_ERROR;
-  }
-
-  if (ok && (ok = APIEnterNotModal(G))) {
-
-    if (ok) {
-      PRINTFB(G, FB_CCmd, FB_Blather)
-	" Cmd-Update: Start ExecutiveMapGenerate."
-      ENDFB(G);
-
-      cResult = (const char*) ExecutiveMapGenerate(G, name, reflection_file, tempFile, 
-						   amplitudes, phases, weights, 
-						   reso_low, reso_high, 
-						   space_group, cell, quiet, zoom);
-
-      PRINTFB(G, FB_CCmd, FB_Blather)
-	" Cmd-Update: Finished ExecutiveMapGenerate."
-      ENDFB(G);
-    }
-    APIExit(G);
-  }
-
-  return APIAutoNone(Py_BuildValue("s", cResult));
-}
-
 static PyObject *CmdMapNew(PyObject * self, PyObject * args)
 {
   PyMOLGlobals *G = nullptr;
@@ -1687,10 +1640,6 @@ static PyObject* CmdGetCapabilities(PyObject*, PyObject*)
 #endif
     // object and atom level properties
     PySet_Add(caps, PConvToPyObject("properties"));
-#ifndef NO_MMLIBS
-    // mmlibs atom typing and stereochemistry, incentive feature PyMOL 1.4-1.8
-    PySet_Add(caps, PConvToPyObject("mmlibs"));
-#endif
   }
 
   Py_INCREF(caps);
@@ -5566,20 +5515,19 @@ static PyObject *CmdLoad(PyObject * self, PyObject * args)
   int multiplex;
   int zoom;
   Py_ssize_t bytes;
-  int mimic;
   const char* contents;
 
-  API_SETUP_ARGS(G, self, args, "Oszz#iiiiiii|zzzi", &self,
+  API_SETUP_ARGS(G, self, args, "Oszz#iiiiiii|zzz", &self,
                         &oname, &fname, &contents, &bytes, &frame, &type,
                         &finish, &discrete, &quiet, &multiplex, &zoom,
-                        &plugin, &object_props, &atom_props, &mimic);
+                        &plugin, &object_props, &atom_props);
   API_ASSERT(APIEnterNotModal(G));
 
   auto result = ExecutiveLoad(G,
                          fname, contents, bytes, type,
                          oname, frame, zoom,
                          discrete, finish, multiplex, quiet, plugin,
-                         object_props, atom_props, mimic);
+                         object_props, atom_props);
 
   OrthoRestorePrompt(G);
   APIExit(G);
@@ -6528,7 +6476,6 @@ static PyMethodDef Cmd_methods[] = {
   {"load_object", CmdLoadObject, METH_VARARGS},
   {"load_traj", CmdLoadTraj, METH_VARARGS},
   {"look_at", CmdLookAt, METH_VARARGS},
-  {"map_generate", CmdMapGenerate, METH_VARARGS},
   {"map_new", CmdMapNew, METH_VARARGS},
   {"map_double", CmdMapDouble, METH_VARARGS},
   {"map_halve", CmdMapHalve, METH_VARARGS},

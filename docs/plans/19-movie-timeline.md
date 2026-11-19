@@ -96,7 +96,7 @@ this set:
 | 19c | The storyboard strip (A) over the same list: thumbnails, drag to reorder and to stretch. |
 | 19d | Record (E) and the guided tour (F). Test: three recorded poses give three keyframes at the expected frames; a tour of two selections gives the expected length. |
 | 19e | The export panel (I). Test: the estimate against a rendered 30-frame movie, within a factor of two. |
-| 19f | Easing (H), then the effects lane (G) after a frame-rate measurement with `testing/bench_gui.py`. |
+| 19f | Easing (H), then the effects lane (G) after a frame-rate measurement with `testing/compare.py -- gui`. |
 | 19g | The shorter Movie menu, and the core's movie panel goes (the old 19c and 19d). |
 
 One limit holds for all of them: the shot list is derived from the

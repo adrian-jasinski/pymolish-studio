@@ -2032,7 +2032,7 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
       bool line_as_cylinders = SettingGetGlobal_b(G, cSetting_use_shaders) &&
                                SettingGetGlobal_b(G, cSetting_render_as_cylinders) &&
                                SettingGetGlobal_b(G, cSetting_line_as_cylinders);
-      if (!line_as_cylinders && !SettingGetGlobal_b(G, cSetting_trilines)){
+      if (!line_as_cylinders && !G->ShaderMgr->Trilines()){
         ExecutiveInvalidateRep(G, inv_sele, cRepLine, cRepInvRep);
       }
     }
@@ -2390,7 +2390,8 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
 	    " Setting-Warning: %s is set incorrectly (%f), setting to 1\n",
             rec.name, line_width ENDFB(G);
 	  SettingSetGlobal_f(G, index, 1.f);
-	} else if (G->HaveGUI && range[1] > 0.f && line_width > range[1]) {
+	} else if (G->HaveGUI && range[1] > 0.f && line_width > range[1] &&
+                   !G->ShaderMgr->Trilines()) {
 	  PRINTFB(G, FB_Setting, FB_Warnings)
             " Setting-Warning: %s is out of range of the graphics card's "
             "capability (range: %f-%f), lines might not be rendered correctly\n",

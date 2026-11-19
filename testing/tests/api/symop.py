@@ -48,16 +48,3 @@ def test_commands():
     for binary in (0, 1):
         cmd.set_session(cmd.get_session(binary=binary))
         testing.assert_image_equal("symop-ref/bond_symop.png", count=50)
-
-
-@testing.requires("incentive")
-def test_load_mae():
-    cmd.load(testing.datafile("pbc.mae"))
-    cmd.viewport(200, 150)
-    cmd.set_view(
-        (0.993128419, -0.107736677, -0.045689747, 0.110594988, 0.736444175,
-         0.667396009, -0.038255211, -0.667863667, 0.743299425,
-         -0.000001433, -0.000000438, -8.649258614, 0.962046325,
-         0.647872984, 0.307970583, 5.649246216, 11.649243355, -20.))
-    testing.ambient_only()
-    testing.assert_image_equal("symop-ref/pbc.png")

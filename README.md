@@ -1,6 +1,9 @@
-<img src="data/pymol/icons/pymolish.png" height="100" align="right" alt="pymolish-studio icon" />
-
-# pymolish-studio
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/img/logo-dark.png" />
+    <img src="data/pymol/icons/logo.png" width="440" alt="pymolish-studio" />
+  </picture>
+</p>
 
 pymolish-studio. Based on PyMOL(TM) technology.
 
@@ -56,6 +59,12 @@ checksums.
 | Help with the code | [Contributing](CONTRIBUTING.md) |
 | See what is planned | [Roadmap](PLAN.md), [finished steps](PLAN-DONE.md), [ChangeLog](ChangeLog) |
 | Know what I may do with it | [Licenses](docs/licenses.md) |
+
+## Support the project
+
+pymolish-studio is free and built in spare time. If it is useful to you, you
+can [sponsor the work on GitHub Sponsors](https://github.com/sponsors/adrian-jasinski) 💖.
+Sponsorship pays for the time spent on new features, fixes and releases.
 
 ## License
 

@@ -107,13 +107,11 @@ enum cLoadType_t : int {
   cLoadTypeCIFStr = 61,
 
   cLoadTypeSpider = 62,
-  cLoadTypeCMS = 63,
+  /* 63 was cms */
   cLoadTypePlugin = 64,
 
-  cLoadTypeMAE = 65,
-  cLoadTypeMAEStr = 66,
+  /* 65/66 were mae, maestr */
   cLoadTypePDBQT = 67,
-  /* 68 is Python-based MAE  */
   cLoadTypeVDBStr = 69,
 
 
@@ -161,11 +159,6 @@ public:
   pymol::CObject* getObject();
   SpecRec* getSpecRec() { return rec; }
 };
-
-const char* ExecutiveMapGenerate(PyMOLGlobals* G, const char* name,
-    const char* reflection_file, const char* tempFile, char* amplitudes,
-    const char* phases, const char* weights, double reso_low, double reso_high,
-    const char* space_group, double cell[6], int quiet, int zoom);
 
 int ExecutiveReference(
     PyMOLGlobals* G, int action, const char* sele, int state, int quiet);
@@ -218,8 +211,7 @@ pymol::Result<> ExecutiveLoad(PyMOLGlobals* G, const char* fname,
     const char* content, int content_length, cLoadType_t content_format,
     const char* object_name, int state, int zoom, int discrete, int finish,
     int multiplex, int quiet, const char* plugin,
-    const char* object_props = nullptr, const char* atom_props = nullptr,
-    bool mimic = true);
+    const char* object_props = nullptr, const char* atom_props = nullptr);
 
 int ExecutiveDebug(PyMOLGlobals* G, const char* name);
 

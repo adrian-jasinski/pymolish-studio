@@ -96,8 +96,6 @@ else:
     parser = argparse.ArgumentParser("pymolish", usage=usage)
     parser.add_argument('filenames', nargs='*', default=[])
     parser.add_argument('--offline', action='store_true')
-    parser.add_argument('--no-mmlibs', action='store_true', default=True)
-    parser.add_argument('--with-mmlibs', action='store_false', dest='no_mmlibs')
     parser.add_argument('--no-undo', action='store_true', default=True)
     parser.add_argument('--with-undo', action='store_false', dest='no_undo')
 
@@ -131,11 +129,9 @@ else:
             'properties': not options.incentive_product,
             'no_edu': PYMOL_EDU,
             'network': cliargs.offline,
-            'mmlibs': cliargs.no_mmlibs,
             'undo': cliargs.no_undo,
             'no_run_all': run_all,
             'multicore': max_threads <= 1,
-            'freemol': True,  # not used since PyMOL 2.5
             'no_win64bit': is_win64bit,
             'multi_undo': 'multi_undo' not in get_capabilities(),
         }

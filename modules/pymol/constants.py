@@ -47,8 +47,6 @@ class _loadable:
     cif = 60      # C++ based CIF parser
     cifstr = 61
     plugin = 64
-    mae = 65
-    maestr = 66
     pdbqt = 67
     vdbstr = 69
     vdb = 70
@@ -71,7 +69,6 @@ class loadable(_loadable):
 _load2str = { loadable.pdb : loadable.pdbstr,
               loadable.vdb: loadable.vdbstr,
               loadable.cif : loadable.cifstr,
-              loadable.mae : loadable.maestr,
               loadable.mol : loadable.molstr,
               loadable.xplor : loadable.xplorstr,
               loadable.mol2 : loadable.mol2str,

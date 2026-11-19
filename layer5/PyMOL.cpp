@@ -1233,7 +1233,6 @@ struct {
   {"pdb",           cLoadTypePDBStr,    cLoadTypePDB},
   {"vdb",           cLoadTypeVDBStr,    cLoadTypeUnknown},
   {"cif",           cLoadTypeCIFStr,    cLoadTypeCIF},
-  {"mae",           cLoadTypeMAEStr,    cLoadTypeMAE},
   {"sdf",           cLoadTypeSDF2Str,   cLoadTypeSDF2},
   {"mol",           cLoadTypeMOLStr,    cLoadTypeMOL},
   {"mol2",          cLoadTypeMOL2Str,   cLoadTypeMOL2},

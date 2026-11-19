@@ -4,6 +4,330 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.30
+
+	* Bundles
+	  - Fixed: the Windows bundle did not start ("Could not find the
+	    Qt platform plugin windows"). It shipped without any Qt
+	    plugin: PyInstaller's PySide6 hook could not import QtCore in
+	    the build environment (the copy of ICU that conda-forge
+	    installs as icuuc.dll, see 4.7.1) and only warned. The
+	    Windows job removes that copy before it builds the bundle.
+	  - A bundle without a Qt platform plugin now fails the build
+	    (packaging/pyinstaller.spec), on every system.
+	  - Qt translations and QML files are now pruned on Windows too
+	    (the path test used "/").
+
+2026-11-19 pymolish-studio
+
+	* 4.19.29
+
+	* Presets
+	  - New preset "cartoon spring" (preset.spring): the cartoon as
+	    one thick round tube along the backbone (cartoon tube,
+	    cartoon_tube_radius 0.8), so that a helix is a spring.
+	  - The row "wire" reads "cartoon wire". preset.wire keeps its
+	    name.
+	  - No preset of the menu but "default" colors the cartoon any
+	    more. Changed: preset.pretty, publication, pretty_solv and
+	    pub_solv (no rainbow), glass, wire and interface (no colors
+	    by chain), b_factor_putty (no colors by B factor),
+	    illustration (no shades of blue), antibody (no chain
+	    colors; the sand and orange of the antigen are now colors
+	    of its surface, surface_color). The colors by element that
+	    some presets give to atoms other than carbon skip nucleic
+	    acids, whose cartoon is colored by P and the bases.
+	  - "protein-protein interaction" (preset.interaction) is now
+	    every chain as an opaque surface, orange, and white where
+	    it is within 4.5 A of another chain. The cartoon, the
+	    sticks and the polar contacts of the earlier picture are
+	    gone; "protein interface" still shows sticks.
+	  - The row "publication green" is gone: without its color it
+	    is "publication". preset.publication_green stays and still
+	    colors.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.28
+
+	* Documentation
+	  - Plan 21 and PLAN.md follow the decisions of 2026-11-19: all
+	    Maestro support removed (4.19.24), a command is enough for
+	    stereochemistry, the stubs outside the request removed
+	    (4.19.25, 4.19.26). The three rendering details are explained
+	    in plain words with their options; two questions remain
+	    (rendering details, size of undo).
+
+2026-11-19 pymolish-studio
+
+	* 4.19.27
+
+	* Brand
+	  - New application icon and logo (blue, green and violet ribbon)
+	    replace the orange ones in data/pymol/icons/. Same file names
+	    and sizes, so the window icon and the bundle icon follow.
+	  - README: the logo is the centered header and replaces the
+	    title line, whose rule ran through the old icon.
+	    docs/img/logo-dark.png is the logo with light text, shown on
+	    dark pages.
+	  - docs/img/window.png retaken from the current window (Palette
+	    and Background buttons).
+	  - The image files and the README change were committed with
+	    4.19.26 by accident.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.26
+
+	* Removed
+	  - Density maps from MTZ reflection files, which never worked
+	    here: cmd.load_mtz raised IncentiveOnlyException, and
+	    cmd.map_generate always ended in "MTZ map loading not
+	    supported in this PyMOL build". With them the MTZ load dialog,
+	    the MTZ header parser pymol.headering, which only they used,
+	    and the C++ function behind map_generate. Loading an .mtz
+	    file now reports "unsupported file type".
+	  - Maps in CCP4, MRC, XPLOR, DX and the other map formats load as
+	    before.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.25
+
+	* Removed
+	  - Three commands that only raised IncentiveOnlyException:
+	    help_setting, callout and desaturate, with their entries in
+	    the command table and the completion lists. They are no
+	    longer commands.
+	  - Two tests for the commercial build: help_setting, and the PDB
+	    header as an object property (nine cases).
+
+2026-11-19 pymolish-studio
+
+	* 4.19.24
+
+	* Removed
+	  - All Maestro file support (decided 2026-11-19): saving .mae
+	    (cmd.save, cmd.get_str('mae'), cmd.get_maestr, the Maestro
+	    row of the save dialog), the VMD plugin maeffplugin that read
+	    .mae and Desmond .cms files, and with it the Desmond .idx
+	    loader (cmd.load of an .idx file, which needs a .cms) and the
+	    automatic trajectory dialog after a .cms. Loading .mae, .cms
+	    or .idx now reports "unsupported file type"; saving .mae
+	    reports "File format not supported for export".
+	  - Kept: Desmond trajectories (.dtr) through load_traj, on a
+	    structure loaded from another format.
+	  - The APBS plugin's "prepwizard" method now asks Schrodinger's
+	    prepwizard for a PDB file instead of a Maestro file. Not
+	    tested: it needs a Schrodinger installation.
+
+	* Testing
+	  - The periodic-boundary tests (api/pbc.py) load the same Desmond
+	    trajectory on an mmCIF copy of its structure; expected values
+	    unchanged.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.23
+
+	* Documentation
+	  - docs/plans/21-commercial-features.md, new: what was removed in
+	    4.19.18 to 4.19.22 and the plan for seven features to rebuild
+	    here (STL export, stereochemistry, pi interactions, focal
+	    blur, morphing, three rendering details, undo of more than the
+	    last move), each with options, a recommendation and what
+	    happens to its tests. PLAN.md: step 21 and four questions.
+	    Plans 8, 13 and 14: pointers and one correction (find > pi-pi
+	    and pi-cation never worked).
+
+2026-11-19 pymolish-studio
+
+	* 4.19.22
+
+	* Testing
+	  - "clean" is this program's own since 4.12.1 (rdkit), so its two
+	    tests for the commercial build no longer wait for that build:
+	    jira/PYMOL-2985.py (clean must not depend on the atom order)
+	    runs wherever rdkit is installed; api/computing.py is removed,
+	    it expected the energy value of the commercial force field and
+	    api/cleanup.py covers the rest.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.21
+
+	* Removed
+	  - The FreeMOL test (testing/tests/system/freemol_.py) and its test
+	    flag. It checked the helper programs apbs, mengine and
+	    mpeg_encode of the FreeMOL package, which is not part of this
+	    program, and was skipped on every run.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.20
+
+	* Removed
+	  - The stubs for three file formats of other vendors, which only
+	    raised IncentiveOnlyException: MOE (.moe, .ph4), Maestro
+	    surfaces and maps (.vis) and Phase pharmacophores (.phypo).
+	    Loading one now reports "unsupported file type". Six tests
+	    and their seven data files.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.19
+
+	* Removed
+	  - Automatic atom typing through Schrodinger's mmlibs, which this
+	    program never had: the code behind "#ifndef NO_MMLIBS" and the
+	    macro itself, the stereo and text_type hooks of iterate, alter
+	    and label behind _PYMOL_IP_EXTRAS, the two CoordSet fields and
+	    two functions only those blocks called. 206 lines, none of
+	    them compiled before. Test PYMOL-317 and the test options
+	    --no-mmlibs and --with-mmlibs.
+	  - Unchanged: the atom property and selection keyword text_type,
+	    MOL2 atom types (cmd.assign_atom_types) and the keyword stereo.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.18
+
+	* Removed
+	  - The leftovers of the commercial Maestro reader: the "mae" stub
+	    that raised IncentiveOnlyException, the Maestro load dialog, the
+	    load types mae and maestr (65, 66), the extension .maegz, the
+	    unused Python parser chempy.mae (chempy.io.mae) and the "mimic"
+	    option below cmd.load. 36 tests that needed the commercial
+	    reader, their 14 data files and one reference image.
+	  - Behavior change: "load file.mae" no longer raises. It reads the
+	    file through the VMD plugin that already reads Desmond .cms
+	    files: atoms, bonds and cell, no styles, labels or properties.
+	    A compressed .mae is not read. cmd.load still accepts "mimic"
+	    and ignores it.
+	  - Kept: saving .mae, loading .cms.
+
+	* Testing
+	  - properties/test_copy_props.py runs again, on an SDF file.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.17
+
+	* Testing
+	  - Benchmark against PyMOL 3.2 repeated with both programs on
+	    Python 3.14 (pymolish built into .venv314): docs/benchmark.md.
+	    Every result and ray-traced image the same. Surface 2 to 2.6
+	    times faster (4v6x 86 s to 33 s), session load 5 to 12 times,
+	    frames on WSL 2.5 to 10 times (GPU against CPU). The rows that
+	    looked slower before, "save PSE" and alter + iterate, are equal
+	    on the same Python.
+	  - testing/compare.py prints the Python version of each side and,
+	    for the GUI, the OpenGL driver each one drew with.
+
+	* Documentation
+	  - docs/install.md: what the app does on WSL and the two variables
+	    that change it. Plan 1 and PLAN.md: the WSL driver decision is
+	    done; the open question is now how to keep the window usable
+	    while a large surface builds.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.16
+
+	* Performance
+	  - Surfaces of very large structures build faster. The grid that
+	    finds neighbors (MapType) was limited to hash_max^3 = one million
+	    cells; the surface dots of a ribosome are 3 to 10 million points
+	    in a 300 A box, so the cells grew and every search scanned more
+	    points. The grid may now have two cells per point when that is
+	    more than hash_max^3. Surface build, before / after: 4v6x (239306
+	    atoms) 48.6 s / 31.0 s, 1aon four times (235480 atoms) 34.4 s /
+	    23.2 s, 1jj2 9.9 s / 8.4 s; 1aon and smaller: no change. Peak
+	    memory the same (8.2 and 8.4 GB for 4v6x). The ray tracer's
+	    grids do not change (it sizes them itself below the limit).
+	  - Changed result: the dot clean-up and the triangulation pick
+	    among neighbors in the order the grid lists them, so where the
+	    grid changed, the surface is triangulated differently: 1aon
+	    34691 of 904807 triangles (3.8 %), 4v6x about 5 % and 1.3 % more
+	    triangles. Same area (1aon 740906 A^2); in a ray-traced
+	    800x600 image of 1aon 0.2 % of the pixels differ by more than
+	    32 of 255. Structures with fewer than 500000 surface dots (6vxx
+	    with 24621 atoms and smaller, tested) give the same surface
+	    byte for byte, as PyMOL 3.2 does.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.15
+
+	* Performance
+	  - On WSL the window draws on the GPU. Through X11, Mesa under WSLg
+	    drew every frame on the CPU (llvmpipe); the app now selects Mesa's
+	    d3d12 driver when /dev/dxg and the driver are there
+	    (theme.prefer_gpu_on_wsl). GALLIUM_DRIVER=llvmpipe, or any other
+	    value of it, keeps the user's choice; so does
+	    LIBGL_ALWAYS_SOFTWARE. Frames of 1aon while rotating, llvmpipe /
+	    integrated Radeon 610M / RTX 5070 (the latter with
+	    MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA), ms: lines 54 / 5.7 /
+	    3.4, sticks 51 / 20 / 12, spheres 21 / 4.3 / 0.7, cartoon 46 /
+	    9.8 / 0.8, surface 114 / 24 / 12.5; surface of 4v6x 520 / 106 /
+	    46. Known cost: after new objects appear, the driver needs 9
+	    slower frames, in proportion to the number of objects (nothing
+	    to see below 20 objects; 600 files of lines take 14 s instead
+	    of 7 s until the first frame, then 75 ms per frame instead of
+	    324 ms).
+	  - Lines, ribbon lines, nonbonded crosses and alignment lines are
+	    drawn as triangles (what "set trilines" does) when the driver
+	    draws lines one pixel wide only, as d3d12 does
+	    (CShaderMgr::Trilines), so line_width keeps working there: the
+	    same pixels are lit as on llvmpipe (8.17 % of a test view; 4.75 %
+	    with one-pixel lines). The out-of-range warning of line_width
+	    is no longer printed in that case. Mesh lines, dashes and cell
+	    outlines stay one pixel wide on such drivers.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.14
+
+	* Removed
+	  - testing/bench.py and testing/bench_gui.py, which compared
+	    pymolish with older pymolish, and their tables in
+	    docs/baseline.md (steps 1a and 1b). testing/compare.py measures
+	    the same workloads against PyMOL 3 and replaces both; the old
+	    numbers stay in this ChangeLog. docs/baseline.md keeps the build
+	    loop, sizes and the other measurements.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.13
+
+	* Testing
+	  - testing/compare.py also times ten structures from RCSB (327 to
+	    239306 atoms: proteins, a nucleosome, two ribosomes) one by one
+	    for load, cartoon, surface and a PSE round trip, all ten in one
+	    session, and the first GUI frames of cartoon and surface. They
+	    are downloaded once into ~/.cache/pymolish-compare.
+	  - docs/benchmark.md: how to run it, the run of 2026-11-19 against
+	    PyMOL 3.2 and what to improve next. Surface 2x faster, session
+	    load 6 to 9x, drawing unchanged, all results and images the
+	    same. docs/features.md "Speed" now shows these numbers.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.12
+
+	* Testing
+	  - testing/compare.py runs the same workloads in pymolish and in
+	    upstream PyMOL 3 ($PYMOL_REF) and prints both side by side:
+	    loading small, big and huge (235k atoms) structures and 600
+	    files, building every representation, ray tracing, switching
+	    objects, trajectories, selections, align, PSE round trip, and
+	    with "-- gui" the GUI frame times. Exits 1 when a workload gives
+	    a different result. First run (32 CPUs, llvmpipe): every result
+	    and every ray-traced image the same, surface build 2x faster,
+	    PSE load 6x faster, GUI frame times equal within noise.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.11
 
 	* CI

@@ -76,6 +76,9 @@ selection to MOL (`cmd.get_str`), `MMFFOptimizeMolecule`, coordinates back with
 - Ceiling: the pocket around a ligand is not seen.
 - Test: stretched C-C bond in ethane returns to 1.53 Å ± 0.02; skipped without rdkit.
 - Public behavior change (`clean` works): `ChangeLog`.
+- 4.19.22: the two tests written for the commercial `clean` no longer wait
+  for that build ([step 21](21-commercial-features.md)): `jira/PYMOL-2985.py`
+  runs against this one, `api/computing.py` is deleted.
 
 **13c, `fix_structure`. Done in 4.12.2, without `missing_residues`:** PDBFixer
 finds missing residues from SEQRES records, and a PyMOL object does not keep

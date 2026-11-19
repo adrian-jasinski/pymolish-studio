@@ -4,7 +4,8 @@
 4.14.0, 15d in 4.14.3, 15f in 4.14.4.** 15b, 15c and 15e are open and wait for
 the user. **15g and 15h done 2026-11-18 in 4.14.5, 15i (visible objects, two
 presets for complexes) in 4.19.1, 15j (the light after "illustration") in
-4.19.2, 15k (publication green) in 4.19.3** (the last sections before "Skipped"). They change three decisions below: the looks are part of the
+4.19.2, 15k (publication green) in 4.19.3, 15l (cartoon spring, colors kept,
+two-color interaction surface) in 4.19.29** (the last sections before "Skipped"). They change three decisions below: the looks are part of the
 one preset list, they leave the background alone, and three presets stop
 recoloring the protein.
 
@@ -177,7 +178,7 @@ wire, illustration, the solvent row and cartoon transparency came.
 **15b, outline in the viewport. Open, the user decides.**
 - A screen-space edge pass over the depth buffer after the scene is drawn,
   in `data/shaders/` and the Scene draw path of `layer1/`. New shader code,
-  to be measured with `testing/bench_gui.py` before and after.
+  to be measured with `testing/compare.py -- gui` before and after.
 
 **15c, ChimeraX object colors. Open, the user decides.**
 - One more entry in `palettes.PALETTES` (tan, sky blue, plum, light green,
@@ -428,6 +429,60 @@ Done in 4.19.3.
 | Shades along each chain | yes | The request: spectrum, shades. |
 | One shade per chain | no | It is C > by chain > shades after any preset. |
 | A row per color (blue, orange, ...) | no | One was asked for; the C menu has the other seven. |
+
+## Request 2026-11-19: spring, colors kept, two-color surface (15l)
+
+Done in 4.19.29. The example was a GIF of a designed binder on its target:
+the target an orange surface with the contact patch in white, the binder a
+thick blue tube.
+
+- **Preset "cartoon spring"** (`preset.spring`): `cartoon tube` with
+  `cartoon_tube_radius` 0.8 on the objects, ligands as sticks. A helix
+  becomes a coil, hence the name. `_prepare` restores the radius, and
+  already restored the cartoon type.
+- **The row "wire" reads "cartoon wire".** `preset.wire` keeps its name.
+- **No row but "default" colors the cartoon.** This replaces the answers
+  to question 1 of 15h. A check runs every row of the menu and compares
+  the colors.
+
+  | Preset | Coloring removed |
+  | --- | --- |
+  | pretty, publication | rainbow over the protein carbons; the ligand colors skip the guide atom of a modified residue |
+  | glass, cartoon wire, protein interface | by chain |
+  | b factor putty | by B factor; the thickness still shows it |
+  | illustration | shades of blue |
+  | antibody and antigen | heavy and light chain blues; the antigen's sand and orange are now `surface_color` |
+  | publication green | row removed: without its color it is "publication". The function stays and colors, like `preset.simple` |
+
+- **Nucleic acids.** Their cartoon takes its colors from P and the base
+  nitrogens (rendered: yellow DNA came out orange and blue). The
+  by-element coloring of atoms other than carbon therefore skips nucleic
+  acids in every preset (`preset.by_element`). Their lines in "technical"
+  keep the colors they had; after loading those are element colors anyway.
+- **"protein-protein interaction"** (`preset.interaction`): every chain
+  an opaque surface, `surface_color` orange, and white on the residues
+  within 4.5 A of another chain. The atom colors stay. No cartoon, sticks
+  or contact dashes; "protein interface" has the sticks.
+- Ray traced on 1BRS (barnase with barstar) on white: spring, wire,
+  interaction, pretty, illustration, putty, each after coloring the two
+  chains by hand.
+
+| Option | Taken | Why |
+| --- | --- | --- |
+| Tube radius 0.5 (the default) | no | Thin next to the example. |
+| Tube radius 0.8 | yes | The thickness of the example. |
+| Interaction as in the GIF: largest chain a surface, the others as spring | no | The user picked every chain a surface. |
+| Every chain a surface | yes | The user's answer. The white patches are mostly between the chains; a seam of white shows. |
+| See-through surfaces with the cartoon inside | no | Not picked. |
+| Exceptions that still color: default | yes | The user's answer: only the reset. |
+| Exceptions: b factor putty, publication green, illustration | no | Not picked. |
+
+Not done: the picture of the GIF itself (one chain a surface, its partner
+a spring). Hiding the surface of one chain of an object leaves the other
+chain's surface open at the contact (tried on 1BRS): the surface is that
+of the whole object. With the two chains as two objects it works in two
+typed steps (tried on 1BRS): `preset.interaction("all")`, which finds the
+white patch, then `preset.spring("binder")`.
 
 ## Skipped
 

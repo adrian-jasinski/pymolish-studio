@@ -150,7 +150,6 @@ def get_auto_arg_list(self_cmd=cmd):
         'group_next'    : [ self_cmd.group_sc               , 'group object'    , '' ],
         'group_previous': [ self_cmd.group_sc               , 'group object'    , '' ],
         'help'           : [ self_cmd.help_sc                , 'selection'       , ''   ],
-        'help_setting'   : [ self_cmd.setting.setting_sc     , 'setting'         , ''   ],
         'h_add'          : aa_sel_e,
         'hide'           : aa_rem_c,
         'isolevel'       : [ self_cmd.contour_sc             , 'contour'         , ', ' ],
@@ -297,7 +296,6 @@ def get_auto_arg_list(self_cmd=cmd):
         {
         'alter_state'    : aa_exp_e,
         'button'         : [ self_cmd.controlling.but_act_sc , 'button action'   , ''   ],
-        'callout'        : aa_sel_e,
         'distance'       : aa_sel_e,
         'extra_fit'      : aa_ali_e,
         'feedback'       : [ self_cmd.fb_mask_sc             , 'mask'            , ''   ],

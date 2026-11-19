@@ -554,7 +554,7 @@ static int MapExclLocusEStart(MapType* map, const float* v)
 }
 
 float MapGetSeparation(PyMOLGlobals* G, float range, const float* mx,
-    const float* mn, float* diagonal)
+    const float* mn, float* diagonal, int nVert)
 {
   float maxSize;
   float size, maxSubDiv, divSize, subDiv[3];
@@ -562,7 +562,10 @@ float MapGetSeparation(PyMOLGlobals* G, float range, const float* mx,
   int a;
   maxSize = SettingGetGlobal_i(G, cSetting_hash_max);
 
-  maxCubed = maxSize * maxSize * maxSize;
+  // at most hash_max^3 cells, or two cells per vertex when that is more:
+  // with fewer cells every neighbor search scans more vertices (surface
+  // dots of a ribosome: 3 to 10 million in a 300 A box)
+  maxCubed = std::max(maxSize * maxSize * maxSize, 2.f * nVert);
 
   /* find longest axis: diagonal = max-min, for
    * each axis and find the largest */
@@ -773,7 +776,7 @@ MapType::MapType(PyMOLGlobals* G, float range, const float* vert, int nVert,
   }
 
   /* compute final box size ..................... */
-  I->Div = MapGetSeparation(G, range, I->Max, I->Min, diagonal);
+  I->Div = MapGetSeparation(G, range, I->Max, I->Min, diagonal, nVert);
   I->recipDiv = 1.0F / (I->Div); /* cache this */
 
   /* add borders to avoid special edge cases */

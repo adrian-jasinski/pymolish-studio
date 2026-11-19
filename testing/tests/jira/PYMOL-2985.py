@@ -2,9 +2,10 @@
 "clean" depends on atom sorting
 '''
 
+import pytest
 from pymol import cmd, testing
 
-pytestmark = testing.requires('incentive', 'no_edu')
+pytest.importorskip('rdkit')
 
 
 def test():
