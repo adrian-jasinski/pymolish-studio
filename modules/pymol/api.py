@@ -511,6 +511,7 @@ from .grouping import \
      color_group_with_gradient, \
      copy_group, \
      extract_chain, \
+     split_types, \
      group_disable, \
      group_enable, \
      group_next, \

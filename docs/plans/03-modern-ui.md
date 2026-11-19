@@ -114,7 +114,7 @@ banner) are not imitated.
 | 6 | **Scenes as a docked panel** with thumbnails, like the reference's left panel: one row per scene, the current one marked; Enter or double click recalls, F2 renames, dragging or Ctrl+Up / Ctrl+Down reorders; Add, Update, Rename, Delete. Hidden until the toolbar's Scenes button, Scene > Scenes or Display > Panels opens it; its place is saved with the layout. Polled from the window's 0.5 s timer while shown (marked `ponytail:`). The separate Scene Panel window (397 lines) is deleted. | New `modules/pmg_qt/scene_panel.py` (dock `dock_scenes`), `pymol_qt_gui.py` | Done 4.13.4 |
 | 7 | Icons for the toolbar, from the Lucide set of step 11. | `action_toolbar.py`, `icons.py` | Done 4.7.0 ([step 7](07-toolbar-icons-scale.md)) |
 | 11 | **Menu look.** Request 2026-11-12 with a reference picture: rounded menus, roomy rows, thin-line icons, hairline separators. One style for every menu in the window (`pymol.sty`); `theme.round_menus` makes the window corners see-through. Icons: 43 Lucide drawings (ISC license, `data/pmg_qt/icons/lucide/`), matched to menu labels in `icons.py` and tinted with the text color; delete, reinitialize and quit keep their red. Menu titles are muted captions. Tear-off rows are removed. | `icons.py`, `pymol.sty`, `theme.py`, `object_panel.py` | Done 4.5.18 |
-| 8 | Timeline. Not planned: no timeline feature exists in this code base. | | Skipped |
+| 8 | Timeline. Built on 2026-11-18 as [step 19](19-movie-timeline.md): a panel with a shot list and a strip. | | Done 4.18.0 |
 | 10 | **Menus stay on the screen under WSLg.** Reported 2026-11-12: with the window maximized, the Color menu of the Objects panel opened its submenu to the right, off the screen. Cause: under Wayland the compositor places popups, and WSLg's does not flip or slide them. On WSL the GUI now starts through X11 (`QT_QPA_PLATFORM=xcb;wayland` unless the user set one), where Qt places menus itself. Checked maximized at 150 %: menu inside the screen, submenu to its left. | `theme.py` `prefer_x11_on_wsl` | Done 4.5.17 |
 | 9 | The viewport no longer draws its own `PyMOL>` prompt and feedback line (`internal_feedback` 0 when the command area exists; `pymolish -x` keeps it). Text typed while the viewport has focus goes to the command line, which is shown and focused; Ctrl and Alt combinations and the special keys stay viewport shortcuts. `set internal_feedback, 1` in pymolrc restores the old prompt and key handling. | `pymol_qt_gui.py` | Done 4.5.16 |
 
@@ -143,13 +143,13 @@ text path of all five. Its menus, though, are plain data from
 | Resize | Drag the dock edge. The dock also floats, tabs and closes (Display > Panels). | Done 4.5.11 |
 | Wizards | Title, buttons and popups of the active wizard (`get_panel`, `get_menu`) under the list; the dock reopens when a wizard starts. | Done 4.5.11 |
 | Mouse mode, selection mode, state | One status line under the list. | Done 4.5.11 |
-| Old internal GUI | Off by default in the GUI; Display > Internal GUI or `set internal_gui` in pymolrc brings it back. Its left edge can now be dragged, with a resize cursor. Not deleted: remove the C++ panel in its own PR after the Qt panel has been used for a release. | Kept on purpose |
+| Old internal GUI | Off by default in the GUI; Display > Internal GUI or `set internal_gui` in pymolrc brings it back. Its left edge can now be dragged, with a resize cursor. Removed on 2026-11-18 in [step 17](17-legacy-ui.md): the menu rows in 4.16.0, the C++ code in 4.17.1. | Done 4.17.1 |
 | Updates | Polled from the window's 0.5 s timer: names, types, visibility. Counts are looked up for tooltips and copied rows only. Marked `ponytail:`; upgrade path is a change notification from the executive. | Done 4.5.11 |
 | Reorder and regroup by dragging rows | Use `order` and `group` meanwhile. | Open |
 | Group open/closed shared with the core | Expansion is view state of the tree for now. | Open |
 | Picking an atom selects its row | Viewport-to-panel synchronization. | Open |
 | Menus the core opens (right click in the viewport or on a sequence residue, scene buttons, timeline) | Qt menus since 4.5.18: the core hands its menu list to `pymol.menu.popup`, which the window sets (`popup_at_cursor`). Without a window (`-x` keeps the hook too; `-c` has none) the GL popup is still used. | Done 4.5.18 |
-| Sequence viewer, scene buttons | Still drawn by the core in whole scale steps. | Open |
+| Sequence viewer, scene buttons | Text still drawn by the core in whole scale steps. The scroll bar of the sequence viewer is a Qt scroll bar since 4.17.0 ([step 18](18-dialogs-scrollbar.md)). | Open |
 | Per-object motion menu (movie column) | Only shown by the old panel when a movie exists. | Open |
 
 ### Row state and colors
@@ -192,7 +192,7 @@ made up (650 mm for a laptop panel), so the size cannot be detected.
 | Live rescale without restart | Qt reads the factor once. Skip unless restarts prove painful. | Skipped |
 | Separate font-size setting | A second knob next to UI Scale. Skip unless the scale alone is not enough. | Skipped |
 | Fixed point sizes in rich text | `help_shortcut.ui` (13 pt, a macOS font) and `pluginmanager.ui` (9 pt, Ubuntu) carried a designer font in their HTML. Removed, so both use the application font. | Done 4.5.13 |
-| Spacing and labels | Hand-built dialogs with zero margins (Lighting Settings fixed); remaining dialogs audited one at a time. | Open |
+| Spacing and labels | Hand-built dialogs with zero margins (Lighting Settings fixed); remaining dialogs audited one at a time. Dialogs opened too small until 4.15.1 ([step 18](18-dialogs-scrollbar.md)). | Open |
 
 Rule for plugins (in [docs/plugins.md](../plugins.md)): do not set text colors
 or pixel font sizes; use the palette, `<b>`, and layouts with default spacing.

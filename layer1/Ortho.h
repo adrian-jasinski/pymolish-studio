@@ -127,7 +127,6 @@ void OrthoSpecial(PyMOLGlobals * G, int k, int x, int y, int mod);
 int OrthoCommandWaiting(PyMOLGlobals * G);
 
 int OrthoTextVisible(PyMOLGlobals * G);
-void OrthoReshapeWizard(PyMOLGlobals * G, ov_size height);
 void OrthoDefer(PyMOLGlobals* G, std::function<void()>&& D);
 void OrthoExecDeferred(PyMOLGlobals * G);
 int OrthoDeferredWaiting(PyMOLGlobals * G);

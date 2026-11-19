@@ -297,6 +297,83 @@ def extract_chain(selection, chains="", group="", quiet=1, *, _self=cmd):
     return [name for name, _ in rows]
 
 
+# Kinds of molecule, for the select and split rows of the action menu. An
+# atom belongs to the first kind that matches.
+# shortcut: membrane is a list of lipid names of CHARMM and GROMACS systems;
+# add names here when a membrane is not found.
+TYPES = (
+    ("protein", "polymer.protein"),
+    ("nucleic", "polymer.nucleic"),
+    (
+        "membrane",
+        "resn POPC+POPE+POPS+POPG+POPA+POPI+DPPC+DPPE+DMPC+DMPE+DMPG+DOPC"
+        "+DOPE+DOPS+DOPG+DLPC+DLPE+DSPC+PLPC+SOPC+SAPC+CHL1+CHOL",
+    ),
+    ("ligand", "organic"),
+    ("ions", "inorganic"),
+    ("solvent", "solvent"),
+    ("other", "*"),
+)
+
+
+def types(selection, _self=cmd):
+    """[(kind, selection)] for the kinds of TYPES that the selection has."""
+    found, rest = [], "(%s)" % selection
+    for kind, sele in TYPES:
+        if _self.count_atoms("%s & (%s)" % (rest, sele)):
+            found.append((kind, "%s & (%s)" % (rest, sele)))
+        rest += " & !(%s)" % sele
+    return found
+
+
+def split_types(selection="all", group="", quiet=1, *, _self=cmd):
+    """
+    DESCRIPTION
+
+        "split_types" makes one new object per kind of molecule, named
+        <object>_<kind>: protein, nucleic, membrane (lipids), ligand, ions,
+        solvent, and other for what is none of them. The source objects
+        are switched off.
+
+    USAGE
+
+        split_types [ selection [, group ]]
+
+    ARGUMENTS
+
+        selection = string: atoms to take {default: all}
+
+        group = string: group to put the new objects in {default: none}
+
+    EXAMPLE
+
+        split_types 1abc
+        split_types 1abc, group=parts
+
+    SEE ALSO
+
+        split_chains, extract_chain
+    """
+    rows = []
+    objects = _self.get_object_list(selection)
+    for obj in objects:
+        for kind, sele in types("(%s) & %%%s" % (selection, obj), _self):
+            rows.append((_self.get_legal_name("%s_%s" % (obj, kind)), sele))
+    taken = set(_self.get_names("all"))
+    clash = [name for name, _ in rows if name in taken]
+    if clash:
+        raise pymol.CmdException("already exists: " + " ".join(clash))
+    for name, sele in rows:
+        _self.create(name, sele, zoom=0)
+        if group:
+            _self.group(group, name, "add")
+    for obj in objects:
+        _self.disable(obj)
+    if not int(quiet):
+        print(" split_types: created %d objects" % len(rows))
+    return [name for name, _ in rows]
+
+
 def cluster_ligands(
     selection, count=0, cutoff=10.0, prefix="cluster", quiet=1, *, _self=cmd
 ):

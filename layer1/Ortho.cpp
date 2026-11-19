@@ -109,7 +109,6 @@ public:
                                                 side in geowall stereo mode */
 
   /* packing information */
-  int WizardHeight{};
   int TextBottom{};
 
   int IssueViewportWhenReleased{};
@@ -1450,31 +1449,12 @@ static void OrthoDoDrawUpdateSeqView(PyMOLGlobals* G)
 }
 
 /**
- * Determines the margin size of the internal_gui (legacy contents panel)
- * @param internal_gui_mode the mode of the internal gui
- * @return the size of the right side margin
- */
-static int OrthoCalculateRightSideMargin(
-    PyMOLGlobals* G, InternalGUIMode internal_gui_mode)
-{
-  if (!SettingGet<bool>(G, cSetting_internal_gui)) {
-    return 0;
-  }
-  if (internal_gui_mode == InternalGUIMode::Default) {
-    return DIP2PIXEL(SettingGet<int>(G, cSetting_internal_gui_width));
-  }
-  return 0;
-}
-
-/**
  * Draws the background for the internal Feedback
  * @param orthoCGO the CGO to render into
- * @param rightSceneMargin the size of the right side margin
- * (OrthoCalculateRightSideMargin)
  * @param internal_gui_mode the mode of the internal gui
  */
-static void OrthoDrawInternalFeedbackBG(PyMOLGlobals* G, CGO* orthoCGO,
-    int rightSceneMargin, InternalGUIMode internal_gui_mode)
+static void OrthoDrawInternalFeedbackBG(
+    PyMOLGlobals* G, CGO* orthoCGO, InternalGUIMode internal_gui_mode)
 {
   auto I = G->Ortho;
   auto* block = SceneGetBlock(G);
@@ -1484,16 +1464,16 @@ static void OrthoDrawInternalFeedbackBG(PyMOLGlobals* G, CGO* orthoCGO,
     if (orthoCGO) {
       CGOColor(orthoCGO, 0.f, 0.f, 0.f);
       CGOBegin(orthoCGO, GL_TRIANGLE_STRIP);
-      CGOVertex(orthoCGO, I->Width - rightSceneMargin, height - 1, 0.f);
-      CGOVertex(orthoCGO, I->Width - rightSceneMargin, 0, 0.f);
+      CGOVertex(orthoCGO, I->Width, height - 1, 0.f);
+      CGOVertex(orthoCGO, I->Width, 0, 0.f);
       CGOVertex(orthoCGO, 0.f, height - 1, 0.f);
       CGOVertex(orthoCGO, 0.f, 0.f, 0.f);
       CGOEnd(orthoCGO);
     } else {
       glColor3f(0.0, 0.0, 0.0);
       glBegin(GL_POLYGON);
-      glVertex2i(I->Width - rightSceneMargin, height - 1);
-      glVertex2i(I->Width - rightSceneMargin, 0);
+      glVertex2i(I->Width, height - 1);
+      glVertex2i(I->Width, 0);
       glVertex2i(0, 0);
       glVertex2i(0, height - 1);
       glEnd();
@@ -1503,49 +1483,19 @@ static void OrthoDrawInternalFeedbackBG(PyMOLGlobals* G, CGO* orthoCGO,
     if (orthoCGO) {
       CGOColor(orthoCGO, 0.3f, 0.3f, 0.3f);
       CGOBegin(orthoCGO, GL_TRIANGLE_STRIP);
-      CGOVertex(orthoCGO, 1 + I->Width - rightSceneMargin, height, 0.f);
-      CGOVertex(orthoCGO, 1 + I->Width - rightSceneMargin, height - 1, 0.f);
+      CGOVertex(orthoCGO, 1 + I->Width, height, 0.f);
+      CGOVertex(orthoCGO, 1 + I->Width, height - 1, 0.f);
       CGOVertex(orthoCGO, -1, height, 0.f);
       CGOVertex(orthoCGO, -1, height - 1, 0.f);
       CGOEnd(orthoCGO);
     } else {
       glColor3f(0.3, 0.3, 0.3);
       glBegin(GL_LINES);
-      glVertex2i(1 + I->Width - rightSceneMargin, height - 1);
+      glVertex2i(1 + I->Width, height - 1);
       glVertex2i(-1, height - 1);
       glEnd();
     }
     break;
-  }
-}
-
-/**
- * Draws the background for the internal GUI (legacy contents panel)
- * @param orthoCGO the CGO to render into
- * @param internal_gui_mode the mode of the internal gui
- */
-static void OrthoDrawInternalGUIBG(
-    PyMOLGlobals* G, CGO* orthoCGO, InternalGUIMode internal_gui_mode)
-{
-  auto I = G->Ortho;
-  auto internal_gui_width =
-      DIP2PIXEL(SettingGet<int>(G, cSetting_internal_gui_width));
-  if (internal_gui_mode != InternalGUIMode::Transparent) {
-    if (orthoCGO) {
-      CGOColor(orthoCGO, 0.3f, 0.3f, 0.3f);
-      CGOBegin(orthoCGO, GL_TRIANGLE_STRIP);
-      CGOVertex(orthoCGO, I->Width - internal_gui_width, 0.f, 0.f);
-      CGOVertex(orthoCGO, I->Width - internal_gui_width + 1.f, 0.f, 0.f);
-      CGOVertex(orthoCGO, I->Width - internal_gui_width, I->Height, 0.f);
-      CGOVertex(orthoCGO, I->Width - internal_gui_width + 1.f, I->Height, 0.f);
-      CGOEnd(orthoCGO);
-    } else {
-      glColor3f(0.3, 0.3, 0.3);
-      glBegin(GL_LINES);
-      glVertex2i(I->Width - internal_gui_width, 0);
-      glVertex2i(I->Width - internal_gui_width, I->Height);
-      glEnd();
-    }
   }
 }
 
@@ -1834,8 +1784,6 @@ void OrthoDoDraw(PyMOLGlobals* G, const OrthoDrawInfo& drawInfo)
     if (Feedback(G, FB_OpenGL, FB_Debugging))
       PyMOLCheckOpenGLErr("OrthoDoDraw checkpoint 0");
 
-    auto rightSceneMargin = OrthoCalculateRightSideMargin(G, internal_gui_mode);
-
     auto numOverlayLines = OrthoGetNumberOverlayLines(G);
     auto text = SettingGet<bool>(G, cSetting_text);
 
@@ -1925,15 +1873,11 @@ void OrthoDoDraw(PyMOLGlobals* G, const OrthoDrawInfo& drawInfo)
 
       auto internal_feedback = SettingGet<int>(G, cSetting_internal_feedback);
       if (internal_feedback) { /* moved to avoid conflict with menus */
-        OrthoDrawInternalFeedbackBG(G, orthoCGO, rightSceneMargin, internal_gui_mode);
+        OrthoDrawInternalFeedbackBG(G, orthoCGO, internal_gui_mode);
       }
 
       PRINTFD(G, FB_Ortho)
       " OrthoDoDraw: drawing blocks...\n" ENDFD;
-
-      if (SettingGet<bool>(G, cSetting_internal_gui)) {
-        OrthoDrawInternalGUIBG(G, orthoCGO, internal_gui_mode);
-      }
 
       OrthoRestorePrompt(G);
 
@@ -2164,84 +2108,6 @@ void OrthoDrawWizardPrompt(PyMOLGlobals* G, CGO* orthoCGO)
   }
 }
 
-static void OrthoLayoutPanel(
-    PyMOLGlobals* G, int m_top, int m_left, int m_bottom, int m_right)
-{
-  COrtho* I = G->Ortho;
-  Block* block = nullptr;
-
-  int controlHeight = DIP2PIXEL(20);
-  int butModeHeight = ButModeGetHeight(G);
-  int wizardHeight = I->WizardHeight;
-
-  int controlBottom = m_bottom;
-  int butModeBottom = controlBottom + controlHeight;
-  int wizardBottom = butModeBottom + butModeHeight;
-  int executiveBottom = wizardBottom + wizardHeight;
-
-  int height = I->Height;
-
-  if (SettingGetGlobal_b(G, cSetting_internal_gui)) {
-    /* The Executive Block consists of the area in which object entries are
-       rendered, if the wizard doesn't exist, then this region extends all the
-       way down to the top of the ButMode block */
-    block = ExecutiveGetBlock(G);
-    block->setMargin(m_top, m_left, executiveBottom, m_right);
-    block->active = true;
-
-    /* The Wizard Block is shown when a wizard is loaded, it is the area between
-       the Executive Block and the ButMode Block, and is used for Wizard-related
-       info/buttons */
-    block = WizardGetBlock(G);
-    if (block) {
-      block->setMargin(
-          height - executiveBottom + 1, m_left, wizardBottom, m_right);
-      block->active = false;
-    }
-
-    /* The ButMode block shows info about which Mouse Mode, Selecting Mode,
-       State info, and other info like frame rate. It is located under the
-       Wizard Block, and above the Control Block */
-    block = ButModeGetBlock(G);
-    block->setMargin(height - wizardBottom + 1, m_left, butModeBottom, m_right);
-    block->active = true;
-
-    /* Controls are the Movie/Scene arrow buttons at the very bottom */
-    block = ControlGetBlock(G);
-    block->setMargin(
-        height - butModeBottom + 1, m_left, controlBottom, m_right);
-    block->active = true;
-  } else {
-    /* The Executive Block consists of the area in which object entries are
-       rendered, if the wizard doesn't exist, then this region extends all the
-       way down to the top of the ButMode block */
-    block = ExecutiveGetBlock(G);
-    block->setMargin(m_right, m_bottom, m_right, m_bottom);
-    block->active = false;
-
-    /* The Wizard Block is shown when a wizard is loaded, it is the area between
-       the Executive Block and the ButMode Block, and is used for Wizard-related
-       info/buttons */
-    block = WizardGetBlock(G);
-    if (block) {
-      block->setMargin(m_right, m_bottom, m_right, m_bottom);
-      block->active = false;
-    }
-
-    /* The ButMode block shows info about which Mouse Mode, Selecting Mode,
-       State info, and other info like frame rate. It is located under the
-       Wizard Block, and above the Control Block */
-    block = ButModeGetBlock(G);
-    block->setMargin(m_right, m_bottom, m_right, m_bottom);
-    block->active = false;
-
-    /* Controls are the Movie/Scene arrow buttons at the very bottom */
-    block = ControlGetBlock(G);
-    block->setMargin(m_right, m_bottom, m_right, m_bottom);
-    block->active = false;
-  }
-}
-
 /*========================================================================*/
 void OrthoReshape(PyMOLGlobals* G, int width, int height, int force)
 {
@@ -2251,9 +2117,8 @@ void OrthoReshape(PyMOLGlobals* G, int width, int height, int force)
     return;
 
   Block* block = nullptr;
-  int sceneBottom, sceneRight = 0;
+  int sceneBottom;
   int textBottom = 0;
-  int internal_gui_width;
   int internal_feedback;
   int sceneTop = 0;
 
@@ -2295,25 +2160,6 @@ void OrthoReshape(PyMOLGlobals* G, int width, int height, int force)
     else
       sceneBottom = textBottom;
 
-    internal_gui_width =
-        DIP2PIXEL(SettingGetGlobal_i(G, cSetting_internal_gui_width));
-    if (!SettingGetGlobal_b(G, cSetting_internal_gui)) {
-      internal_gui_width = 0;
-      sceneRight = 0;
-    } else {
-      auto gui_mode =
-          SettingGet<InternalGUIMode>(cSetting_internal_gui_mode, G->Setting);
-      switch (gui_mode) {
-      case InternalGUIMode::Transparent:
-        sceneRight = 0;
-        sceneBottom = 0;
-        break;
-      default:
-        sceneRight = internal_gui_width;
-        break;
-      }
-    }
-
     {
       int seqHeight;
       block = SeqGetBlock(G);
@@ -2323,35 +2169,33 @@ void OrthoReshape(PyMOLGlobals* G, int width, int height, int force)
 
       if (SettingGetGlobal_b(G, cSetting_seq_view_location)) {
 
-        block->setMargin(height - sceneBottom - 10, 0, sceneBottom, sceneRight);
+        block->setMargin(height - sceneBottom - 10, 0, sceneBottom, 0);
         block->reshape(width, height);
         seqHeight = SeqGetHeight(G);
         block->setMargin(
-            height - sceneBottom - seqHeight, 0, sceneBottom, sceneRight);
+            height - sceneBottom - seqHeight, 0, sceneBottom, 0);
         if (!SettingGetGlobal_b(G, cSetting_seq_view_overlay)) {
           sceneBottom += seqHeight;
         }
 
       } else {
 
-        block->setMargin(0, 0, height - 10, sceneRight);
+        block->setMargin(0, 0, height - 10, 0);
         block->reshape(width, height);
         seqHeight = SeqGetHeight(G);
-        block->setMargin(0, 0, height - seqHeight, sceneRight);
+        block->setMargin(0, 0, height - seqHeight, 0);
         if (!SettingGetGlobal_b(G, cSetting_seq_view_overlay)) {
           sceneTop = seqHeight;
         }
       }
     }
 
-    OrthoLayoutPanel(G, 0, width - internal_gui_width, textBottom, 0);
-
     block = MovieGetBlock(G);
     block->setMargin(height - textBottom, 0, 0, 0);
     block->active = textBottom ? true : false;
 
     block = SceneGetBlock(G);
-    block->setMargin(sceneTop, 0, sceneBottom, sceneRight);
+    block->setMargin(sceneTop, 0, sceneBottom, 0);
 
     block = nullptr;
     for (auto block : I->Blocks) {
@@ -2364,29 +2208,6 @@ void OrthoReshape(PyMOLGlobals* G, int width, int height, int force)
   G->ShaderMgr->ResetUniformSet();
   OrthoInvalidateDoDraw(G);
   OrthoDirty(G);
-}
-
-/*========================================================================*/
-void OrthoReshapeWizard(PyMOLGlobals* G, ov_size wizHeight)
-{
-  COrtho* I = G->Ortho;
-  I->WizardHeight = wizHeight;
-
-  if (SettingGetGlobal_b(G, cSetting_internal_gui)) {
-    Block* block;
-    int internal_gui_width =
-        DIP2PIXEL(SettingGetGlobal_i(G, cSetting_internal_gui_width));
-
-    OrthoLayoutPanel(G, 0, I->Width - internal_gui_width, I->TextBottom, 0);
-
-    block = ExecutiveGetBlock(G);
-    block->reshape(I->Width, I->Height);
-    block = WizardGetBlock(G);
-    if (block) {
-      block->reshape(I->Width, I->Height);
-      block->active = wizHeight ? true : false;
-    }
-  }
 }
 
 /*========================================================================*/

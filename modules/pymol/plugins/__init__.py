@@ -12,7 +12,7 @@ import pymol
 from pymol import cmd
 from pymol import colorprinting
 from pymol.shortcut import Shortcut
-from .legacysupport import *
+from . import startup
 
 # variables
 
@@ -98,10 +98,34 @@ def set_pref_changed():
         pref_save(quiet=not verbose)
 
 
-def addmenuitemqt(label, command=None, menuName='PluginQt'):
+def ask(title, message, parent=None):
     '''
-    Adds plugin menu item to main 'Plugin' menu.
-    Intended for plugins which open a PyQt window.
+    Yes/No question in a message box. Without a running Qt application
+    (headless) it prints the question and answers yes.
+    '''
+    from pymol.Qt import QtWidgets
+    if QtWidgets.QApplication.instance() is None:
+        print(' %s: %s' % (title, message))
+        return True
+    QMB = QtWidgets.QMessageBox
+    return QMB.question(parent, title, message) == QMB.StandardButton.Yes
+
+
+def showinfo(title, message, parent=None):
+    '''
+    Message box, or a printed line without a running Qt application.
+    '''
+    from pymol.Qt import QtWidgets
+    if QtWidgets.QApplication.instance() is None:
+        print(' %s: %s' % (title, message))
+    else:
+        QtWidgets.QMessageBox.information(parent, title, message)
+
+
+def addmenuitemqt(label, command=None, menuName='Plugin'):
+    '''
+    Adds a row to the 'Plugin' menu of the window. For plugins that open a
+    Qt window: raises QtNotAvailableError without the GUI.
     '''
     if not HAVE_QT:
         raise QtNotAvailableError()
@@ -111,22 +135,58 @@ def addmenuitemqt(label, command=None, menuName='PluginQt'):
 
 def addmenuitem(label, command=None, menuName='Plugin'):
     '''
-    Generic replacement for MegaWidgets menu item adding
+    Adds a row to a menu of the window, by default to 'Plugin'. "A|B" puts
+    row B into a submenu A; the label "-" adds a separator. Does nothing
+    without the GUI.
     '''
-    labels1 = [menuName] + label.split('|')
-    labels2 = ['|'.join(labels1[0:i]) for i in range(1, len(labels1))]
-    pmgapp = get_pmgapp()
-    if pmgapp is not None:
-        for i in range(1, len(labels2)):
-            try:
-                pmgapp.menuBar.addcascademenu(labels2[i-1], labels2[i], label=labels1[i])
-            except ValueError:
-                pass
-        if labels1[-1] == '-':
-            pmgapp.menuBar.addmenuitem(labels2[-1], 'separator')
+    if not HAVE_QT:
+        return
+
+    import pymol.gui
+    window = pymol.gui.get_qtwindow()
+
+    if menuName == 'PluginQt':  # the name while a legacy menu existed
+        menuName = 'Plugin'
+    menu = window.menudict[menuName]
+    *parents, label = label.split('|')
+    for parent in parents:
+        for action in menu.actions():
+            if action.menu() and action.text() == parent:
+                menu = action.menu()
+                break
         else:
-            pmgapp.menuBar.addmenuitem(labels2[-1], 'command', label=labels1[-1],
-                    command=command)
+            menu = menu.addMenu(parent)
+
+    if label == '-':
+        menu.addSeparator()
+        return
+
+    def run():
+        # an exception that reaches Qt from here would end the program
+        try:
+            command()
+        except BaseException as e:
+            from pymol.Qt import QtWidgets
+            colorprinting.print_exc([__file__])
+            QtWidgets.QMessageBox.critical(None, 'Error', str(e))
+
+    menu.addAction(label, run)
+
+
+plugin_manager_panel = None
+
+
+def addPluginManagerMenuItem():
+
+    def plugin_manager():
+        global plugin_manager_panel
+        if not plugin_manager_panel:
+            from .managergui_qt import PluginManager
+            plugin_manager_panel = PluginManager(None)
+        plugin_manager_panel.show()
+
+    addmenuitem('Plugin Manager', plugin_manager)
+    addmenuitem('-')
 
 def plugin_load(name, quiet=1):
     '''
@@ -250,16 +310,13 @@ class PluginInfo(object):
         '''
         Load and initialize plugin.
 
-        If pmgapp == -1, do not initialize.
+        If pmgapp == -1, do not call the plugin's __init_plugin__.
         '''
         import time
 
         assert not self.is_temporary
 
         starttime = time.time()
-        if pmgapp is None:
-            pmgapp = get_pmgapp()
-
         verbose = pref_get('verbose', False)
 
         try:
@@ -278,7 +335,7 @@ class PluginInfo(object):
                 __import__(self.mod_name, level=0)
 
             if pmgapp != -1:
-                self.legacyinit(pmgapp)
+                self.init_plugin()
 
             cmd.extend = extend_orig
 
@@ -286,7 +343,7 @@ class PluginInfo(object):
             if verbose and pymol.invocation.options.show_splash:
                 print(' Plugin "%s" loaded in %.2f seconds' % (self.name, self.loadtime))
         except QtNotAvailableError:
-            colorprinting.warning("Plugin '%s' only available with PyQt GUI." % (self.name,))
+            colorprinting.warning("Plugin '%s' only available with the Qt GUI." % (self.name,))
         except:
             e = sys.exc_info()[1]
             if verbose:
@@ -300,29 +357,19 @@ class PluginInfo(object):
 
         return True
 
-    def legacyinit(self, pmgapp):
+    def init_plugin(self):
         '''
-        Call the __init__ or __init_plugin__ function which takes the PMGApp
-        instance as argument (usually adds menu items).
-
-        This must be called after loading and after launching of the external
-        GUI (PMGApp).
-
-        Ignore the build-in <method-wrapper '__init__'> that takes a
-        string as first argument. Only call __init__ if it's of type
-        'function'.
+        Call the plugin's __init_plugin__(app=None), which usually adds its
+        menu rows with addmenuitemqt. The argument was the Tk application
+        once; it is always None now. A plugin that only has the Tk-era
+        module function __init__(self) is loaded but not initialized.
         '''
-        import types
-
         mod = self.module
         if mod is None:
             raise RuntimeError('not loaded')
 
         if hasattr(mod, '__init_plugin__'):
-            mod.__init_plugin__(pmgapp)
-        elif hasattr(mod, '__init__'):
-            if isinstance(mod.__init__, types.FunctionType):
-                mod.__init__(pmgapp)
+            mod.__init_plugin__(None)
 
     def uninstall(self, parent=None):
         '''
@@ -330,14 +377,11 @@ class PluginInfo(object):
 
         Removes the complete directory tree in case of a package.
         '''
-        from .legacysupport import tkMessageBox
-
-        ok = tkMessageBox.askyesno('Confirm',
+        ok = ask('Confirm',
                 'Do you really want to uninstall plugin "%s"' % (self.name), parent=parent)
         if not ok:
             return False
 
-        showinfo = tkMessageBox.showinfo
         dirname, basename = os.path.split(self.filename)
 
         try:
@@ -407,8 +451,8 @@ def initialize(pmgapp=-1):
     Searches for plugins and registers them.
 
     pmgapp == -2: No Autoloading
-    pmgapp == -1: Autoloading but no legacyinit
-    else:         Autoloading and legacyinit
+    pmgapp == -1: Autoloading, __init_plugin__ is not called (no GUI)
+    else:         Autoloading and __init_plugin__
     '''
     if os.path.exists(PYMOLPLUGINSRC):
         from pymol import parsing

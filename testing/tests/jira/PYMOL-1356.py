@@ -3,6 +3,7 @@ PYMOL-1356
 rotate ANISOU when aligning molecules
 '''
 
+import pytest
 from pymol import cmd, testing, stored
 
 v_pdbstr_anisou = (
@@ -46,34 +47,34 @@ views = [
     11.178204536,   17.178203583,  -20.000000000 ),
 ]
 
-class Test1356(testing.PyMOLTestCase):
 
-    def _rep(self, name='m1'):
-        cmd.disable()
-        cmd.color('yellow')
-        cmd.show_as('ellipsoids')
-        cmd.enable(name)
+def _rep(name='m1'):
+    cmd.disable()
+    cmd.color('yellow')
+    cmd.show_as('ellipsoids')
+    cmd.enable(name)
 
-    @testing.foreach(0, 1)
-    def test(self, matrix_mode):
-        cmd.viewport(100,100)
-        cmd.set('matrix_mode', matrix_mode)
-        cmd.set('ambient', 1.0)
 
-        cmd.read_pdbstr(v_pdbstr_anisou, 'm1', zoom=0)
-        cmd.read_pdbstr(v_pdbstr_rotated, 'm2', zoom=0)
-        self._rep()
+@pytest.mark.parametrize("matrix_mode", [0, 1])
+def test(matrix_mode):
+    cmd.viewport(100,100)
+    cmd.set('matrix_mode', matrix_mode)
+    cmd.set('ambient', 1.0)
 
-        cmd.set_view(views[0])
-        ref = self.get_imagearray()
-        self.assertImageHasColor('yellow')
+    cmd.read_pdbstr(v_pdbstr_anisou, 'm1', zoom=0)
+    cmd.read_pdbstr(v_pdbstr_rotated, 'm2', zoom=0)
+    _rep()
 
-        cmd.align('m1', 'm2')
-        cmd.set_view(views[1])
-        self.assertImageEqual(ref, count=100, delta=1, msg='ANISOU not aligned on display')
+    cmd.set_view(views[0])
+    ref = testing.get_imagearray()
+    testing.assert_image_has_color('yellow')
 
-        pdbstr = cmd.get_pdbstr('m1')
-        cmd.delete('*')
-        cmd.read_pdbstr(pdbstr, 'm1', zoom=0)
-        self._rep()
-        self.assertImageEqual(ref, count=100, msg='ANISOU not aligned in PDB')
+    cmd.align('m1', 'm2')
+    cmd.set_view(views[1])
+    testing.assert_image_equal(ref, count=100, delta=1, msg='ANISOU not aligned on display')
+
+    pdbstr = cmd.get_pdbstr('m1')
+    cmd.delete('*')
+    cmd.read_pdbstr(pdbstr, 'm1', zoom=0)
+    _rep()
+    testing.assert_image_equal(ref, count=100, msg='ANISOU not aligned in PDB')

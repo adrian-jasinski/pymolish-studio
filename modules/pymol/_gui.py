@@ -21,6 +21,7 @@ class PyMOLDesktopGUI(object):
     file_save_wrl = None
     file_save_pov = None
     file_save_mpeg = None
+    timeline_panel_dialog = None
     file_save_mov = None
     file_save_mpng = None
     file_save_glb = None
@@ -241,6 +242,8 @@ class PyMOLDesktopGUI(object):
                 ('command', 'Make (pk1) Neutral [Ctrl-Shift-U]',    'alter pk1, formal_charge=0'),
             ]),
             ('menu', 'Movie', [
+                ('command', 'Timeline', self.timeline_panel_dialog),
+                ('separator',),
                 ('menu', 'Append', [
                     ('command', str(i) + ' second', lambda i=i: cmd.movie.add_blank(i))
                     for i in [.25, .5, 1, 2, 3, 4, 6, 8, 12, 18, 24, 30, 48, 60]
@@ -415,17 +418,6 @@ class PyMOLDesktopGUI(object):
                     ]
                 ]),
                 ('separator',),
-                ('check', 'Internal GUI', 'internal_gui', 1),
-                ('check', 'Internal Prompt', 'internal_prompt', 1),
-                ('menu', 'Internal Feedback', [
-                    ('radio', str(val), 'internal_feedback', val)
-                    for val in [0, 1, 3, 5]
-                ]),
-                ('menu', 'Overlay', [
-                    ('radio', str(val), 'overlay', val)
-                    for val in [0, 1, 3, 5]
-                ]),
-                ('separator',),
                 ('check', 'Stereo', 'stereo', 1),
                 ('menu', 'Stereo Mode', [
                     ('command', 'Anaglyph Stereo', 'stereo anaglyph'),
@@ -457,15 +449,7 @@ class PyMOLDesktopGUI(object):
                 ('menu', 'Background', [
                     ('check', 'Opaque', 'opaque_background', 1),
                     ('check', 'Alpha Checker', 'show_alpha_checker', 1),
-                    ('separator',),
-                ] + [
-                    ('radio', lab, 'bg_rgb', val)
-                    for lab, val in [
-                        ('White', 0),           # white
-                        ('Light Grey', 134),    # grey80
-                        ('Grey', 104),          # grey50
-                        ('Black', 1),           # black
-                    ]
+                    # the colors: background button of the toolbar
                 ]),
                 ('menu', 'Color Space', [
                     ('command', 'CMYK (for publications)',  'space cmyk'),
@@ -778,7 +762,6 @@ class PyMOLDesktopGUI(object):
                 ('check', 'Auto-Remove Hydrogens', 'auto_remove_hydrogens', 1),
                 ('separator',),
                 ('check', 'Show Text (Esc)', 'text'),
-                ('check', 'Overlay Text', 'overlay'),
             ]),
             ('menu', 'Scene', [
                 ('command', 'Scenes', self.scene_panel_menu_dialog),

@@ -14,9 +14,8 @@ v_pdbstr_anisou = (
     'ANISOU    3  C   ARG A 197     3219   3434   3242   -225    -95     22       C  \n'
     'END\n')
 
-class TestPYMOL1241(testing.PyMOLTestCase):
 
-    def test(self):
-        cmd.read_pdbstr(v_pdbstr_anisou, 'm1')
-        for a in cmd.get_model().atom:
-            self.assertNotEqual(a.u_aniso, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 'empty ANISOU')
+def test():
+    cmd.read_pdbstr(v_pdbstr_anisou, 'm1')
+    for a in cmd.get_model().atom:
+        assert a.u_aniso != [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 'empty ANISOU'

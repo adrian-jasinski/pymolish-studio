@@ -9,6 +9,7 @@ imports it at launch as `pymol.plugins.startup.<name>` and calls its
 | User directory | `~/.pymol/startup/`, on Windows `%APPDATA%\pymol\startup\`. Plugin > Plugin Manager can add search paths (restart needed). |
 | Bundled plugins | `data/startup/` in this repository |
 | Needs | pymolish 4.3.0 or later, Python 3.13+, PySide6 through `pymol.Qt` only |
+| The argument `app` | Always `None` since 4.16.1. It was the Tk application; `app.menuBar`, `app.root` and `pymol.plugins.get_pmgapp()` are gone with the last Tk stand-ins. Add menu rows with `addmenuitemqt`. A plugin that only has the old module function `__init__(self)` is imported but not initialized. |
 | Without a GUI (`pymolish -c`) | Commands load. A plugin that calls `addmenuitemqt` is skipped with a one-line notice. |
 
 Both examples below were run on 4.5.10, headless and in the GUI.

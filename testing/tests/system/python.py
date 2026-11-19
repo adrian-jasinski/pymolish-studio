@@ -4,6 +4,7 @@ Python installation tests
 
 from __future__ import absolute_import
 
+import pytest
 import sys
 from pymol import testing
 
@@ -23,22 +24,21 @@ if (not sys.executable.startswith('/System/Library/Frameworks/Python.framework/V
 #        'matplotlib',
     ]
 
-class TestSystem(testing.PyMOLTestCase):
 
-    def testHasModules(self):
-        failed = []
-        for name in required_modules:
-            try:
-                __import__(name, level=0)
-            except ImportError:
-                failed.append(name)
-        self.assertEqual(failed, [])
+def testHasModules():
+    failed = []
+    for name in required_modules:
+        try:
+            __import__(name, level=0)
+        except ImportError:
+            failed.append(name)
+    assert failed == []
 
-    @testing.requires_version('1.8.4')
-    def testNoCmd(self):
-        # https://github.com/schrodinger/pymol-open-source/issues/18
-        self.skipTest("made non-fatal in 2.3.0")
 
-        import pymol
-        with self.assertRaises(pymol.CmdException):
-            import cmd
+def testNoCmd():
+    # https://github.com/schrodinger/pymol-open-source/issues/18
+    pytest.skip("made non-fatal in 2.3.0")
+
+    import pymol
+    with pytest.raises(pymol.CmdException):
+        import cmd

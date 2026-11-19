@@ -1496,7 +1496,6 @@ PyMOLreturn_status PyMOL_CmdSetFeedbackMask(CPyMOL * I, int action, int module, 
 
 static const CPyMOLOptions Defaults = {
   true,                         /* pmgui */
-  true,                         /* internal_gui */
   true,                         /* show_splash */
   1,                            /* internal_feedback */
   true,                         /* security */
@@ -1649,9 +1648,8 @@ void PyMOL_Start(CPyMOL * I)
   CGORendererInit(G);
   ShaderMgrInit(G);
   G->GFXMgr = new GFXManager(G->ShaderMgr);
-  SettingInitGlobal(G, true, true, false);
+  SettingInitGlobal(G, true, false);
   PropertyInit(G);
-  SettingSetGlobal_i(G, cSetting_internal_gui, G->Option->internal_gui);
   SettingSetGlobal_i(G, cSetting_internal_feedback, G->Option->internal_feedback);
   TextureInit(G);
   TypeInit(G);
@@ -2201,8 +2199,6 @@ void PyMOL_NeedReshape(CPyMOL * I, int mode, int x, int y, int width, int height
       return;
 
     width = SceneGetBlock(G)->getWidth();
-    if(SettingGetGlobal_b(G, cSetting_internal_gui))
-      width += DIP2PIXEL(SettingGetGlobal_i( G, cSetting_internal_gui_width));
   }
 
   /* if height is negative, force a reshape based on the current height */

@@ -19,7 +19,6 @@ Z* -------------------------------------------------------------------
 
 #include "Ortho.h"
 #include "PyMOLObject.h"
-#include "ScrollBar.h"
 #include <vector>
 
 struct CSeqCol {
@@ -73,8 +72,7 @@ struct CSeqHandler {
 struct CSeq : public Block {
   bool DragFlag { false };
   bool ScrollBarActive { true };
-  int NSkip {};
-  ScrollBar m_ScrollBar;
+  int NSkip {}; //!< first visible column; the window's scroll bar sets it
   std::vector<CSeqRow> Row;
   int NRow { 0 };
   int Size {};
@@ -89,7 +87,7 @@ struct CSeq : public Block {
   int LastRow { -1 };
   CSeqHandler *Handler {};         /* borrowed pointer */
 
-  CSeq(PyMOLGlobals * G) : Block(G), m_ScrollBar(G, true) {}
+  CSeq(PyMOLGlobals * G) : Block(G) {}
 
   int click(int button, int x, int y, int mod) override;
   void draw(CGO* orthoCGO) override;
@@ -103,6 +101,7 @@ void SeqFree(PyMOLGlobals * G);
 Block *SeqGetBlock(PyMOLGlobals * G);
 
 int SeqGetHeight(PyMOLGlobals * G);
+bool SeqScroll(PyMOLGlobals* G, int offset, int* state);
 void SeqSetHandler(PyMOLGlobals * G, CSeqHandler * handler);
 void SeqSetRow(PyMOLGlobals * G, std::vector<CSeqRow>&& row, int nRow);
 void SeqDirty(PyMOLGlobals * G);        /* sequence dirty -- need to update selections */

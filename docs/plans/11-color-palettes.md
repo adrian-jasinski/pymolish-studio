@@ -126,6 +126,11 @@ Differences from the plan above:
   colors are hard to tell apart; the neighbor distance in the test (0.14) is
   set by this list.
 
+### Follow-up, 4.15.0
+
+The menu has a caption, "Palette: colors of objects and chains"
+([step 16](16-background.md)).
+
 ### Follow-up, 4.13.1
 
 Asked for on 2026-11-16 after using it.

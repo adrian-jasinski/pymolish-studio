@@ -2,6 +2,391 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-19 pymolish-studio
+
+	* 4.19.11
+
+	* CI
+	  - Compiler cache (ccache) in the Linux, sanitizer and macOS
+	    jobs: a source file that did not change is not compiled again.
+	    Measured on a test branch, build step with an empty cache and
+	    with the cache of the run before, same sources: Linux 172 s to
+	    24 s, sanitizer 272 s to 31 s, macOS 178 s to 41 s (278 of 279
+	    compiler calls from the cache). A commit that changes C++
+	    compiles what it changed.
+	  - These jobs build without pip's build isolation: its temporary
+	    numpy include path differs in every run and would miss the
+	    cache. cmake, numpy and setuptools are installed first.
+	  - Windows is unchanged: its Visual Studio generator does not
+	    take a compiler launcher.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.10
+
+	* Speed
+	  - util.chainbow matches its selection against the atoms once.
+	    It did so three times for every chain, which shows with a long
+	    selection and many chains: the preset "publication green" on
+	    1aon (58,870 atoms, 21 chains) takes 0.34 s, down from 1.15 s.
+	    Same colors. With a plain object name there is nothing to gain
+	    (0.03 s before, 0.04 s now).
+
+2026-11-19 pymolish-studio
+
+	* 4.19.9
+
+	* Speed
+	  - util.color_by_area (menu C > spectrum > area): the temporary
+	    copy that is measured holds the atoms in reach of the
+	    selection, no longer the whole object. 1aon (58,870 atoms),
+	    chain A: 5.0 s to 0.26 s; three chains: 5.6 s to 0.58 s. A
+	    whole small molecule gains little (1rx1: 0.12 s to 0.09 s).
+	    The colors are the same for every atom in the 7 cases compared.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.8
+
+	* Speed
+	  - get_sasa_relative: the full exposure of all residues is
+	    measured in one pass. Before, each residue was copied into an
+	    object of its own with its bonded neighbors, with two
+	    selections over all atoms: 10 ms per residue in a large
+	    structure. 1aon (58,870 atoms): chain A, 526 residues, 5.6 s
+	    to 1.4 s; chains A and H, 12.3 s to 1.5 s. Small structures
+	    gain little (1rx1: 0.16 s to 0.11 s).
+	    The values are the same, with one exception in 3,921 residues
+	    compared: a value moved by 0.001, because the copies are
+	    measured at other coordinates and one surface dot fell on the
+	    other side of a neighbor's sphere.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.7
+
+	* Tests
+	  - All tests are pytest functions. The 162 files with unittest
+	    classes (166 classes, 854 methods) are rewritten: asserts in
+	    place of self.assert..., pytest.raises, pytest.approx,
+	    pytest.mark.parametrize in place of testing.foreach, fixtures
+	    in place of setUp and tearDown.
+	  - testing.py: PyMOLTestCase, foreach and requires_version are
+	    gone. The image and array checks are functions
+	    (testing.assert_image_has_color, testing.assert_array_equal,
+	    ...), testing.requires gives a pytest mark, and the clean
+	    session per test is the fixture clean_session in conftest.py.
+	  - Same tests as before: 913 pass. 325 are skipped, one more
+	    than before: testMAEchempy of test_atom_props.py had two
+	    cases that the old decorator order collapsed into one.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.6
+
+	* Tests
+	  - pytest runs every test file. Before, testing.py ran the 162
+	    files with unittest classes through unittest and the 18 files
+	    with pytest functions through pytest, and added the results.
+	    Same command, same 1237 tests (913 pass, 324 skipped on Linux).
+	    The exit code is now the one of pytest, no longer the number
+	    of failed tests.
+	  - Gone with the unittest runner: the options --xml, --out and
+	    --verbosity of testing.py, and the file testing/timings.tab
+	    that "timing" blocks appended to. timing(max=...) still fails a
+	    test that takes too long.
+	  - Removed testing/modules/xmlrunner, a vendored copy of
+	    unittest-xml-reporting (559 lines). Only the --xml option used
+	    it; pytest writes the same report with --junitxml.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.5
+
+	* Quit
+	  - Fix: closing the Qt application before a headless quit (4.19.4)
+	    could crash by itself: PySide6 deletes the remaining widgets in
+	    an order that changes from run to run (3 of 7 runs of the test
+	    suite on Linux, in the order pytest runs the files). "quit" now
+	    flushes the output and ends the process without any teardown of
+	    the libraries, with or without a GUI; the GUI already did that.
+	    On Windows this needs TerminateProcess: _Exit still unloads the
+	    DLLs there.
+
+2026-11-18 pymolish-studio
+
+	* 4.19.4
+
+	* Quit
+	  - Fix: "quit" in a headless run (-c) crashed on the way out when
+	    a script had made a Qt application and a widget was still
+	    alive, so the exit code was lost. Seen on Windows with
+	    Python 3.14: every test passed and the run still failed. The
+	    Qt application is now closed before the process exits.
+	    This was what failed the Windows Python 3.14 CI job.
+
+2026-11-18 pymolish-studio
+
+	* 4.19.3
+
+	* Presets
+	  - New preset "publication green" (preset.publication_green):
+	    "publication" with each chain in shades of green, light at
+	    its start to dark at its end, in place of the rainbow.
+
+	* Action menu
+	  - "split" has "by state" for an object with more than one
+	    state. The row more > state > split is gone; it was the
+	    same command (split_states).
+
+2026-11-18 pymolish-studio
+
+	* 4.19.2
+
+	* Action menu (the A button of the Objects panel)
+	  - New row "select" for an object and a group: one row per
+	    chain and per kind of molecule that the object has
+	    (protein, nucleic, membrane, ligand, ions, solvent, other).
+	    A click makes it the selection "sele", in place of what was
+	    selected.
+	  - New row "split": "by chain" and "by type" make one object
+	    per chain or kind, <object>_<chain> or <object>_<kind>, in
+	    a group <object>_chains or <object>_types, and switch the
+	    object off.
+	  - The "preset" row is gone from the A menu of an object, a
+	    group, a selection and "all": presets are in the toolbar.
+	    The right-click menus of the viewport and the sequence
+	    viewer keep it, for a preset on a few atoms. The preset.*
+	    functions are unchanged.
+
+	* New command (cmd.* API): split_types selection [, group].
+	  One new object per kind of molecule; an atom goes to the
+	  first kind that matches, in the order above. "membrane" is a
+	  list of lipid residue names (POPC, POPE, DPPC, CHL1, ...).
+
+	* Presets
+	  - Fix: after "illustration" every other preset stayed flat
+	    and unshaded, because the light of the look "flat" stayed
+	    on. The next preset now switches it back to the standard
+	    light. A look picked from the list as such stays until
+	    another look is picked.
+
+2026-11-18 pymolish-studio
+
+	* 4.19.1
+
+	* Action toolbar
+	  - The text is bold and larger (10 pt) in the first simple
+	    sans-serif the system has: Inter, Segoe UI, Helvetica Neue,
+	    Ubuntu, Noto Sans or Arial. More room between the buttons.
+	  - The default window is as wide as the toolbar needs (1104
+	    px at 150 %, was 940). A saved layout or -W still wins.
+	  - Behavior change: the zoom button zooms on what is visible.
+	    Hidden objects and hidden atoms no longer count. Its menu
+	    has "Visible" and "Everything".
+	  - Behavior change: a preset picked in the toolbar acts on the
+	    objects that are switched on, not on all. The rows for
+	    light and outline stay for the whole scene.
+
+	* Presets
+	  - New preset "protein-protein interaction"
+	    (preset.interaction): every chain as cartoon in its own
+	    color inside a faint surface of that color, the residues
+	    that touch another chain as sticks, polar contacts between
+	    chains as dashes.
+	  - New preset "antibody and antigen" (preset.antibody): heavy
+	    chain blue, light chain light blue, as cartoon; the antigen
+	    as a sand-colored surface with the epitope in orange; the
+	    residues of the antibody that touch it as sticks; polar
+	    contacts as dashes. Antibody chains are found by the start
+	    of framework 2 in the sequence, else by the chain names H
+	    and L; without any, the preset shows the interaction.
+	  - New preset.cartoon_transparency(value, selection), used by
+	    the menu rows: it works for a selection of several objects.
+	  - Every preset now also clears a per-atom surface_color.
+
+2026-11-18 pymolish-studio
+
+	* 4.19.0
+
+	* Action toolbar
+	  - Palette and Background show their name. Zoom, Orient and
+	    Rock show only their icon.
+	  - Icons are 20 px with heavier lines; the text is regular
+	    weight. Scenes has a camera icon.
+	  - What is chosen is blue: the text of the selection mode, a
+	    checked button, the button under the pointer. In the menus
+	    of the bar the row under the pointer is blue and the
+	    chosen row is written in blue.
+	  - Background menu: new row "Ray trace with this background".
+	    It sets opaque_background and resets ray_opaque_background
+	    to -1. "Remember after restart" keeps it.
+	  - Palette menu: "New palette...", "Edit palette...", "Delete
+	    palette" for palettes of the user, kept between starts.
+	    New functions palettes.define(name, colors) and
+	    palettes.undefine(name).
+	  - icons.menu_icon takes size, stroke and accent.
+
+2026-11-18 pymolish-studio
+
+	* 4.18.0
+
+	* Movie timeline
+	  - New panel "Timeline" (Movie > Timeline, Display > Panels):
+	    the movie as a list of shots. A strip shows the shots as
+	    blocks as wide as they last, scenes with their thumbnail,
+	    and the playhead; click or drag on it to go to a moment.
+	    The table under it sets seconds, start (smooth, linear,
+	    cut) and an effect per shot. The panel opens by itself
+	    when a movie appears.
+	  - Shots: a scene, the view of now, zoom to a selection, turn
+	    360 degrees, rock, nutate, play the states, hold.
+	  - Record: while it is on, each view that comes to rest after
+	    you moved it is added as a shot. "Add view" adds one.
+	  - Tour: one click makes a movie that visits every scene, or
+	    flies to every ligand, chain or selection and turns once.
+	  - Effects: fade a surface or the cartoon in or out over a
+	    shot.
+	  - Export: MP4 in three sizes and GIF, drawn or ray traced,
+	    with the number of frames, the time and the size of the
+	    frames shown before rendering; "Copy as script".
+	  - New module pymol.shots (build, shot, tour, estimate,
+	    describe). The movie it builds is an ordinary one made
+	    with mset, mview and mdo; the shot list itself is not
+	    stored in a session file.
+	  - While the Timeline panel is open, the keyframe strip the
+	    core draws under the viewport (movie_panel) is off.
+
+2026-11-18 pymolish-studio
+
+	* 4.17.1
+
+	* The old internal GUI is removed
+	  - Removed: the object list, the mouse mode table, the movie
+	    buttons and the wizard buttons that the core drew at the
+	    right edge of the viewport. The Qt Objects panel has
+	    replaced them since 4.5.11.
+	  - Removed settings: internal_gui, internal_gui_width and
+	    internal_gui_name_color_mode. "set internal_gui_width" in a
+	    pymolrc now prints "unknown Setting" and the start goes on;
+	    session files that carry the settings load as before.
+	  - Removed: the command line option -i (it is ignored when
+	    given) and the option field internal_gui.
+	  - "viewport" and the window size no longer add the width of
+	    the panel.
+	  - Kept: internal_gui_control_size (row height of the scene
+	    buttons) and internal_gui_mode (colors of the menus the
+	    core draws), the text console in the viewport, the movie
+	    panel under the viewport.
+
+2026-11-18 pymolish-studio
+
+	* 4.17.0
+
+	* Sequence viewer
+	  - The scroll bar under the sequence is a Qt scroll bar: a
+	    rounded, see-through handle that follows the theme of the
+	    desktop for dragging, clicking beside the handle, the mouse
+	    wheel and, after Tab, the arrow, Page and Home/End keys.
+	    The marks of the selected residues in the same strip show
+	    through it.
+	  - The core no longer draws a bar there or handles clicks on
+	    it; it keeps the first visible column and the marks. New
+	    internal call _cmd.seq_scroll for the window.
+
+2026-11-18 pymolish-studio
+
+	* 4.16.1
+
+	* Plugins: the last Tk stand-ins are removed
+	  - Removed: pmg_qt.mimic_tk (fake tkMessageBox, tkFileDialog,
+	    tkinter.messagebox and tkinter.filedialog modules, and the
+	    import hook that served them), pmg_qt.mimic_pmg_tk (PMGApp,
+	    PmwMenuBar), pymol.plugins.legacysupport,
+	    pymol.plugins.get_pmgapp, pymol.gui.get_pmgapp,
+	    pymol.gui.createlegacypmgapp, PluginInfo.legacyinit and
+	    the empty "Legacy Plugins" submenu.
+	  - Behavior change: __init_plugin__(app) is called with None.
+	    A plugin that used app.menuBar or app.root, or that only
+	    has the Tk-era module function __init__(self), no longer
+	    adds its menu rows; its commands still load.
+	  - Behavior change: pymol.plugins.addmenuitem and
+	    addmenuitemqt both add to the one Plugin menu. The menu
+	    name "PluginQt" is still accepted.
+	  - New: pymol.plugins.ask and pymol.plugins.showinfo, the
+	    message boxes the Plugin Manager uses; without a GUI they
+	    print and ask answers yes, as before.
+	  - installPlugin moved to pymol.plugins.installation.
+
+2026-11-18 pymolish-studio
+
+	* 4.16.0
+
+	* Legacy menu rows
+	  - Removed from the Display menu: Internal GUI, Internal
+	    Prompt, Internal Feedback and Overlay. Removed from the
+	    Setting menu: Overlay Text. The settings internal_gui,
+	    internal_prompt, internal_feedback and overlay still work
+	    when typed.
+
+2026-11-18 pymolish-studio
+
+	* 4.15.1
+
+	* Dialogs
+	  - Fix: dialogs built from a .ui form open at the size their
+	    content needs, have the form's title and their content
+	    follows the edge of the window. The Plugin Manager opened
+	    too small, with the title "PyMOL" and cut-off tabs.
+	  - Behavior change: pymol.Qt.utils.loadUi(uifile, widget) sets
+	    the form up on the widget itself and returns the widget.
+	    Before, the form became a child of the widget, which then
+	    had no layout. The children are attributes as before.
+	  - Fix: Setting > Edit keyboard shortcuts opens again. Its
+	    module failed to import since the switch to PySide6.
+
+2026-11-18 pymolish-studio
+
+	* 4.15.0
+
+	* Background menu and palette caption
+	  - New toolbar button after the palette: the background. Five
+	    plain colors, two blues and six gradients from top to
+	    bottom, each with a swatch; the one in use has a frame. A
+	    gradient row also sets bg_rgb to its top color, so fog and
+	    the "front" color follow.
+	  - "Remember after restart" in that menu, off by default. When
+	    on, the background is saved with each pick and set again
+	    at the next start, before pymolrc runs.
+	  - The four color rows of Display > Background are removed.
+	    "Opaque" and "Alpha Checker" stay there.
+	  - The palette menu has a caption: "Palette: colors of objects
+	    and chains".
+	  - The Rock button shows only its icon, so the toolbar still
+	    fits the default window at 150 %.
+
+2026-11-18 pymolish-studio
+
+	* 4.14.5
+
+	* Presets and looks
+	  - Behavior change: preset.look no longer sets the background
+	    (bg_rgb, ray_opaque_background) or the outline color. The
+	    outline uses the default "front" color: black on a light
+	    background, white on a dark one. A ray-traced image has a
+	    transparent background again unless Display > Background >
+	    Opaque is on, as without a look.
+	  - Behavior change: preset.technical, preset.ligands and the
+	    ligand sites presets no longer color the protein. Ligand
+	    and non-carbon atoms are colored as before. The guide atom
+	    of a modified residue (a phosphoserine) keeps its color,
+	    so the cartoon has no patch there.
+	  - The preset menu is one list: the looks are its last group,
+	    without a caption of their own; "standard light" restores
+	    the default light. menu.looks is removed.
+	  - The row "simple" left the preset menu. preset.simple and
+	    preset.simple_no_solv still work when typed.
+
 2026-11-16 pymolish-studio
 
 	* 4.14.4

@@ -29,28 +29,27 @@ v_pdbstr_rotated = (
     'TER   \n'
     'END\n')
 
-@testing.requires('incentive')
-@testing.requires_version('2.3.1')
-class Test3221(testing.PyMOLTestCase):
+pytestmark = testing.requires('incentive')
 
-    def test(self):
-        cmd.read_pdbstr(v_pdbstr_anisou, 'm1')
 
-        with testing.mktemp('.mae') as maefilename:
-            cmd.save(maefilename, 'm1')
-            cmd.delete('*')
-            cmd.load(maefilename, 'm1')
+def test():
+    cmd.read_pdbstr(v_pdbstr_anisou, 'm1')
 
-        self.assertEqual(cmd.get_pdbstr('m1'), v_pdbstr_anisou)
+    with testing.mktemp('.mae') as maefilename:
+        cmd.save(maefilename, 'm1')
+        cmd.delete('*')
+        cmd.load(maefilename, 'm1')
 
-        cmd.read_pdbstr(v_pdbstr_rotated, 'm2')
-        cmd.align('m1', 'm2')
+    assert cmd.get_pdbstr('m1') == v_pdbstr_anisou
 
-        with testing.mktemp('.mae') as maefilename:
-            cmd.save(maefilename, 'm1')
-            cmd.delete('*')
-            cmd.load(maefilename, 'm1')
+    cmd.read_pdbstr(v_pdbstr_rotated, 'm2')
+    cmd.align('m1', 'm2')
 
-        # Attention: Not sure if rotation is numerically stable across
-        # platforms. Fuzzy comparison might be needed.
-        self.assertEqual(cmd.get_pdbstr('m1'), v_pdbstr_rotated)
+    with testing.mktemp('.mae') as maefilename:
+        cmd.save(maefilename, 'm1')
+        cmd.delete('*')
+        cmd.load(maefilename, 'm1')
+
+    # Attention: Not sure if rotation is numerically stable across
+    # platforms. Fuzzy comparison might be needed.
+    assert cmd.get_pdbstr('m1') == v_pdbstr_rotated

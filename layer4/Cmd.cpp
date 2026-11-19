@@ -1830,6 +1830,27 @@ static PyObject *CmdGetPosition(PyObject * self, PyObject * args)
   return PConvFloatArrayToPyList(v, 3);
 }
 
+/**
+ * Reads, and with offset >= 0 sets, the scroll state of the sequence
+ * viewer. Like get_movie_playing it takes no API lock: the window calls it
+ * for its scroll bar after every frame, from the thread that draws.
+ */
+static PyObject* CmdSeqScroll(PyObject* self, PyObject* args)
+{
+  PyMOLGlobals* G = nullptr;
+  int offset;
+  int state[7];
+  if (!PyArg_ParseTuple(args, "Oi", &self, &offset)) {
+    return nullptr;
+  }
+  API_SETUP_PYMOL_GLOBALS;
+  if (!G || !G->Seq || !SeqScroll(G, offset, state)) {
+    Py_RETURN_NONE;
+  }
+  return Py_BuildValue("iiiiiii", state[0], state[1], state[2], state[3],
+      state[4], state[5], state[6]);
+}
+
 static PyObject *CmdGetMoviePlaying(PyObject * self, PyObject * args)
 {
   PyMOLGlobals *G = nullptr;
@@ -4938,10 +4959,6 @@ static PyObject *CmdViewport(PyObject * self, PyObject * args)
           if(h < 10)
             h = 10;
 
-          if(SettingGetGlobal_b(G, cSetting_internal_gui)) {
-            w += DIP2PIXEL(SettingGetGlobal_i(G, cSetting_internal_gui_width));
-          }
-
           if(SettingGetGlobal_i(G, cSetting_internal_feedback)) {
             h += (SettingGetGlobal_i(G, cSetting_internal_feedback) - 1) * cOrthoLineHeight +
               cOrthoBottomSceneMargin;
@@ -6446,6 +6463,7 @@ static PyMethodDef Cmd_methods[] = {
   {"get_movie_length", CmdGetMovieLength, METH_VARARGS},
   {"get_movie_locked", CmdGetMovieLocked, METH_VARARGS},
   {"get_movie_playing", CmdGetMoviePlaying, METH_VARARGS},
+  {"seq_scroll", CmdSeqScroll, METH_VARARGS},
   {"get_names", CmdGetNames, METH_VARARGS},
   {"get_object_color_index", CmdGetObjectColorIndex, METH_VARARGS},
   {"get_object_matrix", CmdGetObjectMatrix, METH_VARARGS},

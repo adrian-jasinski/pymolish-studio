@@ -29,6 +29,9 @@ lig_excl = "(resn MSE)"
 lig_sele = "((hetatm or not "+prot_and_dna_sele+") and not ("+solv_sele+"|"+ion_sele+"|"+lig_excl+"))"
 lig_and_solv_sele = "("+lig_sele+"|"+solv_sele+")"
 
+# "illustration" switched the look "flat" on: the next preset switches it off
+_lit_by_preset = False
+
 def get_sname_oname_dname(selection, _self=cmd):
     '''
     Get a named selection, object names and a distance (polar contacts) name
@@ -52,6 +55,8 @@ def _prepare(selection,polar_contacts=None,_self=cmd):
 
     s, selection, dname = get_sname_oname_dname(selection, _self=cmd)
 
+    if _lit_by_preset:
+        look('default', _self=cmd)
     cmd.cartoon("auto",s)
     cmd.hide("everything",s)
 
@@ -62,6 +67,7 @@ def _prepare(selection,polar_contacts=None,_self=cmd):
     cmd.unset("cartoon_transparency",s)
     cmd.unset("cartoon_transparency",selection)
     cmd.unset("surface_color", selection)
+    cmd.unset("surface_color", s) # per atom: interaction
     cmd.unset("surface_quality", selection)
     cmd.unset("surface_type",selection)
     cmd.unset("sphere_scale",s)
@@ -105,7 +111,8 @@ def _ball_and_stick_ligand(lig, _self=cmd):
     _self.set_bond("stick_color", "grey30", lig, lig)
     _self.set("sphere_scale", 0.18, lig)
     _self.set("sphere_scale", 0.13, lig + " & elem H")
-    _self.color("grey85", lig + " & elem C")
+    # not the guide atom of a modified residue: it colors the cartoon
+    _self.color("grey85", lig + " & elem C & !guide")
 
 def simple_no_solv(selection="(all)",_self=cmd):
     cmd=_self
@@ -127,8 +134,6 @@ def ligands(selection="(all)",_self=cmd):
         cmd.select(lig,s+" and "+lig_sele)
         cmd.select(near_solvent,s+" and ("+solvent+" within 4 of "+lig+")")
 
-        util.chainbow(host,_self=cmd)
-        util.cbc(lig,_self=cmd)
         util.cbac("(("+s+") and not elem C)",_self=cmd)
         cmd.hide("everything",s)
         cmd.show("cartoon",host)
@@ -209,8 +214,6 @@ def ligand_sites(selection="(all)",_self=cmd):
         cmd.flag("ignore",host,"clear")
         cmd.flag("ignore",lig+"|"+solvent,"set")
 
-        util.chainbow(host,_self=cmd)
-        util.cbc(lig,_self=cmd)
         util.cbac("(("+s+") and not elem C)",_self=cmd)
         cmd.hide("everything",s)
         cmd.show("cartoon",host)
@@ -297,8 +300,8 @@ def ligand_sites_dots(selection="(all)",_self=cmd):
 def technical(selection="(all)",_self=cmd):
     cmd=_self
     s, selection, polar_contacts = _prepare(selection, _self=cmd)
-    util.chainbow(s,_self=cmd)
-    util.cbc("("+lig_sele+" and ("+s+"))",_self=cmd)
+    # the protein keeps its colors: only ligands and non-carbon atoms
+    util.cbc("("+lig_sele+" and ("+s+") and not guide)",_self=cmd)
     util.cbac("(("+s+") and not elem C)",_self=cmd)
     cmd.show("nonbonded",s)
     cmd.show("lines","((("+s+") and not "+lig_sele+") extend 1)")
@@ -354,6 +357,15 @@ def publication(selection="(all)", *, solv=False, _self=cmd):
 
 pub_no_solv = publication
 
+def publication_green(selection="(all)", _self=cmd):
+    '''
+    "publication" with each chain in shades of green, light to dark, in
+    place of the rainbow. Solvent in the selection is shown.
+    '''
+    publication(selection, solv=True, _self=_self)
+    util.shades("forest", "elem C and (%s) and not %s" % (selection, lig_sele),
+                _self=_self)
+
 def default(selection="(all)",_self=cmd):
     cmd=_self
     s, selection = _prepare(selection, _self=cmd)[:2]
@@ -396,6 +408,146 @@ def interface(selection='*', _self=cmd):
     # delete temporary selections
     _self.delete(s_interface)
     _self.delete(s)
+
+
+def _units(s, _self=cmd):
+    '''
+    The polymer chains of the named selection `s` as (selection, chain)
+    pairs, one per object and chain.
+    '''
+    return [
+        ('(?%s & %%%s & polymer & chain "%s")' % (s, model, chain), chain)
+        for model in _self.get_object_list('?' + s) or ()
+        for chain in _self.get_chains('?%s & %%%s & polymer' % (s, model))
+    ]
+
+
+def _contacts(name, pairs, _self=cmd):
+    '''
+    Polar contacts between each pair of selections, as dashes without
+    labels in one measurement object.
+    '''
+    for i, (a, b) in enumerate(pairs):
+        # zoom=0: a preset of this kind leaves the camera where it is
+        _self.dist(name, a, b, mode=2, quiet=1, label=0, reset=not i, zoom=0)
+    if name in _self.get_names():
+        _self.enable(name)
+        _self.hide('labels', name)
+        _self.show('dashes', name)
+
+
+def interaction(selection='*', _self=cmd):
+    '''
+    Protein-protein interaction: every chain as cartoon in its own color
+    inside a faint surface of that color, the side chains that touch
+    another chain as sticks, and the polar contacts between chains as
+    dashes.
+    '''
+    from . import palettes
+    s, selection, dname = _prepare(selection, _self=_self)
+    units = _units(s, _self)
+
+    # one color per chain, also for its surface: the element colors of the
+    # sticks below would speckle it
+    colors = palettes.cycle()
+    for i, (unit, _) in enumerate(units):
+        color = str(colors[i % len(colors)])
+        _self.color(color, unit)
+        _self.set('surface_color', color, unit)
+
+    _self.show('cartoon', 'polymer & ?' + s)
+    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _self.show('surface', 'polymer & ?' + s)
+    _self.set('transparency', 0.75, s)
+
+    # atoms within 4.5 A of another chain
+    iface = _self.get_unused_name('_iface')
+    _self.select(iface, 'none')
+    for unit, _ in units:
+        _self.select(iface, '?%s | ((polymer & ?%s & !%s) within 4.5 of %s)'
+                     % (iface, s, unit, unit), 0)
+    _self.set('cartoon_side_chain_helper', 1, selection)
+    _self.show('sticks', 'byres ?' + iface)
+    _self.color('atomic', '((byres ?%s) | ((organic | inorganic) & ?%s)) & !(elem C)'
+                % (iface, s))
+    _contacts(dname, [
+        ('?%s & %s' % (iface, a), '?%s & %s' % (iface, b))
+        for i, (a, _) in enumerate(units) for b, _ in units[i + 1:]
+    ], _self)
+
+    _self.delete(iface)
+    _self.delete(s)
+
+
+# The start of framework 2 of an antibody variable domain: heavy chains and
+# single-domain antibodies (W-V-R-Q-A-P-G, W-F-R-Q-A-P-G, mouse W-V-K-Q-R-P-G),
+# light chains (kappa W-Y-Q-Q-K-P-G, lambda W-Y-Q-Q-L-P-G).
+_heavy_re = 'W[VIFY][RK]Q.PG'
+_light_re = 'W[YFL][QLH]Q.[PSA]G'
+
+
+def antibody(selection='*', _self=cmd):
+    '''
+    Antibody with its antigen: the heavy chain blue and the light chain
+    light blue, as cartoon; the antigen as a sand-colored surface with the
+    epitope in orange; the residues of the antibody that touch the antigen
+    as sticks; the polar contacts between the two as dashes.
+
+    Antibody chains are found by the conserved start of framework 2 in
+    their sequence; a chain named H or L fills a role that the sequences
+    left empty. Without any antibody chain this is "interaction".
+    '''
+    import re
+    s, selection, dname = _prepare(selection, _self=_self)
+    heavy, light, other = [], [], []
+    for unit, chain in _units(s, _self):
+        lines = _self.get_fastastr(unit).splitlines()
+        sequence = ''.join(x for x in lines if not x.startswith('>'))
+        if re.search(_heavy_re, sequence):
+            heavy.append(unit)
+        elif re.search(_light_re, sequence):
+            light.append(unit)
+        else:
+            other.append((unit, chain))
+    for role, name in ((heavy, 'H'), (light, 'L')):
+        if not role:
+            role.extend(unit for unit, chain in other if chain == name)
+    antigen = [unit for unit, chain in other if unit not in heavy + light]
+    if not heavy and not light:
+        print(' preset.antibody: no antibody chain found, showing "interaction".')
+        _self.delete(s)
+        return interaction(selection, _self=_self)
+
+    ab = '(%s)' % ' | '.join(heavy + light)
+    ag = '(%s)' % (' | '.join(antigen) or 'none')
+    for units, color in ((heavy, 'skyblue'), (light, 'lightblue'), (antigen, 'wheat')):
+        for unit in units:
+            _self.color(color, unit)
+    epitope = '(%s within 4.5 of %s)' % (ag, ab)
+    paratope = '(%s within 4.5 of %s)' % (ab, ag)
+    _self.color('orange', 'byres ' + epitope)
+    # element colors only on what is drawn as sticks: the surface of the
+    # antigen stays sand and orange
+    _self.color('atomic', '((byres %s) | ((organic | inorganic) & ?%s)) & !(elem C)'
+                % (paratope, s))
+
+    _self.show('cartoon', ab)
+    _self.show('surface', ag)
+    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _self.set('cartoon_side_chain_helper', 1, selection)
+    _self.show('sticks', 'byres ' + paratope)
+    _contacts(dname, [(paratope, epitope)], _self)
+
+    _self.delete(s)
+
+
+def cartoon_transparency(value, selection='*', _self=cmd):
+    '''
+    The cartoon transparency rows of the preset menu: for every object of
+    the selection. The next preset makes the cartoon opaque again.
+    '''
+    for name in _self.get_object_list(selection) or ():
+        _self.set('cartoon_transparency', value, name)
 
 
 def classified(selection='*', _self=cmd):
@@ -466,6 +618,8 @@ def illustration(selection='*', _self=cmd):
     _self.set('transparency', 0.85, s)
     _self.set('surface_color', 'white', selection)
     look('flat', _self=_self) # the picture is its outline
+    global _lit_by_preset
+    _lit_by_preset = True
 
     _self.delete(s)
 
@@ -497,10 +651,11 @@ def show_solvent(show, selection='*', _self=cmd):
         _self.hide('everything', '(%s) & solvent' % (selection))
 
 
-# Looks: light, background and outline of the whole scene (global settings).
-# The outline is drawn in ray-traced images only.
-_outline = dict(bg_rgb='white', depth_cue=0, ray_trace_mode=1,
-                ray_trace_color='black', antialias=2, ray_opaque_background=1)
+# Looks: light and outline of the whole scene (global settings). They are
+# the last group of the preset menu. The outline is drawn in ray-traced
+# images only; its color is the default "front", which contrasts with the
+# background, so a look works on any background and sets none.
+_outline = dict(depth_cue=0, ray_trace_mode=1, antialias=2)
 LOOKS = {
     'default': {},
     # matte, the Rubber light of the Lighting plugin
@@ -526,8 +681,11 @@ LOOKS = {
 
 def look(name, _self=cmd):
     '''
-    Give the whole scene the light, background and outline of LOOKS[name].
+    Give the whole scene the light and outline of LOOKS[name]. The
+    background stays as it is.
     '''
+    global _lit_by_preset
+    _lit_by_preset = False
     for key in {key for settings in LOOKS.values() for key in settings}:
         _self.unset(key)
     for key, value in LOOKS[name].items():

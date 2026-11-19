@@ -157,6 +157,21 @@ def get_plugdir(parent=None):
         'In which directory should the plugin be installed?', plugdirs)
     return value if result else ''
 
+def installPlugin(parent=None):
+    '''
+    Open a file dialog to install a plugin. To install a directory, point to
+    its __init__.py file.
+    '''
+    from pymol.Qt import QtWidgets
+
+    filters = 'Plugins (*.py %s);;All Files (*)' % ' '.join(
+        '*.' + ext for ext in zip_extensions)
+    ofile = QtWidgets.QFileDialog.getOpenFileName(
+        None, 'Install Plugin', os.getcwd(), filters)[0]
+    if ofile:
+        installPluginFromFile(ofile)
+
+
 def installPluginFromFile(ofile, parent=None, plugdir=None):
     '''
     Install plugin from file.
@@ -166,10 +181,7 @@ def installPluginFromFile(ofile, parent=None, plugdir=None):
     import shutil
     from . import startup, PluginInfo
     from . import get_startup_path, set_startup_path, pref_get
-    from .legacysupport import tkMessageBox
-
-    showinfo = tkMessageBox.showinfo
-    askyesno = tkMessageBox.askyesno
+    from . import ask as askyesno, showinfo
 
     plugdirs = get_startup_path()
 
@@ -214,7 +226,7 @@ def installPluginFromFile(ofile, parent=None, plugdir=None):
                 msg = 'Directory "%s" already exists, overwrite?' % pathname
             else:
                 msg = 'File "%s" already exists, overwrite?' % pathname
-            if not tkMessageBox.askyesno('Confirm', msg, parent=parent):
+            if not askyesno('Confirm', msg, parent=parent):
                 raise InstallationCancelled('will not overwrite "%s"' % pathname)
 
         if is_dir:
@@ -239,7 +251,7 @@ def installPluginFromFile(ofile, parent=None, plugdir=None):
         else:
             msg = 'A newer version (%s) of this plugin is already installed. Install anyway?' % (v_installed)
 
-        if not tkMessageBox.askokcancel('Confirm', msg, parent=parent):
+        if not askyesno('Confirm', msg, parent=parent):
             raise InstallationCancelled
 
         remove_if_exists(pathname, False)

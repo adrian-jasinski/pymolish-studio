@@ -634,7 +634,6 @@ static bool is_session_blacklisted(int index) {
   case cSetting_fast_idle:
   case cSetting_fetch_path:
   case cSetting_internal_feedback:
-  case cSetting_internal_gui:
   case cSetting_internal_prompt:
   case cSetting_logging:
   case cSetting_max_threads:
@@ -2804,8 +2803,6 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
     OrthoDirty(G);
     break;
   case cSetting_internal_gui_mode:
-  case cSetting_internal_gui_width:
-  case cSetting_internal_gui:
   case cSetting_internal_feedback:
   case cSetting_mouse_grid:
   case cSetting_movie_panel_row_height:
@@ -2956,7 +2953,7 @@ void SettingFreeGlobal(PyMOLGlobals * G)
 
 
 /*========================================================================*/
-void SettingInitGlobal(PyMOLGlobals * G, int alloc, int reset_gui, int use_default)
+void SettingInitGlobal(PyMOLGlobals * G, int alloc, int use_default)
 {
   CSetting *I = G->Setting;
 
@@ -2979,12 +2976,6 @@ void SettingInitGlobal(PyMOLGlobals * G, int alloc, int reset_gui, int use_defau
 
     // copy defaults from SettingInfo table
     for(int index = 0; index < cSetting_INIT; ++index) {
-      if (!reset_gui) switch (index) {
-        case cSetting_internal_gui_width:
-        case cSetting_internal_gui:
-          continue;
-      }
-
       SettingRestoreDefault(I, index);
     }
 

@@ -735,7 +735,7 @@ def cartoon_transparency(self_cmd, sele):
     # the next preset resets it (preset._prepare)
     return [[ 2, 'Cartoon Transparency:', '' ]] + [
         [ 1, '%d%%' % (t * 100) if t else 'off',
-          'cmd.set("cartoon_transparency",%s,"%s")' % (t, sele) ]
+          'preset.cartoon_transparency(%s,"%s",_self=cmd)' % (t, sele) ]
         for t in (0, 0.25, 0.5, 0.75) ]
 
 def presets(self_cmd, sele):
@@ -744,7 +744,6 @@ def presets(self_cmd, sele):
               _preset('default', 'default', sele),
               _preset('classified', 'classified', sele),
               [ 0, '', '' ],
-              _preset('simple', 'simple', sele),
               _preset('technical', 'technical', sele),
               _preset('ball and stick', 'ball_and_stick', sele),
               _preset('b factor putty', 'b_factor_putty', sele),
@@ -752,6 +751,7 @@ def presets(self_cmd, sele):
               # the variants with solvent: from_menu decides whether it shows
               _preset('pretty', 'pretty_solv', sele),
               _preset('publication', 'pub_solv', sele),
+              _preset('publication green', 'publication_green', sele),
               _preset('glass', 'glass', sele),
               _preset('wire', 'wire', sele),
               _preset('illustration', 'illustration', sele),
@@ -759,16 +759,17 @@ def presets(self_cmd, sele):
               _preset('ligands', 'ligands', sele),
               [ 1, 'ligand sites'   , preset_ligand_sites(self_cmd, sele)         ],
               _preset('protein interface', 'interface', sele),
+              _preset('protein-protein interaction', 'interaction', sele),
+              _preset('antibody and antigen', 'antibody', sele),
               [ 0, '', '' ],
               [ 1, 'cartoon transparency', cartoon_transparency(self_cmd, sele) ],
               [ 1, 'hide solvent' if preset.solvent else 'show solvent',
                 'preset.show_solvent(%d,"%s",_self=cmd)' % (not preset.solvent, sele) ],
-              ]
-
-def looks(self_cmd):
-    from . import preset
-    return [[ 2, 'Look:', '' ]] + [
-        [ 1, name, 'preset.look("%s",_self=cmd)' % name ] for name in preset.LOOKS ]
+              [ 0, '', '' ],
+              # light and outline of the whole scene, whatever the menu is on
+            ] + [
+              [ 1, 'standard light' if name == 'default' else name,
+                'preset.look("%s",_self=cmd)' % name ] for name in preset.LOOKS ]
 
 def hydrogens(self_cmd, sele):
    return [[ 2, 'Hydrogens:'       ,''                        ],
@@ -797,8 +798,6 @@ def state(self_cmd, sele):
               [ 1, 'thaw'  ,
                   'cmd.unset("all_states","'+sele+'");'
                   'cmd.unset("state","'+sele+'")'        ],
-              [ 0, '', '' ],
-              [ 1, 'split'   ,'cmd.split_states("'+sele+'")' ],
               ]
 
 def movement(self_cmd, sele):
@@ -1206,7 +1205,6 @@ def sele_action(self_cmd, sele, picked=0):
               [ 0, ''               ,''                             ],
             ]) + [
               [ 1, 'modify', modify_sele(self_cmd, sele) ],
-              [ 1, 'preset'         ,presets(self_cmd, sele)         ],
               [ 1, 'find', find(self_cmd, sele) ],
               [ 1, 'align', sele_align(self_cmd, sele) ],
               [ 0, ''               ,''                             ],
@@ -1221,6 +1219,26 @@ def sele_action(self_cmd, sele, picked=0):
               [ 1, 'compute'        , compute(self_cmd, sele) ],
               ]
 
+
+def select_part(self_cmd, sele):
+    # only the chains and kinds of molecule that the object has
+    from pymol import grouping
+    fmt = "cmd.select('''%s''',enable=1)"
+    return [[ 2, 'Select:', '' ]] + [
+        [ 1, 'chain ' + (chain or '(no name)'),
+          fmt % ('(%s) & chain "%s"' % (sele, chain)) ]
+        for chain in self_cmd.get_chains(sele)
+    ] + [[ 0, '', '' ]] + [
+        [ 1, kind, fmt % part ] for kind, part in grouping.types(sele, self_cmd)
+    ]
+
+def split(self_cmd, sele):
+    # new objects in a group; the object itself is switched off
+    return [[ 2, 'Split:', '' ],
+            [ 1, 'by chain', 'cmd.extract_chain("%s",group="%s_chains");cmd.disable("%s")' % (sele, sele, sele) ],
+            [ 1, 'by type', 'cmd.split_types("%s",group="%s_types")' % (sele, sele) ],
+            ] + ([[ 1, 'by state', 'cmd.split_states("%s")' % sele ]]
+                 if self_cmd.count_states(sele) > 1 else [])
 
 def mol_more(self_cmd, sele, group=0):
     return [[ 2, 'More:'     , ''                       ],
@@ -1257,7 +1275,8 @@ def mol_action(self_cmd, sele, group=0):
             [ 0, ''             , ''                       ],
           ] if group else []) + [
             [ 1, 'clean'     , clean(self_cmd, sele)    ],
-            [ 1, 'preset'  ,   presets(self_cmd, sele)       ],
+            [ 1, 'select'    , lambda: select_part(self_cmd, sele) ],
+            [ 1, 'split'     , split(self_cmd, sele)    ],
             [ 1, 'find',     find(self_cmd, sele) ],
             [ 1, 'align',     mol_align(self_cmd, sele) ],
             [ 1, 'hydrogens' , hydrogens(self_cmd, sele)    ],
@@ -1451,7 +1470,6 @@ def ramp_color(self_cmd, sele):
 
 def all_action(self_cmd, sele):
     return [[ 2, 'Action:'     , ''                      ],
-              [ 1, 'preset'  , presets(self_cmd, "all")     ],
               [ 1, 'find', find(self_cmd, "all") ],
               [ 0, ''          ,''                                              ],
               [ 1, 'hydrogens' ,hydrogens(self_cmd, sele)     ],

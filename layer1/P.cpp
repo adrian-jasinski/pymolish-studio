@@ -68,6 +68,12 @@ the initialization functions for these libraries on startup.
 #include <cstdlib>
 #include <memory>
 
+#ifdef _WIN32
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 /**
  * Use with functions which return a PyObject - if they return nullptr, then an
  * unexpected exception has occured.
@@ -1812,7 +1818,6 @@ void PConvertOptions(CPyMOLOptions * rec, PyObject * options)
   const char *load_str;
 
   rec->pmgui = !PyInt_AsLong(PyObject_GetAttrString(options, "no_gui"));
-  rec->internal_gui = PyInt_AsLong(PyObject_GetAttrString(options, "internal_gui"));
   rec->internal_feedback =
     PyInt_AsLong(PyObject_GetAttrString(options, "internal_feedback"));
   rec->show_splash = PyInt_AsLong(PyObject_GetAttrString(options, "show_splash"));
@@ -2145,13 +2150,13 @@ void PFree(PyMOLGlobals * G)
 }
 
 /**
- * Terminates the application with a call to `exit(code)`.
+ * Terminates the process with exit status `code`, without the teardown of
+ * `exit()`.
  */
 void PExit(PyMOLGlobals * G, int code)
 {
   assert(!PyGILState_Check());
 
-  const bool gui = G->HaveGUI;
   ExecutiveDelete(G, "all");
   PBlock(G);
 
@@ -2161,25 +2166,16 @@ void PExit(PyMOLGlobals * G, int code)
 
   PyMOL_Free(G->PyMOL);
 
-  // exit() skips Python finalization, which would otherwise flush these
+  // exit() and Py_Exit() tear down libraries under Qt widgets and Python
+  // objects that are still alive, and crash in an order that varies from run
+  // to run (Qt 6.12). Flush, then leave without any teardown.
   PyRun_SimpleString("import sys; sys.stdout.flush(); sys.stderr.flush()");
-
-#if 1
-  /* we're having trouble with threading errors after calling Py_Exit,
-     so for the time being, let's just take the process down at this
-     point, instead of allowing PyExit to be called. */
-
-  // exit() runs static destructors under the still-live Qt widgets and
-  // segfaults (Qt 6.12, Linux); with a GUI, leave without them.
-  if (gui) {
-    fflush(nullptr);
-    std::_Exit(code);
-  }
-  exit(code);
-#else
-
-  Py_Exit(code);
+  fflush(nullptr);
+#ifdef _WIN32
+  // _Exit() would still unload the DLLs and run their destructors
+  TerminateProcess(GetCurrentProcess(), code);
 #endif
+  std::_Exit(code);
 }
 
 /**

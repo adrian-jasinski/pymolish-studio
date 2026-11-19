@@ -2,71 +2,68 @@ from __future__ import absolute_import
 
 from pymol import testing, invocation
 
-class TestPyMOL2(testing.PyMOLTestCase):
 
-    @testing.requires_version('2.2')
-    def testDo(self):
-        import pymol
-        import pymol2
-        p3 = pymol # singleton
-        with pymol2.PyMOL() as p1:
-            p3.cmd.do("viewport 100, 200")
-            p1.cmd.do("viewport 300, 400")
-            self.assertEqual(p3.cmd.get_viewport(), (100, 200))  # singleton
-            self.assertEqual(p1.cmd.get_viewport(), (300, 400))
+def testDo():
+    import pymol
+    import pymol2
+    p3 = pymol # singleton
+    with pymol2.PyMOL() as p1:
+        p3.cmd.do("viewport 100, 200")
+        p1.cmd.do("viewport 300, 400")
+        assert p3.cmd.get_viewport() == (100, 200)  # singleton
+        assert p1.cmd.get_viewport() == (300, 400)
 
-    @testing.requires_version('1.8.5')
-    def testMultiInstance(self):
-        import pymol
-        import pymol2
 
-        p1 = pymol2.PyMOL()
-        p2 = pymol2.PyMOL()
-        p3 = pymol # singleton
+def testMultiInstance():
+    import pymol
+    import pymol2
 
-        p1.start()
-        p2.start()
+    p1 = pymol2.PyMOL()
+    p2 = pymol2.PyMOL()
+    p3 = pymol # singleton
 
-        p1.cmd.fragment('ala')
-        p2.cmd.fragment('trp')
-        p3.cmd.fragment('ile') # singleton
+    p1.start()
+    p2.start()
 
-        self.assertEqual(p1.cmd.count_atoms(), 10)
-        self.assertEqual(p2.cmd.count_atoms(), 24)
-        self.assertEqual(p3.cmd.count_atoms(), 19) # singleton
+    p1.cmd.fragment('ala')
+    p2.cmd.fragment('trp')
+    p3.cmd.fragment('ile') # singleton
 
-        p1.stop()
-        p2.stop()
+    assert p1.cmd.count_atoms() == 10
+    assert p2.cmd.count_atoms() == 24
+    assert p3.cmd.count_atoms() == 19 # singleton
 
-    @testing.requires_version(
-            '2.1' if invocation.options.incentive_product else
-            '1.9')
-    def testDel(self):
-        import pymol2
-        import weakref
+    p1.stop()
+    p2.stop()
 
-        p1 = pymol2.PyMOL()
-        p1.start()
-        p1.cmd.fragment('ala')
 
-        # involve pymol._colortype (holds a bound method)
-        self._test_colortype(p1.cmd)
+def testDel():
+    import pymol2
+    import weakref
 
-        p1.stop()
+    p1 = pymol2.PyMOL()
+    p1.start()
+    p1.cmd.fragment('ala')
 
-        weak_p = weakref.ref(p1)
-        weak_c = weakref.ref(p1.cmd)
+    # involve pymol._colortype (holds a bound method)
+    _test_colortype(p1.cmd)
 
-        del p1
+    p1.stop()
 
-        self.assertEqual(None, weak_p())
-        self.assertEqual(None, weak_c())
+    weak_p = weakref.ref(p1)
+    weak_c = weakref.ref(p1.cmd)
 
-    def _test_colortype(self, _self):
-        colorset = set()
-        _self.set('sphere_color', 'blue', '(*)')
-        _self.iterate('*', 'colorset.add(('
-                'tuple(s.sphere_color),'
-                'int(s.sphere_color)))',
-                space={'colorset': colorset, 'tuple': tuple, 'int': int})
-        self.assertEqual(list(colorset), [((0., 0., 1.), 2)])
+    del p1
+
+    assert None == weak_p()
+    assert None == weak_c()
+
+
+def _test_colortype(_self):
+    colorset = set()
+    _self.set('sphere_color', 'blue', '(*)')
+    _self.iterate('*', 'colorset.add(('
+            'tuple(s.sphere_color),'
+            'int(s.sphere_color)))',
+            space={'colorset': colorset, 'tuple': tuple, 'int': int})
+    assert list(colorset) == [((0., 0., 1.), 2)]

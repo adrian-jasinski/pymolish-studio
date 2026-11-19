@@ -3,16 +3,50 @@
     padding:        1px 3px;
 }
 
+/* Room between the buttons, and a bold, slightly larger text in the first
+   simple sans-serif the system has. The window opens at least as wide as
+   this bar (pymol_qt_gui.py; docs/plans/20-toolbar-look.md). */
 #toolbar_actions
 {
-    spacing:        2px;
-    padding:        2px 4px;
+    spacing:        8px;
+    padding:        3px 6px;
 }
 
 #toolbar_actions QToolButton
 {
-    padding:        4px 3px;
+    padding:        4px 4px;
+    font-family:    "Inter", "Segoe UI", "Helvetica Neue", "Ubuntu", "Noto Sans", "Arial";
+    font-size:      10pt;
     font-weight:    600;
+}
+
+/* Blue for what is chosen and for what the pointer is on: the text of the
+   selection mode, a checked button, a hovered button. palette(link) is a
+   blue that reads on the window color of either theme; the icons follow in
+   action_toolbar.py. */
+#toolbar_actions QToolButton#selecting,
+#toolbar_actions QToolButton:hover,
+#toolbar_actions QToolButton:checked
+{
+    color:          palette(link);
+}
+
+/* In its menus the pointed-at row has the blue of the A button of the
+   Objects panel, and the chosen row is written in blue. */
+#toolbar_actions QMenu::item:selected
+{
+    background:     #1e4fb8;
+    color:          white;
+}
+
+#toolbar_actions QMenu::item:checked
+{
+    color:          palette(link);
+}
+
+#toolbar_actions QMenu::item:checked:selected
+{
+    color:          white;
 }
 
 /* the corners are see-through: theme.round_menus */

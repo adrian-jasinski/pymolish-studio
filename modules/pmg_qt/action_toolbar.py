@@ -1,7 +1,7 @@
 """
 Action toolbar above the viewport: what a click selects, undo/redo, the view
-actions, presets, the object color palette, and on the right the panels, the
-render popup and the UI scale. Every button has a line icon; undo and redo
+actions, presets, the object color palette, the background, and on the right
+the panels, the render popup and the UI scale. Every button has a line icon; undo and redo
 show only that. Replaces the grid of quick buttons that sat next to the log.
 """
 
@@ -17,6 +17,74 @@ from .object_panel import SELECTING, fill_menu
 Qt = QtCore.Qt
 Style = Qt.ToolButtonStyle
 Popup = QtWidgets.QToolButton.ToolButtonPopupMode
+
+
+# Menu of the background button: name -> (top, bottom) as hex, bottom None
+# for a plain color; None starts a new group. Each was ray traced under a
+# rainbow-colored protein (docs/plans/16-background.md).
+BACKGROUNDS = (
+    ("Black", "000000", None),
+    ("Charcoal", "1E1E1E", None),
+    ("Gray", "808080", None),
+    ("Light gray", "CCCCCC", None),
+    ("White", "FFFFFF", None),
+    None,
+    ("Night blue", "0B1D33", None),
+    ("Slate", "2F3E55", None),
+    None,
+    ("PyMOL blue", "00004D", "333380"),
+    ("Night", "000000", "1B2A49"),
+    ("Graphite", "3A3A3A", "101010"),
+    ("Steel", "5A6B7D", "1E2630"),
+    ("Studio", "FFFFFF", "C8CDD4"),
+    ("Sky", "DCEBFA", "FFFFFF"),
+)
+# what a background is made of, and what "Remember after restart" saves
+BACKGROUND_SETTINGS = (
+    "bg_rgb",
+    "bg_gradient",
+    "bg_rgb_top",
+    "bg_rgb_bottom",
+    "opaque_background",
+)
+# toolbar icons: side in pixels, and line width on the 24 px grid of the
+# drawings (menus use 16 and 1.5)
+ICON = 20
+STROKE = 2
+ACCENT = "#1e4fb8"  # the A button of the Objects panel; also in pymol.sty
+
+
+def _caption(menu, text):
+    """A menu caption like the ones object_panel.fill_menu draws."""
+    title = QtWidgets.QWidgetAction(menu)
+    title.setDefaultWidget(QtWidgets.QLabel(text, objectName="menu_title"))
+    title.setEnabled(False)
+    menu.addAction(title)
+
+
+def _swatch(top, bottom, active, mark):
+    """Menu icon: the background as a square, with a frame in the color
+    `mark` when it is the one in use (Qt draws no check mark next to an
+    icon)."""
+    pixmap = QtGui.QPixmap(16, 16)
+    gradient = QtGui.QLinearGradient(0, 0, 0, 16)
+    gradient.setColorAt(0, QtGui.QColor("#" + top))
+    gradient.setColorAt(1, QtGui.QColor("#" + (bottom or top)))
+    painter = QtGui.QPainter(pixmap)
+    painter.fillRect(0, 0, 16, 16, gradient)
+    # a thin grey edge, so black shows on a dark menu and white on a light one
+    painter.setPen(
+        QtGui.QPen(mark if active else QtGui.QColor(128, 128, 128), 3 if active else 1)
+    )
+    painter.drawRect(
+        pixmap.rect().adjusted(1, 1, -2, -2)
+        if active
+        else pixmap.rect().adjusted(0, 0, -1, -1)
+    )
+    painter.end()
+    icon = QtGui.QIcon(pixmap)
+    icon.addPixmap(pixmap, QtGui.QIcon.Mode.Selected)  # else Qt tints it
+    return icon
 
 
 def _strip(colors):
@@ -43,7 +111,7 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.setObjectName("toolbar_actions")
         self.setMovable(False)
         self.setToolButtonStyle(Style.ToolButtonTextBesideIcon)
-        self.setIconSize(QtCore.QSize(16, 16))  # the size icons.py draws
+        self.setIconSize(QtCore.QSize(ICON, ICON))
         self.cmd = cmd
         self._icons = {}  # button or action -> icons.LABELS key
         index = cmd.setting._get_index
@@ -51,6 +119,7 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.selecting = self._menu_button(
             "", "What a click in the viewport selects", icon="select"
         )
+        self.selecting.setObjectName("selecting")  # its text is the choice: blue
         group = QtGui.QActionGroup(self)
         for value, name in enumerate(SELECTING):
             action = group.addAction(self.selecting.menu().addAction(name))
@@ -67,18 +136,25 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.addSeparator()
 
         self.zoom = self._menu_button(
-            "Zoom", "Zoom on everything", lambda: cmd.zoom(animate=1.0)
+            "Zoom", "Zoom on what is visible", self._zoom_visible
         )
+        self.zoom.menu().addAction("Visible", self._zoom_visible)
         for label, command in (
-            ("All", "zoom animate=1"),
+            ("Everything", "zoom animate=1"),
             ("Selection (sele)", "zoom sele, animate=1"),
             ("Center", "center animate=1"),
             ("Reset view", "reset"),
         ):
             self.zoom.menu().addAction(label, lambda c=command: cmd.do(c, echo=0))
-        self._action("Orient", lambda: cmd.orient(animate=1.0))
+        orient = self._action("Orient", lambda: cmd.orient(animate=1.0))
         self.rock = self._action("Rock", cmd.rock)
         self.rock.setCheckable(True)
+        # The view actions show only their icon: the name is the tooltip and
+        # the accessible name. The room goes to the texts of Palette and
+        # Background, which need the explanation more.
+        self.zoom.setToolButtonStyle(Style.ToolButtonIconOnly)
+        for action in (orient, self.rock):
+            self.widgetForAction(action).setToolButtonStyle(Style.ToolButtonIconOnly)
         self.rock.setChecked(bool(cmd.get_setting_int("rock")))
         setting_callbacks[index("rock")].append(lambda v: self.rock.setChecked(bool(v)))
 
@@ -90,32 +166,36 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.colors = self._menu_button(
             "Palette", "Colors of objects and chains", icon="color"
         )
-        # with its text the bar does not fit the default window at 150 %
-        self.colors.setToolButtonStyle(Style.ToolButtonIconOnly)
+        # The palettes the user defined here earlier. Like the saved choice
+        # below, not with -k, which means no user configuration.
+        if pymol.invocation.options.pymolrc is not None:
+            for name, colors in theme.user_palettes().items():
+                try:
+                    palettes.define(name, colors, _self=cmd)
+                except pymol.CmdException as error:
+                    print(" Palette '%s' skipped: %s" % (name, error))
         # A list in the menu, not menu rows: a menu icon is a 16 px square,
         # too small to show the colors.
         self.palettes = view = QtWidgets.QListWidget()
         view.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
         view.setIconSize(QtCore.QSize(140, 16))
-        rows = [("default", "PyMOL default", util._color_cycle)]
-        for name, (background, colors) in palettes.PALETTES.items():
-            label = "%s (%s background)" % (name.capitalize(), background)
-            rows.append((name, label, ["0x" + c for c in colors]))
-        for name, label, colors in rows:
-            strip = [
-                QtGui.QColor.fromRgbF(*cmd.get_color_tuple(c)) for c in colors[:10]
-            ]
-            item = QtWidgets.QListWidgetItem(_strip(strip), label, view)
-            item.setData(Qt.ItemDataRole.UserRole, name)
         view.setSpacing(2)
-        view.setFixedSize(
-            view.sizeHintForColumn(0) + 4,
-            (view.sizeHintForRow(0) + 4) * view.count(),  # 4: the spacing
-        )
+        # the chosen row in the blue of the menus (pymol.sty)
+        colors = view.palette()
+        colors.setColor(QtGui.QPalette.ColorRole.Highlight, QtGui.QColor(ACCENT))
+        view.setPalette(colors)
+        self._fill_palettes()
         menu = self.colors.menu()
+        _caption(menu, "Palette: colors of objects and chains")
         action = QtWidgets.QWidgetAction(menu)
         action.setDefaultWidget(view)
         menu.addAction(action)
+        menu.addSeparator()
+        menu.addAction("New palette...", self._edit_palette)
+        self.edit_palette = menu.addAction(
+            "Edit palette...", lambda: self._edit_palette(palettes.active)
+        )
+        self.delete_palette = menu.addAction("Delete palette", self._delete_palette)
         # a click and the arrow keys pick; Enter closes like a click
         view.currentItemChanged.connect(
             lambda item: self._set_palette(item.data(Qt.ItemDataRole.UserRole))
@@ -128,6 +208,42 @@ class ActionToolbar(QtWidgets.QToolBar):
         saved = theme.object_palette()
         if pymol.invocation.options.pymolrc is not None and saved in palettes.PALETTES:
             cmd.palette(saved)
+
+        self.background = self._menu_button("Background", "Background color")
+        menu = self.background.menu()
+        _caption(menu, "Background:")
+        self._backgrounds = []  # (action, top, bottom)
+        for row in BACKGROUNDS:
+            if row is None:
+                menu.addSeparator()
+                continue
+            name, top, bottom = row
+            action = menu.addAction(name)
+            action.triggered.connect(
+                lambda _=False, t=top, b=bottom: self._set_background(t, b)
+            )
+            self._backgrounds.append((action, top, bottom))
+        menu.addSeparator()
+        # opaque_background is also what Draw/Ray > "transparent background"
+        # and Display > Background > Opaque set
+        self.ray_background = menu.addAction("Ray trace with this background")
+        self.ray_background.setCheckable(True)
+        self.ray_background.setToolTip(
+            "Off: a ray-traced image has a transparent background"
+        )
+        self.ray_background.triggered.connect(self._set_ray_background)
+        self.remember_background = menu.addAction("Remember after restart")
+        self.remember_background.setCheckable(True)
+        self.remember_background.toggled.connect(self._save_background)
+        menu.aboutToShow.connect(self._show_background)
+        # as the palette above: before pymolrc, and not with -k
+        saved = theme.background()
+        if saved:
+            with QtCore.QSignalBlocker(self.remember_background):
+                self.remember_background.setChecked(True)
+            if pymol.invocation.options.pymolrc is not None:
+                for key, value in zip(BACKGROUND_SETTINGS, saved):
+                    cmd.set(key, value)
 
         spacer = QtWidgets.QWidget()
         spacer.setSizePolicy(
@@ -182,8 +298,9 @@ class ActionToolbar(QtWidgets.QToolBar):
 
     def _set_icons(self):
         color = self.palette().buttonText().color()
+        accent = self.palette().link().color()  # as in pymol.sty
         for target, label in self._icons.items():
-            target.setIcon(menu_icon(label, color))
+            target.setIcon(menu_icon(label, color, ICON, STROKE, accent))
 
     def changeEvent(self, event):
         if event.type() == QtCore.QEvent.Type.PaletteChange:
@@ -214,16 +331,115 @@ class ActionToolbar(QtWidgets.QToolBar):
             self, "UI Scale", "The new scale applies the next time pymolish starts."
         )
 
+    def _fill_palettes(self):
+        cmd = self.cmd
+        view = self.palettes
+        rows = [("default", "PyMOL default", util._color_cycle)]
+        for name, (background, colors) in palettes.PALETTES.items():
+            note = "%s background" % background if name in palettes.BUILTIN else "yours"
+            label = "%s (%s)" % (name.capitalize(), note)
+            rows.append((name, label, ["0x" + c for c in colors]))
+        with QtCore.QSignalBlocker(view):
+            view.clear()
+            for name, label, colors in rows:
+                strip = [
+                    QtGui.QColor.fromRgbF(*cmd.get_color_tuple(c)) for c in colors[:10]
+                ]
+                item = QtWidgets.QListWidgetItem(_strip(strip), label, view)
+                item.setData(Qt.ItemDataRole.UserRole, name)
+        view.setFixedSize(
+            view.sizeHintForColumn(0) + 4,
+            (view.sizeHintForRow(0) + 4) * view.count(),  # 4: the spacing
+        )
+
     def _set_palette(self, name):
         theme.set_object_palette(name)
         self.cmd.palette(name, recolor=1, quiet=0)
 
+    def _edit_palette(self, name=""):
+        """New palette, or with a name: change that palette of the user."""
+        from .palette_dialog import PaletteDialog
+
+        colors = palettes.PALETTES[name][1] if name else ()
+        dialog = PaletteDialog(self, name, colors, taken=palettes.BUILTIN)
+        if dialog.exec():
+            self._save_palette(*dialog.value(), old=name)
+
+    def _save_palette(self, name, colors, old=""):
+        stored = theme.user_palettes()
+        if old and old != name:  # renamed
+            stored.pop(old, None)
+            palettes.undefine(old, _self=self.cmd)
+        palettes.define(name, colors, _self=self.cmd)
+        stored[name] = list(colors)
+        theme.set_user_palettes(stored)
+        self._fill_palettes()
+        self._set_palette(name)
+
+    def _delete_palette(self):
+        name = palettes.active
+        stored = theme.user_palettes()
+        stored.pop(name, None)
+        theme.set_user_palettes(stored)
+        self._set_palette("default")
+        palettes.undefine(name, _self=self.cmd)
+        self._fill_palettes()
+
     def _show_palette(self):
+        yours = palettes.active != "default" and palettes.active not in palettes.BUILTIN
+        self.edit_palette.setEnabled(yours)
+        self.delete_palette.setEnabled(yours)
         with QtCore.QSignalBlocker(self.palettes):  # "palette" can be typed
             self.palettes.setCurrentRow(
                 ["default", *palettes.PALETTES].index(palettes.active)
             )
         QtCore.QTimer.singleShot(0, self.palettes.setFocus)  # for the keys
+
+    def _set_ray_background(self, on):
+        cmd = self.cmd
+        cmd.set("ray_opaque_background", -1)  # follow opaque_background
+        cmd.set("opaque_background", int(on), quiet=0)
+        self._save_background()
+
+    def _set_background(self, top, bottom):
+        cmd = self.cmd
+        # bg_rgb also with a gradient: fog and the "front" color follow it
+        cmd.set("bg_rgb", "0x" + top)
+        if bottom:
+            cmd.set("bg_rgb_top", "0x" + top)
+            cmd.set("bg_rgb_bottom", "0x" + bottom)
+        cmd.set("bg_gradient", int(bool(bottom)), quiet=0)
+        self._save_background()
+
+    def _save_background(self, *_):
+        """Keep the background of this moment for the next start, or forget
+        it. A background typed later is kept once a row is picked or the
+        check box is set again."""
+        keep = self.remember_background.isChecked()
+        theme.set_background(
+            [self.cmd.get(key) for key in BACKGROUND_SETTINGS] if keep else None
+        )
+
+    def _show_background(self):
+        cmd = self.cmd
+
+        def now(key):
+            return QtGui.QColor.fromRgbF(*cmd.get_color_tuple(cmd.get(key))).name()
+
+        gradient = cmd.get_setting_boolean("bg_gradient")
+        current = (
+            (now("bg_rgb_top"), now("bg_rgb_bottom"))
+            if gradient
+            else (now("bg_rgb"), None)
+        )
+        ray = cmd.get_setting_int("ray_opaque_background")
+        self.ray_background.setChecked(
+            bool(cmd.get_setting_int("opaque_background") if ray < 0 else ray)
+        )
+        mark = self.palette().highlight().color()
+        for action, top, bottom in self._backgrounds:
+            row = ("#" + top.lower(), "#" + bottom.lower() if bottom else None)
+            action.setIcon(_swatch(top, bottom, row == current, mark))
 
     def _set_selecting(self, value):
         self.cmd.set("mouse_selection_mode", value, quiet=0)
@@ -233,8 +449,16 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.selecting.setText(SELECTING[int(value)])
         self.selecting.menu().actions()[int(value)].setChecked(True)
 
+    def _zoom_visible(self):
+        """Fill the viewport with what is shown, centered. Hidden objects
+        and hidden atoms do not count; with nothing shown, with everything."""
+        cmd = self.cmd
+        cmd.zoom("visible" if cmd.count_atoms("visible") else "all", animate=1.0)
+
     def _fill_presets(self):
         menu = self.presets.menu()
         menu.clear()
-        rows = menus.presets(self.cmd, "all") + [[0, "", ""]] + menus.looks(self.cmd)
+        # "enabled": only the objects that are switched on. The light rows
+        # at the end are for the whole scene.
+        rows = menus.presets(self.cmd, "enabled")
         fill_menu(menu, rows, self.cmd)

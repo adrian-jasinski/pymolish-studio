@@ -86,7 +86,7 @@ unchanged. The window is arranged differently:
 
 | In PyMOL | Here |
 | --- | --- |
-| Object list drawn inside the viewport | Objects panel on the right. `set internal_gui` brings the old list back. |
+| Object list drawn inside the viewport | Objects panel on the right. The old list was removed in 4.17.1. |
 | Command line at the top | Command line at the bottom |
 | Grid of buttons at the top right | Toolbar; the rest is under its last button |
 | Movie buttons at the bottom right | States panel, shown when there is more than one state or frame |

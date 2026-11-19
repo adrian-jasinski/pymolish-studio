@@ -13,16 +13,15 @@ class MockWizard(Wizard):
         cmd.select('s1', 'none')
         cmd.delete('s1')
 
-class Test757(testing.PyMOLTestCase):
 
-    @testing.requires('gui')
-    def testDirtyDelete(self):
-        cmd.pseudoatom('m1')
-        cmd.pseudoatom('m2')
-        cmd.group('g1', 'm1 m2')
-        cmd.set_wizard(MockWizard())
+@testing.requires('gui')
+def testDirtyDelete():
+    cmd.pseudoatom('m1')
+    cmd.pseudoatom('m2')
+    cmd.group('g1', 'm1 m2')
+    cmd.set_wizard(MockWizard())
 
-        cmd.draw()
+    cmd.draw()
 
-        v = cmd.get_object_list('(g1)')
-        self.assertEqual(v, ['m1', 'm2'])
+    v = cmd.get_object_list('(g1)')
+    assert v == ['m1', 'm2']

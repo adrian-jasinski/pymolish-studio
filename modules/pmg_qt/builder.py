@@ -1030,12 +1030,12 @@ def makeFragmentButton():
 
 class _BuilderPanel(QtWidgets.QWidget):
 
-    def __init__(self, parent=None, app=None):
+    def __init__(self, parent=None, cmd=None):
         super(_BuilderPanel, self).__init__(parent)
 
         self.setWindowTitle("Builder")
         self.setObjectName("builder")
-        self.cmd = app.pymol.cmd
+        self.cmd = cmd
 
         self.layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.layout)

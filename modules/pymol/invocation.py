@@ -34,7 +34,7 @@ Options
   -a N      alias for -A
   -A N      application configuration:
     -A1     simple viewer window          (-qxiF -X 68 -Y 100)
-    -A3     internal GUI only, no splash  (-qx -X 68 -Y 100)
+    -A3     viewport only, no splash  (-qx -X 68 -Y 100)
     -A4     used by PYMOLVIEWER           (-X 68 -Y 100)
     -A5     helper application            (-QxiICUF -X 68 -Y 100)
     -A6     full screen presentation      (-qxieICUPF)
@@ -52,7 +52,6 @@ Options
   -G        game mode (DEPRECATED)
   -h        generic helper application (no controls, no feedback)
   -H N      window height in pixels
-  -i        internal_gui=0
   -I        auto_reinitialize=1 (Mac only)
   -j        side-by-side stereo (stereo_mode=4)
   -J        cd to user's home directory
@@ -129,7 +128,6 @@ if True:
 
     options.deferred = []
     options.no_gui = 0
-    options.internal_gui = 1
     options.internal_feedback = 1
     options.external_gui = 1
     options.force_stereo = -1 if sys.platform == 'darwin' else 0
@@ -294,7 +292,7 @@ if True:
                                 "-Y","100",
                                 ]
                     # ====== mode 2 - not available -- clashes with -2 =======
-                    # ====== mode 3 - internal GUI only no splash ======
+                    # ====== mode 3 - viewport only no splash ======
                     if a[2:3] == "3":
                         if 'A3' not in once_dict:
                             once_dict['A3'] = 1
@@ -302,7 +300,7 @@ if True:
                                 "-X","68",
                                 "-Y","100",
                                 ]
-                    # ====== mode 4 - internal GUI only with splash ======
+                    # ====== mode 4 - viewport only with splash ======
                     if a[2:3] == "4": # used by PYMOLVIEWER
                         if 'A4' not in once_dict:
                             once_dict['A4'] = 1
@@ -333,8 +331,6 @@ if True:
                     options.deferred.append("_do__ config_mouse two_button")
                 if "q" in a:
                     options.show_splash = 0
-                if "i" in a:
-                    options.internal_gui = 0
                 if "f" in a:
                     options.internal_feedback = int(av.pop())
                 if "F" in a:
@@ -472,7 +468,6 @@ if True:
                 if "I" in a:
                     options.auto_reinitialize = 1
                 if "h" in a: # generic helper application
-                    options.internal_gui = 0
                     options.external_gui = 0
                     options.internal_feedback = 0
                     options.show_splash = 1

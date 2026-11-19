@@ -94,7 +94,14 @@ ARGUMENTS
     orgSel = _self.get_unused_name("_org")
 
     orgN = _self.select(orgSel, sele, 0)
-    _self.create(tmpObj, "byobj ?%s & ! solvent" % (orgSel), zoom=0)
+    # the copy holds the atoms that can hide a dot of the selection, not the
+    # whole object: get_area builds the dots of all atoms of its object
+    reach = [0.0]
+    _self.iterate("byobj ?%s" % orgSel, "reach[0] = max(reach[0], vdw)",
+                  space={'reach': reach, 'max': max})
+    reach = 2 * (reach[0] + asa * _self.get_setting_float("solvent_radius"))
+    _self.create(tmpObj, "(byobj ?%s & ! solvent) & (?%s expand %f)" % (
+        orgSel, orgSel, reach + 0.1), zoom=0)
     tmpN = _self.select(tmpSel, '?%s in ?%s' % (tmpObj, orgSel), 0)
 
     try:
@@ -810,11 +817,17 @@ def chainbow(selection='(all)', palette="rainbow", quiet=1, _self=cmd):
     '''
     Color all chains in rainbow
     '''
-    for model in _self.get_object_list('(' + selection + ')'):
-        for a in _self.get_chains('model %s & (%s)' % (model, selection)) or ['']:
-            _self.spectrum('count', palette,
-                    "(chain '%s' & model %s & (%s))" % (a, model, selection),
-                    byres=1, quiet=quiet)
+    # matched against all atoms once, not three times for every chain
+    atoms = _self.get_unused_name('_chainbow')
+    _self.select(atoms, selection, 0)
+    try:
+        for model in _self.get_object_list('?' + atoms):
+            for a in _self.get_chains('model %s & ?%s' % (model, atoms)) or ['']:
+                _self.spectrum('count', palette,
+                        "(chain '%s' & model %s & ?%s)" % (a, model, atoms),
+                        byres=1, quiet=quiet)
+    finally:
+        _self.delete(atoms)
 
 color_chains = cbc
 
@@ -1081,6 +1094,95 @@ DESCRIPTION
     _self.enable(name)
 
 
+def _area_alone(selection, state, subsele, residues, _self):
+    '''
+    Area of each of `residues` (keys segi, chain, resi; atoms of one object
+    in `selection`) with nothing around it but the residues bonded to it.
+
+    One temporary object holds all these groups, each in its own cell of a
+    lattice, so that a single get_area call measures them all. A copy and
+    two selections per residue took 10 ms each on a 58,870 atom object.
+    '''
+    import collections
+    import copy
+    from chempy import cpv
+    from chempy.models import Indexed
+
+    around = 'byres ((%s) extend 1)' % selection
+    near = _self.get_model(around, state)
+    # asked of the object itself: in the temporary object a residue occurs
+    # several times, and "guide" would be true for one copy only
+    chosen = set()
+    _self.iterate('(%s) & (%s)' % (around, subsele), 'chosen.add(index)',
+                  space={'chosen': chosen})
+    key = [(at.segi, at.chain, at.resi) for at in near.atom]
+    members = collections.defaultdict(list)  # residue: indices of its atoms
+    for i, k in enumerate(key):
+        members[k].append(i)
+    bonds = collections.defaultdict(list)  # residue: the bonds that touch it
+    bonded = collections.defaultdict(list)  # residue: residues bonded to it
+    for bond in near.bond:
+        a, b = key[bond.index[0]], key[bond.index[1]]
+        bonds[a].append(bond)
+        if a != b:
+            bonds[b].append(bond)
+            if b not in bonded[a]:
+                bonded[a].append(b)
+                bonded[b].append(a)
+
+    groups = [[i for k in [res] + bonded[res] for i in members[k]]
+              for res in residues]
+    low = [[min(near.atom[i].coord[x] for i in group) for x in range(3)]
+           for group in groups]
+    size = max((near.atom[i].coord[x] - corner[x]
+                for group, corner in zip(groups, low)
+                for i in group for x in range(3)), default=0.0)
+    # no atom of one cell is in reach of an atom of the next
+    reach = max((at.vdw for at in near.atom), default=0.0) + \
+        _self.get_setting_float('solvent_radius')
+    cell = size + 2 * reach + 1.0
+    side = int(len(groups) ** (1 / 3.)) + 1
+
+    apart = Indexed()
+    center = {}  # ID of a copied atom of the residue itself: its residue
+    for count, (res, group, corner) in enumerate(zip(residues, groups, low)):
+        shift = [cell * (count // side ** x % side) - corner[x]
+                 for x in range(3)]
+        copied = {}
+        for i in group:
+            at = copy.copy(near.atom[i])
+            at.coord = cpv.add(at.coord, shift)
+            at.id = copied[i] = len(apart.atom)
+            if key[i] == res and at.index in chosen:
+                center[at.id] = res
+            apart.atom.append(at)
+        seen = set()
+        for k in [res] + bonded[res]:
+            for bond in bonds[k]:
+                if id(bond) not in seen and all(i in copied for i in bond.index):
+                    seen.add(id(bond))
+                    bond = copy.copy(bond)
+                    bond.index = [copied[i] for i in bond.index]
+                    apart.bond.append(bond)
+
+    area = dict.fromkeys(residues, 0.0)
+    if not apart.atom:
+        return area
+    name = _self.get_unused_name('_alone')
+    _self.load_model(apart, name, zoom=0)
+    try:
+        _self.get_area(name, 1, load_b=1)
+
+        def add(ID, b):
+            if ID in center:
+                area[center[ID]] += b
+
+        _self.iterate(name, 'add(ID, b)', space={'add': add})
+    finally:
+        _self.delete(name)
+    return area
+
+
 def get_sasa_relative(selection='all',
                       state=1,
                       vis=-1,
@@ -1148,7 +1250,6 @@ SEE ALSO
         vis = not quiet
 
     sele = _self.get_unused_name('_sele')
-    tripepname = _self.get_unused_name('_tripep')
 
     _self.select(sele, selection, 0)
 
@@ -1164,19 +1265,13 @@ SEE ALSO
                       'resarea[model,segi,chain,resi] += b',
                       space=locals())
 
-        for key in resarea:
-            _self.create(tripepname, 'byres (/%s/%s/%s/`%s extend 1)' % key, state, 1, zoom=0)
-            _self.get_area(tripepname, 1, load_b=1)
-
-            resarea_exposed = [0.0]
-            _self.iterate(f"/{tripepname}/{key[1]}/{key[2]}/`{key[3]} & ({subsele})",
-                    'resarea_exposed[0] += b', space=locals())
-            _self.delete(tripepname)
-
-            if resarea_exposed[0] == 0.0:
-                continue
-
-            resarea[key] /= resarea_exposed[0]
+        for model in _self.get_object_list(sele):
+            alone = _area_alone(
+                '?%s & ?%s' % (sele, model), state, subsele,
+                [key[1:] for key in resarea if key[0] == model], _self)
+            for key, area in alone.items():
+                if area:
+                    resarea[(model,) + key] /= area
 
         _self.alter(sele,
                 var + ' = resarea[model,segi,chain,resi]', space=locals())

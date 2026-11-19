@@ -226,6 +226,5 @@ int ButModeGet(PyMOLGlobals * G, int button);
 void ButModeSet(PyMOLGlobals * G, int button, int action);
 int ButModeTranslate(PyMOLGlobals * G, int button, int mod);
 int ButModeCheckPossibleSingleClick(PyMOLGlobals * G, int button, int mod);
-int ButModeGetHeight(PyMOLGlobals * G);
 
 #endif

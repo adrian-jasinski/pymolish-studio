@@ -234,6 +234,11 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.scene_panel)
         self.scene_panel.hide()
 
+        from .timeline import TimelinePanel
+        self.timeline_panel = TimelinePanel(cmd, self)
+        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.timeline_panel)
+        self.timeline_panel.hide()
+
         '''
         # command completion
         completer = QtWidgets.QCompleter(cmd.kwhash.keywords, self)
@@ -398,7 +403,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.feedback_timer.timeout.connect(self.update_feedback)
         self.feedback_timer.start(100)
 
-        # legacy plugin system
+        # with -k: plugins are not loaded until this row is used
         self.menudict['Plugin'].addAction(
             'Initialize Plugin System', self.initializePlugins)
 
@@ -407,6 +412,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         panels.addAction(self.ext_window.toggleViewAction())
         panels.addAction(self.object_panel.toggleViewAction())
         panels.addAction(self.scene_panel.toggleViewAction())
+        panels.addAction(self.timeline_panel.toggleViewAction())
         panels.addAction('Builder', self.open_builder_panel)
         panels.addSeparator()
         panels.addAction('Reset Layout', self.reset_layout)
@@ -433,6 +439,15 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         if style:
             self.setStyleSheet(style)
+
+        # The default window is at least as wide as the action toolbar, so
+        # that no button starts in the overflow menu. A size given with -W
+        # or a saved layout is applied later and wins.
+        if options.external_gui:
+            self.action_toolbar.ensurePolished()
+            needed = self.action_toolbar.sizeHint().width() + 8
+            if needed > self.width():
+                self.resize(needed, self.height())
 
         # Load saved shortcuts on launch
         self.saved_shortcuts = pymol.save_shortcut.load_and_set(self.cmd)
@@ -563,6 +578,11 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         uifile = os.path.join(os.path.dirname(__file__), 'forms', '%s.ui' % name)
         form = pymol.Qt.utils.loadUi(uifile, widget)
+        # The size in a .ui file is often smaller than the content needs:
+        # open at least that large. A form without a size fits its content
+        # by itself when it is shown.
+        if widget.testAttribute(Qt.WidgetAttribute.WA_Resized):
+            widget.resize(widget.sizeHint().expandedTo(widget.size()))
 
         if dialog == 'floating':
             dialog = QtWidgets.QDockWidget(widget.windowTitle(), self)
@@ -641,11 +661,9 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
     def open_builder_panel(self):
         from pmg_qt.builder import BuilderPanelDocked
-        from pymol import plugins
 
-        app = plugins.get_pmgapp()
         if not self.builder:
-            self.builder = BuilderPanelDocked(self, app)
+            self.builder = BuilderPanelDocked(self, self.cmd)
             self.builder.setObjectName('dock_builder')
             self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self.builder)
 
@@ -663,8 +681,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
     def edit_pymolrc(self):
         from . import TextEditor
-        from pymol import plugins
-        TextEditor.edit_pymolrc(plugins.get_pmgapp())
+        TextEditor.edit_pymolrc()
 
     ##################
     # Menu callbacks
@@ -930,6 +947,11 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.scene_panel.refresh()
         self.scene_panel.list.setFocus()
 
+    def timeline_panel_dialog(self):
+        self.timeline_panel.show()
+        self.timeline_panel.raise_()
+        self.timeline_panel.refresh()
+
     def show_about(self):
         QtWidgets.QMessageBox.about(
             self,
@@ -980,6 +1002,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.feedback_timer.start(500)
         self.object_panel.poll()
         self.scene_panel.poll()
+        self.timeline_panel.poll()
 
     def doPrompt(self):
         self.doTypedCommand(self.command_get())
@@ -988,33 +1011,17 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.feedback_timer.start(0)
 
     ##########################
-    # legacy plugin system
+    # plugins
     ##########################
 
     @PopupOnException.decorator
     def initializePlugins(self):
         from pymol import plugins
-        from . import mimic_tk
 
         self.menudict['Plugin'].clear()
-
-        app = plugins.get_pmgapp()
-
-        plugins.legacysupport.addPluginManagerMenuItem()
-
-        # Redirect to Legacy submenu
-        self.menudict['PluginQt'] = self.menudict['Plugin']
-        self.menudict['Plugin'] = self.menudict['PluginQt'].addMenu('Legacy Plugins')
-        self.menudict['PluginQt'].addSeparator()
-
         plugins.HAVE_QT = True
-        plugins.initialize(app)
-
-    def createlegacypmgapp(self):
-        from . import mimic_pmg_tk as mimic
-        pmgapp = mimic.PMGApp()
-        pmgapp.menuBar = mimic.PmwMenuBar(self.menudict)
-        return pmgapp
+        plugins.addPluginManagerMenuItem()
+        plugins.initialize(None)
 
     def window_cmd(self, action, x, y, w, h):
         if action == 0: # hide
@@ -1176,7 +1183,6 @@ class PyMOLApplication(QtWidgets.QApplication):
         # PyMOL Show
         if ev.file().endswith('.psw'):
             pymol.cmd.set('presentation')
-            pymol.cmd.set('internal_gui', 0)
             pymol.cmd.set('internal_feedback', 0)
             pymol.cmd.full_screen('on')
 
@@ -1262,10 +1268,6 @@ def execapp():
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
                 u'com.schrodinger.pymol')
 
-    # The Qt Objects panel replaces the viewport's internal GUI. To get the
-    # old panel back: Display > Internal GUI, or "set internal_gui" in pymolrc.
-    pymol.invocation.options.internal_gui = 0
-
     # The command area has the prompt; the viewport does not draw a second
     # one. "set internal_feedback, 1" in pymolrc brings it back.
     if pymol.invocation.options.external_gui:
@@ -1295,7 +1297,6 @@ def execapp():
         window.toggle_fullscreen(toggle)
 
     import pymol.gui
-    pymol.gui.createlegacypmgapp = window.createlegacypmgapp
 
     pymol.cmd._copy_image = _copy_image
     pymol.cmd._call_in_gui_thread = MainThreadCaller()

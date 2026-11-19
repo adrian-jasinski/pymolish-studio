@@ -1,32 +1,33 @@
+import pytest
 import os
 from pymol import movie, cmd, testing, stored
 
-@testing.requires('incentive')
-@testing.requires_version('2.2')
-class TestStereochemistry(testing.PyMOLTestCase):
+pytestmark = testing.requires('incentive')
 
-    def test_assign_stereo_schrodinger(self):
-        if not os.getenv("SCHRODINGER"):
-            self.skipTest("SCHRODINGER not set")
 
-        self.assertEqual(cmd.count_atoms("stereo R"), 0)
+def test_assign_stereo_schrodinger():
+    if not os.getenv("SCHRODINGER"):
+        pytest.skip("SCHRODINGER not set")
 
-        cmd.load(self.datafile("1ehz-5.pdb"), "m1")
-        cmd.assign_stereo(method="schrodinger")
+    assert cmd.count_atoms("stereo R") == 0
 
-        self.assertEqual(cmd.count_atoms("stereo R"), 15)
-        self.assertEqual(cmd.count_atoms("stereo S"), 5)
+    cmd.load(testing.datafile("1ehz-5.pdb"), "m1")
+    cmd.assign_stereo(method="schrodinger")
 
-    def test_assign_stereo_rdkit(self):
-        try:
-            import rdkit
-        except ImportError:
-            self.skipTest("rdkit not available")
+    assert cmd.count_atoms("stereo R") == 15
+    assert cmd.count_atoms("stereo S") == 5
 
-        self.assertEqual(cmd.count_atoms("stereo R"), 0)
 
-        cmd.load(self.datafile("1ehz-5.pdb"), "m1")
-        cmd.assign_stereo(method="rdkit")
+def test_assign_stereo_rdkit():
+    try:
+        import rdkit
+    except ImportError:
+        pytest.skip("rdkit not available")
 
-        self.assertEqual(cmd.count_atoms("stereo R & not elem P"), 15)
-        self.assertEqual(cmd.count_atoms("stereo S"), 5)
+    assert cmd.count_atoms("stereo R") == 0
+
+    cmd.load(testing.datafile("1ehz-5.pdb"), "m1")
+    cmd.assign_stereo(method="rdkit")
+
+    assert cmd.count_atoms("stereo R & not elem P") == 15
+    assert cmd.count_atoms("stereo S") == 5

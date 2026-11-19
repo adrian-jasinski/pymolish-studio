@@ -5,8 +5,9 @@ Usage:
     pymolish testing.py --run all             Run all tests
     pymolish testing.py --run some/file.py    Run tests from given files
 
-PyMOL test cases should subclass pymol.testing.PyMOLTestCase and provide
-either one "runTest" method or at least one "test*" method.
+Tests are pytest functions. Every test starts with a clean PyMOL session
+and in the directory of its file (the fixture in conftest.py); the helpers
+below are used as testing.<name>.
 '''
 
 from __future__ import print_function
@@ -53,17 +54,15 @@ if __name__ != 'pymol.testing':
     # pymol foo.py    -> __name__ == 'pymol'
     # pymol -r foo.py -> __name__ == '__main__'
 
-    this_path = pathlib.Path(inspect.currentframe().f_code.co_filename)
+    # absolute: the tests change the working directory
+    this_path = pathlib.Path(inspect.currentframe().f_code.co_filename).resolve()
     test_utils = this_path.parent.joinpath('tests', 'helpers', 'test_utils.py')
     pymol.testing = import_from_file(str(this_path), 'pymol.testing')
     pymol.test_utils = import_from_file(str(test_utils), 'pymol.test_utils')
     pymol.testing.cli()
 
 else:
-    import uuid
     import time
-    import unittest
-    import itertools
     import tempfile
     import argparse
     import pytest
@@ -78,11 +77,6 @@ else:
     from pymol.invocation import options
 
     get_capabilities = getattr(pymol, 'get_capabilities', lambda: ())
-
-    try:
-        from pymol.undo import UndoMode
-    except ImportError:
-        pass
 
     def tupleize_version(strversion):
         r = []
@@ -100,15 +94,12 @@ else:
 
     usage = 'pymolish [pymol options] %s [test options]' % (os.path.basename(__file__))
     parser = argparse.ArgumentParser("pymolish", usage=usage)
-    parser.add_argument('--xml', action='store_true')
     parser.add_argument('filenames', nargs='*', default=[])
-    parser.add_argument('--out', default=sys.stdout)
     parser.add_argument('--offline', action='store_true')
     parser.add_argument('--no-mmlibs', action='store_true', default=True)
     parser.add_argument('--with-mmlibs', action='store_false', dest='no_mmlibs')
     parser.add_argument('--no-undo', action='store_true', default=True)
     parser.add_argument('--with-undo', action='store_false', dest='no_undo')
-    parser.add_argument('--verbosity', type=int, default=2)
 
     have_dash_dash = __file__.startswith(sys.argv[0]) or '--run' in sys.argv
     cliargs = parser.parse_known_args(None if have_dash_dash else [])[0]
@@ -124,106 +115,37 @@ else:
     deferred_unlink = []
     deferred_rmtree = []
 
-    class requires_version(object):
-        '''
-        Decorator for restricting to PyMOL version
-        '''
+    def requires(*flags):
+        """
+        Mark that skips a test unless every named condition holds.
 
-        def __init__(self, version):
-            self.version = version
+            >>> @testing.requires('gui')
+            >>> def test_something():
 
-        def __call__(self, func):
-            if isinstance(self.version, int):
-                test = self.version <= PYMOL_VERSION[2]
-            elif isinstance(self.version, float):
-                test = self.version <= PYMOL_VERSION[1]
-            else:
-                test = tupleize_version(self.version) <= PYMOL_VERSION_TUPLE
-
-            if not test:
-                return unittest.skip('version %s' % (self.version))(func)
-
-            return func
-
-    class requires(object):
-        '''
-        Decorator for test methods which only should be executed
-        under certain conditions.
-
-        Example:
-
-            >>> @requires('gui')
-            >>> def testSomething(self):
-            >>>     do_something()
-        '''
-        def __init__(self, *flags):
-            self.flags = flags
-
-        def __call__(self, func):
-
-            flags = dict.fromkeys(self.flags, True)
-            flags_known = []
-
-            def hasflag(flag):
-                flags_known.append(flag)
-                return flags.pop(flag, False)
-
-            if hasflag('shaders') and not use_shaders:
-                return unittest.skip('shaders')(func)
-
-            if hasflag('gui') and options.no_gui:
-                return unittest.skip('no gui')(func)
-
-            if hasflag('incentive') and not options.incentive_product:
-                return unittest.skip('no incentive')(func)
-
-            if hasflag('no_edu') and PYMOL_EDU:
-                return unittest.skip('no edu')(func)
-
-            if hasflag('network') and cliargs.offline:
-                return unittest.skip('no network')(func)
-
-            if hasflag('mmlibs') and cliargs.no_mmlibs:
-                return unittest.skip('no mmlibs')(func)
-
-            if hasflag('undo') and cliargs.no_undo:
-                return unittest.skip('no undo')(func)
-
-            if hasflag('no_run_all') and run_all:
-                return unittest.skip('skip with all')(func)
-
-            if hasflag('multicore') and max_threads <= 1:
-                return unittest.skip('no multicore')(func)
-
-            if hasflag('properties') and not options.incentive_product:
-                return unittest.skip('no pymol.properties')(func)
-
-            if hasflag('freemol'):
-                if PYMOL_VERSION_TUPLE >= (2, 5):
-                    return unittest.skip('freemol not used anymore')(func)
-                if not options.incentive_product:
-                    return unittest.skip('no freemol')(func)
-
-            if hasflag('no_win64bit') and is_win64bit:
-                return unittest.skip('skip 64bit')(func)
-
-            if hasflag('multi_undo'):
-                if not 'multi_undo' in get_capabilities():
-                    return unittest.skip('skip multiundo')(func)
-                else:
-                    def reset_undo_decorator(func):
-                        def wrapper(*args, **kwargs):
-                            cmd.undo_mode(UndoMode.Disable) # force reset
-                            cmd.undo_mode(UndoMode.Enable)
-                            func(*args, **kwargs)
-                            cmd.undo_mode(UndoMode.Disable)
-                        return wrapper
-                    return reset_undo_decorator(func)
-            if flags:
-                raise ValueError('unknown flags: ' + ', '.join(flags)
-                        + '; choices: ' + ', '.join(sorted(flags_known)))
-
-            return func
+        For every test of a file: `pytestmark = testing.requires('gui')`.
+        """
+        unmet = {
+            'shaders': not use_shaders,
+            'gui': options.no_gui,
+            'incentive': not options.incentive_product,
+            'properties': not options.incentive_product,
+            'no_edu': PYMOL_EDU,
+            'network': cliargs.offline,
+            'mmlibs': cliargs.no_mmlibs,
+            'undo': cliargs.no_undo,
+            'no_run_all': run_all,
+            'multicore': max_threads <= 1,
+            'freemol': True,  # not used since PyMOL 2.5
+            'no_win64bit': is_win64bit,
+            'multi_undo': 'multi_undo' not in get_capabilities(),
+        }
+        unknown = sorted(set(flags) - set(unmet))
+        if unknown:
+            raise ValueError('unknown flags: ' + ', '.join(unknown)
+                    + '; choices: ' + ', '.join(sorted(unmet)))
+        missing = [flag for flag in flags if unmet[flag]]
+        return pytest.mark.skipif(bool(missing),
+                reason='requires ' + ', '.join(missing))
 
     class mktemp(object):
         '''
@@ -257,101 +179,15 @@ else:
                 except WindowsError:
                     deferred_rmtree.append(self.name)
 
-    class foreachList(list):
-        pass
+    class timing(object):
+        """
+        Context manager: the test fails if the block takes longer than
+        `max` seconds.
 
-    class foreach(object):
-        '''
-        Decorator to call a method with arguments.
-
-        If you have multiple decorators, this one must be the first (outer
-        most) one because it does not return a function and thus cannot be
-        further processed by other decorators.
-
-        Examples:
-
-            >>> @testing.foreach(1, 2, 3)
-            >>> @someotherdecorator
-            >>> def testSomething(self, a):
-            >>>     print a
-
-            Will print:
-            ... 1
-            ... 2
-            ... 3
-
-            >>> @testing.foreach((1,'A'), (2,'B'))
-            >>> def testSomething(self, a, b):
-            >>>     print a, b
-
-            Will print:
-            ... 1 A
-            ... 2 B
-
-            >>> @testing.foreach.zip((1,2), ('A','B'))
-            >>> def testSomething(self, a, b):
-            >>>     print a, b
-
-            Will print:
-            ... 1 A
-            ... 2 B
-
-            >>> @testing.foreach.product((1,2), ('A','B'))
-            >>> def testSomething(self, a, b):
-            >>>     print a, b
-
-            Will print:
-            ... 1 A
-            ... 1 B
-            ... 2 A
-            ... 2 B
-
-        '''
-        def __init__(self, *args):
-            self.args = args
-
-        def __call__(self, func):
-            r = foreachList()
-            for args in self.args:
-                if not isinstance(args, (tuple, list)):
-                    args = (args,)
-                def wrapper(self, a=args):
-                    return func(self, *a)
-                r.append([wrapper, args])  # need to pass the arguments in to set test name
-            return r
-
-        @classmethod
-        def zip(cls, *args):
-            args = zip(*args)
-            return cls(*args)
-
-        @classmethod
-        def product(cls, *args):
-            args = itertools.product(*args)
-            return cls(*args)
-
-    class PyMOLTestCaseMeta(type):
-        '''
-        Metaclass for PyMOLTestCase. Plays together with the foreach decorator.
-        '''
-        def __init__(self, *a, **k):
-            if self.__module__ == 'pymol.testing':
-                return
-
-            for k, v in list(vars(self).items()):
-                if isinstance(v, foreachList):
-                    for c, fargs in enumerate(v, 1):
-                        f, args = fargs
-                        # set test name to function name plus arguments (delimited by '_')
-                        setattr(self, '%s__%s' % (k, '_'.join(str(e) for e in args)), f)
-                    delattr(self, k)
-
-    class TimingCM(object):
-        '''
-        Timing context manager
-        '''
-        def __init__(self, test, msg=None, max=None):
-            self.test = test
+            >>> with testing.timing(max=3.0):
+            >>>     do_something()
+        """
+        def __init__(self, msg=None, max=None):
             self.msg = msg
             self.max = max
         def __enter__(self):
@@ -365,337 +201,203 @@ else:
                 if self.msg:
                     msg = self.msg + ', ' + msg
                 raise AssertionError(msg)
-            self.test.timings.append((self.msg, delta))
 
-    class PyMOLTestCase(PyMOLTestCaseMeta("Base", (unittest.TestCase,), {})):
-        '''
-        Common PyMOL unit tests should subclass this.
+    def _color_tuple(color):
+        if isinstance(color, (tuple, list)):
+            return tuple(color)
+        return cmd.get_color_tuple(color)
 
-        Each tests starts with a clean (reinitialized) PyMOL session and
-        from the directory where the file is located.
-        '''
+    def assert_color_equal(color1, color2):
+        assert _color_tuple(color1) == _color_tuple(color2)
 
-        if sys.version_info.major > 2:
-            assertEquals = unittest.TestCase.assertEqual
-            assertItemsEqual = unittest.TestCase.assertCountEqual
+    def assert_image_equal(img1, img2=None, delta=0, count=0, msg='images not equal'):
+        """
+        Test if two images are the same.
 
-        def setUp(self):
-            self.oldcwd = os.getcwd()
-            cmd.reinitialize()
-            cmd.viewport(640, 480)
+        img1, img2 can be either filenames, Image (PIL) objects
+        or numpy arrays.
 
-            if cliargs.no_undo:
-                cmd.set('suspend_undo', updates=0)
+        delta > 0 is for inexact match (image data is 0..255 int)
 
-            cwd = os.path.dirname(inspect.getfile(type(self)))
-            os.chdir(cwd)
+        count is the number of allowed pixel mismatches.
+        """
+        import numpy
 
-            cmd.feedback('push')
-            cmd.feedback('disable', 'all', 'details actions')
-            self.timings = []
+        if isinstance(img1, basestring) and not \
+                os.path.exists(img1):
+            print(' Generating reference img:', img1)
+            png(img1)
+            return
 
-        def tearDown(self):
-            cmd.feedback('pop')
-            os.chdir(self.oldcwd)
+        data1 = get_imagearray(img1)
+        data2 = get_imagearray(img2)
 
-        def _getColorTuple(self, color):
-            if isinstance(color, (tuple, list)):
-                return tuple(color)
-            return cmd.get_color_tuple(color)
-                
-        def assertColorEqual(self, color1, color2):
-            self.assertEqual(self._getColorTuple(color1), self._getColorTuple(color2))
+        assert data1.shape == data2.shape, 'image shapes not equal '
 
-        def assertImageEqual(self, img1, img2=None, delta=0, count=0, msg='images not equal'):
-            '''
-            Test if two images are the same.
+        diff = abs(data1 - data2)
 
-            img1, img2 can be either filenames, Image (PIL) objects
-            or numpy arrays.
+        noff = numpy.sum(diff > delta)
+        if noff > count * data1.shape[-1]:
+            filename = tempfile.mktemp('diff.png')
 
-            delta > 0 is for inexact match (image data is 0..255 int)
+            diffimg = Image.fromarray((255 - diff.reshape(data1.shape)).astype(numpy.uint8))
+            diffimg.save(filename)
 
-            count is the number of allowed pixel mismatches.
-            '''
-            import numpy
+            raise AssertionError(msg + ' (%d) %s' % (noff, filename))
 
-            if isinstance(img1, basestring) and not \
-                    os.path.exists(img1):
-                print(' Generating reference img:', img1)
-                self.png(img1)
-                return
+    def assert_image_not_equal(img1, img2=None, delta=0, count=0, msg='images equal'):
+        import numpy
+        data1 = get_imagearray(img1)
+        data2 = get_imagearray(img2)
+        diff = abs(data1 - data2)
+        noff = numpy.sum(diff > delta)
+        assert noff > count * data1.shape[-1], msg
 
-            data1 = self.get_imagearray(img1)
-            data2 = self.get_imagearray(img2)
+    def image_count_colors(img, ignorealpha=False):
+        dim = img.shape[-1]
+        if dim == 4 and ignorealpha:
+            dim = 3
+            img = img[...,:dim]
+        colors = set(tuple(row) for row in img.reshape((-1, dim)).tolist())
+        return len(colors)
 
-            self.assertEqual(data1.shape, data2.shape,
-                    'image shapes not equal ')
+    def _image_has_color(color, img, delta=0):
+        if isinstance(color, str):
+            color = [int(v*255) for v in cmd.get_color_tuple(color)]
+        else:
+            color = list(color)
+        dim = img.shape[-1]
+        if dim == len(color) + 1:
+            dim -= 1
+            img = img[...,:dim]
+        diff = abs(img.reshape((-1, dim)) - color)
+        return (diff - delta <= 0).prod(1).sum()
 
-            diff = abs(data1 - data2)
+    def save_imagearray(img, filename=None):
+        if not filename:
+            filename = tempfile.mktemp('.png')
 
-            noff = numpy.sum(diff > delta)
-            if noff > count * data1.shape[-1]:
-                filename = tempfile.mktemp('diff.png')
+        img = Image.fromarray(img)
+        img.save(filename)
 
-                diffimg = Image.fromarray((255 - diff.reshape(data1.shape)).astype(numpy.uint8))
-                diffimg.save(filename)
+        return filename
 
-                self.assertTrue(False, msg + ' (%d) %s' % (noff, filename))
+    def _assert_image_has_color(test, color, img, delta, msg):
+        img = get_imagearray(img)
+        has_color = _image_has_color(color, img, delta)
 
-        def assertImageNotEqual(self, img1, img2=None, delta=0, count=0, msg='images equal'):
-            import numpy
-            data1 = self.get_imagearray(img1)
-            data2 = self.get_imagearray(img2)
-            diff = abs(data1 - data2)
-            noff = numpy.sum(diff > delta)
-            if noff <= count * data1.shape[-1]:
-                raise self.failureException(msg)
+        if bool(has_color) != test:
+            raise AssertionError(msg + ', ' + save_imagearray(img))
 
-        def imageCountColors(self, img, ignorealpha=False):
-            dim = img.shape[-1]
-            if dim == 4 and ignorealpha:
-                dim = 3
-                img = img[...,:dim]
-            colors = set(tuple(row) for row in img.reshape((-1, dim)).tolist())
-            return len(colors)
+    def assert_image_has_color(color, img=None, delta=0, msg=''):
+        if not msg:
+            msg = 'no such color: ' + str(color)
+        _assert_image_has_color(True, color, img, delta, msg)
 
-        def _imageHasColor(self, color, img, delta=0):
-            if isinstance(color, str):
-                color = [int(v*255) for v in cmd.get_color_tuple(color)]
-            else:
-                color = list(color)
-            dim = img.shape[-1]
-            if dim == len(color) + 1:
-                dim -= 1
-                img = img[...,:dim]
-            diff = abs(img.reshape((-1, dim)) - color)
-            return (diff - delta <= 0).prod(1).sum()
+    def assert_image_has_not_color(color, img=None, delta=0, msg=''):
+        if not msg:
+            msg = 'color found: ' + str(color)
+        _assert_image_has_color(False, color, img, delta, msg)
 
-        def save_imagearray(self, img, filename=None):
-            if not filename:
-                filename = tempfile.mktemp('.png')
+    def assert_image_has_transparency(img=None):
+        img = get_imagearray(img)
+        assert (img[:,:,3] < 255).any()
 
-            img = Image.fromarray(img)
-            img.save(filename)
+    def assert_image_has_no_transparency(img=None):
+        img = get_imagearray(img)
+        if img.shape[-1] == 4:
+            assert (img[:,:,3] == 255).all()
 
+    def assert_array_equal(a1, a2, delta=0, msg='arrays not equal', _not=False):
+        """
+        Test if two (multi-)dimensional numeric arrays are (almost) equal.
+        """
+        import numpy
+
+        a1 = numpy.asarray(a1)
+        a2 = numpy.asarray(a2)
+
+        assert a1.shape == a2.shape, msg + ' (shape)'
+        assert (not _not) == numpy.allclose(a1, a2, 0, delta), msg
+
+    def assert_array_not_equal(a1, a2, delta=0, msg='arrays equal'):
+        assert_array_equal(a1, a2, delta, msg, True)
+
+    def datafile(filename):
+        """
+        Return path to filename, the current directory and the data
+        directory are searched for filename.
+        """
+        if os.path.exists(filename):
             return filename
+        return os.path.join(pymol_test_dir, 'data', filename)
 
-        def _assertImageHasColor(self, test, color, img, delta, msg):
-            import numpy
+    def get_imagearray(img=None, **kwargs):
+        """
+        Get bitmap data as a numpy array.
 
-            img = self.get_imagearray(img)
-            has_color = self._imageHasColor(color, img, delta)
+        img can be either a filename or a Image (PIL) object.
+        """
+        if PYMOL_EDU and (options.no_gui or 'ray' in kwargs):
+            pytest.skip("edu no-ray")
 
-            if bool(has_color) != test:
-                filename = self.save_imagearray(img)
-                self.assertTrue(False, msg + ', ' + filename)
+        import numpy
 
-        def assertImageHasColor(self, color, img=None, delta=0, msg=''):
-            if not msg:
-                msg = 'no such color: ' + str(color)
-            self._assertImageHasColor(True, color, img, delta, msg)
+        if img is None:
+            with mktemp('.png') as filename:
+                png(filename, **kwargs)
+                return get_imagearray(filename)
 
-        def assertImageHasNotColor(self, color, img=None, delta=0, msg=''):
-            if not msg:
-                msg = 'color found: ' + str(color)
-            self._assertImageHasColor(False, color, img, delta, msg)
+        if isinstance(img, numpy.ndarray):
+            return img
 
-        def assertImageHasTransparency(self, img=None):
-            img = self.get_imagearray(img)
-            self.assertTrue((img[:,:,3] < 255).any())
+        if isinstance(img, basestring):
+            img = Image.open(img)
 
-        def assertImageHasNoTransparency(self, img=None):
-            img = self.get_imagearray(img)
-            if img.shape[-1] == 4:
-                self.assertTrue((img[:,:,3] == 255).all())
+        if not isinstance(img, Image.Image):
+            raise TypeError('img must be filename or Image instance')
 
-        def assertArrayEqual(self, a1, a2, delta=0, msg='arrays not equal', _not=False):
-            '''
-            Test if two (multi-)dimensional numeric arrays are (almost) equal.
-            '''
-            import numpy
+        return numpy.array(img.getdata(),
+                           numpy.uint8).reshape((img.size[1], img.size[0], -1))
 
-            a1 = numpy.asarray(a1)
-            a2 = numpy.asarray(a2)
-
-            self.assertEqual(a1.shape, a2.shape, msg + ' (shape)')
-            self.assertEqual(not _not, numpy.allclose(a1, a2, 0, delta), msg)
-
-        def assertArrayNotEqual(self, a1, a2, delta=0, msg='arrays equal'):
-            return self.assertArrayEqual(a1, a2, delta, msg, True)
-
-        def timing(self, *args, **kwargs):
-            '''
-            Timing context manager for feedback and maximum runtime assertion.
-            Will show the runtime in seconds next to the OK message if tests
-            are run with verbose=2.
-
-            Optional arguments:
-            msg = string: short label
-            max = float: maximum allowed runtime in seconds
-
-            Example:
-
-                >>> with self.timing():
-                >>>     so_something()
-
-                >>> # maximum runtime assertion
-                >>> with self.timing(max=3.0):
-                >>>     so_something()
-            '''
-            return TimingCM(self, *args, **kwargs)
-
-        def datafile(self, filename):
-            '''
-            Return path to filename, the current directory and the data
-            directory are searched for filename.
-            '''
-            if os.path.exists(filename):
-                return filename
-            return os.path.join(pymol_test_dir, 'data', filename)
-
-        def get_imagearray(self, img=None, **kwargs):
-            '''
-            Get bitmap data as a numpy array.
-            
-            img can be either a filename or a Image (PIL) object.
-            '''
-            if PYMOL_EDU and (options.no_gui or 'ray' in kwargs):
-                self.skipTest("edu no-ray")
-
-            import numpy
-            
-            if img is None:
-                with mktemp('.png') as filename:
-                    self.png(filename, **kwargs)
-                    return self.get_imagearray(filename)
-
-            if isinstance(img, numpy.ndarray):
-                return img
-
-            if isinstance(img, basestring):
-                img = Image.open(img)
-
-            if not isinstance(img, Image.Image):
-                raise TypeError('img must be filename or Image instance')
-        
-            return numpy.array(img.getdata(),
-                               numpy.uint8).reshape((img.size[1], img.size[0], -1))
-
-        def png(self, filename, *args, **kwargs):
-            '''
-            Save image to filename, with antialias=0.
-            '''
-            if 'multi_undo' in get_capabilities():
-                with cmd.UndoPauseCM():
-                    cmd.set('antialias', 0)
-            else:
+    def png(filename, *args, **kwargs):
+        """
+        Save image to filename, with antialias=0.
+        """
+        if 'multi_undo' in get_capabilities():
+            with cmd.UndoPauseCM():
                 cmd.set('antialias', 0)
-            cmd.png(filename, *args, **kwargs)
-            cmd.draw()
-
-        def ambientOnly(self):
-            cmd.set('ambient', 1)
+        else:
             cmd.set('antialias', 0)
-            cmd.set('light_count', 1)
-            cmd.set('depth_cue', 0)
+        cmd.png(filename, *args, **kwargs)
+        cmd.draw()
 
-            # needed for open-source
-            cmd.set('reflect', 0)
-            cmd.set('direct', 0)
+    def ambient_only():
+        cmd.set('ambient', 1)
+        cmd.set('antialias', 0)
+        cmd.set('light_count', 1)
+        cmd.set('depth_cue', 0)
 
-    class PyMOLTestResult(unittest.runner.TextTestResult):
-        def addSuccess(self, test):
-            if not (self.showAll and test.timings):
-                return super(PyMOLTestResult, self).addSuccess(test)
+        # needed for open-source
+        cmd.set('reflect', 0)
+        cmd.set('direct', 0)
 
-            unittest.result.TestResult.addSuccess(self, test)
-            msg = 'ok (%s)' % ', '.join(
-                    ('%s: %.3fs' % (m, t) if m else '%.3fs' % t)
-                    for (m, t) in test.timings)
-            self.stream.writeln(msg)
-
-            filename = os.getenv("PYMOLTESTTIMINGS",
-                    os.path.join(pymol_test_dir, "timings.tab"))
-
-            if filename in ("", "none"):
-                return
-
-            with open(filename, "a") as handle:
-                for i, (m, t) in enumerate(test.timings):
-                    version = cmd.get_version()
-                    buildinfo = version[3:] or [0, "", 0]
-                    print('\t'.join([
-                        '%f' % time.time(),
-                        '%012x' % uuid.getnode(),
-                        '%f' % t,
-                        type(test).__name__ + '.' + test._testMethodName,
-                        str(m or i),
-                        version[0],
-                        buildinfo[1],
-                        '%d' % buildinfo[2],
-                        platform.platform(),
-                        platform.node(),
-                    ]), file=handle)
-
-    def run_testfiles(filenames='all', verbosity=2, out=sys.stderr, **kwargs):
+    def run_testfiles(filenames='all', **kwargs):
         '''
 DESCRIPTION
 
-    Run one or multiple unit test files as a test suite.
+    Run one or more test files or directories with pytest.
 
 USAGE
 
-    run_testfiles file1 file2 ... [, verbosity [, out ]]
+    run_testfiles file1 file2 ...
         '''
         if filenames in ('all', ['all']):
             global run_all
             run_all = True
-            filenames = pathlib.Path(pymol_test_dir, 'tests').glob('**/*.py')
-        else:
-            filenames = [pathlib.Path(f).resolve() for f in filenames]
+            filenames = [os.path.join(pymol_test_dir, 'tests')]
 
-        unittest_files = []
-        pytest_files = []
-
-        # Glob all files
-        filenames = [f for filename in filenames
-                     for f in (filename.glob('**/*.py')
-                               if filename.is_dir() else [filename])]
-
-        # Separate pytest files from unittest files
-        for path in filenames:
-            if path.stem.startswith('test_') and \
-               path.parent.stem not in ("properties", "settings"):
-                pytest_files.append(path)
-                continue
-            unittest_files.append(path)
-
-        # Run unittest files
-        suite = unittest.TestSuite()
-        for path in unittest_files:
-            filename = str(path)
-            mod = import_from_file(filename)
-
-            # hacky: register working directory with test cases
-            dirname = os.path.abspath(os.path.dirname(filename))
-
-            suite.addTest(unittest.defaultTestLoader
-                    .loadTestsFromModule(mod))
-
-        if not 'xml' in kwargs:
-            kwargs['xml'] = False
-        if kwargs['xml']:
-            import xmlrunner
-            testresult = xmlrunner.XMLTestRunner(output=out, verbosity=int(verbosity)).run(suite)
-        else:
-            if isinstance(out, str):
-                out = open(out, 'w')
-            testresult = unittest.TextTestRunner(stream=out,
-                                                 resultclass=PyMOLTestResult, verbosity=int(verbosity)).run(suite)
-
-        # Run pytest files if any
-        pytest_nfail = pytest.main(['-v', *map(str, pytest_files)]) if pytest_files else 0
+        nfail = int(pytest.main(['-v', *map(str, filenames)]))
 
         while deferred_unlink:
             os.unlink(deferred_unlink.pop())
@@ -704,7 +406,7 @@ USAGE
             import subprocess
             subprocess.call(['rd', '/s', '/q', deferred_rmtree.pop()], shell=True)
 
-        return len(testresult.errors) + len(testresult.failures) + pytest_nfail
+        return nfail
 
     def cli():
         '''

@@ -155,15 +155,11 @@ EXAMPLE
         r = cmd._cmd.set_volume_ramp(_self._COb, name, ramplist, int(state)-1)
 
     if _guiupdate and name in _volume_windows_qt:
-        from pymol import gui
-        app = gui.get_pmgapp()
-        @app.execute
-        def _():
-            try:
-                panel = _volume_windows_qt[name]
-                panel.widget().editor.setColors(ramplist)
-            except LookupError:
-                pass
+        try:
+            panel = _volume_windows_qt[name]
+            panel.widget().editor.setColors(ramplist)
+        except LookupError:
+            pass
 
     return r
 
@@ -184,18 +180,15 @@ ARGUMENTS
         import pymol
         raise pymol.CmdException('volume_panel requires the Qt GUI')
 
-    app = gui.get_pmgapp()
     from pmg_qt import volume as volume_qt
 
-    @app.execute
-    def _():
-        try:
-            panel = _volume_windows_qt[name]
-        except LookupError:
-            panel = volume_qt.VolumePanel(qt_window, name, _self=_self)
-            _volume_windows_qt[name] = panel
-        panel.show()
-        panel.raise_()
+    try:
+        panel = _volume_windows_qt[name]
+    except LookupError:
+        panel = volume_qt.VolumePanel(qt_window, name, _self=_self)
+        _volume_windows_qt[name] = panel
+    panel.show()
+    panel.raise_()
 
 ### utility functions
 

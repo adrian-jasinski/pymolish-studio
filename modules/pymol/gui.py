@@ -17,14 +17,6 @@
 import pymol
 cmd = __import__("sys").modules["pymol.cmd"]
 
-def get_pmgapp():
-    '''
-    Returns the PMGApp instance.
-    '''
-    if pymol._ext_gui is None:
-        pymol._ext_gui = createlegacypmgapp()
-    return pymol._ext_gui
-
 def get_qtwindow():
     '''
     Returns the PyMOLQtGUI/QMainWindow instance, or None if not available.
@@ -34,10 +26,6 @@ def get_qtwindow():
         return window
     except ImportError:
         return None
-
-def createlegacypmgapp():
-    import pymol.plugins.legacysupport as m
-    return m.createlegacypmgapp()
 
 # external gui control
 

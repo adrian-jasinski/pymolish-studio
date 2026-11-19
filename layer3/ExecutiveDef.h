@@ -87,9 +87,4 @@ struct CExecutive : public Block {
 
   CExecutive(PyMOLGlobals * G) : Block(G), m_ScrollBar(G, false) {};
 
-  int release(int button, int x, int y, int mod) override;
-  int click(int button, int x, int y, int mod) override;
-  int drag(int x, int y, int mod) override;
-  void draw(CGO* orthoCGO) override;
-  void reshape(int width, int height) override;
 };
