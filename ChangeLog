@@ -4,6 +4,25 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.35
+
+	* Pi interactions (cmd.* API, was a stub of the commercial build)
+	  - distance with mode 5 (pi-pi and pi-cation), 6 (pi-pi) and 7
+	    (pi-cation) draws dashes between the centers of planar rings,
+	    and between a ring center and an atom with a positive formal
+	    charge. Before, the modes printed "only available in Incentive
+	    PyMOL" and left an empty object. pi-pi: centers within 4.4 A
+	    and planes within 30 degrees (face to face), or within 5.5 A
+	    and planes more than 60 degrees apart (edge to face).
+	    pi-cation: within 6.6 A and 30 degrees of the ring normal.
+	  - pi_interactions name [, selection1 [, selection2 ...]] is
+	    distance with mode 5 and no labels.
+	  - The rows find > pi interactions > pi-pi and pi-cation of the A
+	    menu now find something.
+	  - Step 21c.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.34
 
 	* Stereochemistry (cmd.* API, was a stub of the commercial build)

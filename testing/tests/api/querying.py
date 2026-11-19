@@ -656,7 +656,6 @@ def testGetBonds():
     ] == cmd.get_bonds()
 
 
-@testing.requires('incentive')
 def testPiInteractions():
     # 1rx1 has 4 pi-pi and 1 pi-cation
     coords_ref_pi_pi = [

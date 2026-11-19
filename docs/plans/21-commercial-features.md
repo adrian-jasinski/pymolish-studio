@@ -118,6 +118,15 @@ rare cases.
 
 ### 21c — Pi interactions
 
+**Done in 4.19.35, option A, with 5 lines instead of 150.** The plan was
+wrong about what was missing: the finder `FindPiInteractions` (rings, cations,
+the distance and angle rules) was already in `layer3/Interactions.cpp`,
+compiled and never called. Only `ObjectDistNewFromSele` refused modes 5 to 7.
+It now calls the finder, and `pi_interactions` calls `distance` with mode 5.
+Checked besides the test: the two menu rows on 1rx1 give four and one
+dashes. Not looked at: structures without formal charges on lysine and
+arginine (the finder asks the core to assign them), several states.
+
 - **Now:** `cmd.pi_interactions` raises. The menu rows find > pi-pi and
   pi-cation are there and call `distance` with mode 6 and 7, which prints
   "modes 5-7 only available in Incentive PyMOL" and leaves an empty object.

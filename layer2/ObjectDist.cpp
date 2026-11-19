@@ -440,11 +440,11 @@ ObjectDist *ObjectDistNewFromSele(PyMOLGlobals * G, ObjectDist * oldObj,
 
       /* this does the actual work of creating the distances for this state */
       /* I->DSet[a] = new DistSet(G, selections, states, etc) -- created this new DistSet */
-      if (5 <= mode && mode <= 7) {
-        PRINTFB(G, FB_ObjectDist, FB_Errors)
-          " ObjectDist-Error: modes 5-7 only available in Incentive PyMOL\n"
-          ENDFB(G);
-        I->DSet[a] = nullptr;
+      if (5 <= mode && mode <= 7) { // 5: pi-pi and pi-cation, 6, 7: one of them
+        dist = 0.f; // dashes between ring centers, no average to report
+        I->DSet[a].reset(pymol::FindPiInteractions(G, I->DSet[a].release(),
+            sele1, state1, sele2, state2, mode != 7,
+            mode != 6 ? pymol::cInteractionBoth : pymol::cInteractionNone));
       } else if (mode == 9) { // 9: halogen-bond interaction
         I->DSet[a].reset(pymol::FindHalogenBondInteractions(G,
             I->DSet[a].release(), sele1, state1, sele2, state2, cutoff, &dist));
