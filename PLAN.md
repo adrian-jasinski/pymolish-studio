@@ -6,7 +6,9 @@ user's decisions of that day are applied (4.12.8 to 4.13.0) and listed in
 [PLAN-DONE.md](PLAN-DONE.md). Extended 2026-11-18 at 4.14.4 (`6125122a`) with
 the request of that day: 15g, 15h and steps 16 to 19, all planned, none built.
 Extended 2026-11-19 at 4.19.26 with step 21: the stubs of the commercial
-build, removed or to rebuild.
+build, removed or to rebuild. Checked again 2026-11-19 at 4.19.32: every
+shipped milestone left the table below for [PLAN-DONE.md](PLAN-DONE.md); the
+table lists only what is open.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -25,20 +27,20 @@ user's original numbers; the letters are milestones of the detailed plans.
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
 | 5 | **1b** — [Performance and GPU](docs/plans/01-performance-gpu.md) | Large surfaces off the GUI thread (waits for the user), draw cost of sticks, lines as triangles on every driver, the two triangulation passes. One measured bottleneck per change. | Each change has before and after numbers. |
-| 5 | **3** — [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Rows moved by dragging, a picked atom selects its row, sequence viewer text and scene buttons still drawn by the core, spacing of the remaining dialogs. The removal of the old C++ panel moved to step 17 and the timeline to step 19; dialog sizes and the scroll bar of the sequence viewer shipped as step 18. | Each increment ships in a reviewable test build. |
-| none | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Next: 8c to 8g. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
-| none | **5c** — [Release builds without GitHub Actions](docs/plans/05-builds-binaries.md) | A proposal of 2026-11-16 inside finished step 5: Linux in podman, Windows on the host, macOS not possible off Apple hardware. Nothing is built yet. | The user accepts or drops the proposal. |
-| none | **15** — [Presets and looks](docs/plans/15-presets.md) | 15b: the outline of the looks in the viewport (today only in ray-traced images). 15c: ChimeraX object colors as a palette. 15e: five more effects, tried and described. 15a (ordered menu, solvent row, glass, looks) shipped in 4.14.0, 15d (cartoon everywhere, ligand balls and sticks, cartoon transparency, comic and sketch) in 4.14.3, 15f (wire, illustration, shades of one color) in 4.14.4. 15g and 15h (one list, looks keep the background, working presets keep the protein colors) in 4.14.5. 15l (cartoon spring, no preset colors the cartoon, two-color interaction surface) in 4.19.29. | The user picks or drops 15b, 15c and each effect of 15e. |
-| none | **17** — [Legacy menu rows and the old internal GUI](docs/plans/17-legacy-ui.md) | 17a (the legacy menu rows) shipped in 4.16.0, 17b (the last Tk stand-ins and the Legacy Plugins menu) in 4.16.1. 17c (the C++ code of the panel, 2,694 lines) in 4.17.1. Open: 17d, the panel list, after step 19d; 17e, the menus the core draws in OpenGL. | 17d and 17e each pass the suite, the sanitizer job and a PSE round trip. |
-| none | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | Built in 4.18.0: the Timeline panel with a shot list, a strip, record, tours, fades, easing and export with an estimate, on a new module `pymol.shots`. Open: keeping the shot list in the session file, a shorter Movie menu, removal of the core's movie panel (19g), dragging on the strip. | The user answers the three questions; 19g passes the suite and the sanitizer job. |
-| none | **21** — [Features of the commercial build](docs/plans/21-commercial-features.md) | Removed in 4.19.18 to 4.19.26: all Maestro file support, mmlibs atom typing, the MOE, `.vis` and `.phypo` stubs, MTZ maps, `help_setting`, `callout`, `desaturate`, the FreeMOL test; `clean` was already rebuilt. To rebuild, smallest first: 21a STL export, 21b stereochemistry (a command, with rdkit), 21c pi interactions, 21d focal blur, 21e morphing, 21f three rendering details, 21g undo of more than the last move. | Each slice makes its old test pass under `pymolish -ckqyn`, then the `incentive` mark comes off. |
+| 5 | **3** — [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Rows moved by dragging, a picked atom selects its row, sequence viewer text and scene buttons still drawn by the core, spacing of the remaining dialogs. | Each increment ships in a reviewable test build. |
+| none | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c to 8g, the about 80 string calls through a pointer of 8b, twelve dead `_PYMOL_IP_EXTRAS` guards (8i style). Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
+| none | **5c** — [Release builds without GitHub Actions](docs/plans/05-builds-binaries.md) | A proposal of 2026-11-16 inside finished step 5: Linux in podman, Windows on the host, macOS not possible off Apple hardware. Nothing is built. | The user accepts or drops the proposal. |
+| none | **15** — [Presets and looks](docs/plans/15-presets.md) | 15b: the outline of the looks in the viewport (today only in ray-traced images). 15c: ChimeraX object colors as a palette. 15e: five more effects, tried and described. | The user picks or drops 15b, 15c and each effect of 15e. |
+| none | **17** — [Legacy menu rows and the old internal GUI](docs/plans/17-legacy-ui.md) | 17d: the panel list, after 19g. 17e: the menus the core draws in OpenGL (969 lines). | 17d and 17e each pass the suite, the sanitizer job and a PSE round trip. |
+| none | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | The shot list in the session file, a shorter Movie menu, removal of the core's movie panel (19g), dragging on the strip. | The user answers the three questions; 19g passes the suite and the sanitizer job. |
+| none | **21** — [Features of the commercial build](docs/plans/21-commercial-features.md) | To rebuild, smallest first: 21a STL export, 21b stereochemistry (a command, with rdkit), 21c pi interactions, 21d focal blur, 21e morphing, 21f three rendering details, 21g undo of more than the last move. | Each slice makes its old test pass under `pymolish -ckqyn`, then the `incentive` mark comes off. |
 
-Steps 8, 5c, 15, 17, 19 and 21 never got an order number. Steps 16 (4.15.0) and
-18 (4.15.1, 4.17.0) shipped and moved to [PLAN-DONE.md](PLAN-DONE.md). Suggested order for the
-request of 2026-11-18, smallest and most visible first: 15g with 15h, 16,
-18a, 17a with 17b, 18b, 19a to 19c, then the removals 17c, 19d, 17d, 17e. GPU compute is not on the critical
-path. What needs the user's answer first is in "Waiting for the user", not
-repeated in this table.
+Steps 8, 5c, 15, 17, 19 and 21 never got an order number. What can be built
+without an answer, in this order: 21a to 21e, then 8c to 8g, and the items of
+1b that are not the surface thread, each on a quiet machine. Everything else
+in the table waits for an answer in "Waiting for the user": 1b's surface
+thread (1), 5c (4), 15 (5 to 7), 19 (13), 17d behind 19g, 17e (14), 21f (16),
+21g (17). GPU compute is not on the critical path.
 
 ## Validation of the original draft
 
@@ -87,15 +89,16 @@ recommended direction, not a claim that an implementation has passed tests.
 
 The user's to do, not decisions:
 
-- `master` on GitHub has everything up to 4.14.4 (pull requests 5 to 7,
-  merged 2026-11-16). The checks marked "first CI run" can now be looked at:
-  the icon of the Windows program, the release notes, the `chem` and `fix`
-  extras on three systems.
-- Take the line `set internal_gui_width, 400` out of `~/.pymolrc`: since
-  4.17.1 it prints "unknown Setting" at every start.
-- Remove the pymolish plugin from `~/.pymol/startup`: it still wins over the
-  native commands.
-- Look at the Windows artifact after the merge.
+- Merge pull request 9 (`feature11`, 4.19.12 and later). `master` on GitHub
+  has everything up to 4.19.11 (pull request 8, merged 2026-11-19).
+- The checks marked "first CI run" can be looked at: the icon of the Windows
+  program, the release notes, the `chem` and `fix` extras on three systems.
+  The Windows bundle starts again only from 4.19.30 on.
+- Take the line `set internal_gui_width, 400` out of `~/.pymolrc` (line 12,
+  still there on 2026-11-19): since 4.17.1 it prints "unknown Setting" at
+  every start.
+- Remove the pymolish plugin from `~/.pymol/startup` (still there on
+  2026-11-19): it wins over the native commands.
 
 ## Shared completion criteria
 

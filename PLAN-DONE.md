@@ -14,7 +14,7 @@ order numbers are the ones the roadmap used.
 | 5 | [Builds and test binaries](docs/plans/05-builds-binaries.md) | Improve incremental builds and deliver test artifacts before large changes. |
 | 6 | [States panel](docs/plans/06-states-panel.md) | First, previous, play/stop, next, last, jump and speed in the Objects dock; replaces the state label and the toolbar's movie buttons. |
 | 7 | [Toolbar icons and UI scale](docs/plans/07-toolbar-icons-scale.md) | Line icons on every action toolbar button, Undo and Redo icon-only, 150 % default scale, scale button in the toolbar; replaces Display > UI Scale. |
-| 9 | [Own icon and logo](docs/plans/09-icons-logo.md) | Allowed and asked for by the license. One master PNG; window title and About box stop saying PyMOL. |
+| 9 | [Own icon and logo](docs/plans/09-icons-logo.md) | Allowed and asked for by the license. One master PNG; window title and About box stop saying PyMOL. New art (blue, green and violet ribbon) in 4.19.27. |
 | 10 | [README and license files](docs/plans/10-readme-license.md) | New README naming the fork; PyMOL notice kept word for word, new code MIT, third parties listed; two allowed slogans with the trademark footnote. |
 | 11 | [Color palettes](docs/plans/11-color-palettes.md) | Five palettes replace the object color order; toolbar button; remembered in `QSettings`. |
 | 12 | [pymolish plugin commands, native](docs/plans/12-native-commands.md) | Command bodies ported, not the framework: 58 plugin commands became 18 (19 since 4.12.9, `fetch_uniprot_ligands`), in five files; two dialogs, five menu entries, no new top menu. rdkit is the optional extra `chem`. |
@@ -22,7 +22,7 @@ order numbers are the ones the roadmap used.
 | 20 | [Look of the action toolbar, own palettes](docs/plans/20-toolbar-look.md) | Names on Palette and Background, icon-only view actions, larger and heavier icons, blue for what is chosen, a camera for Scenes, ray tracing with or without the background, palettes of the user. |
 | 18 | [Dialog sizes and the scroll bar of the sequence viewer](docs/plans/18-dialogs-scrollbar.md) | The form loader sets a form up on the dialog itself; the sequence viewer scrolls with a Qt scroll bar. |
 | 16 | [Background menu and palette caption](docs/plans/16-background.md) | A toolbar button with 13 backgrounds, plain and gradient, remembered only when asked; the palette menu says what it colors. |
-| 14 | [Action and right-click menus](docs/plans/14-menus.md) | One builder for objects and groups, one for selections; the A menu of an object has 10 rows, the rest under "more"; right click on a row gives rename, duplicate and delete at once. `menu.py` 1,869 to 1,745 lines. 14d (4.19.2): "select" and "split" rows by chain and by kind of molecule, new command `split_types`; presets left the A menus; "split by state" moved there in 4.19.3. |
+| 14 | [Action and right-click menus](docs/plans/14-menus.md) | One builder for objects and groups, one for selections; the A menu of an object has 10 rows, the rest under "more"; right click on a row gives rename, duplicate and delete at once. `menu.py` 1,869 to 1,745 lines. 14d (4.19.2): "select" and "split" rows by chain and by kind of molecule, new command `split_types`; presets left the A menus; "split by state" moved there in 4.19.3. 14e (4.19.31, 4.19.32): one list in Show, cartoon styles and hydrogens as hover menus, Show 21 to 15 rows, Hide 22 to 17. |
 
 ## Finished work, in execution order
 
@@ -46,6 +46,7 @@ optimization and workspace increments) is still open and stays in the roadmap.
 | 13 | **13a to 13d — cleanup** | Water and ions go in one click; `clean` works on ligands; a protein is repaired and relaxed into a new object. | Done 2026-11-14 (4.12.0 to 4.12.3): the A > clean submenu, `clean`, `fix_structure`, `minimize`. Not built: gaps in a chain (PDBFixer needs SEQRES records). `minimize` has no ligand parameters. |
 | 14 | **14a to 14c — menus** | Approved keep, merge, drop list applied; fewer rows and fewer lines in `menu.py`. | Done 2026-11-16 (4.13.0): [docs/plans/14-menus.md](docs/plans/14-menus.md). 14a in 4.10.1 (red trash icon on destructive rows), 14b on 2026-11-14 (audit, table of nine rows), 4.12.5 (zoom, orient, center, origin left the menus), 14c in 4.13.0 (all rows of the table). This was also slice 6 of step 3. |
 | none | **16a to 16c — background** | The menu ships with the rows that passed 16b. | Done 2026-11-18 (4.15.0): [docs/plans/16-background.md](docs/plans/16-background.md). All 13 candidates passed the ray-traced trial. Rock became icon-only to keep the toolbar inside the default window at 150 %. |
+| none | **20 — toolbar look** | The bar fits the default window; each option that was chosen is listed with its alternatives. | Done 2026-11-18 (4.19.0): [docs/plans/20-toolbar-look.md](docs/plans/20-toolbar-look.md). |
 
 Sequencing used for orders 1 to 6: cleanup preceded speculative optimization;
 recording a baseline was preparation. UI work needed the binding decision and a
@@ -71,21 +72,22 @@ Decided by the user on 2026-11-16 and applied:
 
 ## Finished milestones of open steps
 
-Steps 1, 3, 8 and 15 stay in the roadmap. These parts of them have shipped.
+Steps 1, 3, 8, 15, 17, 19 and 21 stay in the roadmap. These parts of them have
+shipped.
 
 | Step | Milestone | Result |
 | --- | --- | --- |
-| 1 | 1b, eight changes so far | 4.5.10 session load 0.92 s to 0.14 s (6.6x). 4.5.12 surface build 11.97 s to 9.66 s (1.24x). 4.7.7 to 4.7.9 surface build 9.44 s to 6.24 s (1.5x). GUI frame time measured 2026-11-14 (`testing/bench_gui.py`): software rendering under WSL is the main cost. 4.7.10 atom labels fixed on drivers without geometry shaders. 4.13.3 the ray tracer's voxel table 0.68 s to 0.28 s. 4.19.15 the window draws on the GPU under WSL (1aon cartoon 46 ms to 9.8 ms per frame). 4.19.16 surfaces of very large structures (4v6x 48.6 s to 31.0 s). Numbers: the ChangeLog and, against PyMOL 3, [docs/benchmark.md](docs/benchmark.md). |
+| 1 | 1b, eight changes so far | 4.5.10 session load 0.92 s to 0.14 s (6.6x). 4.5.12 surface build 11.97 s to 9.66 s (1.24x). 4.7.7 to 4.7.9 surface build 9.44 s to 6.24 s (1.5x). GUI frame time measured 2026-11-14 (`testing/bench_gui.py`): software rendering under WSL is the main cost. 4.7.10 atom labels fixed on drivers without geometry shaders. 4.13.3 the ray tracer's voxel table 0.68 s to 0.28 s. 4.19.15 the window draws on the GPU under WSL (1aon cartoon 46 ms to 9.8 ms per frame). 4.19.16 surfaces of very large structures (4v6x 48.6 s to 31.0 s). Outside the list of 1b, found with the same measurements: 4.19.8 to 4.19.10 `get_sasa_relative`, `util.color_by_area` and `util.chainbow`. Numbers: the ChangeLog and, against PyMOL 3, [docs/benchmark.md](docs/benchmark.md). |
 | 3 | Slices 1 to 3 | Done 2026-11-08 (4.5.0): objects dock, layout persistence, Panels menu. |
 | 3 | Slice 4 and the workspace layout | 4.5.11 Qt Objects panel replaces the viewport's object list. 4.5.14 action toolbar on top, command area at the bottom, toggle bar. 4.5.15 row state and colors. 4.5.16 no second prompt in the viewport. 4.5.17 menus stay on the screen under WSLg. 4.5.18 Qt menus for the viewport's right click. 4.13.4 scenes as a docked panel with thumbnails. |
 | 3 | Slice 5, partly | 4.5.2 dark theme. 4.5.7 UI Scale and the dark-theme color audit. 4.5.13 no fixed point sizes in rich text. Open: spacing of the remaining dialogs. |
+| 3 | Moved to other steps | The removal of the old C++ panel became step 17 (17c, 4.17.1), the timeline step 19 (4.18.0); dialog sizes and the scroll bar of the sequence viewer shipped as step 18 (4.15.1, 4.17.0). |
 | 8 | 8a — safety net | Done 2026-11-13 (4.7.2): CI job with ASan and UBSan, three bugs fixed, coverage measured (about half of the core). Catch2 is compiled in CI and not run: that is 8h. |
 | 8 | 8h — Catch2 in CI | Done 2026-11-16: the three build jobs ran the Catch2 tests all along, through `ctest.py`; the sanitizer job now runs them too. One defect found and fixed (4.14.1, `ColorGetName`). |
-| 8 | 8i — dead `#ifdef` branches | Done 2026-11-16 (4.14.2): the branches of 12 macros nothing defines, 2,207 lines in 97 files, one commit per macro. Proof: the preprocessed text of all 197 translation units is identical before and after. |
+| 8 | 8i — dead `#ifdef` branches | Done 2026-11-16 (4.14.2): the branches of 12 macros nothing defines, 2,207 lines in 97 files, one commit per macro. Proof: the preprocessed text of all 197 translation units is identical before and after. Two more macros of the same kind in 4.19.19, with step 21: `NO_MMLIBS` and the atom-typing blocks behind `_PYMOL_IP_EXTRAS`. |
 | 8 | 8b — strings, mostly | 4.7.3 to 4.7.6: 408 of 475 `sprintf`, `strcpy` and `strcat` calls are bounded; three real defects fixed with a test. About 80 calls through a pointer close with 8c and 8e. |
 | 15 | 15a — menu, glass and looks | Done 2026-11-16 (4.14.0): [docs/plans/15-presets.md](docs/plans/15-presets.md). The preset menu is ordered and has 13 rows instead of 14; one solvent row replaces three twin rows; new preset glass; five looks (default, figure, soft, flat, x-ray) in the toolbar menu. Tried and left out: Metal, Plastic and Rubber of the Lighting plugin. |
 | 15 | 15d — cartoon, ligand style, transparency, comic and sketch | Done 2026-11-16 (4.14.3). Only "simple" keeps the ribbon; technical, ligands and ligand sites draw cartoon. The ligand presets draw the ligand as balls on thin dark sticks. New row "cartoon transparency", reset by the next preset. New looks comic and sketch: seven looks. |
-| none | **20 — toolbar look** | The bar fits the default window; each option that was chosen is listed with its alternatives. | Done 2026-11-18 (4.19.0): [docs/plans/20-toolbar-look.md](docs/plans/20-toolbar-look.md). |
 | 19 | 19 — movie timeline | Done 2026-11-18 (4.18.0): [docs/plans/19-movie-timeline.md](docs/plans/19-movie-timeline.md). Timeline panel: shot list, strip with thumbnails and playhead, record, tours, fades, easing, export with an estimate; `pymol.shots` builds an ordinary movie from the list. The step stays open for three questions and 19g. |
 | 17 | 17c — the old internal GUI | Done 2026-11-18 (4.17.1). Object list, mouse mode table, movie and wizard buttons of the viewport: 2,694 lines deleted in 19 files, three settings and the option `-i` removed. |
 | 18 | 18b — scroll bar of the sequence viewer | Done 2026-11-18 (4.17.0). A see-through Qt scroll bar on the strip under the sequence rows; the core keeps the offset and the selection marks. |
@@ -95,6 +97,8 @@ Steps 1, 3, 8 and 15 stay in the roadmap. These parts of them have shipped.
 | 15 | 15i — visible objects, complexes | Done 2026-11-18 (4.19.1). Toolbar presets act on the objects that are switched on. New presets "protein-protein interaction" and "antibody and antigen", tried on 1BRS and 1N8Z. |
 | 15 | 15g, 15h — one list, background, colors | Done 2026-11-18 (4.14.5). The looks are the last group of the one preset list and no longer set the background or the outline color; ray traced on black and on white, the outline contrasts by itself. technical, ligands and ligand sites keep the protein colors, also at modified residues. The row "simple" is gone; the function stays. |
 | 15 | 15f — wire, illustration, shades | Done 2026-11-16 (4.14.4). Preset wire: the cartoon as a wire mesh (`cartoon_debug` 3, already in the core). Preset illustration: shades of blue inside a faint outlined surface, with the look flat. `util.shades` and "shades" rows in the color menus. The look flat keeps colors as they are and outlines transparent things. |
+| 15 | 15j, 15k — light after illustration, publication green | Done 2026-11-18 (4.19.2, 4.19.3). The next preset after "illustration" goes back to the standard light. Preset "publication green"; its row left the menu again with 15l, the function stays. |
+| 21 | Removals | Done 2026-11-19 (4.19.18 to 4.19.26): [docs/plans/21-commercial-features.md](docs/plans/21-commercial-features.md). All Maestro file support, mmlibs atom typing, the MOE, `.vis` and `.phypo` stubs, MTZ maps, `help_setting`, `callout`, `desaturate`, the FreeMOL test. `clean` was already rebuilt in 4.12.1. |
 
 ## Validation of the original draft, closed rows
 
