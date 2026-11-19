@@ -4,6 +4,18 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.39
+
+	* Core
+	  - Executive.cpp: seven function-local buffers made with malloc
+	    and released with FreeP are std::vector now (the object list
+	    while it is reordered, the stack of visible records of
+	    set_vis, the three buffers of map arithmetic, the selection
+	    indicator texture, and the index, vertex and outlier buffers
+	    of fit). No behavior change. Step 8c, first file.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.38
 
 	* Core

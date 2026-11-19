@@ -606,3 +606,22 @@ def testSetColor():
     cmd.set_color(longname, [0xFF, 0xFF, 0x00])
     cmd.color(longname)
     testing.assert_image_has_color('yellow')
+
+
+def testGetSetVis():
+    # which objects are switched on comes back, also inside a closed group
+    cmd.pseudoatom('m1')
+    cmd.pseudoatom('m2')
+    cmd.pseudoatom('m3')
+    cmd.group('g1', 'm2 m3')
+    cmd.disable('m1')
+    cmd.disable('m3')
+    vis = cmd.get_vis()
+    cmd.enable('m1')
+    cmd.enable('m3')
+    cmd.disable('g1')
+    assert cmd.get_names('public_objects', enabled_only=1) == ['m1', 'm2', 'm3']
+    cmd.set_vis(vis)
+    assert cmd.get_names('public_objects', enabled_only=1) == ['m2', 'g1']
+    cmd.set_vis({})
+    assert cmd.get_names('public_objects', enabled_only=1) == ['m2', 'g1']

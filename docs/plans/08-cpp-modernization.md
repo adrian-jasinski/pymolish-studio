@@ -248,6 +248,32 @@ removal lays bare, not removed because it is not neutral:
   has no such proof: it needs a real GUI check on each renderer path. Other
   macros were not surveyed again (the 2026-11-14 list was taken as given).
 
+**8c started 2026-11-19 in 4.19.39: `Executive.cpp`.**
+
+- Seven function-local buffers went from `pymol::malloc` / `calloc` plus
+  `FreeP` to `std::vector`: `ExecutiveReorder` (four arrays; the old code
+  freed one of them half way and used the null pointer as the mark "already
+  put back", now a `bool`), `ExecutiveSetVisFromPyDict` (the stack of
+  visible records; the pointer still walks up and down, over a vector),
+  `ExecutiveMapSet` (three buffers), the selection indicator texture, and
+  in `ExecutiveRMS` the two index arrays, the vertex array and the outlier
+  flags. 13 allocations and 16 frees gone; the null checks after `malloc`
+  went with them (a failed allocation now throws).
+- Left in the file: the `free` calls of `ExecutiveCEAlign` (the arrays come
+  from `ccealignmodule.cpp` and change with that file), and raw `new` /
+  `delete` (32 / 9), which are objects handed to the object list.
+- Not neutral in one point, on purpose: a vector zero-fills where `malloc`
+  did not. The buffers are per call, not per atom pair.
+- Checks: the suite (929 passed) and Catch2; a sanitizer build of the
+  working tree in a scratch copy (address and undefined behavior, the flags
+  of the CI job): 908 passed, 269 skipped (no rdkit, PDBFixer or OpenMM
+  there), no report, exit code 0. `set_vis` had no test: added
+  `viewing.py::testGetSetVis`, run in both builds. The selection indicator
+  texture is drawn only in a window: checked on WSLg, the markers of a
+  selection appear and grow with `selection_width`. A PSE round trip.
+  Not run: `compare.py` (the machine was busy with the sanitizer build;
+  none of the seven functions is on a profile of the benchmark rows).
+
 ## Review 2026-11-14: is it finished, and what is next
 
 `grep` counts and CI configuration only; nothing was built or changed.
