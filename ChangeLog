@@ -4,6 +4,35 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.15
+
+	* Performance
+	  - On WSL the window draws on the GPU. Through X11, Mesa under WSLg
+	    drew every frame on the CPU (llvmpipe); the app now selects Mesa's
+	    d3d12 driver when /dev/dxg and the driver are there
+	    (theme.prefer_gpu_on_wsl). GALLIUM_DRIVER=llvmpipe, or any other
+	    value of it, keeps the user's choice; so does
+	    LIBGL_ALWAYS_SOFTWARE. Frames of 1aon while rotating, llvmpipe /
+	    integrated Radeon 610M / RTX 5070 (the latter with
+	    MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA), ms: lines 54 / 5.7 /
+	    3.4, sticks 51 / 20 / 12, spheres 21 / 4.3 / 0.7, cartoon 46 /
+	    9.8 / 0.8, surface 114 / 24 / 12.5; surface of 4v6x 520 / 106 /
+	    46. Known cost: after new objects appear, the driver needs 9
+	    slower frames, in proportion to the number of objects (nothing
+	    to see below 20 objects; 600 files of lines take 14 s instead
+	    of 7 s until the first frame, then 75 ms per frame instead of
+	    324 ms).
+	  - Lines, ribbon lines, nonbonded crosses and alignment lines are
+	    drawn as triangles (what "set trilines" does) when the driver
+	    draws lines one pixel wide only, as d3d12 does
+	    (CShaderMgr::Trilines), so line_width keeps working there: the
+	    same pixels are lit as on llvmpipe (8.17 % of a test view; 4.75 %
+	    with one-pixel lines). The out-of-range warning of line_width
+	    is no longer printed in that case. Mesh lines, dashes and cell
+	    outlines stay one pixel wide on such drivers.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.14
 
 	* Removed

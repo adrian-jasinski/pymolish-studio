@@ -1092,7 +1092,7 @@ void ObjectAlignment::render(RenderInfo * info)
               SettingGetGlobal_b(G, cSetting_alignment_as_cylinders) &&
               SettingGetGlobal_b(G, cSetting_render_as_cylinders);
 
-            bool trilines = !as_cylinders && SettingGetGlobal_b(G, cSetting_trilines);
+            bool trilines = !as_cylinders && G->ShaderMgr->Trilines();
 
             if (sobj->renderCGO && (
                   (as_cylinders ^ sobj->renderCGO_has_cylinders) ||

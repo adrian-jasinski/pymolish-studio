@@ -155,6 +155,7 @@ public:
   void Set_Reload_Bits(int bits);
   void Check_Reload();
   GLfloat *GetLineWidthRange();
+  bool Trilines() const;
 
   template <typename T, typename... TArgs>
   T * newGPUBuffer(TArgs&&... args) {
@@ -319,7 +320,7 @@ public:
 
   short print_warnings;
   int reload_bits;
-  GLfloat line_width_range[2];
+  GLfloat line_width_range[2] = {};
   short stereo_flag; /* -1 left; 0 = off; 1 = right */
   short stereo_blend;  /* 0 - no blend, 1 - blend  : for right eye stereo in full-screen e.g., anaglyph */
   bool stereo_draw_buffer_pass;

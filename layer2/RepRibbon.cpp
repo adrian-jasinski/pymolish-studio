@@ -92,7 +92,7 @@ static bool RepRibbonCGOGenerate(RepRibbon* I) {
     if (ok)
       ok &= CGOStop(I->shaderCGO);
   } else {
-    int trilines = SettingGetGlobal_b(G, cSetting_trilines);
+    int trilines = G->ShaderMgr->Trilines();
     int shader = trilines ? GL_TRILINES_SHADER : GL_LINE_SHADER;
     if (ok)
       ok &= CGOEnable(I->shaderCGO, shader);

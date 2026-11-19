@@ -120,6 +120,34 @@ def prefer_x11_on_wsl(environ=os.environ):
         environ.setdefault("QT_QPA_PLATFORM", "xcb;wayland")
 
 
+# where distributions install Mesa's drivers
+_DRI_DIRS = (
+    "/usr/lib/x86_64-linux-gnu/dri",
+    "/usr/lib/aarch64-linux-gnu/dri",
+    "/usr/lib64/dri",
+    "/usr/lib/dri",
+)
+
+
+def prefer_gpu_on_wsl(environ=os.environ, exists=os.path.exists):
+    """Call before the OpenGL context exists. Through X11, Mesa under WSLg
+    draws on the CPU (llvmpipe) unless it is told to use its d3d12 driver,
+    which draws on the GPU of Windows: a frame of 1aon takes 50 to 120 ms on
+    the CPU. That driver draws lines one pixel wide; CShaderMgr::Trilines
+    makes up for it."""
+    # ponytail: a d3d12 driver that is installed but fails to start leaves
+    # the viewport without a context (Mesa does not fall back from a named
+    # driver); GALLIUM_DRIVER=llvmpipe is the way out. If that shows up in
+    # the field, restart without the variable when the context is invalid.
+    if (
+        "WSL_DISTRO_NAME" in environ
+        and "LIBGL_ALWAYS_SOFTWARE" not in environ
+        and exists("/dev/dxg")
+        and any(exists(d + "/d3d12_dri.so") for d in _DRI_DIRS)
+    ):
+        environ.setdefault("GALLIUM_DRIVER", "d3d12")
+
+
 class _RoundMenus(QtCore.QObject):
     def eventFilter(self, watched, event):
         if (
