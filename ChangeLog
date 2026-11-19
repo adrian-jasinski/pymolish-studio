@@ -4,6 +4,23 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.27
+
+	* Brand
+	  - New application icon and logo (blue, green and violet ribbon)
+	    replace the orange ones in data/pymol/icons/. Same file names
+	    and sizes, so the window icon and the bundle icon follow.
+	  - README: the logo is the centered header and replaces the
+	    title line, whose rule ran through the old icon.
+	    docs/img/logo-dark.png is the logo with light text, shown on
+	    dark pages.
+	  - docs/img/window.png retaken from the current window (Palette
+	    and Background buttons).
+	  - The image files and the README change were committed with
+	    4.19.26 by accident.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.26
 
 	* Removed

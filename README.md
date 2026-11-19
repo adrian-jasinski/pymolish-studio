@@ -1,6 +1,9 @@
-<img src="data/pymol/icons/pymolish.png" height="100" align="right" alt="pymolish-studio icon" />
-
-# pymolish-studio
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/img/logo-dark.png" />
+    <img src="data/pymol/icons/logo.png" width="440" alt="pymolish-studio" />
+  </picture>
+</p>
 
 pymolish-studio. Based on PyMOL(TM) technology.
 
