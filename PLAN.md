@@ -5,6 +5,8 @@ at 4.12.6 (`f30d3525`) against the code, the detailed plans and the git log; the
 user's decisions of that day are applied (4.12.8 to 4.13.0) and listed in
 [PLAN-DONE.md](PLAN-DONE.md). Extended 2026-11-18 at 4.14.4 (`6125122a`) with
 the request of that day: 15g, 15h and steps 16 to 19, all planned, none built.
+Extended 2026-11-19 at 4.19.22 with step 21: the stubs of the commercial
+build, removed or to rebuild.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -29,8 +31,9 @@ user's original numbers; the letters are milestones of the detailed plans.
 | none | **15** — [Presets and looks](docs/plans/15-presets.md) | 15b: the outline of the looks in the viewport (today only in ray-traced images). 15c: ChimeraX object colors as a palette. 15e: five more effects, tried and described. 15a (ordered menu, solvent row, glass, looks) shipped in 4.14.0, 15d (cartoon everywhere, ligand balls and sticks, cartoon transparency, comic and sketch) in 4.14.3, 15f (wire, illustration, shades of one color) in 4.14.4. 15g and 15h (one list, looks keep the background, working presets keep the protein colors) in 4.14.5. | The user picks or drops 15b, 15c and each effect of 15e. |
 | none | **17** — [Legacy menu rows and the old internal GUI](docs/plans/17-legacy-ui.md) | 17a (the legacy menu rows) shipped in 4.16.0, 17b (the last Tk stand-ins and the Legacy Plugins menu) in 4.16.1. 17c (the C++ code of the panel, 2,694 lines) in 4.17.1. Open: 17d, the panel list, after step 19d; 17e, the menus the core draws in OpenGL. | 17d and 17e each pass the suite, the sanitizer job and a PSE round trip. |
 | none | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | Built in 4.18.0: the Timeline panel with a shot list, a strip, record, tours, fades, easing and export with an estimate, on a new module `pymol.shots`. Open: keeping the shot list in the session file, a shorter Movie menu, removal of the core's movie panel (19g), dragging on the strip. | The user answers the three questions; 19g passes the suite and the sanitizer job. |
+| none | **21** — [Features of the commercial build](docs/plans/21-commercial-features.md) | Removed in 4.19.18 to 4.19.22: the Maestro reader's leftovers, mmlibs atom typing, the MOE, `.vis` and `.phypo` stubs, the FreeMOL test; `clean` was already rebuilt. To rebuild, smallest first: 21a STL export, 21b stereochemistry, 21c pi interactions, 21d focal blur, 21e morphing, 21f three rendering details, 21g undo of more than the last move. Five more stubs are undecided. | Each slice makes its old test pass under `pymolish -ckqyn`, then the `incentive` mark comes off. |
 
-Steps 8, 5c, 15, 17 and 19 never got an order number. Steps 16 (4.15.0) and
+Steps 8, 5c, 15, 17, 19 and 21 never got an order number. Steps 16 (4.15.0) and
 18 (4.15.1, 4.17.0) shipped and moved to [PLAN-DONE.md](PLAN-DONE.md). Suggested order for the
 request of 2026-11-18, smallest and most visible first: 15g with 15h, 16,
 18a, 17a with 17b, 18b, 19a to 19c, then the removals 17c, 19d, 17d, 17e. GPU compute is not on the critical
@@ -79,6 +82,10 @@ recommended direction, not a claim that an implementation has passed tests.
 | 13 | 19: keep the shot list after a restart, as a new entry in the session file (recommended: yes; it changes PSE output)? Remove the 58 Program rows of the Movie menu that Add and Tour replace (recommended: yes)? Remove the keyframe strip the core draws under the viewport (recommended: not yet)? | [19-movie-timeline.md](docs/plans/19-movie-timeline.md), Options and Questions | 19 |
 | 14 | 17e: remove the menus the core draws in OpenGL (969 lines)? Since the window shows Qt menus, only a program that embeds the viewport through `pymol2` without the window still gets them. Recommended: yes, if no such program is in use. | [17-legacy-ui.md](docs/plans/17-legacy-ui.md), 17e and question 4 | 17e |
 | 15 | 20: blue hover in every menu of the program, not only in the toolbar's (recommended: yes)? Should Orient act only on what is visible, like Zoom since 4.19.1 (recommended: yes)? | [20-toolbar-look.md](docs/plans/20-toolbar-look.md), Options and Questions | Two lines |
+| 16 | 21: Maestro. Keep what is left (saving `.mae`, loading `.cms`, and through the same VMD plugin a basic `.mae` load: atoms, bonds, cell), or remove all of it, about 2,400 lines? Kept so far (recommended: keep; it works and is tested). | [21-commercial-features.md](docs/plans/21-commercial-features.md), "One side effect" and question 1 | Nothing |
+| 17 | 21b: is `assign_stereo` as a command enough (A, recommended), or must the property `stereo` fill itself in (B)? 21g: undo by snapshots for edits plus the coordinate ring for moves (C, recommended), or coordinates only for now? | [21-commercial-features.md](docs/plans/21-commercial-features.md), 21b and 21g | 21b, 21g |
+| 18 | 21f: which rendering details? Recommended: FXAA in the viewport yes; sphere modes 10 and 11 no (cap the setting at 9); background image stored inside the session file yes, which changes what a PSE contains. | [21-commercial-features.md](docs/plans/21-commercial-features.md), 21f, questions 3 and 4 | 21f |
+| 19 | 21: five commands still refuse and were not in the request: `load_mtz` with `map_generate`, `help_setting`, `callout`, `desaturate`, the PDB header as a property. Remove or rebuild, each? | [21-commercial-features.md](docs/plans/21-commercial-features.md), "Not asked, still refusing" | The removal of `IncentiveOnlyException` |
 
 The user's to do, not decisions:
 

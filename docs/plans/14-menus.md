@@ -101,6 +101,12 @@ No action menu has two rows with the same command, with one exception
 | 8 | Add | Right click on a row: show as ▸, color ▸, rename, duplicate, delete on top, then the five submenus | The essentials one click away, as planned. |
 | 9 | Keep | Everything else. Done in 4.12.5, against the first draft of this row: zoom, orient, center and origin left every A and right-click menu | The toolbar zooms, orients and centers; a double click on a row zooms on it. |
 
+Correction 2026-11-19: the rows "pi-pi" and "pi-cation" of row 2 do not
+work either; `distance` with mode 6 or 7 prints "only available in
+Incentive PyMOL" and leaves an empty object. Rebuilding the three modes,
+and bringing back label > stereochemistry (row 4), is planned in
+[step 21](21-commercial-features.md), 21c and 21b.
+
 Rows 1 to 4 remove dead things and fix a bug: they change nothing a user
 relies on. Rows 5 to 8 move rows that people know by position. Decided
 2026-11-16: the user left the choice open ("select best option and apply");

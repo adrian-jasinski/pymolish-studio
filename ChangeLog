@@ -4,6 +4,20 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.23
+
+	* Documentation
+	  - docs/plans/21-commercial-features.md, new: what was removed in
+	    4.19.18 to 4.19.22 and the plan for seven features to rebuild
+	    here (STL export, stereochemistry, pi interactions, focal
+	    blur, morphing, three rendering details, undo of more than the
+	    last move), each with options, a recommendation and what
+	    happens to its tests. PLAN.md: step 21 and four questions.
+	    Plans 8, 13 and 14: pointers and one correction (find > pi-pi
+	    and pi-cation never worked).
+
+2026-11-19 pymolish-studio
+
 	* 4.19.22
 
 	* Testing

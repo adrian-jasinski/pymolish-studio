@@ -200,7 +200,10 @@ save round trip. `layer1/` changes: real GUI.
   shift in `ColorGetName`, reached by the new `testLook`.
 - Not tried: the job itself on GitHub (GCC 11 on Ubuntu 22.04; here GCC 13).
 
-**8i done 2026-11-16 in 4.14.2.**
+**8i done 2026-11-16 in 4.14.2.** Two more macros of the same kind went in
+4.19.19 with [step 21](21-commercial-features.md): `NO_MMLIBS` (always
+defined) and the atom-typing blocks behind `_PYMOL_IP_EXTRAS` (never
+defined). Twelve `_PYMOL_IP_EXTRAS` guards in eight files are left.
 
 - 12 macros, one commit each (`59cc08ee` to `374acdcc`) and a last pass for
   conditions that name two of them: 2,207 lines gone from 97 files.
