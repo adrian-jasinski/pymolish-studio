@@ -37,21 +37,3 @@ def testStereoPYMOL2782():
     labels = []
     cmd.iterate('name CA', 'labels.append(stereo)', space=locals())
     assert labels == ['R']
-
-
-def testLoadMTZ():
-    cmd.load_mtz(testing.datafile('4rwb.mtz'), 'foo',
-            'cryst_1/data_1/FP',
-            'cryst_1/data_1/PHIC')
-
-    assert cmd.get_names() == ['foo']
-
-    extent = cmd.get_extent('foo')
-    testing.assert_array_equal(extent, [
-        [   0.000,   0.000,   0.000],
-        [  37.585,  40.586,  27.214]], delta=1e-3, msg='extend wrong')
-
-    # min, max, mean, stdev
-    mmms = cmd.get_volume_histogram('foo', 0)
-    testing.assert_array_equal(mmms, [-2.6767, 4.9998, 0.0, 1.0], delta=1e-4,
-            msg='histogram wrong')

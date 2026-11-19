@@ -6788,35 +6788,6 @@ pymol::Result<> ExecutiveMapSet(PyMOLGlobals* G, const char* name,
   return {};
 }
 
-const char* ExecutiveMapGenerate(PyMOLGlobals* G, const char* name,
-    const char* reflection_file, const char* tempFile, char* amplitudes,
-    const char* phases, const char* weights, double reso_low, double reso_high,
-    const char* space_group, double cell[6], int quiet, int zoom)
-{
-  /* FIXME: this should be returned in memory!! */
-  /* In the meantime, use mkstemp and load in Python */
-  int ok;
-
-  ok = 0;
-
-  if (weights && (!strncmp(weights, "None", 4)))
-    weights = nullptr;
-
-    /* printf("Passing to primex driver: space_group=%s, cell=[%f %f %f %f %f
-     * %f], reso_high=%f, rseo_low=%f, refl_file=%s, ampl=%s, phases=%s,
-     * weights=%s, map_file=%s", space_group, cell[0], cell[1], cell[2],
-     * cell[3], cell[4], cell[5], reso_high, reso_low, reflection_file,
-     * amplitudes, phases, weights, tempFile); */
-
-  PRINTFB(G, FB_Executive, FB_Errors)
-  " Error: MTZ map loading not supported in this PyMOL build.\n" ENDFB(G);
-
-  if (!ok)
-    return nullptr;
-  else
-    return (const char*) tempFile;
-}
-
 pymol::Result<> ExecutiveMapNew(PyMOLGlobals* G, const char* name, int type,
     float grid_spacing, const char* s0, float buffer, const float* minCorner,
     const float* maxCorner, int state, int have_corners, int quiet, int zoom,

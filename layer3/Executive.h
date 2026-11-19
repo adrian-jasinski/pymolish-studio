@@ -160,11 +160,6 @@ public:
   SpecRec* getSpecRec() { return rec; }
 };
 
-const char* ExecutiveMapGenerate(PyMOLGlobals* G, const char* name,
-    const char* reflection_file, const char* tempFile, char* amplitudes,
-    const char* phases, const char* weights, double reso_low, double reso_high,
-    const char* space_group, double cell[6], int quiet, int zoom);
-
 int ExecutiveReference(
     PyMOLGlobals* G, int action, const char* sele, int state, int quiet);
 int ExecutiveGetExpandedGroupList(PyMOLGlobals* G, const char* name);

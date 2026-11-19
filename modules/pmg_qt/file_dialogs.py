@@ -30,8 +30,6 @@ def load_dialog(parent, fname, **kwargs):
         load_map_dialog(parent, fname, 'ccp4')
     elif format == 'brix':
         load_map_dialog(parent, fname, 'o')
-    elif format == 'mtz':
-        load_mtz_dialog(parent, fname)
     else:
         if format in ('pse', 'psw') and not ask_partial(parent, kwargs, fname):
             return
@@ -119,57 +117,6 @@ def load_traj_dialog(parent, filename):
     form._dialog.setModal(True)
     form._dialog.show()
 
-
-def load_mtz_dialog(parent, filename):
-    from pymol import headering
-
-    _fileData = headering.MTZHeader(filename)
-
-    FCols = _fileData.getColumnsOfType("F") + \
-            _fileData.getColumnsOfType("G")
-    PCols = _fileData.getColumnsOfType("P")
-    WCols = _fileData.getColumnsOfType("W") + \
-            _fileData.getColumnsOfType("Q")
-    _2FC, _2PC, _looksLike = _fileData.guessCols("2FoFc")
-    _FC, _PC, _looksLike = _fileData.guessCols("FoFc")
-
-    form = parent.load_form('load_mtz')
-    form.input_amplitudes.addItems(FCols)
-    form.input_phases.addItems(PCols)
-    form.input_weights.addItem("")
-    form.input_weights.addItems(WCols)
-    form.input_prefix.setFocus(),
-
-    for col in [_2FC, _FC]:
-        if col in FCols:
-            form.input_amplitudes.setCurrentIndex(FCols.index(col))
-            break
-    for col in [_2PC, _PC]:
-        if col in PCols:
-            form.input_phases.setCurrentIndex(PCols.index(col))
-            break
-
-    if _fileData.reso_min is not None:
-        form.input_reso_min.setValue(_fileData.reso_min)
-    if _fileData.reso_max is not None:
-        form.input_reso_max.setValue(_fileData.reso_max)
-
-    def run():
-        try:
-            parent.cmd.load_mtz(filename,
-                    form.input_prefix.text(),
-                    form.input_amplitudes.currentText(),
-                    form.input_phases.currentText(),
-                    form.input_weights.currentText(),
-                    form.input_reso_min.value(),
-                    form.input_reso_max.value(),
-                    quiet=0)
-        except BaseException as e:
-            QtWidgets.QMessageBox.critical(parent, "Error", str(e))
-
-    form._dialog.accepted.connect(run)
-    form._dialog.setModal(True)
-    form._dialog.show()
 
 
 def load_aln_dialog(parent, filename, format):

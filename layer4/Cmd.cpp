@@ -1469,53 +1469,6 @@ static PyObject *CmdRampNew(PyObject * self, PyObject * args)
   return APIResult(G, result);
 }
 
-/* Synthesize a map from possibly weighted coefficients */
-/* See MapCalculate for the actual calculation */
-static PyObject * CmdMapGenerate(PyObject * self, PyObject * args)
-{
-  PyMOLGlobals * G = nullptr;
-  int ok = false;
-
-  char * name, * reflection_file, * tempFile, * amplitudes, * phases, * weights, *space_group;
-  const char * cResult = nullptr;
-  int  quiet, zoom;
-  double reso_high, reso_low, cell[6];
-
-
-  ok = PyArg_ParseTuple(args, "Ossssszddsddddddii", &self, &name, &reflection_file, &tempFile,
-			&amplitudes, &phases, &weights, &reso_low, &reso_high,
-			&space_group, &cell[0], &cell[1], &cell[2], &cell[3], &cell[4],
-			&cell[5],&quiet, &zoom);
-
-  if(ok) {
-    API_SETUP_PYMOL_GLOBALS;
-    ok = (G != nullptr);
-  } else {
-    API_HANDLE_ERROR;
-  }
-
-  if (ok && (ok = APIEnterNotModal(G))) {
-
-    if (ok) {
-      PRINTFB(G, FB_CCmd, FB_Blather)
-	" Cmd-Update: Start ExecutiveMapGenerate."
-      ENDFB(G);
-
-      cResult = (const char*) ExecutiveMapGenerate(G, name, reflection_file, tempFile, 
-						   amplitudes, phases, weights, 
-						   reso_low, reso_high, 
-						   space_group, cell, quiet, zoom);
-
-      PRINTFB(G, FB_CCmd, FB_Blather)
-	" Cmd-Update: Finished ExecutiveMapGenerate."
-      ENDFB(G);
-    }
-    APIExit(G);
-  }
-
-  return APIAutoNone(Py_BuildValue("s", cResult));
-}
-
 static PyObject *CmdMapNew(PyObject * self, PyObject * args)
 {
   PyMOLGlobals *G = nullptr;
@@ -6523,7 +6476,6 @@ static PyMethodDef Cmd_methods[] = {
   {"load_object", CmdLoadObject, METH_VARARGS},
   {"load_traj", CmdLoadTraj, METH_VARARGS},
   {"look_at", CmdLookAt, METH_VARARGS},
-  {"map_generate", CmdMapGenerate, METH_VARARGS},
   {"map_new", CmdMapNew, METH_VARARGS},
   {"map_double", CmdMapDouble, METH_VARARGS},
   {"map_halve", CmdMapHalve, METH_VARARGS},

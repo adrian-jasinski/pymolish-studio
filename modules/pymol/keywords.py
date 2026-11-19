@@ -162,7 +162,6 @@ def get_command_keywords(self_cmd=cmd):
         'load_embedded' : [ self_cmd.load_embedded     , 0 , 0 , ''  , parsing.STRICT ],
         'load_files'   : [ self_cmd.load_files         , 0 , 0 , ''  , parsing.STRICT ],
         'list_uniprot_structures': [ self_cmd.list_uniprot_structures, 0 , 0 , ''  , parsing.STRICT ],
-        'load_mtz'      : [ self_cmd.load_mtz          , 0 , 0 , ''  , parsing.STRICT ],
         'load_png'      : [ self_cmd.load_png          , 0 , 0 , ''  , parsing.STRICT ],
         'load_smiles'  : [ self_cmd.load_smiles        , 0 , 0 , ''  , parsing.STRICT ],
         'load_traj'     : [ self_cmd.load_traj         , 0 , 0 , ''  , parsing.STRICT ],

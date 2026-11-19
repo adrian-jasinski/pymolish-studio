@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-19 pymolish-studio
 
+	* 4.19.26
+
+	* Removed
+	  - Density maps from MTZ reflection files, which never worked
+	    here: cmd.load_mtz raised IncentiveOnlyException, and
+	    cmd.map_generate always ended in "MTZ map loading not
+	    supported in this PyMOL build". With them the MTZ load dialog,
+	    the MTZ header parser pymol.headering, which only they used,
+	    and the C++ function behind map_generate. Loading an .mtz
+	    file now reports "unsupported file type".
+	  - Maps in CCP4, MRC, XPLOR, DX and the other map formats load as
+	    before.
+
+2026-11-19 pymolish-studio
+
 	* 4.19.25
 
 	* Removed

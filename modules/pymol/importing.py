@@ -1335,38 +1335,6 @@ ARGUMENTS
             r = _cmd.load_coords(_self._COb, selection, coords, int(state)-1)
         return r
 
-    def load_mtz(filename, prefix='', amplitudes='', phases='', weights='None',
-            reso_low=0, reso_high=0, quiet=1, *, _self=cmd):
-        '''
-DESCRIPTION
-
-    Load a MTZ file as two map objects (fofc, 2fofc) or if amplitudes and
-    phases column names are given, as one map object.
-
-USAGE
-
-    load_mtz filename [, prefix [, amplitudes, phases [, weights
-        [, reso_low [, reso_high ]]]]]
-
-ARGUMENTS
-
-    filename = str: filename
-
-    prefix = str: object name or prefix {default: filename without extension}
-
-    amplitudes = str: amplitudes column name, guess if blank {default: }
-
-    phases = str: phases column name, required if amplitudes are given {default: }
-
-    weights = str: weights column name, optional {default: None}
-
-    reso_low = float: minimum resolution {default: 0, read from file}
-
-    reso_high = float: maximum resolution {default: 0, read from file}
-
-        '''
-        raise pymol.IncentiveOnlyException()
-
     def loadall(pattern, group='', quiet=1, _self=cmd, **kwargs):
         '''
 DESCRIPTION
@@ -1418,7 +1386,6 @@ EXAMPLE
     loadfunctions = {
         'pdbml': 'pymol.lazyio:load_pdbml',
         'cml': 'pymol.lazyio:load_cml',
-        'mtz': load_mtz,
         'py': lambda filename, _self: _self.do("_ run %s" % filename),
         'pml': lambda filename, _self: _self.do("_ @%s" % filename),
         'aln': 'pymol.seqalign:load_aln_multi',
