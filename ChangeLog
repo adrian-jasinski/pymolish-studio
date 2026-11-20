@@ -4,6 +4,23 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.37.0
+
+	* Property table: values at the left, a new icon, no message
+	  for a group
+	  - Every value starts at the left of its cell, numbers too.
+	    The row number stays at the right.
+	  - The Table button has the icon of a sheet: a grid under a
+	    header. The old one read as a window with panes.
+	  - Fix: with a group, a map or a measurement among the
+	    objects (A > split > by type makes a group), the console
+	    got "ExecutiveGetProperty: objname='...' not found" twice
+	    a second while the table was open. Only molecules have
+	    properties, and only they are asked and written now.
+	  - Step 30b.
+
+2026-11-20 pymolish-studio
+
 	* 4.36.0
 
 	* Ligand 2D: circles, larger text, tones for a light and a dark

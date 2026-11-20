@@ -77,9 +77,34 @@ def test_rows_and_columns():
     assert _shown(table, 0) == ["1", "", "2", "3", "4"]
     assert table.items["lig_b"].text(3) == "-10.25"
     assert table.items["lig_c"].text(3) == "-8" and table.items["lig_a"].text(4) == ""
+    # 30b: every value starts at the left of its cell, numbers too; the
+    # row number stays at the right
     right = QtCore.Qt.AlignmentFlag.AlignRight
-    assert table.items["lig_b"].textAlignment(3) & right
+    assert not table.items["lig_b"].textAlignment(3) & right
     assert not table.items["lig_b"].textAlignment(4) & right
+    assert table.items["lig_b"].textAlignment(0) & right
+
+
+def test_only_molecules_are_asked(capfd):
+    # 30b: a group, a measurement and a map have no properties. Asked for
+    # them the core prints "ExecutiveGetProperty: objname=... not found",
+    # twice a second while the table is open; writing to one raises.
+    _scene()
+    cmd.distance("far", "lig_a and name N", "lig_a and name C")
+    capfd.readouterr()
+    table = _table()
+    table.refresh(force=True)
+    assert "far" in table.items and "poses" in table.items
+    table._write([(table.items["poses"], 3), (table.items["far"], 3)], "5")
+    QtWidgets = __import__("pymol.Qt", fromlist=["QtWidgets"]).QtWidgets
+    table.tree.setCurrentItem(table.items["poses"], 3)
+    QtWidgets.QApplication.clipboard().setText("7")
+    table.paste()
+    printed = capfd.readouterr()
+    assert "not found" not in printed.out + printed.err
+    assert cmd.get_property("score", "lig_b") == -10.25  # the members keep theirs
+    cmd.get_property_list("poses")  # what the table no longer does
+    assert "not found" in capfd.readouterr().out
 
 
 def test_in_dot():

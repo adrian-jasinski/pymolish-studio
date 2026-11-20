@@ -20,6 +20,7 @@ Qt = QtCore.Qt
 UserRole = Qt.ItemDataRole.UserRole
 Checked, Unchecked = Qt.CheckState.Checked, Qt.CheckState.Unchecked
 FIXED = ("Row", "In", "Name")
+MOLECULE = "object:molecule"
 ROW, IN, NAME = range(3)
 
 
@@ -29,7 +30,9 @@ def table_rows(cmd):
     rows = []
     for name, kind, enabled, parent in snapshot(cmd):
         if kind.startswith("object:"):
-            names = cmd.get_property_list(name) or ()
+            # only molecules have properties: asked for those of a group or
+            # a map, the core prints an error
+            names = cmd.get_property_list(name) or () if kind == MOLECULE else ()
             props = {p: cmd.get_property(p, name) for p in names}
             rows.append((name, kind, enabled, parent, props))
     return rows
@@ -253,12 +256,8 @@ class PropertyTable(QtWidgets.QDockWidget):
         item.setText(NAME, name)
         if kind != "object:group":
             item.setCheckState(IN, Checked if enabled else Unchecked)
-        right = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
-        left = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
         for column, value in enumerate(item.values[1:], len(FIXED)):
             item.setText(column, cell_text(value))
-            number = isinstance(value, (int, float)) and not isinstance(value, bool)
-            item.setTextAlignment(column, right if number else left)
 
     def _apply_filter(self):
         text = self.filter.text().lower()
@@ -312,11 +311,12 @@ class PropertyTable(QtWidgets.QDockWidget):
         None or "" deletes the property. The core picks the type: a whole
         number, a number, else text."""
         for item, column in cells:
-            if column >= len(FIXED):
+            name, kind = item.data(NAME, UserRole)
+            if column >= len(FIXED) and kind == MOLECULE:
                 self.cmd.set_property(
                     self.columns[column - len(FIXED)],
                     text.strip() if text and text.strip() else None,
-                    item.data(NAME, UserRole)[0],
+                    name,
                 )
         self.refresh(force=True)
 
@@ -490,12 +490,13 @@ class PropertyTable(QtWidgets.QDockWidget):
         order = sorted(range(tree.columnCount()), key=tree.header().visualIndex)
         order = order[order.index(columns[0]) :]
         for item, line in zip(shown, text.rstrip("\n").split("\n")):
+            name, kind = item.data(NAME, UserRole)
             for column, value in zip(order, line.split("\t")):
-                if column >= len(FIXED):
+                if column >= len(FIXED) and kind == MOLECULE:
                     self.cmd.set_property(
                         self.columns[column - len(FIXED)],
                         value.strip() or None,
-                        item.data(NAME, UserRole)[0],
+                        name,
                     )
         self.refresh(force=True)
 
