@@ -48,9 +48,9 @@ a look in the real window, all listed in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.36.0 to 4.40.0 | Step 30: the 2D picture with circles, tones and a larger legend; the table's alignment and icon; the live UI scale with sharp icons; the preset menu with three submenus, and no preset colors a cartoon or a surface; a clean row for crystallization additives; Undo and Redo for a row of the preset menu. |
 | 4.41.0 | Palette `halo` (11b): five colors of a brand book and seven added ones. |
 
-All ten requested features have a working version, except the second half
-of the fourth: the surface looks wait for the grid surface of 1b, as
-decided. Steps 20, 26 and 29 are finished.
+Of the ten requested features, nine have a working version. The tenth, the
+surface looks, waits for the grid surface of 1b, as decided. Steps 20, 26
+and 29 are finished.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
