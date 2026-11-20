@@ -183,7 +183,7 @@ since 15g: black on a light background, light on a dark one.
   in `data/shaders/` and the Scene draw path of `layer1/`. New shader code,
   to be measured with `testing/compare.py -- gui` before and after.
 
-**15c, ChimeraX object colors. Approved 2026-11-20, to build.**
+**15c, ChimeraX object colors. Done 2026-11-20 in 4.22.0:** palette `chimerax`, the ten values of ChimeraX's `atomic_color_names`; listed for "any" background, since its purple is too dark for the contrast rule of the dark palettes.
 - One more entry in `palettes.PALETTES` (tan, sky blue, plum, light green,
   salmon, ...), the pattern of [step 11](11-color-palettes.md). One line and
   the docstring.

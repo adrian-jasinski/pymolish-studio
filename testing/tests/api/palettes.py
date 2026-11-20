@@ -56,6 +56,7 @@ def test_data(subtests):
             "nord",
             "dracula",
             "catppuccin",
+            "chimerax",
         ]
     for name, (background, colors) in palettes.PALETTES.items():
         with subtests.test(name):

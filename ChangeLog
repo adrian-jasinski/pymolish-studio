@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.22.0
+
+	* Palette "chimerax"
+	  - The ten colors UCSF ChimeraX gives to models 1 to 10: tan,
+	    sky blue, plum, light green, salmon, light gray, deep pink,
+	    gold, dodger blue, purple. In the Palette menu of the
+	    toolbar and as "palette chimerax".
+	  - Step 15c.
+
+2026-11-20 pymolish-studio
+
 	* 4.21.0
 
 	* Action toolbar: an Open button

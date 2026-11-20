@@ -52,11 +52,15 @@ also recolors what is loaded; typed, `palette vivid` leaves it alone and
 | `nord` | dark background | ![nord](img/palette-nord.png) |
 | `dracula` | dark background | ![dracula](img/palette-dracula.png) |
 | `catppuccin` | dark background | ![catppuccin](img/palette-catppuccin.png) |
+| `chimerax` | any background | ![chimerax](img/palette-chimerax.png) |
 
 `colorblind` is Okabe-Ito followed by Paul Tol's bright and muted sets, with
 the published values. Only the first seven colors are designed as one set.
 `nord`, `dracula` and `catppuccin` are the accent colors of the editor themes
 of those names (Nord frost and aurora, Dracula, Catppuccin Mocha).
+`chimerax` is the ten colors UCSF ChimeraX gives to models 1 to 10 (tan, sky
+blue, plum, light green, salmon, light gray, deep pink, gold, dodger blue,
+purple), for those who move between the two programs.
 
 ## New commands and menu entries
 

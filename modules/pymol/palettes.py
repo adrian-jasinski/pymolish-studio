@@ -60,6 +60,14 @@ PALETTES = {
         "dark",
         "89b4fa a6e3a1 f38ba8 f9e2af cba6f7 fab387 94e2d5 f5c2e7 74c7ec b4befe f5e0dc",
     ),
+    # The colors UCSF ChimeraX gives to models 1 to 10, values as in its
+    # source (atomic_color_names): tan, sky blue, plum, light green, salmon,
+    # light gray, deep pink, gold, dodger blue, purple. Made for its black
+    # background, but the purple is too dark to pass as "dark" here.
+    "chimerax": (
+        "any",
+        "d2b48c 87ceeb dda0dd 90ee90 fa8072 d3d3d3 ff1493 ffd700 1e90ff 800080",
+    ),
 }
 PALETTES = {name: (bg, colors.split()) for name, (bg, colors) in PALETTES.items()}
 BUILTIN = tuple(PALETTES)  # define() adds the palettes of the user
@@ -138,8 +146,8 @@ def palette(name="", recolor=0, quiet=1, *, _self=cmd):
 
     ARGUMENTS
 
-        name = default, vivid, deep, pastel, soft, colorblind, nord, dracula
-        or catppuccin. "default" is the PyMOL order (green, cyan, light
+        name = default, vivid, deep, pastel, soft, colorblind, nord, dracula,
+        catppuccin or chimerax. "default" is the PyMOL order (green, cyan, light
         magenta, ...).
 
         recolor = 0/1: also color the carbons of the loaded objects, from the
