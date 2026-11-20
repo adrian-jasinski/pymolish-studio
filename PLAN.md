@@ -31,6 +31,8 @@ the AI agents of Anthropic and OpenAI. Planned, not built; questions 41
 to 48.
 A fifth, small one: 11b, a palette from the user's brand colors, planned
 at 4.39.0 and built in 4.41.0 as `halo`.
+A sixth, at 4.41.0: step 32, icons in the row under the object list and a
+Movie button in the action toolbar. Planned, not built; questions 49 to 52.
 
 **State 2026-11-20 at 4.41.0.** Built since 4.19.43, each with its test and
 a look in the real window, all listed in [PLAN-DONE.md](PLAN-DONE.md):
@@ -81,6 +83,7 @@ user's original numbers; the letters are milestones of the detailed plans.
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 | any time | **23b** — [Rows moved by dragging](docs/plans/23-rename-in-panel.md) | Reorder and regroup in the Objects panel with the mouse. Carried over from step 3. | The drop goes through a function a test calls. |
 | any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
+| after the answers | **32a, 32b** — [Icons under the object list, a Movie button](docs/plans/32-footer-icons-movie-button.md) | Request of 2026-11-20, planned the same day, nothing built. 32a: icons for the four buttons under the object list (mouse mode, Wizard, SEQ, command line), beside the text or in its place. 32b: a Movie button after Scenes in the action toolbar; it opens the Timeline panel. Both are small: 32a is one block of the window, four icon files and four rows of names; 32b is one row. 32a waits for questions 49 and 50, 32b for 51 and 52. | 32a: the row fits the panel at 150 % in both themes, and the icons stay sharp after a live change of the UI scale. 32b: no button of the bar starts in the overflow menu. |
 | after the answers | **31** — [AI agents: Claude and ChatGPT drive the program](docs/plans/31-ai-agents.md) | Request of 2026-11-20, planned the same day, nothing built. Four slices. 31a: the tools (run commands, the scene, a picture of the viewport, a table of atoms, help), a connector that listens on this machine only, behind a token, off until it is turned on, and an icon in the action toolbar. 31b: "Connect Claude Code" and "Connect ChatGPT and Codex" in one click. 31c: a built-in assistant in the command area, with an API key. 31d: Sign in with ChatGPT. There is no login for a Claude subscription inside the program: Anthropic does not allow it, so that route is the connector. Waits for questions 41 to 48; 31a needs 41, 43, 45 and 46. | Each slice has its test and a look in the real window. In 31a Claude Code and Codex each make one figure of 1OKY through the connector. |
 
 The session key and the rest of the table come first, then the scale and
@@ -93,6 +96,10 @@ on GitHub for now. GPU compute is not on the critical path.
 
 Step 31, the AI agents, has no number in the order yet: it is built when
 its questions are answered, its first slice before the rest.
+
+Step 32 has no number either. Its two slices are small: each can be built
+as soon as its two questions are answered. The Movie button of 32b takes
+room in the bar that the icon of 31a also wants: the plan has the widths.
 
 ## Validation of the original draft
 
@@ -129,7 +136,20 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-Eight questions are open, all for step 31, further down.
+Twelve questions are open: four for step 32, here, and eight for step 31,
+further down.
+
+Four questions are for step 32, the icons under the object list and the
+Movie button ([plan](docs/plans/32-footer-icons-movie-button.md), with a
+picture of every option). Nothing of it is built. The last column is the
+recommended answer.
+
+| No. | Question | Recommended |
+| --- | --- | --- |
+| 49 | The four buttons under the object list: A, an icon beside every text (the row then needs 307 px and has 292); B, icons for Wizard, SEQ and the command line, and the mouse mode keeps its name beside its icon; C, icons only? | B. |
+| 50 | The drawings: `mouse`, `wand-sparkles`, `letter-text` and `square-terminal`, or others from the picture in the plan? Does "SEQ" keep its letters beside its icon? | Those four. "SEQ" as an icon alone; the letters come back if it does not read as "sequence". |
+| 51 | The icon of the Movie button: `clapperboard`, which the menus use for "movie" already, or `film`? | `clapperboard`. |
+| 52 | A click on Movie opens the Timeline panel, as Scenes does for its panel; or a second click also closes it, as Table does? | It opens. |
 
 Questions 33 to 35 (11b, the palette from the brand colors) got one
 answer on 2026-11-20, "add this to code", without a choice. So the
