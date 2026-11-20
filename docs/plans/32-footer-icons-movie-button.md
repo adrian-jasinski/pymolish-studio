@@ -1,8 +1,21 @@
 # 32 — Icons in the row under the object list, and a Movie button
 
 [Roadmap](../../PLAN.md) · Request 2026-11-20 · **Planned 2026-11-20 at
-4.41.0. Two slices, 32a and 32b, each one commit and one version. Nothing is
-built. Questions 49 to 52.**
+4.41.0. Done the same day: 32a in 4.42.0, 32b in 4.43.0.**
+
+As built, after the answers to questions 49 to 52. The text below is the
+plan as it was written, with its options.
+
+| Slice | Built | Measured in the real window, 150 %, dark theme |
+| --- | --- | --- |
+| 32a, 4.42.0 | Layout B with two changes from answer 50: the order is mouse mode, SEQ, Wizard, command line, and SEQ keeps its letters beside its icon. The drawings are the four recommended ones. | The buttons are 177, 61, 24 and 24 px wide and 23 px high; the row needs 254 px of its 292. SEQ keeps its tooltip after a click. Also looked at in the light theme and after a live change of the UI scale to 200 %: the icons are sharp. |
+| 32b, 4.43.0 | The icon is `video` (answer 51). A click opens the Timeline panel and a second click closes it (answer 52). | The bar needs 1236 px and the window opens 1244 px wide; no button is in the overflow menu. Click, second click and Space on the focused button were tried. |
+
+Not in the plan: the "movie" rows of the menus show `video` too, since a
+label has one icon, and `clapperboard.svg` is deleted. Left out: the Movie
+button was not looked at in the light theme; the Tab order was not walked
+by hand (every button takes the Tab key, read from the widgets); Windows
+and macOS were not seen.
 
 **The row under the object list has four buttons with text: the mouse mode,
 Wizard, SEQ and `>_`. 32a gives them icons, beside the text or in its place.

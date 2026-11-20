@@ -10,6 +10,7 @@ order numbers are the ones the roadmap used.
 | --- | --- | --- |
 | 0 | [UI engine research](docs/plans/00-ui-engine.md) | PySide6 + Qt Widgets; preserve the renderer while simplifying bindings. |
 | 3 | [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Named docks with a saved layout, the Objects panel in Qt, the action toolbar on top and the command area at the bottom, the dark theme, the UI scale, scenes as a dock, Qt menus. Closed on 2026-11-20 without its metadata table: the property table of [step 22](docs/plans/22-property-table.md) replaces it. Its open rows went to 22e (a picked atom selects its row), 23b (rows moved by dragging) and question 31 (scene buttons and sequence text drawn by the core); the spacing of dialogs is fixed when a dialog is touched. |
+| 32 | [Icons under the object list, a Movie button](docs/plans/32-footer-icons-movie-button.md) | Requested, planned and built on 2026-11-20, 4.42.0 and 4.43.0, two slices. The four buttons under the object list have an icon: the mouse mode with its name, SEQ with its letters, Wizard and the command line as the icon alone. A Movie button after Scenes in the action toolbar opens and closes the Timeline panel. |
 | 30 | [Eight repairs after a first look at 4.35.0](docs/plans/30-polish.md) | Requested, planned and built on 2026-11-20, 4.36.0 to 4.40.0, six slices: the 2D picture, the property table, the live UI scale, the preset menu and what a preset may color, a clean row for crystallization additives, Undo and Redo for a row of the preset menu. Questions 36 to 40 are open, each with a built answer. |
 | 29 | [Version numbers](docs/plans/29-versioning.md) | The first number stays 4. The second goes up when something a user can see ships, the third for every other change to the program; plans, docs, CI and tests take no number. In `AGENTS.md` §5 since 2026-11-20; 4.20.0 is the first version under it. |
 | 26 | [Action toolbar: Bg, Open, quick select, layout](docs/plans/26-toolbar-buttons.md) | "Bg" with a paint roller; an Open button with the rows of File that bring something in; chips P, L, S, a menu with chains and more, All and "nothing", with Shift to add and Ctrl to take away; one row, 1154 px at 150 %, with a text only on Residues, Presets, Bg, Draw and the scale. 4.20.0, 4.21.0, 4.30.0. |
@@ -122,6 +123,16 @@ its colors, whether the brand is named) were answered on 2026-11-20 with
 in 4.41.0: `halo`, twelve colors with the five of the brand book as
 published, the brand not named.
 
+Decided by the user on 2026-11-20, questions 49 to 52 (step 32), built the
+same day:
+
+| # | Decision | Where it went |
+| --- | --- | --- |
+| 49 | B: icons for Wizard and the command line, the mouse mode keeps its name beside its icon. | 4.42.0. |
+| 50 | "SEQ with letters but before the wizard. Wizard next." The four drawings as proposed. | 4.42.0: mouse mode, SEQ, Wizard, command line. |
+| 51 | The video icon. | 4.43.0: `video`, also on the "movie" rows of the menus. |
+| 52 | The button opens and closes the panel. | 4.43.0. |
+
 Also on 2026-11-20: `plan_images/` is not committed and is ignored by git;
 it is deleted when the last plans made from it (22d, 24c, 25b) are built. Its `:Zone.Identifier`
 files are deleted. The line `set internal_gui_width, 400` is out of the
@@ -145,14 +156,17 @@ ones, the new ones win.
 ## Finished milestones of open steps
 
 Steps 1, 8, 15, 19, 21, 22, 23, 24, 25, 27 and 28 stay in the roadmap.
-These parts of them have shipped. The rows of steps 3, 11, 17, 18, 20, 26 and
-30, which are finished, are kept here as the record of their milestones. The
-rows are not in order of time: the newest row, 4.41.0, is 11b at the top;
+These parts of them have shipped. The rows of steps 3, 11, 17, 18, 20, 26, 30
+and 32, which are finished, are kept here as the record of their milestones. The
+rows are not in order of time: the newest rows, 4.42.0 and 4.43.0, are 32a
+and 32b at the top; under them 4.41.0, 11b;
 under it the block 4.36.0 to 4.40.0, the six rows of step 30; the block before it, 4.20.0 to 4.35.0, is
 the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
+| 32 | 32b — a Movie button in the action toolbar | Done 2026-11-20 (4.43.0): [docs/plans/32-footer-icons-movie-button.md](docs/plans/32-footer-icons-movie-button.md). After Scenes; a click opens the Timeline panel, a second click closes it; Space on the focused button does the same. Measured at 150 %: the bar needs 1236 px (1195 before), the window opens 1244 px wide, no button is in the overflow menu. Differs from the plan: the icon is `video` and the click also closes (answers 51 and 52); the "movie" rows of the menus got the same icon and `clapperboard.svg` is deleted. |
+| 32 | 32a — icons in the row under the object list | Done 2026-11-20 (4.42.0): the same plan. `mouse` with the name of the mode, `letter-text` with "SEQ", `wand-sparkles` and `square-terminal` alone; SEQ stands before Wizard. The icons of SEQ and of the command line are blue while on. Measured at 150 %: the row needs 254 px of its 292, the buttons are 23 px high (21 before); looked at in the dark and the light theme and after a live change to 200 %. Differs from the plan: the order, and "SEQ" keeps its letters (answer 50). On the way: the tooltip of SEQ is set on its action, the button takes it from there at every click. |
 | 11 | 11b — palette `halo` | Done 2026-11-20 (4.41.0): [docs/plans/11-color-palettes.md](docs/plans/11-color-palettes.md). Twelve colors: turquoise, blue, cyan, indigo and deep purple of the user's brand book as published, and between them pink, yellow, lime, red, green, magenta and orange in the same tone. Listed for any background: on black the deep purple has a contrast of 1.8 and the indigo 2.7; neighbors are at least 0.56 apart. Differs from the plan: the three questions got no choice, so the recommended options were built; the menu was looked at at 100 % only. |
 | 30 | 30a — the 2D picture | Done 2026-11-20 (4.36.0): [docs/plans/30-polish.md](docs/plans/30-polish.md). Residues are circles of 52 px with 14 px text; each fill is a gradient in tones for a light or a dark window; the legend has 16 px text and wraps. 1OKY: the picture went from 514 to 429 px wide. The three `qt.svg` messages per drawing are gone. Differs from the plan: the legend's text is 16 px, not 14, and the picture has less empty margin, both after a look at it in a panel 420 px wide. |
 | 30 | 30b — the property table | Done 2026-11-20 (4.37.0). Values at the left; the icon `sheet`; only molecules are asked for properties and written, so a group no longer makes the core print an error at every poll. |
