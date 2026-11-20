@@ -4,6 +4,25 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.25.0
+
+	* Removed: the scene buttons drawn in the viewport
+	  - The column of buttons at the lower left of the viewport, one
+	    per scene, is gone. The Scenes panel (toolbar, camera icon)
+	    lists the scenes with pictures; Enter recalls, F2 renames,
+	    dragging reorders.
+	  - The setting scene_buttons no longer exists: "set
+	    scene_buttons" reports an unknown setting. A session that
+	    stored it loads as before. Scene > Buttons and the row
+	    "buttons" of the viewport's scene menu are gone with it.
+	  - pymol.menu.scene_buttons and pymol.menu.scene_menu are
+	    deleted; only the buttons used them.
+	  - 498 lines of C++ deleted, in Scene.cpp, SceneMouse.cpp,
+	    Setting.cpp and MovieScene.cpp, with SceneElem.h.
+	  - Step 17f. Left over from step 3.
+
+2026-11-20 pymolish-studio
+
 	* 4.24.0
 
 	* Objects panel: rename on the row

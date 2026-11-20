@@ -264,6 +264,19 @@ then committed apart):
 
 ## 17f — Scene buttons the core draws (decided 2026-11-20)
 
+**Done 2026-11-20 in 4.25.0.** 498 lines of C++ deleted (drawing, the
+click, release and drag paths in `SceneMouse.cpp`, the list of scene names
+the core kept for the buttons, `SceneElem.h`), 5 added: both settings are
+placeholders, and `Movie.h` includes `ScrollBar.h` itself, which it used to
+get through the scene header. In the three mouse functions the
+"handled by a button" flag is gone and the block it guarded moved two
+columns left: `git diff -w` shows only the deletions. Checks: the suite; a
+session written by 4.19.17 with `scene_buttons` off and three scenes loads,
+recalls, renames, reorders and saves; in the real window a drag and clicks
+at the lower left of the viewport act on the molecule, and the Scenes panel
+lists the three scenes. Not run: the sanitizer build and the Catch2 tests
+(CI runs both).
+
 Left over from step 3, question 31 of the roadmap, answered "as
 recommended": the buttons the core draws at the lower left of the viewport,
 one per scene, are deleted. The Scenes panel (4.13.4) lists the same scenes

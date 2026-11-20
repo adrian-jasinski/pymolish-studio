@@ -785,7 +785,6 @@ class PyMOLDesktopGUI(object):
                 ('menu', 'Store', F_scene_menu('store')),
                 ('menu', 'Clear', F_scene_menu('clear')),
                 ('separator',),
-                ('check', 'Buttons', 'scene_buttons', 1),
                 ('menu', 'Cache', [
                     ('command', 'Enable', lambda: cmd.cache("enable")),
                     ('command', 'Optimize', lambda: cmd.cache("optimize")),

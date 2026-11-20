@@ -30,8 +30,6 @@
 
 #include "MovieScene.h"
 
-void SceneSetNames(PyMOLGlobals * G, const std::vector<std::string> &list);
-
 /**
  * Get read-only pointer to G->scenes->order
  */
@@ -152,7 +150,6 @@ pymol::Result<> MovieSceneOrder(PyMOLGlobals* G, std::vector<std::string> names_
   }
 
   G->scenes->order = std::move(new_order);
-  SceneSetNames(G, G->scenes->order);
 
   return {};
 }
@@ -194,8 +191,6 @@ pymol::Result<> MovieSceneStore(PyMOLGlobals * G, const char * name,
     } else if (scenes->dict.find(key) == scenes->dict.end()) {
       scenes->order.push_back(key);
     }
-
-    SceneSetNames(G, scenes->order);
 
     // set scene_current_name
     SettingSetGlobal_s(G, cSetting_scene_current_name, key.c_str());
@@ -596,7 +591,6 @@ pymol::Result<> MovieSceneRename(PyMOLGlobals * G, const char * name, const char
     // delete all scenes
     G->scenes->dict.clear();
     G->scenes->order.clear();
-    SceneSetNames(G, G->scenes->order);
     return {};
   }
 
@@ -633,8 +627,6 @@ pymol::Result<> MovieSceneRename(PyMOLGlobals * G, const char * name, const char
         G->scenes->order.erase(v_it);
       }
     }
-
-    SceneSetNames(G, G->scenes->order);
 
     // update scene_current_name
     if (0 == strcmp(name, SettingGetGlobal_s(G,
@@ -918,8 +910,6 @@ void MovieScenesFromPyList(PyMOLGlobals * G, PyObject * o) {
   MovieSceneRename(G, "*");
 
   PConvArgsFromPyList(G, o, G->scenes->order, G->scenes->dict);
-
-  SceneSetNames(G, G->scenes->order);
 }
 
 pymol::Result<MovieScene*> MovieSceneGet(

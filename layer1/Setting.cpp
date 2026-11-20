@@ -2106,11 +2106,6 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
   case cSetting_stereo_dynamic_strength:
     SceneInvalidate(G);
     break;
-  case cSetting_scene_buttons:
-  case cSetting_scene_buttons_mode:
-    SceneInvalidate(G);
-    OrthoInvalidateDoDraw(G);
-    break;
   case cSetting_dash_round_ends:
   case cSetting_dash_color:
     if (SettingGetGlobal_b(G, cSetting_use_shaders) && SettingGetGlobal_b(G, cSetting_dash_use_shader)){
@@ -2404,13 +2399,6 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
     ExecutiveInvalidateRep(G, inv_sele, cRepLine, cRepInvRep);
     ExecutiveInvalidateRep(G, inv_sele, cRepNonbonded, cRepInvRep);
     SceneChanged(G);
-    break;
-  case cSetting_scenes_changed:
-    {
-      int scene_buttons = SettingGetGlobal_i(G, cSetting_scene_buttons);
-      if (scene_buttons)
-	OrthoInvalidateDoDraw(G);
-    }
     break;
   case cSetting_button_mode_name:
     {

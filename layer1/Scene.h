@@ -47,8 +47,6 @@ Z* -------------------------------------------------------------------
 #define cSceneImage_Draw 1
 #define cSceneImage_Ray 2
 
-#define SceneScrollBarMargin DIP2PIXEL(1)
-#define SceneScrollBarWidth DIP2PIXEL(13)
 #define SceneGetExactScreenVertexScale SceneGetScreenVertexScale
 
 enum class SceneClipMode {

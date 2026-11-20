@@ -293,13 +293,6 @@ def _testRampColor(sele):
     _eval_first(m)
 
 
-def testSceneMenu():
-    _make_scenes()
-    m = menu.scene_menu(cmd, '001')
-    d = _to_dict(m)
-    _eval_first(d['update'])
-
-
 def testSeleAction():
     _make_seles()
     sele = 's1'

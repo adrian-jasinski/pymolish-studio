@@ -622,7 +622,6 @@ label fonts 5-15: are scalable vector fonts.  Font 15 includes greek characters 
 "roving_sticks","is the cutoff radius for sticks.","float","6.0","0"
 "scene_animation","controls whether or not scenes are animated.  If negative, then [[setting:animation|animation]] controls.","integer","-1","0"
 "scene_animation_duration","controls how long it takes to interpolate the camera between scenes.","float","2.25","0"
-"scene_buttons","Controls whether PyMOL displays scene buttons on screen.","bool","off","0"
 "scene_current_name","contains the name of the current scene (if any).","string","blank","0"
 "scene_loop","controls whether or not the scenes loop without an intervening blank scene.","boolean","on","0"
 "scenes_changed","this is a setting PyMOL uses internally.","float","1.0","0"

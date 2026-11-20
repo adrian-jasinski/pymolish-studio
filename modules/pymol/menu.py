@@ -1631,11 +1631,6 @@ def enable_disable(self_cmd, enable):
         result.insert(2, [1, 'selections', 'deselect'])
     return result
 
-def scene_buttons(self_cmd):
-    return [[ 2, 'Buttons', '' ],
-            [ 1, 'on', 'cmd.set("scene_buttons")'],
-            [ 1, 'off', 'cmd.set("scene_buttons", 0)']]
-
 def scene_main(self_cmd):
     list = self_cmd.get_scene_list()
     recall_list = [ [2, 'Scenes' , ''] ]
@@ -1648,9 +1643,7 @@ def scene_main(self_cmd):
         [ 1, 'append' , 'cmd.scene("new","append",quiet=0)' ],
         [ 1, 'update' , 'cmd.scene("auto","update",quiet=0)' ],
         [ 0, ''             , ''                      ],
-        [ 1, 'recall' , recall_list ],
-        [ 0, ''             , ''                      ],
-        [ 1, 'buttons', scene_buttons(self_cmd)] ]
+        [ 1, 'recall' , recall_list ] ]
 
 def main_pseudoatom_sub(self_cmd,pos, screenpos):
     return [
@@ -1826,12 +1819,3 @@ def seq_option(self_cmd, sele, title, object=0):
             ])
     return result
 
-def scene_menu(self_cmd, name):
-    safe_name = name.replace('"','\\"') # just in case
-    return [[ 2, 'Scene '+name    , '' ],
-            [ 1, 'rename', 'cmd.wizard("renaming","'+name+'",mode="scene")'          ],
-            [ 0, ''             , ''                      ],
-            [ 1, 'update', 'cmd.scene("'+safe_name+'","update")'],
-            [ 0, ''             , ''                      ],
-            [ 1, del_col + 'delete', 'cmd.scene("'+safe_name+'","delete")'],
-            ]
