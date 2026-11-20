@@ -29,7 +29,7 @@ is no longer the way to rename.**
 
 ## Options
 
-**The old wizard** (it is a removal, so it is a choice):
+**The old wizard** (question 22, answered 2026-11-20: A, it is kept):
 
 | | Option | Note |
 | --- | --- | --- |

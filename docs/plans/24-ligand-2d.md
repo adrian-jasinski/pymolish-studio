@@ -119,14 +119,15 @@ always on white unless "transparent" is chosen.
 | Click on a residue | `select sele, <that residue>` and the residue is shown as sticks; Ctrl+click adds. Double click zooms on it. |
 | Click on a ligand atom | Selects the atom. |
 | Hover | The contact's distance in a tooltip. |
-| From 3D to 2D | "Show in 3D" check box: the drawn contacts appear as dashes in the viewport (`distance` objects in a group `ligand_2d`), removed when the panel closes. |
+| Selection, both ways | A residue or ligand atom selected in the drawing is selected in 3D (the two rows above). The other way too: residues that are in `sele` are drawn with a blue ring, so a click in the viewport or on a quick-select chip shows in the drawing. Read from `sele` in the window's 0.5 s poll while the panel is shown. |
+| Contacts in 3D | "Show in 3D" check box: the drawn contacts appear as dashes in the viewport (`distance` objects in a group `ligand_2d`), removed when the panel closes. |
 | Update | A Refresh button, and by itself when the ligand choice changes. Not on every frame or state change. |
 | Export | Save as SVG or PNG (the command's `filename`), Copy to the clipboard. |
 | Keyboard | Tab walks the residues, Enter selects the current one; the buttons are ordinary buttons. |
 
 ## Options
 
-**How it is drawn** (question 23):
+**How it is drawn** (question 23, answered 2026-11-20: A, "our own code, it could use rdkit; try to make it interactive, e.g. selecting a residue in 2D selects it in 3D as well"). The interactive part is the panel of 24b; the answer makes the selection go both ways, see below.
 
 | | Option | Note |
 | --- | --- | --- |

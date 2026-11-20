@@ -49,7 +49,7 @@ within 30 % of the gzipped mmCIF, which holds less (no settings, no scenes):
 little is left to gain by a different layout. zstd would be faster still but
 is in the standard library only from Python 3.14; the floor is 3.13.
 
-## Options (question 29)
+## Options (question 29, answered 2026-11-20: B with B1)
 
 | | Option | Note |
 | --- | --- | --- |
@@ -71,7 +71,7 @@ is in the standard library only from Python 3.14; the floor is 3.13.
 | File | The bytes `PSEX` and a format number (1) and three reserved bytes, then the lzma stream (`lzma.compress(data, preset=1)`) of the pickle that `get_session(binary=1)` gives. The mark lets `load` tell the type without trusting the file name, and a later change of packing (zstd when 3.14 is the floor) is a new format number. |
 | Writing | `save name.psex` and File > Save Session. The dialog offers "pymolish session (*.psex)" first and "PyMOL session (*.pse)" second. |
 | Reading | `load name.psex`, File > Open, a dropped file, Open Recent, the file association of the bundles. `.pse` and `.pze` load as before. |
-| One key for everything new | `session["pymolish"]`, a dictionary with a `version` and one entry per feature: `table` ([step 22](22-property-table.md): column order and hidden columns), `shots` ([step 19](19-movie-timeline.md): the shot list), later, if question 29 says so, `background_image` ([21f](21-commercial-features.md) decided on 2026-11-20 to store the picture as text in the setting itself; under this key PyMOL would keep seeing the file name), and `stage` and `ligand_2d` if they need one. One save task and one restore task in a new `modules/pymol/session_extra.py` hand each entry to its owner. Object properties need no entry: the core saves them. |
+| One key for everything new | `session["pymolish"]`, a dictionary with a `version` and one entry per feature: `table` ([step 22](22-property-table.md): column order and hidden columns), `shots` ([step 19](19-movie-timeline.md): the shot list), not `background_image` ([21f](21-commercial-features.md) decided on 2026-11-20 to store the picture as text in the setting itself; that stands, the answer to question 29 did not move it), later `stage` and `ligand_2d` if they need one. One save task and one restore task in a new `modules/pymol/session_extra.py` hand each entry to its owner. Object properties need no entry: the core saves them. |
 | Unknown entries | Kept and written back untouched, so an older pymolish does not strip what a newer one saved. |
 | Safety | A session is a pickle, and loading a pickle can run code: true for `.pse` today and unchanged by this plan. The existing warning on files from others stays; `.psex` adds no new risk and removes none. |
 | Old sessions | Every `.pse` ever written loads as before. Nothing is converted by itself. |

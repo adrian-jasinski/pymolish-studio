@@ -41,7 +41,7 @@ well under a second. Qt prints its warning line each time.
 Not tried: Windows, macOS, Wayland, a floating dock, an open dialog, a
 second screen with another scale.
 
-## Options (question 28)
+## Options (question 28, answered 2026-11-20: A, with D as its fallback)
 
 | | Option | Note |
 | --- | --- | --- |

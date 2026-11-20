@@ -262,6 +262,27 @@ then committed apart):
 - Not clicked: the menu of the core's movie panel (it goes through the same
   `MenuActivate` functions). Not tested: Windows and macOS.
 
+## 17f — Scene buttons the core draws (decided 2026-11-20)
+
+Left over from step 3, question 31 of the roadmap, answered "as
+recommended": the buttons the core draws at the lower left of the viewport,
+one per scene, are deleted. The Scenes panel (4.13.4) lists the same scenes
+with thumbnails, rename and reorder.
+
+| What goes | Where |
+| --- | --- |
+| Drawing and layout of the buttons, the click and drag handling | `layer1/Scene.cpp` (around line 3247), `layer1/SceneMouse.cpp` (around line 1296) and what only they call |
+| Setting `scene_buttons` (599) | `layer1/SettingInfo.h`: a `REC__( 599, ),` placeholder, the table is positional. `scene_buttons_mode` (598) is unused already and gets one too. `Setting.cpp` lines 2109 and 2410. |
+| Menu rows | Scene > Buttons (`_gui.py` line 788); `menu.scene_buttons` and its row "buttons" (`menu.py` lines 1620 to 1639) |
+| The right-click menu of a button | `menu.scene_menu` (`menu.py` line 1815), called only from `SceneMouse.cpp`, and its test in `testing/tests/api/menu.py`. It holds the one row that starts the rename wizard for a scene; the Scenes panel renames in place. |
+
+Before deleting: `grep -rn` for every name above in Python, C++, `.pml`,
+tests and `data/`; a session that has `scene_buttons` set must load without
+a message (the placeholder takes it). Checks: the suite, a session round
+trip with scenes, the real window with three scenes. One PR, `remove(core):
+scene buttons drawn in the viewport`. The sequence viewer's text stays as
+it is.
+
 ## Questions
 
 1. `pymolish -x` after the removal: (A) it shows the viewport alone, with

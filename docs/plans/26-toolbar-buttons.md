@@ -21,7 +21,7 @@ are Lucide drawings in `data/pmg_qt/icons/lucide/`, named in `icons.py`.
 
 ![candidates](../img/plan-bg-icons.png)
 
-**Which icon** (question 27):
+**Which icon** (question 27, answered 2026-11-20: A, the paint roller. Built in 4.20.0):
 
 | | Option | Note |
 | --- | --- | --- |
@@ -109,11 +109,12 @@ scale; a 1920 px screen is 1280):
 | + six quick-select buttons as ordinary text buttons | 1309 (as 26 px chips: about 1240) |
 | + 2D and Table, icon only | about 1320 |
 | Builder, Scenes and Draw/Ray icon only | about 1140 to 1210 |
+| **4.20.0, measured:** "Bg", Builder and Scenes as icons, "Draw" | **904** |
 
 The first three rows and the text-button row are measured; the rows with
 chips are worked out from them, since the chips do not exist yet.
 
-**Options** (question 26):
+**Options** (question 26, answered 2026-11-20: A, with one change asked the same day: Builder and Scenes show only their icon, the name on mouse-over; "Draw/Ray" keeps a text, shortened to "Draw". Those two changes are built in 4.20.0 with 26a):
 
 | | Option | Note |
 | --- | --- | --- |

@@ -218,7 +218,7 @@ files, and the change of what a PSE contains.
 Since 2026-11-20 there is a second place for the picture: the session key
 of [step 28](28-session-format.md). With it PyMOL would still see the file
 name in the setting instead of text it cannot use. Option A stands as
-decided unless question 29 of the roadmap says otherwise. The FXAA pass is
+decided: the answer to question 29 (2026-11-20) did not move it. The FXAA pass is
 also what a shadow pass for the floor of [step 25](25-studio-effects.md)
 would follow.
 

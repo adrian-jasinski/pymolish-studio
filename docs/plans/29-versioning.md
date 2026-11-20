@@ -1,7 +1,7 @@
 # 29 — Version numbers
 
-[Roadmap](../../PLAN.md) · Request 2026-11-20 · A rule to choose; nothing is
-changed until it is chosen.
+[Roadmap](../../PLAN.md) · Request 2026-11-20 · **Done 2026-11-20: option A
+was chosen and is in `AGENTS.md` §5. The first version under it is 4.20.0.**
 
 **The first number stays 4. The second and third numbers get a rule that
 does not depend on roadmap steps. Recommended: the second number counts
@@ -17,7 +17,7 @@ then.**
 | Where the number lives | `layer0/Version.h`: `_PyMOL_VERSION "4.19.43"` and `_PyMOL_VERSION_int 4019043` (`X.Y.Z` as `XYYYZZZ`, so the second and third numbers each go to 999). `get_version()` and session headers read it. |
 | Who reads it | The release job tags `v<version>` at every push to `master` (so far `v4.19.11` and `v4.19.30`); the About box; `ChangeLog` has one entry per version. |
 
-## Options (question 30)
+## Options (question 30, answered: A, with both smaller rules)
 
 | | Option | Second number | Third number | Note |
 | --- | --- | --- | --- | --- |

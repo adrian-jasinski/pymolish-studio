@@ -10,6 +10,7 @@ order numbers are the ones the roadmap used.
 | --- | --- | --- |
 | 0 | [UI engine research](docs/plans/00-ui-engine.md) | PySide6 + Qt Widgets; preserve the renderer while simplifying bindings. |
 | 3 | [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Named docks with a saved layout, the Objects panel in Qt, the action toolbar on top and the command area at the bottom, the dark theme, the UI scale, scenes as a dock, Qt menus. Closed on 2026-11-20 without its metadata table: the property table of [step 22](docs/plans/22-property-table.md) replaces it. Its open rows went to 22e (a picked atom selects its row), 23b (rows moved by dragging) and question 31 (scene buttons and sequence text drawn by the core); the spacing of dialogs is fixed when a dialog is touched. |
+| 29 | [Version numbers](docs/plans/29-versioning.md) | The first number stays 4. The second goes up when something a user can see ships, the third for every other change to the program; plans, docs, CI and tests take no number. In `AGENTS.md` §5 since 2026-11-20; 4.20.0 is the first version under it. |
 | 2 | [Code and dependencies](docs/plans/02-cleanup-dependencies.md) | One feature removal per PR; trace dependencies before deleting. |
 | 4 | [Features and external libraries](docs/plans/04-extensibility.md) | Preserve `cmd` and the existing loader; document small integration patterns. |
 | 5 | [Builds and test binaries](docs/plans/05-builds-binaries.md) | Improve incremental builds and deliver test artifacts before large changes. |
@@ -91,12 +92,34 @@ nothing is built yet.
 | 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g, order 8. To build. |
 | 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b, order 7. To build. |
 
-14 was answered by "release 17" (4.19.42). Questions 20 to 32, from the
-second request of that day, are open in the roadmap.
+14 was answered by "release 17" (4.19.42). 
+Decided by the user on 2026-11-20, second round (questions 20 to 32 of the
+ten-feature request). "To build" means nothing is built yet.
+
+| # | Decision | Where it goes |
+| --- | --- | --- |
+| 20 | The property table is a window of its own that can be closed and resized; it lies over the viewport and sticks to the Objects panel on the right. None of the three options offered. | [Plan 22](docs/plans/22-property-table.md), "Where the table lives". To build. |
+| 21 | As recommended: `.xlsx` is read with the standard library, no new dependency. | Plan 22, 22c. To build. |
+| 22 | As recommended: the rename wizard stays as the fallback without a window. | [Plan 23](docs/plans/23-rename-in-panel.md). To build. |
+| 23 | The 2D ligand drawing is our own code, rdkit allowed; interactive: selecting a residue in 2D selects it in 3D. | [Plan 24](docs/plans/24-ligand-2d.md); the selection goes both ways. To build. |
+| 24 | Shadows ray traced only at first. | [Plan 25](docs/plans/25-studio-effects.md), 25a. To build. |
+| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moves up (order 8); the surface looks and the blob are planned again with its result; no surface look and no new setting before that. |
+| 26 | As recommended: one row, icons. The same day: Builder and Scenes show only the icon, the name on mouse-over; "Draw/Ray" becomes "Draw". | Builder, Scenes and Draw done in 4.20.0; the rest with 26c. |
+| 27 | The paint roller. (The answer ends "rest", cut off.) | Done in 4.20.0 with "Bg". |
+| 28 | As recommended: live scale through Qt's private function, the "next start" message as fallback. | [Plan 27](docs/plans/27-ui-scale.md). To build. |
+| 29 | As recommended: `.psex` is what Save Session writes; a `.pse` carries the new data too. | [Plan 28](docs/plans/28-session-format.md). To build. The background picture of 21f stays in its setting. |
+| 30 | As recommended: the version rule by what changed for the user. | Done: `AGENTS.md` §5, step 29. |
+| 31 | As recommended: the scene buttons the core draws are deleted; the sequence viewer stays. | 17f in [plan 17](docs/plans/17-legacy-ui.md). To build. |
+| 32 | As recommended: color themes set protein color and background, as a group of their own. | Plan 25, 25b-2, with 15e. To build. |
+
+Also on 2026-11-20: `plan_images/` is not committed and is ignored by git;
+it is deleted when the plans made from it are built. Its `:Zone.Identifier`
+files are deleted. The line `set internal_gui_width, 400` is out of the
+user's `~/.pymolrc`.
 
 Old decisions replaced by the second request of 2026-11-20 (ten features,
 steps 22 to 29). The request said: where the new plans contradict the old
-ones, the new ones win. Nothing of this is built yet.
+ones, the new ones win.
 
 | Old decision | Where it was | Replaced by |
 | --- | --- | --- |
@@ -107,7 +130,7 @@ ones, the new ones win. Nothing of this is built yet.
 | UI scale in five steps from 100 to 200 %, applied at the next start; "live rescale without restart: skipped". | Plans 3 and 7 | [Step 27](docs/plans/27-ui-scale.md): any value from 50 to 300 %, live where Qt allows it. |
 | The shot list goes "into the session file". | Plan 19 | Unchanged in substance: it goes under the one key of [step 28](docs/plans/28-session-format.md), which is built first. The background picture of 21f stays as decided unless question 29 moves it. |
 | A look leaves the background alone; a preset keeps the protein colors. | Plan 15, 15g and 15h | Still true for looks and presets. The color themes of [25b](docs/plans/25-studio-effects.md) set both, as a group of their own (question 32). |
-| The version: the second number once per roadmap step. | `AGENTS.md` §5 | [Step 29](docs/plans/29-versioning.md), once question 30 is answered; `AGENTS.md` keeps the old rule until then. |
+| The version: the second number once per roadmap step. | `AGENTS.md` §5 | [Step 29](docs/plans/29-versioning.md): done, the new rule is in `AGENTS.md`. |
 
 ## Finished milestones of open steps
 
