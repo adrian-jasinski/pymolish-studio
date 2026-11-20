@@ -4,6 +4,20 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.41.0
+
+	* Palette "halo"
+	  - Twelve strong colors: turquoise, blue, cyan, indigo and deep
+	    purple from a brand book, and between them pink, yellow,
+	    lime, red, green, magenta and orange. In the Palette menu
+	    of the toolbar and as "palette halo".
+	  - Listed for any background: on black the deep purple and the
+	    indigo are dark (contrast 1.8 and 2.7), on white six of the
+	    twelve are light.
+	  - Step 11b.
+
+2026-11-20 pymolish-studio
+
 	* 4.40.0
 
 	* Undo and Redo take back a row of the Presets menu

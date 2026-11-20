@@ -68,6 +68,15 @@ PALETTES = {
         "any",
         "d2b48c 87ceeb dda0dd 90ee90 fa8072 d3d3d3 ff1493 ffd700 1e90ff 800080",
     ),
+    # Five colors of a brand book, values as published (turquoise, blue,
+    # cyan, indigo, deep purple), and between them seven in the same tone for
+    # the hues it lacks. No background suits all twelve: the indigo and the
+    # purple are dark on black, six others are light on white.
+    "halo": (
+        "any",
+        "00f4d6 016afa ff3d9a 00caff ffd900 4300ff 9be800 ff4d4d 471396 1fd655"
+        " c61aff ff8a00",
+    ),
 }
 PALETTES = {name: (bg, colors.split()) for name, (bg, colors) in PALETTES.items()}
 BUILTIN = tuple(PALETTES)  # define() adds the palettes of the user
@@ -147,8 +156,8 @@ def palette(name="", recolor=0, quiet=1, *, _self=cmd):
     ARGUMENTS
 
         name = default, vivid, deep, pastel, soft, colorblind, nord, dracula,
-        catppuccin or chimerax. "default" is the PyMOL order (green, cyan, light
-        magenta, ...).
+        catppuccin, chimerax or halo. "default" is the PyMOL order (green, cyan,
+        light magenta, ...).
 
         recolor = 0/1: also color the carbons of the loaded objects, from the
         first palette color on {default: 0}
@@ -160,8 +169,8 @@ def palette(name="", recolor=0, quiet=1, *, _self=cmd):
 
     NOTES
 
-        deep and soft are made for a white background, colorblind for any,
-        the others for a dark one. The colors are named <palette>_01, <palette>_02, ... and can
+        deep and soft are made for a white background, colorblind, chimerax
+        and halo for any, the others for a dark one. The colors are named <palette>_01, <palette>_02, ... and can
         be used like any color. A "palette" line in pymolrc applies at every
         start.
 
