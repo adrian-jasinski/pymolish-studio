@@ -26,6 +26,9 @@ day.
 Extended once more that day at 4.35.0 with a third request, eight repairs
 after a first look at the program: step 30, built the same day in 4.36.0 to
 4.40.0 and finished.
+And a fourth request that day, at 4.40.0: step 31, the program works with
+the AI agents of Anthropic and OpenAI. Planned, not built; questions 41
+to 48.
 
 **State 2026-11-20 at 4.40.0.** Built since 4.19.43, each with its test and
 a look in the real window, all listed in [PLAN-DONE.md](PLAN-DONE.md):
@@ -76,6 +79,7 @@ user's original numbers; the letters are milestones of the detailed plans.
 | any time | **23b** — [Rows moved by dragging](docs/plans/23-rename-in-panel.md) | Reorder and regroup in the Objects panel with the mouse. Carried over from step 3. | The drop goes through a function a test calls. |
 | any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
 | after the answers | **11b** — [A palette from the user's brand colors](docs/plans/11-color-palettes.md#11b--a-palette-from-the-users-brand-colors) | Request of 2026-11-20, planned the same day: the five colors of a brand book as an object palette under another name, with seven added colors for the hues the brand lacks. One entry of data, its name in the test, a row and a strip in `docs/features.md`. Waits for questions 33 to 35. | The data test passes with the new name; the menu and twelve objects looked at on black and on white. |
+| after the answers | **31** — [AI agents: Claude and ChatGPT drive the program](docs/plans/31-ai-agents.md) | Request of 2026-11-20, planned the same day, nothing built. Four slices. 31a: the tools (run commands, the scene, a picture of the viewport, a table of atoms, help), a connector that listens on this machine only, behind a token, off until it is turned on, and an icon in the action toolbar. 31b: "Connect Claude Code" and "Connect ChatGPT and Codex" in one click. 31c: a built-in assistant in the command area, with an API key. 31d: Sign in with ChatGPT. There is no login for a Claude subscription inside the program: Anthropic does not allow it, so that route is the connector. Waits for questions 41 to 48; 31a needs 41, 43, 45 and 46. | Each slice has its test and a look in the real window. In 31a Claude Code and Codex each make one figure of 1OKY through the connector. |
 
 The session key and the rest of the table come first, then the scale and
 the 2D ligand. For surfaces the grid surface of 1b comes first (order 6);
@@ -84,6 +88,9 @@ behind: timeline, rendering details, outline, the surface on a worker
 thread, and undo, the largest, last. Orders 9 and 10 share their shader
 pass. 5c (release builds without GitHub Actions) is shelved: the builds stay
 on GitHub for now. GPU compute is not on the critical path.
+
+Step 31, the AI agents, has no number in the order yet: it is built when
+its questions are answered, its first slice before the rest.
 
 ## Validation of the original draft
 
@@ -120,7 +127,8 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-Three questions are open, all for 11b, the palette from the user's brand
+Eleven questions are open: eight for step 31, further down, and three for
+11b, the palette from the user's brand
 colors ([plan](docs/plans/11-color-palettes.md#11b--a-palette-from-the-users-brand-colors),
 picture `plan_images/palette-options.png`). The first option is the
 recommended one.
@@ -145,6 +153,21 @@ a built answer, so nothing waits for them; say so if another one is wanted.
 | 38 | "remove crystallization additives" also removes the sugars of glycosylation and NAD(P), as asked. One row, or rows of their own for sugars and cofactors? | one row |
 | 39 | "Clean the preset menu": should presets leave it? Candidates: classified, ball and stick, b factor putty, five of the seven ligand sites rows. | none taken out |
 | 40 | Undo of a preset takes back everything done after it (Redo brings it back) until 21g builds one stack. Good enough until then? | yes |
+
+Eight questions are for step 31, the AI agents
+([plan](docs/plans/31-ai-agents.md), with the reasons). Nothing of it is
+built. The last column is the recommended answer.
+
+| No. | Question | Recommended |
+| --- | --- | --- |
+| 41 | Which routes: the connector only (the agent runs in the user's Claude or ChatGPT program); the connector, then an assistant built into the window; also an assistant through `claude -p` and `codex exec`? | The connector, then the built-in assistant. The third is a grey area of Anthropic's rules. |
+| 42 | A new dependency: the official `anthropic` and `openai` packages as an optional extra `ai` for the built-in assistant, or the standard library only? | The official packages, once their size in a bundle is measured. |
+| 43 | What an agent may run by default: commands only, with a switch for Python and files; or everything? | Commands only. |
+| 44 | Where the built-in assistant lives: in the command area (a command `ask`, answers in the log), or in a panel of its own? | The command area. |
+| 45 | The icon (`bot`, `sparkle`, `message-circle`) and the name ("Assistant", "AI", "Agent"). | `bot`, "AI assistant" on mouse-over, the commands `agent` and `ask`. |
+| 46 | "Native build option": always built in and off until used, or also a build flag that leaves it out? | Always built in. |
+| 47 | "Connect" rows for Claude Code and for Codex with the ChatGPT desktop app; also for the chat tab of Claude Desktop, which needs a helper program? | The first two; the chat tab as a slice 31e if wanted. |
+| 48 | A key or a token is kept in a file only the user can read, or in the keychain of the system (`keyring`, a new dependency)? | The file. |
 
 One answer was cut off: question 27 reads "paint roller icon. rest". The
 paint roller is built; say if the rest of the sentence asked for more.
