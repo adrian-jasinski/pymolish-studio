@@ -4,6 +4,20 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.23.1
+
+	* Less CPU time while surfaces are built
+	  - Worker threads that wait for work sleep at once instead of
+	    spinning first (OMP_WAIT_POLICY=passive, set at start
+	    unless that variable or GOMP_SPINCOUNT is already set).
+	    1aon, three surface builds: CPU time 98 s to 66 s, the same
+	    time on the clock (5.1 to 6.1 s a build). Less heat and
+	    battery, not more speed. The ray tracer has its own threads
+	    and is not touched by this.
+	  - Step 1b.
+
+2026-11-20 pymolish-studio
+
 	* 4.23.0
 
 	* Menus and Orient
