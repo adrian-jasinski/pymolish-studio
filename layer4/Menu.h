@@ -18,13 +18,12 @@ Z* -------------------------------------------------------------------
 #define _H_Menu
 
 struct PyMOLGlobals;
-struct Block;
 
 void MenuActivate(PyMOLGlobals * G, int x, int y, int last_x, int last_y,
                   int passive, const char *name, const char *sele);
 void MenuActivate0Arg(PyMOLGlobals * G, int x, int y, int last_x, int last_y,
                       int passive, const char *name);
-Block *MenuActivate1Arg(PyMOLGlobals * G, int x, int y, int last_x, int last_y,
+void MenuActivate1Arg(PyMOLGlobals * G, int x, int y, int last_x, int last_y,
                       int passive, const char *name, const char *arg1);
 void MenuActivate2Arg(PyMOLGlobals * G, int x, int y, int last_x, int last_y,
                       int passive, const char *name, const char *sele1, const char *sele2);

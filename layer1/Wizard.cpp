@@ -27,7 +27,6 @@ Z* -------------------------------------------------------------------
 #include"Ortho.h"
 #include"P.h"
 #include"PConv.h"
-#include"PopUp.h"
 
 #include"Wizard.h"
 #include"Scene.h"
@@ -39,11 +38,6 @@ Z* -------------------------------------------------------------------
 #include"vla.h"
 #include"pymol/type_traits.h"
 #include "Util2.h"
-
-#define cWizBlank      0
-#define cWizTypeText   1
-#define cWizTypeButton 2
-#define cWizTypePopUp  3
 
 #define cWizEventPick    1
 #define cWizEventSelect  2
@@ -81,10 +75,6 @@ struct CWizard : public Block {
 
   bool isEventType(cWizEvent_t eventType) const noexcept;
 };
-
-#define cWizardLeftMargin DIP2PIXEL(3)
-#define cWizardTopMargin 0
-#define cWizardClickOffset DIP2PIXEL(2)
 
 void WizardDirty(PyMOLGlobals * G)
 {

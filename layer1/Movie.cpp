@@ -36,7 +36,6 @@ Z* -------------------------------------------------------------------
 #include"Parse.h"
 #include"PyMOL.h"
 #include"ScrollBar.h"
-#include"Menu.h"
 #include"View.h"
 #include"Seq.h"
 #include"CGO.h"

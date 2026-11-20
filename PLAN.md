@@ -11,6 +11,8 @@ shipped milestone left the table below for [PLAN-DONE.md](PLAN-DONE.md); the
 table lists only what is open. Same day, 4.19.33 to 4.19.40: 21a to 21e built,
 two slices of step 8 (the last dead product macros, 8c in `Executive.cpp`), one
 change of 1b after a new profile of the surface build.
+2026-11-20, 4.19.42: step 17 finished (17d, 17e); a web search for 1b added
+questions 18 and 19.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -33,16 +35,16 @@ user's original numbers; the letters are milestones of the detailed plans.
 | none | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
 | none | **5c** — [Release builds without GitHub Actions](docs/plans/05-builds-binaries.md) | A proposal of 2026-11-16 inside finished step 5: Linux in podman, Windows on the host, macOS not possible off Apple hardware. Nothing is built. | The user accepts or drops the proposal. |
 | none | **15** — [Presets and looks](docs/plans/15-presets.md) | 15b: the outline of the looks in the viewport (today only in ray-traced images). 15c: ChimeraX object colors as a palette. 15e: five more effects, tried and described. | The user picks or drops 15b, 15c and each effect of 15e. |
-| none | **17** — [Legacy menu rows and the old internal GUI](docs/plans/17-legacy-ui.md) | 17d: the panel list, after 19g. 17e: the menus the core draws in OpenGL (969 lines). | 17d and 17e each pass the suite, the sanitizer job and a PSE round trip. |
-| none | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | The shot list in the session file, a shorter Movie menu, removal of the core's movie panel (19g), dragging on the strip. | The user answers the three questions; 19g passes the suite and the sanitizer job. |
+| none | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | The shot list in the session file, a shorter Movie menu, removal of the core's movie panel (19g; nothing of step 17 waits for it any more), dragging on the strip. | The user answers the three questions; 19g passes the suite and the sanitizer job. |
 | none | **21** — [Features of the commercial build](docs/plans/21-commercial-features.md) | 21f: three rendering details (smooth edges in the viewport, sphere modes 10 and 11, the background image in the session file). 21g: undo of more than the last move. Both wait for an answer. With the last of them the error "only in Incentive PyMOL", the test mark `incentive` and the option `-n` go. | Each slice makes its old test pass under `pymolish -ckqyn`, then the `incentive` mark comes off. |
 
-Steps 8, 5c, 15, 17, 19 and 21 never got an order number. What can be built
+Steps 8, 5c, 15, 19 and 21 never got an order number. Step 17 finished on
+2026-11-20 (4.19.42) and moved to [PLAN-DONE.md](PLAN-DONE.md). What can be built
 without an answer: 8c to 8g, and the items of 1b that are not the surface
 thread, each on a quiet machine. Everything else
 in the table waits for an answer in "Waiting for the user": 1b's surface
-thread (1), 5c (4), 15 (5 to 7), 19 (13), 17d behind 19g, 17e (14), 21f (16),
-21g (17). GPU compute is not on the critical path.
+thread (1), 5c (4), 15 (5 to 7), 19 (13), 21f (16), 21g (17). Two more
+questions came out of the web search of 2026-11-20 (18, 19). GPU compute is not on the critical path.
 
 ## Validation of the original draft
 
@@ -84,7 +86,6 @@ recommended direction, not a claim that an implementation has passed tests.
 | 6 | 15c: add ChimeraX's object colors (tan, sky blue, plum, ...) as one more palette? | [15-presets.md](docs/plans/15-presets.md), Slices | 15c, one line |
 | 7 | 15e: which of the five effects to build: color steps in the viewport, fog toward a white background, helices as cylinders, ambient occlusion in the soft look, a "balls in glass" preset? | [15-presets.md](docs/plans/15-presets.md), 15e | 15e |
 | 13 | 19: keep the shot list after a restart, as a new entry in the session file (recommended: yes; it changes PSE output)? Remove the 58 Program rows of the Movie menu that Add and Tour replace (recommended: yes)? Remove the keyframe strip the core draws under the viewport (recommended: not yet)? | [19-movie-timeline.md](docs/plans/19-movie-timeline.md), Options and Questions | 19 |
-| 14 | 17e: remove the menus the core draws in OpenGL (969 lines)? Since the window shows Qt menus, only a program that embeds the viewport through `pymol2` without the window still gets them. Recommended: yes, if no such program is in use. | [17-legacy-ui.md](docs/plans/17-legacy-ui.md), 17e and question 4 | 17e |
 | 15 | 20: blue hover in every menu of the program, not only in the toolbar's (recommended: yes)? Should Orient act only on what is visible, like Zoom since 4.19.1 (recommended: yes)? | [20-toolbar-look.md](docs/plans/20-toolbar-look.md), Options and Questions | Two lines |
 | 16 | 21f: which rendering details, and how? Smooth edges in the viewport: FXAA shader (recommended), multisampling, or leave. Sphere modes 10 and 11 (cubes, tetrahedra): build, or cap the setting at 9 (recommended). Background image stored inside the session file (recommended; it changes what a PSE contains), or leave. | [21-commercial-features.md](docs/plans/21-commercial-features.md), 21f | 21f |
 | 17 | 21g: undo by snapshots for edits plus the coordinate ring for moves (C, recommended), or coordinates only, as today, for now? | [21-commercial-features.md](docs/plans/21-commercial-features.md), 21g | 21g |

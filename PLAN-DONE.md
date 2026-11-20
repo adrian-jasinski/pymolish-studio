@@ -21,6 +21,7 @@ order numbers are the ones the roadmap used.
 | 13 | [Clean, fix and optimize structures](docs/plans/13-structure-cleanup.md) | Four layers, each shipped alone: remove water, ions and ligands; `clean` for ligands (rdkit); `fix_structure` (PDBFixer); `minimize` (OpenMM). PDBFixer and OpenMM are the optional extra `fix`. |
 | 20 | [Look of the action toolbar, own palettes](docs/plans/20-toolbar-look.md) | Names on Palette and Background, icon-only view actions, larger and heavier icons, blue for what is chosen, a camera for Scenes, ray tracing with or without the background, palettes of the user. |
 | 18 | [Dialog sizes and the scroll bar of the sequence viewer](docs/plans/18-dialogs-scrollbar.md) | The form loader sets a form up on the dialog itself; the sequence viewer scrolls with a Qt scroll bar. |
+| 17 | [Legacy menu rows and the old internal GUI](docs/plans/17-legacy-ui.md) | Menu rows that led nowhere, the Tk stand-ins, then the C++ code of the old panel and of the GL menus: 316 lines of Tk stand-ins and 4,160 lines of panel and menu code deleted in five slices, each a working program. |
 | 16 | [Background menu and palette caption](docs/plans/16-background.md) | A toolbar button with 13 backgrounds, plain and gradient, remembered only when asked; the palette menu says what it colors. |
 | 14 | [Action and right-click menus](docs/plans/14-menus.md) | One builder for objects and groups, one for selections; the A menu of an object has 10 rows, the rest under "more"; right click on a row gives rename, duplicate and delete at once. `menu.py` 1,869 to 1,745 lines. 14d (4.19.2): "select" and "split" rows by chain and by kind of molecule, new command `split_types`; presets left the A menus; "split by state" moved there in 4.19.3. 14e (4.19.31, 4.19.32): one list in Show, cartoon styles and hydrogens as hover menus, Show 21 to 15 rows, Hide 22 to 17. |
 
@@ -72,7 +73,7 @@ Decided by the user on 2026-11-16 and applied:
 
 ## Finished milestones of open steps
 
-Steps 1, 3, 8, 15, 17, 19 and 21 stay in the roadmap. These parts of them have
+Steps 1, 3, 8, 15, 19 and 21 stay in the roadmap. These parts of them have
 shipped.
 
 | Step | Milestone | Result |
@@ -92,6 +93,7 @@ shipped.
 | 17 | 17c — the old internal GUI | Done 2026-11-18 (4.17.1). Object list, mouse mode table, movie and wizard buttons of the viewport: 2,694 lines deleted in 19 files, three settings and the option `-i` removed. |
 | 18 | 18b — scroll bar of the sequence viewer | Done 2026-11-18 (4.17.0). A see-through Qt scroll bar on the strip under the sequence rows; the core keeps the offset and the selection marks. |
 | 17 | 17a, 17b — legacy menu rows, Tk stand-ins | Done 2026-11-18 (4.16.0, 4.16.1): [docs/plans/17-legacy-ui.md](docs/plans/17-legacy-ui.md). Five menu rows gone; `mimic_tk.py`, `mimic_pmg_tk.py` and `legacysupport.py` deleted (316 lines), one Plugin menu, `__init_plugin__` gets `None`. |
+| 17 | 17d, 17e — panel list, GL menus | Done 2026-11-20 (4.19.41, 4.19.42). 17d did not need the movie panel to go first: the list had one reader left, a scroll function nothing called. 242 lines. 17e: `PopUp.cpp`, `Pop.cpp` and the fallback in `Menu.cpp`, 1,224 lines; a program that embeds the viewport without the window sets `pymol.menu.popup` to get menus. Suite, Catch2, a sanitizer build, session round trips, right clicks in the real window. |
 | 18 | 18a — dialog sizes | Done 2026-11-18 (4.15.1): [docs/plans/18-dialogs-scrollbar.md](docs/plans/18-dialogs-scrollbar.md). `loadUi` sets a form up on the dialog itself: right size, title and a layout for every form. The shortcut editor opens again. |
 | 15 | 15l — spring, colors kept, two-color surface | Done 2026-11-19 (4.19.29). New preset "cartoon spring" (thick round tube); "wire" reads "cartoon wire". No preset but "default" colors the cartoon; the row "publication green" is gone. "protein-protein interaction" is every chain as an orange surface, white where chains touch. |
 | 15 | 15i — visible objects, complexes | Done 2026-11-18 (4.19.1). Toolbar presets act on the objects that are switched on. New presets "protein-protein interaction" and "antibody and antigen", tried on 1BRS and 1N8Z. |

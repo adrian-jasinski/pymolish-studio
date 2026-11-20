@@ -4,6 +4,27 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.19.42
+
+	* Removed: the menus the core drew in OpenGL
+	  - Since 4.5.18 the window shows every menu of the viewport as a
+	    Qt menu (right click on empty space, on an atom, on a residue
+	    of the sequence viewer, on a scene button, in the movie
+	    panel). The code that drew such a menu inside the viewport
+	    when no window took it is deleted: layer4/PopUp.cpp and
+	    layer1/Pop.cpp with their headers, and the fallback in
+	    Menu.cpp. 1,224 lines.
+	  - What changes: a program that embeds the viewport through
+	    pymol2 without the pymolish window gets no right-click menu
+	    any more. To get one, set pymol.menu.popup to a function that
+	    takes the menu list (rows of [kind, label, command]) and
+	    shows it.
+	  - The setting internal_gui_mode stays; the text console in the
+	    viewport reads it.
+	  - Step 17e. Step 17 is finished.
+
+2026-11-20 pymolish-studio
+
 	* 4.19.41
 
 	* Removed: the row list of the old object panel

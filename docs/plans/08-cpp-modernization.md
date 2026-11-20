@@ -127,7 +127,7 @@ save round trip. `layer1/` changes: real GUI.
   | --- | --- |
   | `layer1/CGOGL.cpp`, `SceneRender.cpp`, `ScenePicking.cpp`, `Picking.cpp` (OpenGL drawing and picking) | 2,682 |
   | `layer1/SceneMouse.cpp`, `layer3/Interactions.cpp`, `layer1/ScrollBar.cpp` (mouse) | 2,130 |
-  | `layer4/PopUp.cpp`, `Menu.cpp` (viewport menus) | 696 |
+  | `layer4/PopUp.cpp`, `Menu.cpp` (viewport menus; `PopUp.cpp` deleted in 4.19.42) | 696 |
   | `layer0/GenericBuffer.cpp`, `ShaderPrg.cpp`, `PostProcess.cpp`, `layerGraphics/gl/GLVertexBuffer.cpp` (GPU buffers, shaders) | 890 |
   | `layer2/ObjectCurve.cpp`, `RepSphereImmediate.cpp`, `RepSphereGenerate.cpp` | 520 |
   | `ov/src/OVOneToAny.cpp`, `OVRandom.cpp` | 300 |

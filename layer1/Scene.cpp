@@ -51,7 +51,6 @@ Z* -------------------------------------------------------------------
 #include"ObjectDist.h"
 #include"ObjectGadget.h"
 #include"Seq.h"
-#include"Menu.h"
 #include"View.h"
 #include"ObjectSlice.h"
 #include"Text.h"

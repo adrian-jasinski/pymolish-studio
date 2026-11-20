@@ -41,7 +41,6 @@ Z* -------------------------------------------------------------------
 #include "MyPNG.h"
 #include "Ortho.h"
 #include "P.h"
-#include "Pop.h"
 #include "PyMOL.h"
 #include "PyMOLOptions.h"
 #include "Scene.h"
@@ -2451,7 +2450,6 @@ int OrthoInit(PyMOLGlobals* G, int showSplash)
     /*printf("orthoNewLine: CC: %d CL:%d PC: %d IF:L
        %d\n",I->CurChar,I->CurLine, I->PromptChar,I->InputFlag); */
 
-    PopInit(G);
     {
       int a;
       for (a = 0; a <= OrthoHistoryLines; a++)
@@ -2470,7 +2468,6 @@ void OrthoFree(PyMOLGlobals* G)
   COrtho* I = G->Ortho;
 
   VLAFreeP(I->WizardPromptVLA);
-  PopFree(G);
   {
     I->cmdActiveQueue = nullptr;
   }

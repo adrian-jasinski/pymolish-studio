@@ -148,7 +148,7 @@ text path of all five. Its menus, though, are plain data from
 | Reorder and regroup by dragging rows | Use `order` and `group` meanwhile. | Open |
 | Group open/closed shared with the core | Expansion is view state of the tree for now. | Open |
 | Picking an atom selects its row | Viewport-to-panel synchronization. | Open |
-| Menus the core opens (right click in the viewport or on a sequence residue, scene buttons, timeline) | Qt menus since 4.5.18: the core hands its menu list to `pymol.menu.popup`, which the window sets (`popup_at_cursor`). Without a window (`-x` keeps the hook too; `-c` has none) the GL popup is still used. | Done 4.5.18 |
+| Menus the core opens (right click in the viewport or on a sequence residue, scene buttons, timeline) | Qt menus since 4.5.18: the core hands its menu list to `pymol.menu.popup`, which the window sets (`popup_at_cursor`). Without the hook there is no menu: the GL popup of the core went in 4.19.42 ([step 17](17-legacy-ui.md), 17e). | Done 4.5.18 |
 | Sequence viewer, scene buttons | Text still drawn by the core in whole scale steps. The scroll bar of the sequence viewer is a Qt scroll bar since 4.17.0 ([step 18](18-dialogs-scrollbar.md)). | Open |
 | Per-object motion menu (movie column) | Only shown by the old panel when a movie exists. | Open |
 
