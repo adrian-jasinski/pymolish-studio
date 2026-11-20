@@ -28,6 +28,11 @@ plans). Built on them: the version rule (step 29, done, in `AGENTS.md` §5)
 and, as 4.20.0, the first under that rule, 26a with two more changes to the
 bar: "Bg" with a paint roller, Builder and Scenes as icons, "Draw" for
 "Draw/Ray".
+Then all of order 1, 4.21.0 to 4.25.0: the Open button (26b), the palette
+`chimerax` (15c), blue hover in every menu and Orient on what is visible
+(step 20, finished), sleeping idle threads (1b), rename on the row of the
+Objects panel (23a), and the scene buttons of the core deleted (17f). The
+table below starts again at order 1.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -45,40 +50,32 @@ user's original numbers; the letters are milestones of the detailed plans.
 
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
-| 1 | **26b** — [Open button](docs/plans/26-toolbar-buttons.md) | A button before Residues: open file, open folder, recent, get by PDB code, by UniProt, predicted structure. All rows exist in File. | The toolbar test; reachable by keyboard. |
-| 1 | **23a** — [Rename in the Objects panel](docs/plans/23-rename-in-panel.md) | F2 or "rename" edits the name on the row; the green line in the viewport stays only as the fallback without a window (the wizard is kept). | The panel test: Enter renames, Esc and a taken name do not. |
-| 1 | **15c** — [ChimeraX colors](docs/plans/15-presets.md) | One more palette: tan, sky blue, plum, light green, salmon, ... | The palette is in the toolbar menu and in the palette test. |
-| 1 | **20** — [Toolbar look, two follow-ups](docs/plans/20-toolbar-look.md) | Blue hover in every menu of the program (one rule in `pymol.sty`). Orient acts only on what is visible, like Zoom. | Both looked at in the real window. |
-| 1 | **1b** — [Idle threads sleep](docs/plans/01-performance-gpu.md) | `OMP_WAIT_POLICY=passive` is set at start unless the user set one. | CPU time of a 1aon surface before and after; wall time not worse. |
-| 1 | **17f** — [Scene buttons the core draws](docs/plans/17-legacy-ui.md) | Deleted: the Scenes panel replaced them. The setting `scene_buttons` leaves a placeholder, the menu rows go. Left over from step 3. | The suite; a session with scenes loads; the real window with three scenes. |
-| 2 | **28** — [Session file `.psex`](docs/plans/28-session-format.md) | The same content as a `.pse`, packed: 14 to 18 times smaller, saved faster. Save Session writes `.psex`; `.pse` stays for PyMOL and carries the new data too. One key `pymolish` in the session for everything new (table columns, shot list). | Round trip test; PyMOL 3 loads the `.pse` written with the key. |
-| 3 | **22** — [Property table](docs/plans/22-property-table.md) | A window of its own that lies over the viewport, its right edge stuck to the Objects panel; it can be closed and resized. Row number, a dot that shows or hides the object, name, one column per property. Cells edited in place, columns added by hand or from CSV and Excel (read with the standard library), export to CSV. Five slices, 22a to 22e. | Each slice has its test; 1,000 objects with 20 properties scroll and sort without a pause. |
-| 4 | **26c, 26d** — [Quick select and the layout of the bar](docs/plans/26-toolbar-buttons.md) | Chips P, L, S, a menu with chains and more, All, none. One row: everything an icon except Residues, Presets and Draw; Palette loses its name with this slice. | Each chip selects the atoms of its expression; no button starts in the overflow menu at 150 %. |
-| 5 | **27** — [UI scale 50 to 300 %, live](docs/plans/27-ui-scale.md) | A field for any percent; the window changes at once (worked in a trial on Linux), "Keep this size?" with a revert, the old message where the live change cannot work. Windows and macOS to try in CI. | The GUI test: 150, 100, 225, 150, the viewport still draws. |
-| 6 | **24** — [Ligand in 2D with its contacts](docs/plans/24-ligand-2d.md) | Command `ligand_2d` and a panel, our own code on rdkit and Qt: the ligand flat, residues around it colored by kind, hydrogen bonds, salt bridges, ring stacking. Interactive both ways: a residue clicked in the drawing is selected in 3D, and what is selected in 3D is ringed in the drawing. A toolbar button, off without a ligand. Three slices. | On 2RH1 the known contacts are found and no two residues overlap. |
-| 7 | **15e, 25b-2** — [Five effects](docs/plans/15-presets.md), [color themes](docs/plans/25-studio-effects.md) | 15e as decided: color steps in the viewport; fog toward a white background; helices as cylinders; ambient occlusion in the soft look (timed on a large surface first); "balls in glass". With them five color themes (clay, blue, sage, mint, night): protein color, ligand color, background, as a group of their own. | Each has a check in the preset tests and a picture. |
-| 8 | **1b** — [Grid surface, an experiment](docs/plans/01-performance-gpu.md) | A second `surface_type`: signed distance grid and marching cubes, with a smoothness value. Times and pictures of 1aon and 4v6x against today's surface, at two smoothness values; then the user decides whether it stays. Moved up: the surface looks wait for it. | The table and the pictures. |
-| 9 | **25b** — [Surface looks and the blob](docs/plans/25-studio-effects.md) | Not planned in detail yet (answer to question 25): written again with the result of order 8. Until then no surface look and no new setting is added. The trial pictures (glossy, candy glass, clay, night) are in the plan. | A new plan section after order 8. |
-| 10 | **25a** — [Floor, shadow, mirror, lights](docs/plans/25-studio-effects.md) | Command `stage`: a floor under the molecule with a shadow, a soft shadow, or a mirror image; three light setups. The shadow is ray traced only; the viewport shows the floor and the mirror. | The floor lies under every visible atom, `off` leaves nothing behind; ray times. |
-| 11 | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | The shot list goes into the session file. The 58 Program rows of the Movie menu go. Dragging on the strip. The keyframe strip of the core (19g) stays for now. The list goes under the key of step 28. | A session with a shot list loads here with the list and loads in 4.19.x without it; the menu test. |
-| 12 | **21f** — [Three rendering details](docs/plans/21-commercial-features.md) | `sphere_mode` is capped at 9, its test and two reference images go. The background image is stored inside the session file. Smooth edges in the viewport with an FXAA shader. The picture is stored in the setting, as decided. | Each old test passes or is deleted with its item. |
-| 13 | **15b** — [Outline in the viewport](docs/plans/15-presets.md) | An edge pass over the drawn picture for the looks figure, soft, flat, comic and sketch. The line is black on a light background and light on a dark one. It is the same kind of pass as FXAA, so it comes right after it. | Frame time before and after; pictures on black and on white. |
-| 14 | **1b** — [Surface on a worker thread](docs/plans/01-performance-gpu.md) | A large surface is built off the GUI thread: the window stays usable, the status line says it is being built, the surface appears when ready. Headless runs still wait. | 1aon and 4v6x in the real window; the suite and the sanitizer job. |
-| 15 | **21g** — [Undo of more than the last move](docs/plans/21-commercial-features.md) | Snapshots for commands that add, remove or edit; the existing coordinate ring for moves. Three slices: the stack with create, delete, remove and the builder's edits; Undo and Redo in the toolbar say what they will undo; the rest of the test list. After it the error "only in Incentive PyMOL", the test mark `incentive` and the option `-n` go. | The 26 undo tests and the three jira tests pass, then the `incentive` mark comes off. |
+| 1 | **28** — [Session file `.psex`](docs/plans/28-session-format.md) | The same content as a `.pse`, packed: 14 to 18 times smaller, saved faster. Save Session writes `.psex`; `.pse` stays for PyMOL and carries the new data too. One key `pymolish` in the session for everything new (table columns, shot list). | Round trip test; PyMOL 3 loads the `.pse` written with the key. |
+| 2 | **22** — [Property table](docs/plans/22-property-table.md) | A window of its own that lies over the viewport, its right edge stuck to the Objects panel; it can be closed and resized. Row number, a dot that shows or hides the object, name, one column per property. Cells edited in place, columns added by hand or from CSV and Excel (read with the standard library), export to CSV. Five slices, 22a to 22e. | Each slice has its test; 1,000 objects with 20 properties scroll and sort without a pause. |
+| 3 | **26c, 26d** — [Quick select and the layout of the bar](docs/plans/26-toolbar-buttons.md) | Chips P, L, S, a menu with chains and more, All, none. One row: everything an icon except Residues, Presets and Draw; Palette loses its name with this slice. | Each chip selects the atoms of its expression; no button starts in the overflow menu at 150 %. |
+| 4 | **27** — [UI scale 50 to 300 %, live](docs/plans/27-ui-scale.md) | A field for any percent; the window changes at once (worked in a trial on Linux), "Keep this size?" with a revert, the old message where the live change cannot work. Windows and macOS to try in CI. | The GUI test: 150, 100, 225, 150, the viewport still draws. |
+| 5 | **24** — [Ligand in 2D with its contacts](docs/plans/24-ligand-2d.md) | Command `ligand_2d` and a panel, our own code on rdkit and Qt: the ligand flat, residues around it colored by kind, hydrogen bonds, salt bridges, ring stacking. Interactive both ways: a residue clicked in the drawing is selected in 3D, and what is selected in 3D is ringed in the drawing. A toolbar button, off without a ligand. Three slices. | On 2RH1 the known contacts are found and no two residues overlap. |
+| 6 | **15e, 25b-2** — [Five effects](docs/plans/15-presets.md), [color themes](docs/plans/25-studio-effects.md) | 15e as decided: color steps in the viewport; fog toward a white background; helices as cylinders; ambient occlusion in the soft look (timed on a large surface first); "balls in glass". With them five color themes (clay, blue, sage, mint, night): protein color, ligand color, background, as a group of their own. | Each has a check in the preset tests and a picture. |
+| 7 | **1b** — [Grid surface, an experiment](docs/plans/01-performance-gpu.md) | A second `surface_type`: signed distance grid and marching cubes, with a smoothness value. Times and pictures of 1aon and 4v6x against today's surface, at two smoothness values; then the user decides whether it stays. Moved up: the surface looks wait for it. | The table and the pictures. |
+| 8 | **25b** — [Surface looks and the blob](docs/plans/25-studio-effects.md) | Not planned in detail yet (answer to question 25): written again with the result of order 7. Until then no surface look and no new setting is added. The trial pictures (glossy, candy glass, clay, night) are in the plan. | A new plan section after order 7. |
+| 9 | **25a** — [Floor, shadow, mirror, lights](docs/plans/25-studio-effects.md) | Command `stage`: a floor under the molecule with a shadow, a soft shadow, or a mirror image; three light setups. The shadow is ray traced only; the viewport shows the floor and the mirror. | The floor lies under every visible atom, `off` leaves nothing behind; ray times. |
+| 10 | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | The shot list goes into the session file. The 58 Program rows of the Movie menu go. Dragging on the strip. The keyframe strip of the core (19g) stays for now. The list goes under the key of step 28. | A session with a shot list loads here with the list and loads in 4.19.x without it; the menu test. |
+| 11 | **21f** — [Three rendering details](docs/plans/21-commercial-features.md) | `sphere_mode` is capped at 9, its test and two reference images go. The background image is stored inside the session file. Smooth edges in the viewport with an FXAA shader. The picture is stored in the setting, as decided. | Each old test passes or is deleted with its item. |
+| 12 | **15b** — [Outline in the viewport](docs/plans/15-presets.md) | An edge pass over the drawn picture for the looks figure, soft, flat, comic and sketch. The line is black on a light background and light on a dark one. It is the same kind of pass as FXAA, so it comes right after it. | Frame time before and after; pictures on black and on white. |
+| 13 | **1b** — [Surface on a worker thread](docs/plans/01-performance-gpu.md) | A large surface is built off the GUI thread: the window stays usable, the status line says it is being built, the surface appears when ready. Headless runs still wait. | 1aon and 4v6x in the real window; the suite and the sanitizer job. |
+| 14 | **21g** — [Undo of more than the last move](docs/plans/21-commercial-features.md) | Snapshots for commands that add, remove or edit; the existing coordinate ring for moves. Three slices: the stack with create, delete, remove and the builder's edits; Undo and Redo in the toolbar say what they will undo; the rest of the test list. After it the error "only in Incentive PyMOL", the test mark `incentive` and the option `-n` go. | The 26 undo tests and the three jira tests pass, then the `incentive` mark comes off. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 | any time | **23b** — [Rows moved by dragging](docs/plans/23-rename-in-panel.md) | Reorder and regroup in the Objects panel with the mouse. Carried over from step 3. | The drop goes through a function a test calls. |
 | any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
 
-The new requests go first where they are small or where others wait for
-them: three small changes to the bar and the panel and one removal, then the
-session file, because the table and the shot list store into it. The table
-follows, then the rest of the bar, the scale and the 2D ligand. For
-surfaces the grid surface of 1b comes first (order 8); the surface looks
-are planned with its result. The old order is kept behind: timeline,
-rendering details, outline, the surface on a worker thread, and undo, the
-largest, last. Orders 12 and 13 share their shader pass. 5c (release builds
-without GitHub Actions) is shelved: the builds stay on GitHub for now. GPU
-compute is not on the critical path.
+The session file is first, because the table and the shot list store into
+it. The table follows, then the rest of the bar, the scale and the 2D
+ligand. For surfaces the grid surface of 1b comes first (order 7); the
+surface looks are planned with its result. The old order is kept behind:
+timeline, rendering details, outline, the surface on a worker thread, and
+undo, the largest, last. Orders 11 and 12 share their shader pass. 5c
+(release builds without GitHub Actions) is shelved: the builds stay on
+GitHub for now. GPU compute is not on the critical path.
 
 ## Validation of the original draft
 
@@ -122,7 +119,7 @@ paint roller is built; say if the rest of the sentence asked for more.
 
 The user's to do, not decisions:
 
-- Merge pull request 9 (`feature11`, 4.19.12 and later). `master` on GitHub
+- Merge pull request 9 (`feature11`, 4.19.12 to 4.25.0). `master` on GitHub
   has everything up to 4.19.11 (pull request 8, merged 2026-11-19).
 - The checks marked "first CI run" can be looked at: the icon of the Windows
   program, the release notes, the `chem` and `fix` extras on three systems.
