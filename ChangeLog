@@ -4,6 +4,25 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.20.0
+
+	* Action toolbar: shorter
+	  - "Background" reads "Bg" and has a paint roller as its icon;
+	    the tooltip still says "Background color".
+	  - Builder and Scenes show only their icon. The name appears
+	    under the mouse and is what a screen reader says.
+	  - "Draw/Ray" reads "Draw". Its panel is unchanged.
+	  - The bar is 192 px narrower at 150 % (1096 to 904).
+	  - Step 26a and the first part of 26d.
+
+	* Version numbers: a new rule, from this version on
+	  - The second number goes up when something a user can see or
+	    use changes; the third for every other change to the
+	    program. A change to plans, documents or tests alone gets
+	    no number. The first number stays 4. AGENTS.md, section 5.
+
+2026-11-20 pymolish-studio
+
 	* 4.19.43
 
 	* Licenses

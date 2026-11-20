@@ -93,7 +93,7 @@ def test_icons():
         panels=[
             ("Builder", lambda: None),
             ("Scenes", lambda: None),
-            ("Draw/Ray", QtWidgets.QMenu()),
+            ("Draw", QtWidgets.QMenu()),
         ],
     )
     buttons = [
@@ -105,13 +105,19 @@ def test_icons():
     assert [b.text() for b in buttons if b.icon().isNull()] == []
     IconOnly = QtCore.Qt.ToolButtonStyle.ToolButtonIconOnly
     assert sorted(b.toolTip() for b in buttons if b.toolButtonStyle() == IconOnly) == [
+            "Builder",
             "More view actions",
             "Orient",
             "Redo",
             "Rock",
+            "Scenes",
             "Undo",
             "Zoom on what is visible",
         ]
+    # the rest keep a text; the background's is short, its tooltip says it
+    texts = [b.text() for b in buttons if b.toolButtonStyle() != IconOnly]
+    assert "Bg" in texts and "Draw" in texts and "Background" not in texts
+    assert bar.background.toolTip() == "Background color"
     # bolder and larger than the menu icons, and blue while hovered or
     # checked; the text of the selection mode is styled by its name
     assert bar.iconSize().width() == 20
@@ -124,6 +130,7 @@ def test_icons():
     from pmg_qt import icons
 
     assert icons.LABELS["scenes"] == "camera"
+    assert icons.LABELS["background"] == "paint-roller"
 
 
 def test_background(request):
@@ -165,7 +172,7 @@ def test_background(request):
         assert pixel["Black"] == "#000000"
 
         # ray tracing with or without the background: one setting,
-        # the one Draw/Ray and Display > Background use
+        # the one Draw and Display > Background use
         cmd.set("ray_opaque_background", 0)
         rows["Ray trace with this background"].trigger()
         assert cmd.get_setting_int("ray_opaque_background") == -1

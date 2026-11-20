@@ -46,7 +46,7 @@ These parts are in the repository and in every wheel and bundle.
 
 | Part | Where | License | Text |
 | --- | --- | --- | --- |
-| [Lucide](https://lucide.dev) icons, 51 files | `data/pmg_qt/icons/lucide/` | ISC; parts from Feather under MIT | [LICENSE](../data/pmg_qt/icons/lucide/LICENSE) |
+| [Lucide](https://lucide.dev) icons, 53 files | `data/pmg_qt/icons/lucide/` | ISC; parts from Feather under MIT | [LICENSE](../data/pmg_qt/icons/lucide/LICENSE) |
 | champ | `contrib/champ/` | Open-Source PyMOL license | [LICENSE](../contrib/champ/LICENSE) |
 | VMD molfile plugins | `contrib/uiuc/plugins/` | University of Illinois Open Source License | [LICENSE](../contrib/uiuc/plugins/LICENSE) |
 | pocketfft | `contrib/pocketfft/` | BSD 3-Clause, Max-Planck-Society | [LICENSE.md](../contrib/pocketfft/LICENSE.md) |

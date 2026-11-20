@@ -34,7 +34,7 @@
         <string notr="true">background-color: #0c0; color: black; padding: 20px</string>
        </property>
        <property name="text">
-        <string notr="true">New in PyMOL 2.0: To render a sized antialiased image, use the Draw/Ray panel in the upper right.</string>
+        <string notr="true">New in PyMOL 2.0: To render a sized antialiased image, use the Draw panel in the upper right.</string>
        </property>
        <property name="textFormat">
         <enum>Qt::PlainText</enum>

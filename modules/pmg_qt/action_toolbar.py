@@ -150,8 +150,8 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.rock = self._action("Rock", cmd.rock)
         self.rock.setCheckable(True)
         # The view actions show only their icon: the name is the tooltip and
-        # the accessible name. The room goes to the texts of Palette and
-        # Background, which need the explanation more.
+        # the accessible name. The room goes to the text of Palette, which
+        # needs the explanation more.
         self.zoom.setToolButtonStyle(Style.ToolButtonIconOnly)
         for action in (orient, self.rock):
             self.widgetForAction(action).setToolButtonStyle(Style.ToolButtonIconOnly)
@@ -209,7 +209,9 @@ class ActionToolbar(QtWidgets.QToolBar):
         if pymol.invocation.options.pymolrc is not None and saved in palettes.PALETTES:
             cmd.palette(saved)
 
-        self.background = self._menu_button("Background", "Background color")
+        self.background = self._menu_button(
+            "Bg", "Background color", icon="background"
+        )
         menu = self.background.menu()
         _caption(menu, "Background:")
         self._backgrounds = []  # (action, top, bottom)
@@ -224,7 +226,7 @@ class ActionToolbar(QtWidgets.QToolBar):
             )
             self._backgrounds.append((action, top, bottom))
         menu.addSeparator()
-        # opaque_background is also what Draw/Ray > "transparent background"
+        # opaque_background is also what Draw > "transparent background"
         # and Display > Background > Opaque set
         self.ray_background = menu.addAction("Ray trace with this background")
         self.ray_background.setCheckable(True)
@@ -256,7 +258,9 @@ class ActionToolbar(QtWidgets.QToolBar):
             if isinstance(target, QtWidgets.QMenu):
                 self._menu_button(label, label).setMenu(target)
             else:
-                self._action(label, target)
+                # a panel button shows only its icon; the name is the tooltip
+                button = self.widgetForAction(self._action(label, target))
+                button.setToolButtonStyle(Style.ToolButtonIconOnly)
 
         # ponytail: Qt reads the scale once, so a pick needs a restart.
         # Upgrade path: restart with the session saved and reloaded.

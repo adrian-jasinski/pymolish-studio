@@ -356,7 +356,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
                 ('Scenes', self.scene_panel_menu_dialog),
                 # the render dialog is built when the menu is first shown, so
                 # it starts with the current viewport and settings
-                ('Draw/Ray', WidgetMenu(self).setSetupUi(self.render_dialog)),
+                ('Draw', WidgetMenu(self).setSetupUi(self.render_dialog)),
             ],
             more=[
                 ('Get View', self.get_view),
