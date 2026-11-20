@@ -4,6 +4,25 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.39.0
+
+	* Clean menu: remove crystallization additives
+	  - A > clean > "remove crystallization additives" removes
+	    what a crystal was grown and frozen in, by residue name,
+	    and says how many atoms went: fragments of PEG, glycerol,
+	    MPD and other cryoprotectants, buffers (TRIS, HEPES, MES,
+	    citrate, acetate ...), sulfate, phosphate and nitrate,
+	    reducing agents, detergents. 111 names; the list is
+	    ADDITIVES in pymol/grouping.py.
+	  - As asked for, the list also has the sugars of
+	    glycosylation (NAG, NDG, BMA, MAN, FUC) and NAD, NADH,
+	    NADP and NADPH. They are not additives: where a sugar or
+	    the cofactor is what the structure is about, use "remove"
+	    on a selection instead.
+	  - Step 30e.
+
+2026-11-20 pymolish-studio
+
 	* 4.38.0
 
 	* Presets menu: submenus for themes, lights and the floor; no

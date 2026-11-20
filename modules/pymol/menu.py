@@ -830,11 +830,15 @@ def hydrogens(self_cmd, sele):
            ]
 
 def clean(self_cmd, sele):
+    from pymol import grouping
     return [[ 2, 'Clean:', '' ],
             [ 1, rem_col + 'remove waters', 'cmd.remove("solvent and ('+sele+')")' ],
             [ 1, rem_col + 'remove ions', 'cmd.remove("inorganic and ('+sele+')")' ],
             [ 1, rem_col + 'remove waters and ions', 'cmd.remove("(solvent or inorganic) and ('+sele+')")' ],
             [ 1, rem_col + 'remove ligands', 'cmd.remove("organic and ('+sele+')")' ],
+            # PEG, glycerol, buffers, detergents ...; it says how many atoms went
+            [ 1, rem_col + 'remove crystallization additives',
+              'cmd.remove("('+grouping.ADDITIVES+') and ('+sele+')",quiet=0)' ],
             [ 0, '', '' ],
             [ 1, 'optimize ligand geometry', 'cmd.clean("'+sele+'",async_=1)' ],
             [ 1, 'fix structure...', 'pymol.gui.get_qtwindow().fix_structure_dialog("'+sele+'")' ],

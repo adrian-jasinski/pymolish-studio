@@ -297,6 +297,32 @@ def extract_chain(selection, chains="", group="", quiet=1, *, _self=cmd):
     return [name for name, _ in rows]
 
 
+# What is in a crystal because of how it was grown and frozen, by residue
+# name: the row "remove crystallization additives" of the clean menu.
+# Sources: the BioLiP list of ligands suspected to be artifacts, as PLIP
+# ships it (2014-07-10), cut down to what a crystallographer adds; the PDB
+# names of PEG fragments. The last two lines are no additives: the sugars
+# of glycosylation and NAD(P), on the list by request (2026-11-20).
+# shortcut: a fixed list; add a name here when an additive is left behind.
+ADDITIVES = "resn " + "+".join(
+    # PEG and glycol fragments
+    "PEG PGE PG4 PG0 PG5 PG6 1PE 2PE P6G PE3 PE4 PE5 PE8 P33 P3G P4G 12P 15P"
+    " 16P 7PE 7PG XPE PEU PGF ETE EDO PGO PGR PDO 1PG AE3 AE4 TOE ME2"
+    # cryoprotectants and solvents
+    " GOL MPD MRD BU1 BU3 HEZ IPA EOH MOH DMS DMF ACN DIO TBU"
+    # buffers and organic salts
+    " TRS EPE MES MPO BTB B3P CAC NHE CXS TAM BCN IMD CIT FLC ACT ACY FMT MLI"
+    " MLA TLA TAR SRT MLT LMR SIN BET URE GAI"
+    # precipitant ions, reducing agents
+    " SO4 PO4 NO3 SCN NH4 BME DTT DTV DTD DTU"
+    # detergents and lipids of the mother liquor
+    " BOG BNG HTG SOG LDA LMT LMU DMU UMQ SDS C8E CE9 CXE CPS OLC OLB"
+    # sugars of glycosylation
+    " NAG NDG BMA MAN FUC"
+    # NAD, NADH, NADP, NADPH
+    " NAD NAI NAP NDP".split()
+)
+
 # Kinds of molecule, for the select and split rows of the action menu. An
 # atom belongs to the first kind that matches.
 # shortcut: membrane is a list of lipid names of CHARMM and GROMACS systems;
