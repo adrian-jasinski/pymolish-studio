@@ -29,8 +29,10 @@ after a first look at the program: step 30, built the same day in 4.36.0 to
 And a fourth request that day, at 4.40.0: step 31, the program works with
 the AI agents of Anthropic and OpenAI. Planned, not built; questions 41
 to 48.
+A fifth, small one: 11b, a palette from the user's brand colors, planned
+at 4.39.0 and built in 4.41.0 as `halo`.
 
-**State 2026-11-20 at 4.40.0.** Built since 4.19.43, each with its test and
+**State 2026-11-20 at 4.41.0.** Built since 4.19.43, each with its test and
 a look in the real window, all listed in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
@@ -42,6 +44,7 @@ a look in the real window, all listed in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.30.0 to 4.31.0 | Quick-select chips; UI scale from 50 to 300 %, live. |
 | 4.32.0 to 4.35.0 | The ligand in 2D (command and panel), `stage` with floor, shadow and mirror, five color themes. |
 | 4.36.0 to 4.40.0 | Step 30: the 2D picture with circles, tones and a larger legend; the table's alignment and icon; the live UI scale with sharp icons; the preset menu with three submenus, and no preset colors a cartoon or a surface; a clean row for crystallization additives; Undo and Redo for a row of the preset menu. |
+| 4.41.0 | Palette `halo` (11b): five colors of a brand book and seven added ones. |
 
 All ten requested features have a working version, except the second half
 of the fourth: the surface looks wait for the grid surface of 1b, as
@@ -78,7 +81,6 @@ user's original numbers; the letters are milestones of the detailed plans.
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 | any time | **23b** — [Rows moved by dragging](docs/plans/23-rename-in-panel.md) | Reorder and regroup in the Objects panel with the mouse. Carried over from step 3. | The drop goes through a function a test calls. |
 | any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
-| after the answers | **11b** — [A palette from the user's brand colors](docs/plans/11-color-palettes.md#11b--a-palette-from-the-users-brand-colors) | Request of 2026-11-20, planned the same day: the five colors of a brand book as an object palette under another name, with seven added colors for the hues the brand lacks. One entry of data, its name in the test, a row and a strip in `docs/features.md`. Waits for questions 33 to 35. | The data test passes with the new name; the menu and twelve objects looked at on black and on white. |
 | after the answers | **31** — [AI agents: Claude and ChatGPT drive the program](docs/plans/31-ai-agents.md) | Request of 2026-11-20, planned the same day, nothing built. Four slices. 31a: the tools (run commands, the scene, a picture of the viewport, a table of atoms, help), a connector that listens on this machine only, behind a token, off until it is turned on, and an icon in the action toolbar. 31b: "Connect Claude Code" and "Connect ChatGPT and Codex" in one click. 31c: a built-in assistant in the command area, with an API key. 31d: Sign in with ChatGPT. There is no login for a Claude subscription inside the program: Anthropic does not allow it, so that route is the connector. Waits for questions 41 to 48; 31a needs 41, 43, 45 and 46. | Each slice has its test and a look in the real window. In 31a Claude Code and Codex each make one figure of 1OKY through the connector. |
 
 The session key and the rest of the table come first, then the scale and
@@ -127,17 +129,14 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-Eleven questions are open: eight for step 31, further down, and three for
-11b, the palette from the user's brand
-colors ([plan](docs/plans/11-color-palettes.md#11b--a-palette-from-the-users-brand-colors),
-picture `plan_images/palette-options.png`). The first option is the
-recommended one.
+Eight questions are open, all for step 31, further down.
 
-| No. | Question | Options |
-| --- | --- | --- |
-| 33 | The name of the palette. | `halo`, `lagoon`, `prism`, or another: lowercase letters, digits, `_`. |
-| 34 | The colors. | A: twelve, the five of the brand book as published, listed for any background (deep purple 1.8 and indigo 2.7 on black). B: eleven for a dark background, indigo lifted, deep purple left out. |
-| 35 | Is the brand named as the source? | No, as the palette has another name. Yes, in the comment and in `docs/features.md`, as for nord and chimerax. |
+Questions 33 to 35 (11b, the palette from the brand colors) got one
+answer on 2026-11-20, "add this to code", without a choice. So the
+recommended options were built in 4.41.0: the name `halo`, the twelve
+colors with the five of the brand book as published, and the brand not
+named. Say so if another name or the dark version is wanted: it is one
+entry of data.
 
 Questions 20 to 32 were answered on 2026-11-20; the
 answers, with the version each one shipped in, are under "Decided by the
@@ -182,8 +181,8 @@ ligands.
 
 The user's to do, not decisions:
 
-- Push `feature12` and open a pull request. The branch is local only: 30
-  commits after `master` on GitHub, 4.20.0 to 4.40.0 (counted 2026-11-20).
+- Push `feature12` and open a pull request. The branch is local only: 35
+  commits after `master` on GitHub, 4.20.0 to 4.41.0 (counted 2026-11-20).
   Pull request 10 was merged on 2026-11-20; `master` on GitHub is at
   4.19.43.
 - The checks marked "first CI run" can be looked at once the branch is

@@ -2,7 +2,7 @@
 
 [Roadmap](../../PLAN.md) · Request 2026-11-14 · Done in 4.10.0, see
 [Status](#status).
-One more palette, 11b, was planned on 2026-11-20 and is not built: see
+One more palette, 11b, was planned and built on 2026-11-20 (`halo`, 4.41.0): see
 [the end](#11b--a-palette-from-the-users-brand-colors).
 
 **Five named palettes replace the order in which new objects get their color
@@ -156,10 +156,27 @@ Asked for on 2026-11-16 after using it.
 ## 11b — a palette from the user's brand colors
 
 Request 2026-11-20: the colors of a brand book as an object palette, under
-another name, filled up to a full palette like the others. **Planned
-2026-11-20 at 4.39.0. Not built: questions 33 to 35 of
-[PLAN.md](../../PLAN.md) are open.** The brand book is the user's file and
-is not in the repo.
+another name, filled up to a full palette like the others. Planned
+2026-11-20 at 4.39.0. The brand book is the user's file and is not in the
+repo.
+
+**Done 2026-11-20 in 4.41.0 as `halo`.** The user answered the three
+questions below with "add this to code", without a choice, so the
+recommended options were built: the name `halo`, the twelve colors of
+option A, the brand not named.
+
+- Measured: the data test passes with the new name (6 tests, 10 subtests)
+  and so do the 8 toolbar tests. In the real window the menu has eleven
+  rows, its list is 338 x 242 px at 100 % on a screen 1067 px high.
+  Twelve helices, six as cartoon and six with sticks, on black and on
+  white: all twelve can be told apart; the deep purple is the darkest on
+  black and still seen.
+- `docs/img/palette-halo.png` is 248 x 28 px. The script that drew it
+  gives the shipped chimerax strip back pixel for pixel.
+- Also changed: the NOTES of the `palette` help named colorblind alone
+  for "any"; they name chimerax and halo too.
+- Left out: the look at 150 %. The list grows by one row of 22 px, so
+  no trouble is expected; that is an estimate, not a measurement.
 
 **One more row in the palette menu: the five colors of the brand book, and
 seven more in the same strong tone for the hues the brand does not have. It

@@ -116,6 +116,12 @@ ten-feature request). The last column says where each one stands at 4.35.0.
 | 31 | As recommended: the scene buttons the core draws are deleted; the sequence viewer stays. | 17f in [plan 17](docs/plans/17-legacy-ui.md). Done in 4.25.0. |
 | 32 | As recommended: color themes set protein color and background, as a group of their own. | Plan 25, 25b-2. Done in 4.35.0, ahead of 15e. |
 
+Questions 33 to 35 (11b, the palette from the user's brand colors: its name,
+its colors, whether the brand is named) were answered on 2026-11-20 with
+"add this to code", without a choice. The recommended options were built
+in 4.41.0: `halo`, twelve colors with the five of the brand book as
+published, the brand not named.
+
 Also on 2026-11-20: `plan_images/` is not committed and is ignored by git;
 it is deleted when the last plans made from it (22d, 24c, 25b) are built. Its `:Zone.Identifier`
 files are deleted. The line `set internal_gui_width, 400` is out of the
@@ -139,14 +145,15 @@ ones, the new ones win.
 ## Finished milestones of open steps
 
 Steps 1, 8, 15, 19, 21, 22, 23, 24, 25, 27 and 28 stay in the roadmap.
-These parts of them have shipped. The rows of steps 3, 17, 18, 20, 26 and
+These parts of them have shipped. The rows of steps 3, 11, 17, 18, 20, 26 and
 30, which are finished, are kept here as the record of their milestones. The
-rows are not in order of time: the newest block, 4.36.0 to 4.40.0, is the
-six rows of step 30 at the top; the block before it, 4.20.0 to 4.35.0, is
+rows are not in order of time: the newest row, 4.41.0, is 11b at the top;
+under it the block 4.36.0 to 4.40.0, the six rows of step 30; the block before it, 4.20.0 to 4.35.0, is
 the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
+| 11 | 11b — palette `halo` | Done 2026-11-20 (4.41.0): [docs/plans/11-color-palettes.md](docs/plans/11-color-palettes.md). Twelve colors: turquoise, blue, cyan, indigo and deep purple of the user's brand book as published, and between them pink, yellow, lime, red, green, magenta and orange in the same tone. Listed for any background: on black the deep purple has a contrast of 1.8 and the indigo 2.7; neighbors are at least 0.56 apart. Differs from the plan: the three questions got no choice, so the recommended options were built; the menu was looked at at 100 % only. |
 | 30 | 30a — the 2D picture | Done 2026-11-20 (4.36.0): [docs/plans/30-polish.md](docs/plans/30-polish.md). Residues are circles of 52 px with 14 px text; each fill is a gradient in tones for a light or a dark window; the legend has 16 px text and wraps. 1OKY: the picture went from 514 to 429 px wide. The three `qt.svg` messages per drawing are gone. Differs from the plan: the legend's text is 16 px, not 14, and the picture has less empty margin, both after a look at it in a panel 420 px wide. |
 | 30 | 30b — the property table | Done 2026-11-20 (4.37.0). Values at the left; the icon `sheet`; only molecules are asked for properties and written, so a group no longer makes the core print an error at every poll. |
 | 30 | 30c — the live UI scale | Done 2026-11-20 (4.37.1). Found on the way: Qt keeps the application's pixel ratio from the start, so after a live change every new icon was still made for the old scale (30 px for a place of 40 at 150 to 200 %). Icons are made for the ratio of the screens, and what draws icons draws them again after a change. Qt's warning is not printed. |
