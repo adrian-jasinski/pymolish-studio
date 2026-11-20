@@ -75,46 +75,48 @@ Decided by the user on 2026-11-16 and applied:
 | Version rule: `X` bumps once per roadmap step, with its main user-visible change; everything else bumps `Y`. | `AGENTS.md` §5. |
 | Merges to `master` are done by the user. | Listed in the roadmap under "Waiting for the user". |
 
-Decided by the user on 2026-11-20. Recorded in the plans; "to build" means
-nothing is built yet.
+Decided by the user on 2026-11-20, first round. The last column was brought
+up to date on 2026-11-20 at 4.35.0: a version where the decision shipped,
+"open" with its order in the roadmap where it has not.
 
 | # | Decision | Where it goes |
 | --- | --- | --- |
-| 1 | A large surface is built on a worker thread (option A). | 1b, order 6 of the roadmap. To build. |
+| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 11. |
 | 3 | The icon and the logo were generated with ChatGPT; the user owns them. They get "a license that is good for trade marks". | Done in 4.19.43: `data/pymol/icons/LICENSE`, a notice outside the two code licenses (unchanged copies travel with the program and may refer to it; a changed version needs its own). `docs/licenses.md`, plan 9. |
 | 4 | The release builds stay on GitHub Actions for now. | 5c is shelved; nothing was built for it. Plan 5. |
-| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b, order 5. To build. |
-| 6 | The ChimeraX object colors become a palette. | 15c, order 1. To build. |
-| 7 | All five effects of 15e. | Order 2. To build. |
-| 13 | "Decide by yourself." Decided as recommended: the shot list goes into the session file; the 58 Program rows of the Movie menu go; the keyframe strip of the core stays for now. | Step 19, order 3. To build. |
-| 15 | As recommended: blue hover in every menu; Orient acts only on what is visible. | Step 20, order 1. To build. |
-| 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f, order 4. To build. |
-| 18 | As recommended: idle OpenMP threads sleep at once. | 1b, order 1. To build. |
-| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g, order 8. To build. |
-| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b, order 7. To build. |
+| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 10. |
+| 6 | The ChimeraX object colors become a palette. | 15c. Done in 4.22.0. |
+| 7 | All five effects of 15e. | Open, order 5. |
+| 13 | "Decide by yourself." Decided as recommended: the shot list goes into the session file; the 58 Program rows of the Movie menu go; the keyframe strip of the core stays for now. | Step 19. Open, order 8. |
+| 15 | As recommended: blue hover in every menu; Orient acts only on what is visible. | Step 20. Done in 4.23.0. |
+| 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Open, order 9. |
+| 18 | As recommended: idle OpenMP threads sleep at once. | 1b. Done in 4.23.1. |
+| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. Open, order 12. |
+| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Open, order 6; moved up by the answer to question 25. |
 
-14 was answered by "release 17" (4.19.42). 
+14 was answered by "release 17" (4.19.42).
+
 Decided by the user on 2026-11-20, second round (questions 20 to 32 of the
-ten-feature request). "To build" means nothing is built yet.
+ten-feature request). The last column says where each one stands at 4.35.0.
 
 | # | Decision | Where it goes |
 | --- | --- | --- |
-| 20 | The property table is a window of its own that can be closed and resized; it lies over the viewport and sticks to the Objects panel on the right. None of the three options offered. | [Plan 22](docs/plans/22-property-table.md), "Where the table lives". To build. |
-| 21 | As recommended: `.xlsx` is read with the standard library, no new dependency. | Plan 22, 22c. To build. |
-| 22 | As recommended: the rename wizard stays as the fallback without a window. | [Plan 23](docs/plans/23-rename-in-panel.md). To build. |
-| 23 | The 2D ligand drawing is our own code, rdkit allowed; interactive: selecting a residue in 2D selects it in 3D. | [Plan 24](docs/plans/24-ligand-2d.md); the selection goes both ways. To build. |
-| 24 | Shadows ray traced only at first. | [Plan 25](docs/plans/25-studio-effects.md), 25a. To build. |
-| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moves up (order 8); the surface looks and the blob are planned again with its result; no surface look and no new setting before that. |
-| 26 | As recommended: one row, icons. The same day: Builder and Scenes show only the icon, the name on mouse-over; "Draw/Ray" becomes "Draw". | Builder, Scenes and Draw done in 4.20.0; the rest with 26c. |
+| 20 | The property table is a window of its own that can be closed and resized; it lies over the viewport and sticks to the Objects panel on the right. None of the three options offered. | [Plan 22](docs/plans/22-property-table.md), "Where the table lives". Done in 4.27.0. |
+| 21 | As recommended: `.xlsx` is read with the standard library, no new dependency. | Plan 22, 22c. Done in 4.29.0. |
+| 22 | As recommended: the rename wizard stays as the fallback without a window. | [Plan 23](docs/plans/23-rename-in-panel.md). Done in 4.24.0. |
+| 23 | The 2D ligand drawing is our own code, rdkit allowed; interactive: selecting a residue in 2D selects it in 3D. | [Plan 24](docs/plans/24-ligand-2d.md); the selection goes both ways. Done in 4.32.0 (command) and 4.33.0 (panel). |
+| 24 | Shadows ray traced only at first. | [Plan 25](docs/plans/25-studio-effects.md), 25a. Done in 4.34.0. |
+| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up (order 6 now); the surface looks and the blob are planned again with its result; no surface look and no new setting before that. Open. |
+| 26 | As recommended: one row, icons. The same day: Builder and Scenes show only the icon, the name on mouse-over; "Draw/Ray" becomes "Draw". | Builder, Scenes and Draw done in 4.20.0; the rest in 4.30.0. |
 | 27 | The paint roller. (The answer ends "rest", cut off.) | Done in 4.20.0 with "Bg". |
-| 28 | As recommended: live scale through Qt's private function, the "next start" message as fallback. | [Plan 27](docs/plans/27-ui-scale.md). To build. |
-| 29 | As recommended: `.psex` is what Save Session writes; a `.pse` carries the new data too. | [Plan 28](docs/plans/28-session-format.md). To build. The background picture of 21f stays in its setting. |
+| 28 | As recommended: live scale through Qt's private function, the "next start" message as fallback. | [Plan 27](docs/plans/27-ui-scale.md). Done in 4.31.0 on Linux; Windows and macOS are 27c, open. |
+| 29 | As recommended: `.psex` is what Save Session writes; a `.pse` carries the new data too. | [Plan 28](docs/plans/28-session-format.md). The file type done in 4.26.0; the key for new data (28b) comes with its first user. The background picture of 21f stays in its setting. |
 | 30 | As recommended: the version rule by what changed for the user. | Done: `AGENTS.md` §5, step 29. |
-| 31 | As recommended: the scene buttons the core draws are deleted; the sequence viewer stays. | 17f in [plan 17](docs/plans/17-legacy-ui.md). To build. |
-| 32 | As recommended: color themes set protein color and background, as a group of their own. | Plan 25, 25b-2, with 15e. To build. |
+| 31 | As recommended: the scene buttons the core draws are deleted; the sequence viewer stays. | 17f in [plan 17](docs/plans/17-legacy-ui.md). Done in 4.25.0. |
+| 32 | As recommended: color themes set protein color and background, as a group of their own. | Plan 25, 25b-2. Done in 4.35.0, ahead of 15e. |
 
 Also on 2026-11-20: `plan_images/` is not committed and is ignored by git;
-it is deleted when the plans made from it are built. Its `:Zone.Identifier`
+it is deleted when the last plans made from it (22d, 24c, 25b) are built. Its `:Zone.Identifier`
 files are deleted. The line `set internal_gui_width, 400` is out of the
 user's `~/.pymolrc`.
 
@@ -124,20 +126,22 @@ ones, the new ones win.
 
 | Old decision | Where it was | Replaced by |
 | --- | --- | --- |
-| A read-only metadata table, one of the slices of step 3; "no editable grid". | Plan 3, slices 2 and 3, "Acceptance checks and scope" | [Step 22](docs/plans/22-property-table.md): an editable table on the object properties of the core, with import and export. Step 3 is closed. |
-| Rename through the wizard that types into the viewport. | Plan 14 (the row "rename" of the A menu) | [Step 23](docs/plans/23-rename-in-panel.md): the name is edited on the row. |
-| "Palette and Background carry their names." | Plan 20 | [26a](docs/plans/26-toolbar-buttons.md): "Bg" and a new icon. |
-| The bar must fit 940 px; names on Builder, Scenes and Draw/Ray. | Plans 7 and 20 | [26d](docs/plans/26-toolbar-buttons.md): the bar is 1096 px today and about 1140 to 1210 px with the new buttons as icons (question 26). |
-| UI scale in five steps from 100 to 200 %, applied at the next start; "live rescale without restart: skipped". | Plans 3 and 7 | [Step 27](docs/plans/27-ui-scale.md): any value from 50 to 300 %, live where Qt allows it. |
-| The shot list goes "into the session file". | Plan 19 | Unchanged in substance: it goes under the one key of [step 28](docs/plans/28-session-format.md), which is built first. The background picture of 21f stays as decided unless question 29 moves it. |
-| A look leaves the background alone; a preset keeps the protein colors. | Plan 15, 15g and 15h | Still true for looks and presets. The color themes of [25b](docs/plans/25-studio-effects.md) set both, as a group of their own (question 32). |
+| A read-only metadata table, one of the slices of step 3; "no editable grid". | Plan 3, slices 2 and 3, "Acceptance checks and scope" | [Step 22](docs/plans/22-property-table.md): an editable table on the object properties of the core, with import and export. Done in 4.27.0 to 4.29.0. Step 3 is closed. |
+| Rename through the wizard that types into the viewport. | Plan 14 (the row "rename" of the A menu) | [Step 23](docs/plans/23-rename-in-panel.md): the name is edited on the row. Done in 4.24.0. |
+| "Palette and Background carry their names." | Plan 20 | [26a](docs/plans/26-toolbar-buttons.md): "Bg" and a new icon. Done in 4.20.0. |
+| The bar must fit 940 px; names on Builder, Scenes and Draw/Ray. | Plans 7 and 20 | [26d](docs/plans/26-toolbar-buttons.md): the bar is one row of icons, 1195 px at 150 % with every planned button (4.33.0); the default window opens that wide. |
+| UI scale in five steps from 100 to 200 %, applied at the next start; "live rescale without restart: skipped". | Plans 3 and 7 | [Step 27](docs/plans/27-ui-scale.md): any value from 50 to 300 %, live where Qt allows it. Done in 4.31.0. |
+| The shot list goes "into the session file". | Plan 19 | Unchanged in substance: it goes under the one key of [step 28](docs/plans/28-session-format.md), which is built with it. The background picture of 21f stays as decided: the answer to question 29 did not move it. |
+| A look leaves the background alone; a preset keeps the protein colors. | Plan 15, 15g and 15h | Still true for looks and presets. The color themes of [25b](docs/plans/25-studio-effects.md) set both, as a group of their own (question 32). Done in 4.35.0. |
 | The version: the second number once per roadmap step. | `AGENTS.md` §5 | [Step 29](docs/plans/29-versioning.md): done, the new rule is in `AGENTS.md`. |
 
 ## Finished milestones of open steps
 
-Steps 1, 8, 15, 19, 21, 22, 23, 24, 25, 27 and 28 stay in the roadmap. These parts of them have
-shipped. The rows of steps 3, 17 and 18, which are finished, are kept here
-as the record of their milestones.
+Steps 1, 8, 15, 19, 21, 22, 23, 24, 25, 27 and 28 stay in the roadmap.
+These parts of them have shipped. The rows of steps 3, 17, 18, 20 and 26,
+which are finished, are kept here as the record of their milestones. The
+rows are not in order of time: the newest block, 4.20.0 to 4.35.0, is the
+one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
@@ -169,6 +173,7 @@ as the record of their milestones.
 | 27 | 27a, 27b — UI scale, any value, live | Done 2026-11-20 (4.31.0): [docs/plans/27-ui-scale.md](docs/plans/27-ui-scale.md). A field for 50 to 300 %; the running window changes through Qt's private scale function, with the "next start" message as fallback; a question with a ten-second revert for very small and very large values. Linux only so far. |
 | 22 | 22a to 22c — the property table | Done 2026-11-20 (4.27.0 to 4.29.0): [docs/plans/22-property-table.md](docs/plans/22-property-table.md). A window over the viewport, stuck to the Objects panel: row number, a dot for shown or hidden, name, one column per object property; sorts by value, filters. Cells and names are edited in place, columns added, renamed, deleted; blocks copied and pasted. `load_table` (CSV, TSV, `.xlsx` with the standard library) and `save_table`. `split_states` keeps properties. 4.27.1: the core no longer aborts when a property changes its type. |
 | 28 | 28a — the packed session file | Done 2026-11-20 (4.26.0): [docs/plans/28-session-format.md](docs/plans/28-session-format.md). `save x.psex`: 1AON 19.6 MB to 1.10 MB, 4V6X 87.2 MB to 3.90 MB, faster to write and to read. First choice in Save Session As; `.pse` stays for PyMOL. |
+| 26 | 26c, 26d — quick select, the layout of the bar | Done 2026-11-20 (4.30.0). Chips P, L, S, a menu with chains and more, All and "nothing"; Shift adds, Ctrl takes away. Palette became an icon; the bar is one row. With the 2D and Table buttons it is 1195 px at 150 %. Step 26 is finished. |
 | 26 | 26a, 26b — Bg, Builder and Scenes as icons, Draw; the Open button | Done 2026-11-20 (4.20.0, 4.21.0): [docs/plans/26-toolbar-buttons.md](docs/plans/26-toolbar-buttons.md). The bar went from 1096 px to 904 px at 150 %, and is 959 px with Open. Open lists open file, open folder, recent, get by PDB code, by UniProt, predicted structure. |
 | 15 | 15c — ChimeraX colors | Done 2026-11-20 (4.22.0). Palette `chimerax`: the ten values of ChimeraX's own list, read from its source. Listed for any background, because its purple is too dark for the contrast rule of the dark palettes. |
 | 20 | The two follow-ups | Done 2026-11-20 (4.23.0). One rule in `pymol.sty` for every menu and the menu bar; a checked row is written in blue everywhere. Orient in the toolbar acts on `visible`. |

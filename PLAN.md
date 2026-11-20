@@ -17,30 +17,28 @@ Same day: the user answered questions 1, 3 to 7, 13, 15, 16, 18 and 19. The
 answers are in the table below and in the detailed plans; none of that work is
 built yet.
 Then 3 (the icon and logo got a notice of their own, 4.19.43) and 17 (undo).
-Extended the same day at 4.19.43 with a second request of ten features:
-steps 22 to 29, all planned, none built. Step 3 is closed: the property table
-of step 22 replaces its metadata table. Where a new plan contradicts an old
-decision the new one wins; the old decisions that fall are listed in
-[PLAN-DONE.md](PLAN-DONE.md). Experiments were run for six of the plans and
-their numbers and pictures are in the plan files.
-Then the user answered questions 20 to 32 (answers in the table and in the
-plans). Built on them: the version rule (step 29, done, in `AGENTS.md` §5)
-and, as 4.20.0, the first under that rule, 26a with two more changes to the
-bar: "Bg" with a paint roller, Builder and Scenes as icons, "Draw" for
-"Draw/Ray".
-Then all of order 1, 4.21.0 to 4.25.0: the Open button (26b), the palette
-`chimerax` (15c), blue hover in every menu and Orient on what is visible
-(step 20, finished), sleeping idle threads (1b), rename on the row of the
-Objects panel (23a), and the scene buttons of the core deleted (17f). The
-table below starts again at order 1.
-Then 4.26.0 to 4.29.0: the packed session file `.psex` (28a), the property
-table with editing, import and export (22a to 22c), and a fix in the core
-(a property set again with another type ended the program). 4.30.0: the
-quick-select chips and the final layout of the bar; step 26 is finished.
-4.31.0: the UI scale from 50 to 300 %, live on Linux. 4.32.0 and 4.33.0:
-the ligand in 2D, as a command and as a panel. 4.34.0: `stage`, a floor
-with shadow or mirror image, and three light setups. 4.35.0: five color
-themes.
+Extended the same day at 4.19.43 with a second request of ten features,
+steps 22 to 29. Step 3 was closed: the property table of step 22 replaces
+its metadata table. Where a new plan contradicted an old decision the new
+one won; the old decisions that fell are listed in
+[PLAN-DONE.md](PLAN-DONE.md). The user answered questions 20 to 32 the same
+day.
+
+**State 2026-11-20 at 4.35.0.** Built since 4.19.43, each with its test and
+a look in the real window, all listed in [PLAN-DONE.md](PLAN-DONE.md):
+
+| Version | What |
+| --- | --- |
+| 4.20.0 to 4.21.0 | The version rule (step 29). The bar: "Bg", icons, "Draw", the Open button. |
+| 4.22.0 to 4.25.0 | Palette `chimerax`, blue hover in every menu, Orient on what is visible, sleeping idle threads, rename on the row, the scene buttons of the core deleted. |
+| 4.26.0 | The packed session file `.psex`. |
+| 4.27.0 to 4.29.0 | The property table: window, editing, import and export. A fix in the core. |
+| 4.30.0 to 4.31.0 | Quick-select chips; UI scale from 50 to 300 %, live. |
+| 4.32.0 to 4.35.0 | The ligand in 2D (command and panel), `stage` with floor, shadow and mirror, five color themes. |
+
+All ten requested features have a working version, except the second half
+of the fourth: the surface looks wait for the grid surface of 1b, as
+decided. Steps 20, 26 and 29 are finished.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -107,6 +105,8 @@ recommended direction, not a claim that an implementation has passed tests.
   open, so a session starts there instead of exploring again.
 - Version numbers: `AGENTS.md` §5 (rule of 2026-11-20). A commit that only
   changes plans, docs, CI or tests takes no version.
+- This file and `PLAN-DONE.md` are brought up to date at the end of every
+  run that ships a feature: `AGENTS.md` §5.
 - [ponytail](https://github.com/dietrichgebert/ponytail) is already the rule
   (`AGENTS.md` §1): each plan has a "Skipped" list and, where code goes away,
   a "Deleted" list. Nothing on a "Skipped" list is built without a new request.
@@ -115,25 +115,37 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-Nothing waits for an answer. Questions 20 to 32 were answered on
-2026-11-20; the answers are under "Decided by the user" in
-[PLAN-DONE.md](PLAN-DONE.md).
+No question is open. Questions 20 to 32 were answered on 2026-11-20; the
+answers, with the version each one shipped in, are under "Decided by the
+user" in [PLAN-DONE.md](PLAN-DONE.md).
 
 One answer was cut off: question 27 reads "paint roller icon. rest". The
 paint roller is built; say if the rest of the sentence asked for more.
 
+Small things that were left out on the way and are built only if asked for:
+shortcuts for the UI scale (Ctrl+=, Ctrl+-, Ctrl+0) and the option
+`--ui-scale`; the five themes as palettes and backgrounds of their own; the
+table window's size between sessions (it is part of 22d).
+
 The user's to do, not decisions:
 
-- Merge pull request 9 (`feature11`, 4.19.12 to 4.35.0). `master` on GitHub
-  has everything up to 4.19.11 (pull request 8, merged 2026-11-19).
-- The checks marked "first CI run" can be looked at: the icon of the Windows
-  program, the release notes, the `chem` and `fix` extras on three systems.
-  The Windows bundle starts again only from 4.19.30 on.
+- Push `feature11` and merge pull request 10. GitHub has the branch up to
+  4.19.43; everything from 4.20.0 on is local (checked 2026-11-20). `master` is at
+  4.19.30 (pull request 9, merged 2026-11-19).
+- The checks marked "first CI run" can be looked at once the branch is
+  pushed: the icon of the Windows program, the release notes, the `chem` and
+  `fix` extras on three systems, and new with 4.31.0: whether the live UI
+  scale works on Windows and macOS (the test `test_scale_range_and_live`
+  prints it; step 27c).
 - Remove the pymolish plugin from `~/.pymol/startup` (still there on
-  2026-11-19): it wins over the native commands.
+  2026-11-20): it wins over the native commands.
 - `plan_images/` (the pictures of the request of 2026-11-20) is ignored by
-  git and is deleted when steps 22 to 28 are built. The plans name its
-  files by path.
+  git. It is deleted when the last plans made from it are built: 22d, 24c
+  and 25b. The plans name its files by path.
+
+Not the user's, and not a roadmap step: the screenshot in the README
+(`docs/img/window.png`) shows the window of 4.19; it is retaken when the
+bar has stopped changing.
 
 ## Shared completion criteria
 
