@@ -1,7 +1,8 @@
 # 30 — Eight repairs after a first look at 4.35.0
 
 [Roadmap](../../PLAN.md) · Request 2026-11-20 · **Planned 2026-11-20 at
-4.35.0. Six slices, 30a to 30f, each one commit and one version.**
+4.35.0. Six slices, 30a to 30f, each one commit and one version. All six
+done the same day, 4.36.0 to 4.40.0: see [Status](#status) at the end.**
 
 **The user tried 4.35.0 and came back with eight points: the look of the 2D
 ligand picture, the property table, two messages in the console, blurred
@@ -57,7 +58,7 @@ Each slice: code, its test, a look in the real window, `ChangeLog`, version.
 `modules/pmg_qt/property_table.py`, `modules/pmg_qt/icons.py`, one icon file.
 
 - Every value is left-aligned. The row number stays right-aligned.
-- A new icon. Options (question 33): **`sheet`, a grid of three rows and
+- A new icon. Options (question 36): **`sheet`, a grid of three rows and
   three columns under a header, recommended**; `table`, two columns;
   `table-properties`, a narrow column on the right.
 - Only molecules are asked for properties, and only their cells are
@@ -84,7 +85,7 @@ Each slice: code, its test, a look in the real window, `ChangeLog`, version.
 - **Menu:** the 16 presets stay as they are. Under them the two switches
   (cartoon transparency, solvent), then three submenus: **theme** (5),
   **light** (10), **floor** (3). 21 rows in place of 33. No preset is taken
-  out: that is question 36.
+  out: that is question 39.
 - **Rule:** no row but a theme changes the color of a cartoon or of a
   surface.
   - "default" colors the non-carbon atoms by element and leaves the
@@ -95,7 +96,7 @@ Each slice: code, its test, a look in the real window, `ChangeLog`, version.
     it; the sticks and lines keep their element colors.
   - protein-protein interaction: the surface has the colors of its atoms,
     and only the residues within 4.5 A of another chain get one color.
-    Options (question 34): **orange, recommended**: it shows on every
+    Options (question 37): **orange, recommended**: it shows on every
     theme and on the default chain colors; white, as before, is lost on the
     pale themes.
   - antibody and antigen: the same, only the epitope is orange.
@@ -128,7 +129,7 @@ Each slice: code, its test, a look in the real window, `ChangeLog`, version.
 - **A warning that belongs here:** the last two groups are not additives.
   NAG, BMA, MAN and FUC are the sugars a cell puts on a glycoprotein, and
   NAD(P) is the cofactor of most enzymes it is found in. They are on the
-  list because the request names them. Options (question 35): **one row
+  list because the request names them. Options (question 38): **one row
   with all of it, as asked, recommended for now**; a row of their own for
   sugars and one for cofactors, so that "additives" can be removed without
   them.
@@ -165,11 +166,11 @@ New `modules/pymol/snapshots.py`; `editing.py` (undo, redo), `menu.py`,
 
 | | Question | Built for now |
 | --- | --- | --- |
-| 33 | The table's icon: `sheet`, `table` or `table-properties`? | `sheet` |
-| 34 | The color of the contact area in "protein-protein interaction": orange or white? | orange |
-| 35 | Sugars and NAD(P) in the additives row, or in rows of their own? | in the one row |
-| 36 | "Clean the menu": should presets leave it? Candidates: classified (it is what loading does), ball and stick, b factor putty, five of the seven ligand sites rows. | none taken out |
-| 37 | Undo of a preset takes back what was done after it, until 21g. Good enough until then? | yes |
+| 36 | The table's icon: `sheet`, `table` or `table-properties`? | `sheet` |
+| 37 | The color of the contact area in "protein-protein interaction": orange or white? | orange |
+| 38 | Sugars and NAD(P) in the additives row, or in rows of their own? | in the one row |
+| 39 | "Clean the menu": should presets leave it? Candidates: classified (it is what loading does), ball and stick, b factor putty, five of the seven ligand sites rows. | none taken out |
+| 40 | Undo of a preset takes back what was done after it, until 21g. Good enough until then? | yes |
 
 ## Skipped
 
@@ -182,3 +183,22 @@ New `modules/pymol/snapshots.py`; `editing.py` (undo, redo), `menu.py`,
 - Undo for anything but the preset menu: 21g.
 - A row that removes additives from a selection typed by the user: the row
   acts on the object or selection of its menu, like the other four.
+
+## Status
+
+Done 2026-11-20, one commit per slice. The suite passed before each commit
+(968 tests at the end, 251 skipped); each slice was looked at in the real
+window.
+
+| Slice | Version | Measured | Differs from the plan |
+| --- | --- | --- | --- |
+| 30a | 4.36.0 | 1OKY, staurosporine: the picture is 429 x 553 px (was 514 x 560), the legend four rows. No message from Qt while the panel is resized. | The legend's text is 16 px, not 14; less empty margin (the 85 px the picture lost in width); a picture is at least 344 px wide. All three after a look at it in a panel 420 px wide, where the picture is drawn at 0.79 of its size. |
+| 30b | 4.37.0 | A group and a measurement in the table: nothing printed. | None. |
+| 30c | 4.37.1 | 150 to 200 % in the real window: the icon of a toolbar button was 30 x 30 px for a place of 40, and is 40 x 40. | The cause was not only that old icons stay: Qt keeps the application's pixel ratio from the start, so new icons were wrong too. Icons are made for the ratio of the screens. |
+| 30d | 4.38.0 | 21 rows. One test runs the 40 rows of the menu and its submenus that are no theme on a yellow structure. | More: a surface drawn by a preset has the color of the carbons of each residue, in all five presets with a surface, because an earlier preset leaves element colors behind (one pass, 0.03 s on 1AON). A modified residue of the protein keeps the protein's color. Less: a residue of which the file has no carbon keeps the color of its atoms. |
+| 30e | 4.39.0 | 111 names. 1OKY: 43 atoms go (three glycerols, five sulfates), staurosporine stays. | None. |
+| 30f | 4.40.0 | 4HHB in the real window: after Undo the viewport is the same picture, pixel for pixel, as before the preset; after Redo the same as after it. The window keeps its size. | The steps are also dropped when a session file is opened. Undo and Redo print one line. |
+
+Left out: the list under "Skipped". Questions 36 to 40 are in
+[PLAN.md](../../PLAN.md); they were 33 to 37 here until 11b took 33 to 35
+the same day.

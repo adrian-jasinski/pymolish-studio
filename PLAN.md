@@ -23,8 +23,11 @@ its metadata table. Where a new plan contradicted an old decision the new
 one won; the old decisions that fell are listed in
 [PLAN-DONE.md](PLAN-DONE.md). The user answered questions 20 to 32 the same
 day.
+Extended once more that day at 4.35.0 with a third request, eight repairs
+after a first look at the program: step 30, built the same day in 4.36.0 to
+4.40.0 and finished.
 
-**State 2026-11-20 at 4.35.0.** Built since 4.19.43, each with its test and
+**State 2026-11-20 at 4.40.0.** Built since 4.19.43, each with its test and
 a look in the real window, all listed in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
@@ -35,6 +38,7 @@ a look in the real window, all listed in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.27.0 to 4.29.0 | The property table: window, editing, import and export. A fix in the core. |
 | 4.30.0 to 4.31.0 | Quick-select chips; UI scale from 50 to 300 %, live. |
 | 4.32.0 to 4.35.0 | The ligand in 2D (command and panel), `stage` with floor, shadow and mirror, five color themes. |
+| 4.36.0 to 4.40.0 | Step 30: the 2D picture with circles, tones and a larger legend; the table's alignment and icon; the live UI scale with sharp icons; the preset menu with three submenus, and no preset colors a cartoon or a surface; a clean row for crystallization additives; Undo and Redo for a row of the preset menu. |
 
 All ten requested features have a working version, except the second half
 of the fourth: the surface looks wait for the grid surface of 1b, as
@@ -56,7 +60,6 @@ user's original numbers; the letters are milestones of the detailed plans.
 
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
-| now | **30** — [Eight repairs after a first look at 4.35.0](docs/plans/30-polish.md) | Request of 2026-11-20, planned the same day, six slices: the look of the 2D picture; the table's alignment, icon and a message; the live UI scale without a warning and with sharp icons; the preset menu with submenus, and no preset but a theme colors a cartoon or a surface; a clean row for crystallization additives; Undo and Redo for a row of the preset menu. | Each slice has its test and a look in the real window. |
 | 1 | **28b** — [One session key for new data](docs/plans/28-session-format.md) | 28a, the packed `.psex` file, shipped in 4.26.0. Left: one key `pymolish` in the session for everything new (table columns, shot list), with unknown entries kept. Built with its first user (22d or step 19), not ahead. | An entry of a "newer" version survives load and save; PyMOL 3 loads the `.pse` written with the key. |
 | 2 | **22d, 22e** — [Property table, the rest](docs/plans/22-property-table.md) | 22a to 22c shipped in 4.27.0 to 4.29.0: the window, editing, columns, copy and paste, import from CSV and Excel, export. Left: 22d, column order and hidden columns kept in the session (with 28b), computed columns (atoms, residues, chains, states, weight, charge), a Columns menu, "follow" (the current row is the only object shown), the window's size between sessions; 22e, a picked atom selects its row. | Each slice has its test. |
 | 3 | **27c** — [UI scale, Windows and macOS](docs/plans/27-ui-scale.md) | 27a and 27b shipped in 4.31.0: any percent from 50 to 300, live on Linux. Left: see in the first CI run whether the live change works on Windows and macOS (the test prints it); where it does not, restart in place or the "next start" message stays. | The CI log of both systems. |
@@ -68,7 +71,7 @@ user's original numbers; the letters are milestones of the detailed plans.
 | 9 | **21f** — [Three rendering details](docs/plans/21-commercial-features.md) | `sphere_mode` is capped at 9, its test and two reference images go. The background image is stored inside the session file. Smooth edges in the viewport with an FXAA shader. The picture is stored in the setting, as decided. | Each old test passes or is deleted with its item. |
 | 10 | **15b** — [Outline in the viewport](docs/plans/15-presets.md) | An edge pass over the drawn picture for the looks figure, soft, flat, comic and sketch. The line is black on a light background and light on a dark one. It is the same kind of pass as FXAA, so it comes right after it. | Frame time before and after; pictures on black and on white. |
 | 11 | **1b** — [Surface on a worker thread](docs/plans/01-performance-gpu.md) | A large surface is built off the GUI thread: the window stays usable, the status line says it is being built, the surface appears when ready. Headless runs still wait. | 1aon and 4v6x in the real window; the suite and the sanitizer job. |
-| 12 | **21g** — [Undo of more than the last move](docs/plans/21-commercial-features.md) | Snapshots for commands that add, remove or edit; the existing coordinate ring for moves. Three slices: the stack with create, delete, remove and the builder's edits; Undo and Redo in the toolbar say what they will undo; the rest of the test list. After it the error "only in Incentive PyMOL", the test mark `incentive` and the option `-n` go. | The 26 undo tests and the three jira tests pass, then the `incentive` mark comes off. |
+| 12 | **21g** — [Undo of more than the last move](docs/plans/21-commercial-features.md) | A first piece shipped in 4.40.0 (30f): a row of the preset menu is undone and redone through a snapshot of the whole session, five steps. Left, all of the plan: snapshots for commands that add, remove or edit; the existing coordinate ring for moves. Three slices: the stack with create, delete, remove and the builder's edits; Undo and Redo in the toolbar say what they will undo; the rest of the test list. After it the error "only in Incentive PyMOL", the test mark `incentive` and the option `-n` go. | The 26 undo tests and the three jira tests pass, then the `incentive` mark comes off. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 | any time | **23b** — [Rows moved by dragging](docs/plans/23-rename-in-panel.md) | Reorder and regroup in the Objects panel with the mouse. Carried over from step 3. | The drop goes through a function a test calls. |
 | any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
@@ -132,19 +135,34 @@ Questions 20 to 32 were answered on 2026-11-20; the
 answers, with the version each one shipped in, are under "Decided by the
 user" in [PLAN-DONE.md](PLAN-DONE.md).
 
+Five more questions come from [step 30](docs/plans/30-polish.md). Each has
+a built answer, so nothing waits for them; say so if another one is wanted.
+
+| No. | Question | Built in 4.36.0 to 4.40.0 |
+| --- | --- | --- |
+| 36 | The icon of the Table button: `sheet`, `table` or `table-properties` of Lucide? | `sheet` |
+| 37 | The color of the contact area in "protein-protein interaction": orange or white? | orange |
+| 38 | "remove crystallization additives" also removes the sugars of glycosylation and NAD(P), as asked. One row, or rows of their own for sugars and cofactors? | one row |
+| 39 | "Clean the preset menu": should presets leave it? Candidates: classified, ball and stick, b factor putty, five of the seven ligand sites rows. | none taken out |
+| 40 | Undo of a preset takes back everything done after it (Redo brings it back) until 21g builds one stack. Good enough until then? | yes |
+
 One answer was cut off: question 27 reads "paint roller icon. rest". The
 paint roller is built; say if the rest of the sentence asked for more.
 
 Small things that were left out on the way and are built only if asked for:
 shortcuts for the UI scale (Ctrl+=, Ctrl+-, Ctrl+0) and the option
 `--ui-scale`; the five themes as palettes and backgrounds of their own; the
-table window's size between sessions (it is part of 22d).
+table window's size between sessions (it is part of 22d); from step 30,
+the tones of the 2D picture in a PNG written by `ligand_2d` (rdkit draws
+it), and glycerol and other additives sorted out of the 2D panel's list of
+ligands.
 
 The user's to do, not decisions:
 
-- Push `feature11` and merge pull request 10. GitHub has the branch up to
-  4.19.43; everything from 4.20.0 on is local (checked 2026-11-20). `master` is at
-  4.19.30 (pull request 9, merged 2026-11-19).
+- Push `feature12` and open a pull request. The branch is local only: 30
+  commits after `master` on GitHub, 4.20.0 to 4.40.0 (counted 2026-11-20).
+  Pull request 10 was merged on 2026-11-20; `master` on GitHub is at
+  4.19.43.
 - The checks marked "first CI run" can be looked at once the branch is
   pushed: the icon of the Windows program, the release notes, the `chem` and
   `fix` extras on three systems, and new with 4.31.0: whether the live UI

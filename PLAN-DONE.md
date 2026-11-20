@@ -10,6 +10,7 @@ order numbers are the ones the roadmap used.
 | --- | --- | --- |
 | 0 | [UI engine research](docs/plans/00-ui-engine.md) | PySide6 + Qt Widgets; preserve the renderer while simplifying bindings. |
 | 3 | [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Named docks with a saved layout, the Objects panel in Qt, the action toolbar on top and the command area at the bottom, the dark theme, the UI scale, scenes as a dock, Qt menus. Closed on 2026-11-20 without its metadata table: the property table of [step 22](docs/plans/22-property-table.md) replaces it. Its open rows went to 22e (a picked atom selects its row), 23b (rows moved by dragging) and question 31 (scene buttons and sequence text drawn by the core); the spacing of dialogs is fixed when a dialog is touched. |
+| 30 | [Eight repairs after a first look at 4.35.0](docs/plans/30-polish.md) | Requested, planned and built on 2026-11-20, 4.36.0 to 4.40.0, six slices: the 2D picture, the property table, the live UI scale, the preset menu and what a preset may color, a clean row for crystallization additives, Undo and Redo for a row of the preset menu. Questions 36 to 40 are open, each with a built answer. |
 | 29 | [Version numbers](docs/plans/29-versioning.md) | The first number stays 4. The second goes up when something a user can see ships, the third for every other change to the program; plans, docs, CI and tests take no number. In `AGENTS.md` §5 since 2026-11-20; 4.20.0 is the first version under it. |
 | 26 | [Action toolbar: Bg, Open, quick select, layout](docs/plans/26-toolbar-buttons.md) | "Bg" with a paint roller; an Open button with the rows of File that bring something in; chips P, L, S, a menu with chains and more, All and "nothing", with Shift to add and Ctrl to take away; one row, 1154 px at 150 %, with a text only on Residues, Presets, Bg, Draw and the scale. 4.20.0, 4.21.0, 4.30.0. |
 | 2 | [Code and dependencies](docs/plans/02-cleanup-dependencies.md) | One feature removal per PR; trace dependencies before deleting. |
@@ -91,7 +92,7 @@ up to date on 2026-11-20 at 4.35.0: a version where the decision shipped,
 | 15 | As recommended: blue hover in every menu; Orient acts only on what is visible. | Step 20. Done in 4.23.0. |
 | 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Open, order 9. |
 | 18 | As recommended: idle OpenMP threads sleep at once. | 1b. Done in 4.23.1. |
-| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. Open, order 12. |
+| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 12. |
 | 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Open, order 6; moved up by the answer to question 25. |
 
 14 was answered by "release 17" (4.19.42).
@@ -138,13 +139,20 @@ ones, the new ones win.
 ## Finished milestones of open steps
 
 Steps 1, 8, 15, 19, 21, 22, 23, 24, 25, 27 and 28 stay in the roadmap.
-These parts of them have shipped. The rows of steps 3, 17, 18, 20 and 26,
-which are finished, are kept here as the record of their milestones. The
-rows are not in order of time: the newest block, 4.20.0 to 4.35.0, is the
-one from "25b-2" to "17f".
+These parts of them have shipped. The rows of steps 3, 17, 18, 20, 26 and
+30, which are finished, are kept here as the record of their milestones. The
+rows are not in order of time: the newest block, 4.36.0 to 4.40.0, is the
+six rows of step 30 at the top; the block before it, 4.20.0 to 4.35.0, is
+the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
+| 30 | 30a — the 2D picture | Done 2026-11-20 (4.36.0): [docs/plans/30-polish.md](docs/plans/30-polish.md). Residues are circles of 52 px with 14 px text; each fill is a gradient in tones for a light or a dark window; the legend has 16 px text and wraps. 1OKY: the picture went from 514 to 429 px wide. The three `qt.svg` messages per drawing are gone. Differs from the plan: the legend's text is 16 px, not 14, and the picture has less empty margin, both after a look at it in a panel 420 px wide. |
+| 30 | 30b — the property table | Done 2026-11-20 (4.37.0). Values at the left; the icon `sheet`; only molecules are asked for properties and written, so a group no longer makes the core print an error at every poll. |
+| 30 | 30c — the live UI scale | Done 2026-11-20 (4.37.1). Found on the way: Qt keeps the application's pixel ratio from the start, so after a live change every new icon was still made for the old scale (30 px for a place of 40 at 150 to 200 %). Icons are made for the ratio of the screens, and what draws icons draws them again after a change. Qt's warning is not printed. |
+| 30 | 30d — the preset menu and colors | Done 2026-11-20 (4.38.0). 21 rows in place of 33: submenus theme, light, floor. No row but a theme colors a cartoon or a surface; the two presets for complexes color the contact area orange. More than planned: a surface drawn by a preset takes the color of the carbons of each residue (one pass, 0.03 s on the 59,192 atoms of 1AON), because an earlier preset leaves element colors behind; a modified residue of the protein is no longer colored like a ligand. |
+| 30 | 30e — crystallization additives | Done 2026-11-20 (4.39.0). A > clean > "remove crystallization additives": 111 residue names in eight groups. On 1OKY three glycerols and five sulfates go, staurosporine stays. The sugars of glycosylation and NAD(P) are on the list as asked, with a note that they are no additives. |
+| 30 | 30f — Undo for presets | Done 2026-11-20 (4.40.0). Checked first: Undo did nothing after a preset. Now every row of the preset menu keeps the session, and Undo and Redo put it back: five steps, 600,000 atoms over all of them. 1AON: 0.15 s to keep, 0.06 s to put back, 17.8 MB. The first piece of 21g; the limits (the whole session, not in one order with moves) are in the module. |
 | 1 | 1b, nine changes so far | 4.5.10 session load 0.92 s to 0.14 s (6.6x). 4.5.12 surface build 11.97 s to 9.66 s (1.24x). 4.7.7 to 4.7.9 surface build 9.44 s to 6.24 s (1.5x). GUI frame time measured 2026-11-14 (`testing/bench_gui.py`): software rendering under WSL is the main cost. 4.7.10 atom labels fixed on drivers without geometry shaders. 4.13.3 the ray tracer's voxel table 0.68 s to 0.28 s. 4.19.15 the window draws on the GPU under WSL (1aon cartoon 46 ms to 9.8 ms per frame). 4.19.16 surfaces of very large structures (4v6x 48.6 s to 31.0 s). 4.19.40 the neighbor list is not zero-filled before it is written (1aon surface about 0.3 s of 5.5 s faster, same triangles). Outside the list of 1b, found with the same measurements: 4.19.8 to 4.19.10 `get_sasa_relative`, `util.color_by_area` and `util.chainbow`. Numbers: the ChangeLog and, against PyMOL 3, [docs/benchmark.md](docs/benchmark.md). |
 | 3 | Slices 1 to 3 | Done 2026-11-08 (4.5.0): objects dock, layout persistence, Panels menu. |
 | 3 | Slice 4 and the workspace layout | 4.5.11 Qt Objects panel replaces the viewport's object list. 4.5.14 action toolbar on top, command area at the bottom, toggle bar. 4.5.15 row state and colors. 4.5.16 no second prompt in the viewport. 4.5.17 menus stay on the screen under WSLg. 4.5.18 Qt menus for the viewport's right click. 4.13.4 scenes as a docked panel with thumbnails. |

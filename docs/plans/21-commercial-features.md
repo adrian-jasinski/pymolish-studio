@@ -3,7 +3,11 @@
 [Roadmap](../../PLAN.md) · Request 2026-11-19 · **Removals done in 4.19.18
 to 4.19.26. 21a to 21e built in 4.19.33 to 4.19.37. 21f was decided on
 2026-11-20 and is to build; 21g was decided the same day (option C) and is
-to build last.** Answers of the
+to build last. A first piece of 21g shipped on 2026-11-20 in 4.40.0, ahead
+of its turn, as slice 30f of [step 30](30-polish.md): a row of the preset
+menu is undone and redone through a snapshot of the whole session
+(`modules/pymol/snapshots.py`; 1AON: 0.15 s to keep, 17.8 MB). The stack of
+slice 1, with one order for snapshots and moves, is still to build.** Answers of the
 user from 2026-11-19 are applied: all Maestro support removed, a command is
 enough for stereochemistry, stubs that break nothing else removed.
 
