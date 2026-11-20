@@ -121,6 +121,7 @@ def test_icons():
         panels=[
             ("Builder", lambda: None),
             ("Scenes", lambda: None),
+            ("Movie", lambda: None),
             ("Draw", QtWidgets.QMenu()),
         ],
     )
@@ -129,13 +130,14 @@ def test_icons():
         for b in bar.findChildren(QtWidgets.QToolButton)
         if b.objectName() != "qt_toolbar_ext_button"  # Qt's overflow arrow
     ]
-    assert len(buttons) == 20
+    assert len(buttons) == 21
     # every button has an icon, but the letter chips of quick select
     assert [b.text() for b in buttons if b.icon().isNull()] == ["P", "L", "S", "\u22ef", "All"]
     IconOnly = QtCore.Qt.ToolButtonStyle.ToolButtonIconOnly
     assert sorted(b.toolTip() for b in buttons if b.toolButtonStyle() == IconOnly) == [
             "Builder",
             "More view actions",
+            "Movie",
             "Orient",
             "Palette: colors of objects and chains",
             "Redo",
@@ -161,6 +163,7 @@ def test_icons():
     from pmg_qt import icons
 
     assert icons.LABELS["scenes"] == "camera"
+    assert icons.LABELS["movie"] == "video"
     assert icons.LABELS["background"] == "paint-roller"
 
 

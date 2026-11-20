@@ -4,6 +4,19 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.43.0
+
+	* Movie button in the action toolbar
+	  - After Scenes: a click opens the Timeline panel, a second
+	    click closes it. Its name is the tooltip.
+	  - Its icon is a video camera. The "movie" rows of the menus
+	    show the same one now, in place of the clapperboard.
+	  - Measured at 150 %: the bar needs 1236 px (1195 before), the
+	    window opens 1244 px wide and every button is in the bar.
+	  - Step 32b.
+
+2026-11-20 pymolish-studio
+
 	* 4.42.0
 
 	* Icons in the row under the object list

@@ -18,7 +18,7 @@ LABELS = {
     "center": "crosshair",
     "origin": "locate-fixed",
     "reset": "rotate-ccw",
-    "movie": "clapperboard",
+    "movie": "video",
     "scene": "image",
     "enable": "eye",
     "show": "eye",

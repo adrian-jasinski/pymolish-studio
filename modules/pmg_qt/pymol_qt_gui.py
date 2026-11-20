@@ -368,6 +368,10 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
             panels=[
                 ('Builder', self.open_builder_panel),
                 ('Scenes', self.scene_panel_menu_dialog),
+                # the Timeline panel: a second click closes it
+                ('Movie', lambda: self.timeline_panel.hide()
+                    if self.timeline_panel.isVisible()
+                    else self.timeline_panel_dialog()),
                 ('2D', self.ligand_panel.open),
                 ('Table', lambda: self.property_table.setVisible(
                     not self.property_table.isVisible())),
