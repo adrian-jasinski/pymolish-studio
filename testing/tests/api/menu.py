@@ -248,8 +248,9 @@ def testPresets(request):
         'ligand sites', 'protein interface', 'protein-protein interaction',
         'antibody and antigen', 'cartoon transparency',
         'show solvent',
+        'floor', 'floor with mirror image', 'no floor',
         'standard light', 'figure', 'soft', 'flat', 'comic', 'sketch',
-        'x-ray']
+        'x-ray', 'studio', 'top light', 'soft shadow']
     assert [row[1] for row in m if row[0] == 2] == ['Preset:']
     from pymol import preset
     request.addfinalizer(lambda: setattr(preset, 'solvent', False))
