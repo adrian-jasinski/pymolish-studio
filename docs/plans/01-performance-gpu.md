@@ -96,6 +96,22 @@ the next step there is a profile per pass (a build with `-g`, or timers).
 (`OMP_WAIT_POLICY=passive` is the knob; its effect on wall time is not
 measured).
 
+## Status 2026-11-20: what others do (web search)
+
+Asked for: solutions that speed up something in 1b, or that keep the window
+usable while something is built. Each row was held against this code; only
+row 4 was measured here.
+
+| # | Found | What it means here | Verdict |
+| --- | --- | --- | --- |
+| 1 | Qt's own guidance and the forum practice: compute on a worker thread, hand over plain data with a signal, upload to the GPU on the GUI thread. Rendering from a worker into a `QOpenGLWidget` is the route people report bugs with. [Qt threading basics](https://doc.qt.io/qt-6.8/thread-basics.html), [QOpenGLWidget and threads](https://forum.qt.io/post/565597) | It is option A of the table above, and `SurfaceJob` already has its input and its result apart. Nothing new to choose. | **Supports option A** (question 1). |
+| 2 | The setting `async_builds` of PyMOL, which the mailing list recommends for large sessions. | It is in this code (off by default): objects and states are built on several threads, but the GUI thread waits until all are done. It shortens a freeze with many objects; it does not remove one, and one large surface gains nothing. | **Not the answer** to the freeze. |
+| 3 | ChimeraX left the analytic surface (MSMS) for a grid: signed distance to the atoms enlarged by the probe, marching cubes, probes on those vertices, a second distance grid, marching cubes again. Works at any size, about 3 times the triangles at 0.5 A, 30 s for a 100,000 atom ribosome in the unoptimized version of 2013. EDTSurf is the same family. [Goddard, surface algorithms](https://www.cgl.ucsf.edu/chimera/data/surface-oct2013/surface.html), [EDTSurf](https://pmc.ncbi.nlm.nih.gov/articles/PMC2779860) | The triangulation here is an advancing front: one thread, a third of the build (profile above). Every step of the grid method is a loop over grid cells, and a parallel marching cubes is already in `layer0/marching_cubes.cpp`. The price: a different, smoother surface with more triangles, so more to draw and to ray trace. EDTSurf's code has no stated license: read the paper, do not copy the code. | **The largest candidate, and an experiment first**: build it as a second `surface_type`, time 1aon and 4v6x, compare pictures. The look changes, so it is the user's choice (question 19). |
+| 4 | libgomp lets idle threads spin before they sleep (`GOMP_SPINCOUNT` 300,000 when nothing is set); `OMP_WAIT_POLICY=passive` makes them sleep at once. [libgomp manual](https://gcc.gnu.org/onlinedocs/libgomp/GOMP_005fSPINCOUNT.html) | Measured here, 1aon, three surface builds and a ray of 800x600: wall time the same (builds 5.66 to 5.90 s against 5.52 to 6.01 s), CPU time 223 and 228 s against 191 and 188 s, 16 % less. `GOMP_SPINCOUNT=10000`: 185 s. | **Cheap and measured**: set the policy at start unless the user set one (question 18). Saves heat and battery, not time. |
+| 5 | GPU surfaces: QuickSES and its base (Hermosilla 2017) in CUDA, contour build-up on the GPU. [QuickSES](https://diglib.eg.org/items/bf030581-4b55-4781-8c73-712e8cc0d589/full), [Krone 2010](https://cg.ivd.kit.edu/downloads/bcb10_147.pdf) | CUDA is excluded by `AGENTS.md` §2.3; a GLSL compute version needs OpenGL 4.3, which macOS does not have (GPU compute gate below). | **Skip.** |
+| 6 | Gaussian density surfaces: QuickSurf of VMD, interactive for millions of atoms on a GPU. [VMD QuickSurf](https://tcbg.illinois.edu/Research/vmd/current/ug/node73.html) | Not a solvent excluded surface: no sharp grooves, a blob. This program can already do it by hand (`map_new` with a Gaussian, then `isosurface`). | **Skip** as a default; a preset could offer it for very large structures. |
+| 7 | Sticks: one quad per cylinder and a ray cast per pixel (impostors) is the standard; VTK reported 20 times fewer triangles. [VTK rendering engine](https://www.kitware.com/rendering-engine-improvements-in-vtk/), [HyperBalls](https://hal.archives-ouvertes.fr/hal-00645162) | Already the case: `stick_as_cylinders` and `render_as_cylinders` are on. What is left is cost per pixel, so the next measurement is frame time against window size and zoom, not a new technique. | **Nothing to adopt.** |
+
 ## Evidence and corrections
 
 - Reuse [performance tests](../../testing/tests/performance), especially
