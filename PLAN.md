@@ -13,6 +13,9 @@ two slices of step 8 (the last dead product macros, 8c in `Executive.cpp`), one
 change of 1b after a new profile of the surface build.
 2026-11-20, 4.19.42: step 17 finished (17d, 17e); a web search for 1b added
 questions 18 and 19.
+Same day: the user answered questions 1, 3 to 7, 13, 15, 16, 18 and 19. The
+answers are in the table below and in the detailed plans; none of that work is
+built yet.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -30,21 +33,25 @@ user's original numbers; the letters are milestones of the detailed plans.
 
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
-| 5 | **1b** — [Performance and GPU](docs/plans/01-performance-gpu.md) | Large surfaces off the GUI thread (waits for the user). The triangulation, a third of a surface build since the profile of 2026-11-19 and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. One measured bottleneck per change. | Each change has before and after numbers. |
-| 5 | **3** — [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Rows moved by dragging, a picked atom selects its row, sequence viewer text and scene buttons still drawn by the core, spacing of the remaining dialogs. | Each increment ships in a reviewable test build. |
-| none | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
-| none | **5c** — [Release builds without GitHub Actions](docs/plans/05-builds-binaries.md) | A proposal of 2026-11-16 inside finished step 5: Linux in podman, Windows on the host, macOS not possible off Apple hardware. Nothing is built. | The user accepts or drops the proposal. |
-| none | **15** — [Presets and looks](docs/plans/15-presets.md) | 15b: the outline of the looks in the viewport (today only in ray-traced images). 15c: ChimeraX object colors as a palette. 15e: five more effects, tried and described. | The user picks or drops 15b, 15c and each effect of 15e. |
-| none | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | The shot list in the session file, a shorter Movie menu, removal of the core's movie panel (19g; nothing of step 17 waits for it any more), dragging on the strip. | The user answers the three questions; 19g passes the suite and the sanitizer job. |
-| none | **21** — [Features of the commercial build](docs/plans/21-commercial-features.md) | 21f: three rendering details (smooth edges in the viewport, sphere modes 10 and 11, the background image in the session file). 21g: undo of more than the last move. Both wait for an answer. With the last of them the error "only in Incentive PyMOL", the test mark `incentive` and the option `-n` go. | Each slice makes its old test pass under `pymolish -ckqyn`, then the `incentive` mark comes off. |
+| 1 | **15c** — [ChimeraX colors](docs/plans/15-presets.md) | One more palette: tan, sky blue, plum, light green, salmon, ... | The palette is in the toolbar menu and in the palette test. |
+| 1 | **20** — [Toolbar look, two follow-ups](docs/plans/20-toolbar-look.md) | Blue hover in every menu of the program (one rule in `pymol.sty`). Orient acts only on what is visible, like Zoom. | Both looked at in the real window. |
+| 1 | **1b** — [Idle threads sleep](docs/plans/01-performance-gpu.md) | `OMP_WAIT_POLICY=passive` is set at start unless the user set one. | CPU time of a 1aon surface before and after; wall time not worse. |
+| 2 | **15e** — [Five effects](docs/plans/15-presets.md) | Color steps in the viewport; fog toward a white background; helices as cylinders; ambient occlusion in the soft look (timed on a large surface first); a "balls in glass" preset. | Each has a check in the preset tests and a picture. |
+| 3 | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | The shot list goes into the session file. The 58 Program rows of the Movie menu go. Dragging on the strip. The keyframe strip of the core (19g) stays for now. | A session with a shot list loads here with the list and loads in 4.19.x without it; the menu test. |
+| 4 | **21f** — [Three rendering details](docs/plans/21-commercial-features.md) | `sphere_mode` is capped at 9, its test and two reference images go. The background image is stored inside the session file. Smooth edges in the viewport with an FXAA shader. | Each old test passes or is deleted with its item. |
+| 5 | **15b** — [Outline in the viewport](docs/plans/15-presets.md) | An edge pass over the drawn picture for the looks figure, soft, flat, comic and sketch. The line is black on a light background and light on a dark one. It is the same kind of pass as FXAA, so it comes right after it. | Frame time before and after; pictures on black and on white. |
+| 6 | **1b** — [Surface on a worker thread](docs/plans/01-performance-gpu.md) | A large surface is built off the GUI thread: the window stays usable, the status line says it is being built, the surface appears when ready. Headless runs still wait. | 1aon and 4v6x in the real window; the suite and the sanitizer job. |
+| 7 | **1b** — [Grid surface, an experiment](docs/plans/01-performance-gpu.md) | A second `surface_type`: signed distance grid and marching cubes. Times and pictures of 1aon and 4v6x against today's surface; then the user decides whether it stays. | The table and the pictures. |
+| any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
+| any time | **3** — [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Rows moved by dragging, a picked atom selects its row, sequence viewer text and scene buttons still drawn by the core, spacing of the remaining dialogs. | Each increment ships in a reviewable test build. |
+| any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
+| waits | **21g** — [Undo of more than the last move](docs/plans/21-commercial-features.md) | Question 17 has no answer yet. With the last slice of step 21 the error "only in Incentive PyMOL", the test mark `incentive` and the option `-n` go. | The old undo tests pass, then the `incentive` mark comes off. |
 
-Steps 8, 5c, 15, 19 and 21 never got an order number. Step 17 finished on
-2026-11-20 (4.19.42) and moved to [PLAN-DONE.md](PLAN-DONE.md). What can be built
-without an answer: 8c to 8g, and the items of 1b that are not the surface
-thread, each on a quiet machine. Everything else
-in the table waits for an answer in "Waiting for the user": 1b's surface
-thread (1), 5c (4), 15 (5 to 7), 19 (13), 21f (16), 21g (17). Two more
-questions came out of the web search of 2026-11-20 (18, 19). GPU compute is not on the critical path.
+The order is by size and by what is seen first: three one-line changes, then
+presets, the timeline, the rendering details, and the two large pieces of 1b
+last. Order 4 and 5 share their shader pass. 5c (release builds without
+GitHub Actions) left the table: the builds stay on GitHub for now. GPU
+compute is not on the critical path.
 
 ## Validation of the original draft
 
@@ -79,18 +86,11 @@ recommended direction, not a claim that an implementation has passed tests.
 
 | # | Decision | Where it is described | What it holds up |
 | --- | --- | --- | --- |
-| 1 | A large surface freezes the window while it builds (4v6x 30 s, 1aon 5 s). Build it on a worker thread (A, recommended), make large surfaces coarser (B), or only announce the build in the status line (C)? | [01-performance-gpu.md](docs/plans/01-performance-gpu.md), Status 2026-11-19 | The next item of 1b |
-| 3 | Rights line for the icon and the logo: who made them, which license. | [09-icons-logo.md](docs/plans/09-icons-logo.md), `docs/licenses.md` | A complete license list; no code |
-| 4 | 5c: build the Linux and Windows bundles on the development machine, or stay with GitHub Actions now that the failing test is fixed (4.12.7)? | [05-builds-binaries.md](docs/plans/05-builds-binaries.md), 5c | 5c |
-| 5 | 15b: draw the black outline of the looks figure, soft, flat, comic and sketch in the viewport too? It needs a new edge pass in the shaders; today the outline appears only in ray-traced images. The preset illustration depends on it most: without the outline the viewport shows only flat blue shapes. | [15-presets.md](docs/plans/15-presets.md), Slices | 15b |
-| 6 | 15c: add ChimeraX's object colors (tan, sky blue, plum, ...) as one more palette? | [15-presets.md](docs/plans/15-presets.md), Slices | 15c, one line |
-| 7 | 15e: which of the five effects to build: color steps in the viewport, fog toward a white background, helices as cylinders, ambient occlusion in the soft look, a "balls in glass" preset? | [15-presets.md](docs/plans/15-presets.md), 15e | 15e |
-| 13 | 19: keep the shot list after a restart, as a new entry in the session file (recommended: yes; it changes PSE output)? Remove the 58 Program rows of the Movie menu that Add and Tour replace (recommended: yes)? Remove the keyframe strip the core draws under the viewport (recommended: not yet)? | [19-movie-timeline.md](docs/plans/19-movie-timeline.md), Options and Questions | 19 |
-| 15 | 20: blue hover in every menu of the program, not only in the toolbar's (recommended: yes)? Should Orient act only on what is visible, like Zoom since 4.19.1 (recommended: yes)? | [20-toolbar-look.md](docs/plans/20-toolbar-look.md), Options and Questions | Two lines |
-| 16 | 21f: which rendering details, and how? Smooth edges in the viewport: FXAA shader (recommended), multisampling, or leave. Sphere modes 10 and 11 (cubes, tetrahedra): build, or cap the setting at 9 (recommended). Background image stored inside the session file (recommended; it changes what a PSE contains), or leave. | [21-commercial-features.md](docs/plans/21-commercial-features.md), 21f | 21f |
-| 17 | 21g: undo by snapshots for edits plus the coordinate ring for moves (C, recommended), or coordinates only, as today, for now? | [21-commercial-features.md](docs/plans/21-commercial-features.md), 21g | 21g |
-| 18 | 1b: let idle OpenMP threads sleep at once (`OMP_WAIT_POLICY=passive`, set at start unless the user set it)? Measured on 1aon: the same wall time, 16 % less CPU time. Recommended: yes. | [01-performance-gpu.md](docs/plans/01-performance-gpu.md), Status 2026-11-20, row 4 | One line |
-| 19 | 1b: try a grid surface (signed distance grid and marching cubes, what ChimeraX does) as a second `surface_type`? Every step runs on all cores, where today's triangulation is one thread and a third of the build; the surface is smoother and has about 3 times the triangles. Options: (A) an experiment with numbers and pictures of 1aon and 4v6x, then decide (recommended); (B) no, keep one surface. | [01-performance-gpu.md](docs/plans/01-performance-gpu.md), Status 2026-11-20, row 3 | The next large item of 1b |
+| 3 | The icon and the logo: under which license do they ship? MIT like the new code (recommended: one rule for everything this project added), or no license, all rights with you? Who made them is answered. | [09-icons-logo.md](docs/plans/09-icons-logo.md), `docs/licenses.md` | One cell of the license list; no code |
+| 17 | 21g: undo by snapshots for edits plus the coordinate ring for moves (C, recommended), or coordinates only, as today, for now? | [21-commercial-features.md](docs/plans/21-commercial-features.md), 21g | 21g, and the end of step 21 |
+
+Answered on 2026-11-20, see "Decided by the user" in
+[PLAN-DONE.md](PLAN-DONE.md): 1, 4, 5, 6, 7, 13, 15, 16, 18, 19.
 
 The user's to do, not decisions:
 

@@ -116,8 +116,10 @@ Differences from the plan above:
 
 Open:
 
-- **Rights line** for the two images (who made them, which license): not
-  delivered yet. `docs/licenses.md` has the row and says so.
+- **Rights line** for the two images: who made them is answered
+  (2026-11-20): generated with ChatGPT for this project, owned by the user.
+  `docs/licenses.md` says so. Still open: under which license they ship
+  (question 3 of the roadmap).
 - **Windows artifact:** icon on `pymolish.exe` not looked at; first CI run.
 - **Logo on dark pages:** `logo.png` has near-black text on a transparent
   background. The README uses the icon for that reason.

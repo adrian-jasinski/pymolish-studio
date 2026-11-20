@@ -71,6 +71,25 @@ Decided by the user on 2026-11-16 and applied:
 | Version rule: `X` bumps once per roadmap step, with its main user-visible change; everything else bumps `Y`. | `AGENTS.md` §5. |
 | Merges to `master` are done by the user. | Listed in the roadmap under "Waiting for the user". |
 
+Decided by the user on 2026-11-20. Recorded in the plans; "to build" means
+nothing is built yet.
+
+| # | Decision | Where it goes |
+| --- | --- | --- |
+| 1 | A large surface is built on a worker thread (option A). | 1b, order 6 of the roadmap. To build. |
+| 3 | The icon and the logo were generated with ChatGPT; the user owns them. | `docs/licenses.md`, plan 9. Written down. Which license they ship under is still asked. |
+| 4 | The release builds stay on GitHub Actions for now. | 5c is shelved; nothing was built for it. Plan 5. |
+| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b, order 5. To build. |
+| 6 | The ChimeraX object colors become a palette. | 15c, order 1. To build. |
+| 7 | All five effects of 15e. | Order 2. To build. |
+| 13 | "Decide by yourself." Decided as recommended: the shot list goes into the session file; the 58 Program rows of the Movie menu go; the keyframe strip of the core stays for now. | Step 19, order 3. To build. |
+| 15 | As recommended: blue hover in every menu; Orient acts only on what is visible. | Step 20, order 1. To build. |
+| 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f, order 4. To build. |
+| 18 | As recommended: idle OpenMP threads sleep at once. | 1b, order 1. To build. |
+| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b, order 7. To build. |
+
+Not answered: 17 (21g, undo). 14 was answered by "release 17" (4.19.42).
+
 ## Finished milestones of open steps
 
 Steps 1, 3, 8, 15, 19 and 21 stay in the roadmap. These parts of them have

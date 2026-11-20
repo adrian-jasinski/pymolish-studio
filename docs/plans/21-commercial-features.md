@@ -1,8 +1,8 @@
 # 21 — Features of the commercial build: removed, kept, to rebuild
 
 [Roadmap](../../PLAN.md) · Request 2026-11-19 · **Removals done in 4.19.18
-to 4.19.26. 21a to 21e built in 4.19.33 to 4.19.37; 21f and 21g wait for
-an answer.** Answers of the
+to 4.19.26. 21a to 21e built in 4.19.33 to 4.19.37. 21f was decided on
+2026-11-20 and is to build; 21g waits for an answer.** Answers of the
 user from 2026-11-19 are applied: all Maestro support removed, a command is
 enough for stereochemistry, stubs that break nothing else removed.
 
@@ -205,8 +205,14 @@ of the movie in the window.
 
 ### 21f — Rendering details
 
-Three unrelated items; each can be taken or dropped alone. Still open:
-question 1.
+Three unrelated items; each can be taken or dropped alone.
+
+**Decided 2026-11-20, as recommended:** smooth edges with FXAA (item 1,
+option A); sphere modes 10 and 11 dropped, the setting capped at 9, the
+test and its two reference images deleted (item 2, option B); the
+background image stored inside the session file (item 3, option A). The
+answer covers the two things that needed a yes: deleting the two image
+files, and the change of what a PSE contains.
 
 **1. Smooth edges in the viewport.** Edges of sticks, spheres and cartoons
 look like small stairs on screen, because each pixel is either object or
@@ -305,7 +311,7 @@ those two slices.
 1. 21f: which of the three rendering details are wanted, and with which
    option? Recommended: smooth edges with FXAA (A), sphere modes 10 and 11
    dropped (B), background image stored in the session (A). The last one
-   changes what a PSE contains.
+   changes what a PSE contains. **Answer 2026-11-20: as recommended.**
 2. 21g: is option C the right size (snapshots for edits, the coordinate ring
    for moves), or is undo of coordinates, as today, enough for now?
 

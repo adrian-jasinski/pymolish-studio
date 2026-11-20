@@ -31,7 +31,7 @@ part, its license and the file the license was read from.
 | --- | --- | --- |
 | Code from [Open-Source PyMOL](https://github.com/schrodinger/pymol-open-source), Copyright (C) Schrodinger, LLC | Open-Source PyMOL license | [LICENSE](../LICENSE) |
 | Code added by pymolish-studio: new files, and changes inside files from Open-Source PyMOL | MIT | [LICENSE-MIT](../LICENSE-MIT) |
-| Application icon and logo, `data/pymol/icons/` | Made for this project. No license is recorded for them yet. | none |
+| Application icon and logo, `data/pymol/icons/` | Generated with ChatGPT (an AI image generator) for this project; owned by the author of pymolish-studio. No license is attached to them yet. | none |
 
 A file from Open-Source PyMOL that pymolish-studio changed is under both
 licenses, so a copy of the software needs both files.

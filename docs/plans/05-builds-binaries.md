@@ -137,6 +137,10 @@ rule when implementing. Keep packaging requirements out of core runtime deps.
 
 ## 5c — Release builds without GitHub Actions (proposal, 2026-11-16)
 
+**Decided 2026-11-20: the builds stay on GitHub Actions for now.** The
+proposal is shelved. Nothing was built for it; the text below stays as the
+record of what was measured, for the day the question comes back.
+
 Question: can the Windows and macOS bundles be built on the development
 machine (Windows 11 x64 host, Ubuntu 24.04 in WSL2, 32 threads, 332 GB free on
 `C:`) instead of on GitHub Actions? Short answer: Linux yes, Windows yes after

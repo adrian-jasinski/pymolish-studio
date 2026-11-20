@@ -1,8 +1,8 @@
 # 15 — Presets and looks
 
 [Roadmap](../../PLAN.md) · Request 2026-11-16 · **15a done 2026-11-16 in
-4.14.0, 15d in 4.14.3, 15f in 4.14.4.** 15b, 15c and 15e are open and wait for
-the user. **15g and 15h done 2026-11-18 in 4.14.5, 15i (visible objects, two
+4.14.0, 15d in 4.14.3, 15f in 4.14.4.** 15b, 15c and 15e were approved on
+2026-11-20 and are to build. **15g and 15h done 2026-11-18 in 4.14.5, 15i (visible objects, two
 presets for complexes) in 4.19.1, 15j (the light after "illustration") in
 4.19.2, 15k (publication green) in 4.19.3, 15l (cartoon spring, colors kept,
 two-color interaction surface) in 4.19.29** (the last sections before "Skipped"). They change three decisions below: the looks are part of the
@@ -175,18 +175,24 @@ wire, illustration, the solvent row and cartoon transparency came.
   glass in the new flat.
 - Commit: `ui(presets): wire and illustration presets, shades of one color`.
 
-**15b, outline in the viewport. Open, the user decides.**
+**15b, outline in the viewport. Approved 2026-11-20, to build.** The answer:
+"black, or a color that will be visible on the selected background". So the
+line takes its color from the background, as the ray-traced outline does
+since 15g: black on a light background, light on a dark one.
 - A screen-space edge pass over the depth buffer after the scene is drawn,
   in `data/shaders/` and the Scene draw path of `layer1/`. New shader code,
   to be measured with `testing/compare.py -- gui` before and after.
 
-**15c, ChimeraX object colors. Open, the user decides.**
+**15c, ChimeraX object colors. Approved 2026-11-20, to build.**
 - One more entry in `palettes.PALETTES` (tan, sky blue, plum, light green,
   salmon, ...), the pattern of [step 11](11-color-palettes.md). One line and
   the docstring.
 
-**15e, more effects. Open, the user picks.** Each was tried (table above)
-except the first, which needs code.
+**15e, more effects. Approved 2026-11-20: all five of the question**
+(color steps, fog, helices as cylinders, ambient occlusion in the soft look,
+balls in glass). The sixth row of the table, glow and blur, was not part of
+the question and stays unbuilt. Each was tried (table above) except the
+first, which needs code.
 
 | Effect | What it takes |
 | --- | --- |

@@ -112,6 +112,18 @@ row 4 was measured here.
 | 6 | Gaussian density surfaces: QuickSurf of VMD, interactive for millions of atoms on a GPU. [VMD QuickSurf](https://tcbg.illinois.edu/Research/vmd/current/ug/node73.html) | Not a solvent excluded surface: no sharp grooves, a blob. This program can already do it by hand (`map_new` with a Gaussian, then `isosurface`). | **Skip** as a default; a preset could offer it for very large structures. |
 | 7 | Sticks: one quad per cylinder and a ray cast per pixel (impostors) is the standard; VTK reported 20 times fewer triangles. [VTK rendering engine](https://www.kitware.com/rendering-engine-improvements-in-vtk/), [HyperBalls](https://hal.archives-ouvertes.fr/hal-00645162) | Already the case: `stick_as_cylinders` and `render_as_cylinders` are on. What is left is cost per pixel, so the next measurement is frame time against window size and zoom, not a new technique. | **Nothing to adopt.** |
 
+## Decisions 2026-11-20
+
+| Question | Answer | What follows |
+| --- | --- | --- |
+| A large surface freezes the window | **A, build it on a worker thread.** | The next large item of 1b. `SurfaceJob` leaves the GUI thread; the status line says "building surface"; the surface appears when it is ready. To settle while building: what happens when the atoms change during a job (drop the result and start again), and the headless path, which must still wait. Checks: 1aon and 4v6x in the real window, the suite, the sanitizer job. |
+| Idle OpenMP threads (row 4 above) | **Yes.** | `OMP_WAIT_POLICY=passive` at start, before the core loads, unless the user set the variable or `GOMP_SPINCOUNT`. One line next to the place that picks the GPU on WSL. Numbers again after the change. |
+| Grid surface (row 3 above) | **Yes, as an experiment.** | A second `surface_type` with the distance grid and the marching cubes of `layer0/marching_cubes.cpp`. Table: build time, triangles, memory and ray time for 1aon and 4v6x against today's surface; pictures side by side. Then the user decides whether it stays, and for which sizes. Written from the description of the method, not from EDTSurf's code. |
+
+Order: the one-line change first, the worker thread next, the experiment
+last. With a worker thread the build time matters less; the experiment
+then answers how much shorter the wait can get.
+
 ## Evidence and corrections
 
 - Reuse [performance tests](../../testing/tests/performance), especially
