@@ -745,6 +745,8 @@ SEE ALSO
             _self.set("session_file",
                     # always use unix-like path separators
                     filename.replace("\\", "/"), quiet=1)
+            from . import snapshots
+            snapshots.clear()  # "undo" does not go back to another file
 
         if ((format == 'psw' or
             _self.get_setting_boolean("presentation")) and

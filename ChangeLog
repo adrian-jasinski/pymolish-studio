@@ -4,6 +4,31 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.40.0
+
+	* Undo and Redo take back a row of the Presets menu
+	  - Before a row of the preset menu runs (a preset, a theme, a
+	    light, the floor, cartoon transparency, the solvent row),
+	    the session is kept in memory. "undo", Ctrl-Z and the Undo
+	    button put it back: colors, representations, settings,
+	    light, background, view, the contacts a preset measured.
+	    "redo" goes forward again. Until now Undo did nothing
+	    after a preset.
+	  - API change, cmd.undo and cmd.redo: with a kept step they
+	    restore the session; without one they restore coordinates
+	    as before.
+	  - Limits: five steps, and 600,000 atoms over all of them;
+	    above that a preset runs without a step and says so. A
+	    step is the whole session, so undo also takes back what
+	    was done after the preset, and redo brings it back. The
+	    steps are dropped by "reinitialize" and when a session
+	    file is opened.
+	  - Measured on 1AON (59,192 atoms): 0.15 s to keep a step,
+	    0.06 s to put it back, 17.8 MB.
+	  - Step 30f; the first piece of 21g.
+
+2026-11-20 pymolish-studio
+
 	* 4.39.0
 
 	* Clean menu: remove crystallization additives

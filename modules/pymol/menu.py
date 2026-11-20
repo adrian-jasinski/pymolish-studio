@@ -776,9 +776,18 @@ def cartoon_transparency(self_cmd, sele):
           'preset.cartoon_transparency(%s,"%s",_self=cmd)' % (t, sele) ]
         for t in (0, 0.25, 0.5, 0.75) ]
 
+def _undoable(rows):
+    # every row of the preset menu is one step of "undo"
+    for row in rows:
+        if row[0] == 1 and isinstance(row[2], str):
+            row[2] = 'pymol.snapshots.keep(_self=cmd);' + row[2]
+        elif row[0] == 1:
+            _undoable(row[2])
+    return rows
+
 def presets(self_cmd, sele):
-    from . import preset
-    return [[ 2, 'Preset:'       ,''                        ],
+    from . import preset, snapshots
+    return _undoable([[ 2, 'Preset:'       ,''                        ],
               _preset('default', 'default', sele),
               _preset('classified', 'classified', sele),
               [ 0, '', '' ],
@@ -819,7 +828,7 @@ def presets(self_cmd, sele):
                   [ 1, 'floor', 'cmd.stage("floor", quiet=0)' ],
                   [ 1, 'floor with mirror image', 'cmd.stage("mirror", quiet=0)' ],
                   [ 1, 'no floor', 'cmd.stage("off")' ]]],
-            ]
+            ])
 
 def hydrogens(self_cmd, sele):
    return [[ 2, 'Hydrogens:'       ,''                        ],
