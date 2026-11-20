@@ -75,7 +75,6 @@
 #include "Scene.h"
 #include "ScenePicking.h"
 #include "SceneRay.h"
-#include "ScrollBar.h"
 #include "SculptCache.h"
 #include "Seeker.h"
 #include "Selector.h"
@@ -1496,64 +1495,6 @@ static void ExecutiveUpdateGridSlots(PyMOLGlobals* G, int force)
   }
 }
 
-void ExecutiveInvalidatePanelList(PyMOLGlobals* G)
-{
-  CExecutive* I = G->Executive;
-  I->Panel.clear();
-  ExecutiveInvalidateGridSlots(G);
-}
-
-/**
- * Add all members which belong to group
- */
-static void PanelListGroup(
-    CExecutive* I, SpecRec const* group, unsigned level, bool hide_underscore)
-{
-  for (auto& rec : pymol::make_list_adapter(I->Spec)) {
-    if (rec.group != group) {
-      continue;
-    }
-
-    assert(!rec.in_panel);
-
-    if (rec.isHiddenNotRecursive(hide_underscore)) {
-      continue;
-    }
-
-    if (!level) {
-      assert(!rec.group_name[0]);
-      rec.group_name[0] =
-          0; /* force open any cycles which have been created... */
-    }
-
-    I->Panel.emplace_back(&rec, level);
-    rec.in_panel = true;
-
-    if (auto obj_group = dynamic_cast<ObjectGroup*>(rec.obj)) {
-      auto& panelitem = I->Panel.back();
-      panelitem.is_group = true;
-      if (obj_group->OpenOrClosed) {
-        panelitem.is_open = true;
-        PanelListGroup(I, &rec, level + 1, hide_underscore);
-      }
-    }
-  }
-}
-
-static void ExecutiveUpdatePanelList(PyMOLGlobals* G)
-{
-  CExecutive* I = G->Executive;
-  int hide_underscore = SettingGetGlobal_b(G, cSetting_hide_underscore_names);
-  if (I->Panel.empty()) {
-    for (auto& rec : pymol::make_list_adapter(I->Spec)) {
-      rec.in_panel = false;
-    }
-
-    /* brute-force & inefficient -- need to optimize algorithm */
-    PanelListGroup(I, nullptr, 0, hide_underscore);
-  }
-}
-
 void ExecutiveInvalidateSceneMembers(PyMOLGlobals* G)
 {
   CExecutive* I = G->Executive;
@@ -1605,7 +1546,7 @@ void ExecutiveInvalidateGroups(PyMOLGlobals* G, bool force)
   }
   I->ValidGroups = false;
   ExecutiveInvalidateSceneMembers(G);
-  ExecutiveInvalidatePanelList(G);
+  ExecutiveInvalidateGridSlots(G);
   /* any changes to group structure means that we need to check scene
      members */
 }
@@ -1667,7 +1608,7 @@ void ExecutiveUpdateGroups(PyMOLGlobals* G, bool force)
     /* note that it is possible to have infinite loops -- these must be
        allowed for later in the group expansion routine(s) */
     I->ValidGroups = true;
-    ExecutiveInvalidatePanelList(G);
+    ExecutiveInvalidateGridSlots(G);
   }
 }
 
@@ -1808,75 +1749,6 @@ static SpecRec* ExecutiveAnyCaseNameMatch(PyMOLGlobals* G, const char* name)
     }
   }
   return (result);
-}
-
-/**
- * Scroll the i'th match in the object menu panel to the top.
- * Scroll to last match if i < 0 and to first match if i > #-1.
- * Open groups if hit is inside.
- * Highlight the hit (same as mouse click highlight).
- *
- * Returns the number of hits
- */
-int ExecutiveScrollTo(PyMOLGlobals* G, const char* name, int i)
-{
-  CExecutive* I = G->Executive;
-  int pos = 0, numhits = 0;
-  ObjectGroup* group;
-  SpecRec *tmp, *spec = nullptr, *first = nullptr;
-  int ignore_case = SettingGetGlobal_b(G, cSetting_ignore_case);
-  int j, lendiff, plen = strlen(name);
-
-  ok_assert(1, I->Spec);
-
-  // i'th substring match, skip the "all" item
-  for (tmp = I->Spec->next; tmp; tmp = tmp->next) {
-    lendiff = strlen(tmp->name) - plen;
-    for (j = 0; j <= lendiff; j++)
-      if (WordMatchNoWild(G, name, tmp->name + j, ignore_case)) {
-        if (numhits++ == i || i < 0)
-          spec = tmp;
-        if (!first)
-          first = tmp;
-        break;
-      }
-    tmp->hilight = 0;
-  }
-
-  // if i was out of range
-  if (!spec)
-    spec = first;
-
-  ok_assert(1, spec);
-
-  // flash button until panel is clicked for the next time
-  spec->hilight = 1;
-
-  // open parent groups
-  for (tmp = spec->group; tmp; tmp = tmp->group) {
-    if (!(tmp->type == cExecObject && tmp->obj->type == cObjectGroup))
-      break;
-    group = (ObjectGroup*) tmp->obj;
-    if (!group->OpenOrClosed) {
-      group->OpenOrClosed = 1;
-      ExecutiveInvalidatePanelList(G);
-    }
-  }
-
-  // in case any parent got opened
-  ExecutiveUpdatePanelList(G);
-
-  // scroll that record to the top
-  for (auto const& panelitem : I->Panel) {
-    if (panelitem.spec == spec) {
-      I->m_ScrollBar.setValueNoCheck(pos);
-      return numhits;
-    }
-    pos++;
-  }
-
-ok_except1:
-  return numhits;
 }
 
 void ExecutiveUpdateColorDepends(PyMOLGlobals* G, ObjectMolecule* mol)
@@ -3214,7 +3086,7 @@ pymol::Result<> ExecutiveOrder(
         SeqChanged(G);
       }
     }
-    ExecutiveInvalidatePanelList(G);
+    ExecutiveInvalidateGridSlots(G);
   }
   WordListFreeP(word_list);
   return {};
@@ -3239,13 +3111,6 @@ pymol::vla<ObjectMolecule*> ExecutiveGetObjectMoleculeVLA(
 }
 
 /* #define ExecLineHeight 18 */
-#define ExecClickMargin DIP2PIXEL(2)
-#define ExecTopMargin 0
-#define ExecToggleMargin DIP2PIXEL(2)
-#define ExecLeftMargin DIP2PIXEL(1)
-#define ExecRightMargin 0
-#define ExecToggleWidth DIP2PIXEL(17)
-#define ExecToggleSize DIP2PIXEL(16)
 #define ExecToggleTextShift DIP2PIXEL(4)
 
 int ExecutiveSetDrag(PyMOLGlobals* G, const char* name, int quiet, int mode)
@@ -5203,7 +5068,7 @@ static int ExecutiveSetNamedEntries(
         ListAppend(I->Spec, rec, next, SpecRec);
         ExecutiveAddKey(I, rec);
         ExecutiveInvalidateGroups(G, false);
-        ExecutiveInvalidatePanelList(G);
+        ExecutiveInvalidateGridSlots(G);
       } else {
         ListElemFree(rec);
       }
@@ -5960,9 +5825,6 @@ int ExecutiveSetSession(
 
   return (ok);
 }
-
-#define ExecScrollBarMargin DIP2PIXEL(1)
-#define ExecScrollBarWidth DIP2PIXEL(13)
 
 /**
  * @param sele object name (or single-object atom selection expression)
@@ -14204,7 +14066,7 @@ void ExecutivePurgeSpec(PyMOLGlobals* G, SpecRec* rec, bool save)
   }
 
   ExecutiveInvalidateGroups(G, false);
-  ExecutiveInvalidatePanelList(G);
+  ExecutiveInvalidateGridSlots(G);
   switch (rec->type) {
   case cExecObject:
     if (I->LastEdited == rec->obj)
@@ -14352,7 +14214,7 @@ pymol::Result<> ExecutiveDeleteStates(
     ObjectMoleculeDeleteStates(mol, states);
   }
   SceneChanged(G);
-  ExecutiveInvalidatePanelList(G);
+  ExecutiveInvalidateGridSlots(G);
   return {};
 }
 
@@ -14367,7 +14229,7 @@ void ExecutiveReAddSpec(PyMOLGlobals* G, std::vector<DiscardedRec>& specs)
     TrackerLink(I->Tracker, rec->cand_id, I->all_obj_list_id, 1);
     ListInsertAt(I->Spec, rec, pos);
     ExecutiveAddKey(I, rec);
-    ExecutiveInvalidatePanelList(G);
+    ExecutiveInvalidateGridSlots(G);
     if (rec->type == cExecObject) {
       rec->in_scene = SceneObjectAdd(G, rec->obj);
     }
@@ -14605,7 +14467,7 @@ void ExecutiveManageObject(
       TrackerLink(I->Tracker, rec->cand_id, I->all_obj_list_id, 1);
       ListAppend(I->Spec, rec, next, SpecRec);
       ExecutiveAddKey(I, rec);
-      ExecutiveInvalidatePanelList(G);
+      ExecutiveInvalidateGridSlots(G);
 
       ExecutiveDoAutoGroup(G, rec);
     }
@@ -14676,7 +14538,7 @@ void ExecutiveManageSelection(PyMOLGlobals* G, const char* name)
     TrackerLink(I->Tracker, rec->cand_id, I->all_sel_list_id, 1);
     ListAppend(I->Spec, rec, next, SpecRec);
     ExecutiveAddKey(I, rec);
-    ExecutiveInvalidatePanelList(G);
+    ExecutiveInvalidateGridSlots(G);
   }
   assert(rec);
   if (!hidden_name) {
@@ -15756,7 +15618,7 @@ void ExecutiveSetOrderOf(PyMOLGlobals* G, const std::vector<OrderRec>& recs)
     ListInsertAt(I->Spec, detachedRec, oRec.pos);
   }
   if (!recs.empty()) {
-    ExecutiveInvalidatePanelList(G);
+    ExecutiveInvalidateGridSlots(G);
   }
 }
 

@@ -185,7 +185,6 @@ enum ExecRec_t { cExecObject = 0, cExecSelection = 1, cExecAll = 2 };
 
 int ExecutiveGroup(PyMOLGlobals* G, pymol::zstring_view name,
     pymol::zstring_view members, int action, int quiet);
-int ExecutiveScrollTo(PyMOLGlobals* G, const char* name, int);
 
 void ExecutiveInvalidateGroups(PyMOLGlobals* G, bool force);
 void ExecutiveUpdateGroups(PyMOLGlobals* G, bool force);
@@ -926,7 +925,6 @@ std::vector<OrderRec> ExecutiveGetOrderOf(
  */
 
 void ExecutiveSetOrderOf(PyMOLGlobals* G, const std::vector<OrderRec>& recs);
-void ExecutiveInvalidatePanelList(PyMOLGlobals* G);
 void ExecutiveSpecSetVisibility(
     PyMOLGlobals* G, SpecRec* rec, int new_vis, int mod, int parents);
 

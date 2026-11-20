@@ -2,6 +2,22 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-20 pymolish-studio
+
+	* 4.19.41
+
+	* Removed: the row list of the old object panel
+	  - The core no longer keeps the list of rows the old internal GUI
+	    drew (removed in 4.17.1): the list and its builder, the scroll
+	    position, the mouse state of the panel, and _cmd.scrollto with
+	    pymol.controlling.find, which scrolled that panel. 242 lines.
+	    "find" was never a command and not part of cmd; nothing else
+	    called it.
+	  - No change to objects, groups, their order or the grid: the
+	    places that reset the list now only reset the grid slots, as
+	    they did before besides.
+	  - Step 17d.
+
 2026-11-19 pymolish-studio
 
 	* 4.19.40

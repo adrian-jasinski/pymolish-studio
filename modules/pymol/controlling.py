@@ -547,15 +547,6 @@ SEE ALSO
           ]
         }
 
-    def find(name, i=0, quiet=1, *, _self=cmd):
-        '''
-DESCRIPTION
-
-    Find an item in the object menu panel and scroll it to the top.
-        '''
-        with _self.lockcm:
-            return _cmd.scrollto(_self._COb, str(name), int(i))
-
     def order(names, sort=0, location='current', *, _self=cmd):
         '''
 DESCRIPTION
