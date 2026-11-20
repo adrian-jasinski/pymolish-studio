@@ -135,7 +135,7 @@ ones, the new ones win.
 
 ## Finished milestones of open steps
 
-Steps 1, 8, 15, 19, 21, 22, 23 and 28 stay in the roadmap. These parts of them have
+Steps 1, 8, 15, 19, 21, 22, 23, 27 and 28 stay in the roadmap. These parts of them have
 shipped. The rows of steps 3, 17 and 18, which are finished, are kept here
 as the record of their milestones.
 
@@ -163,6 +163,7 @@ as the record of their milestones.
 | 15 | 15g, 15h — one list, background, colors | Done 2026-11-18 (4.14.5). The looks are the last group of the one preset list and no longer set the background or the outline color; ray traced on black and on white, the outline contrasts by itself. technical, ligands and ligand sites keep the protein colors, also at modified residues. The row "simple" is gone; the function stays. |
 | 15 | 15f — wire, illustration, shades | Done 2026-11-16 (4.14.4). Preset wire: the cartoon as a wire mesh (`cartoon_debug` 3, already in the core). Preset illustration: shades of blue inside a faint outlined surface, with the look flat. `util.shades` and "shades" rows in the color menus. The look flat keeps colors as they are and outlines transparent things. |
 | 15 | 15j, 15k — light after illustration, publication green | Done 2026-11-18 (4.19.2, 4.19.3). The next preset after "illustration" goes back to the standard light. Preset "publication green"; its row left the menu again with 15l, the function stays. |
+| 27 | 27a, 27b — UI scale, any value, live | Done 2026-11-20 (4.31.0): [docs/plans/27-ui-scale.md](docs/plans/27-ui-scale.md). A field for 50 to 300 %; the running window changes through Qt's private scale function, with the "next start" message as fallback; a question with a ten-second revert for very small and very large values. Linux only so far. |
 | 22 | 22a to 22c — the property table | Done 2026-11-20 (4.27.0 to 4.29.0): [docs/plans/22-property-table.md](docs/plans/22-property-table.md). A window over the viewport, stuck to the Objects panel: row number, a dot for shown or hidden, name, one column per object property; sorts by value, filters. Cells and names are edited in place, columns added, renamed, deleted; blocks copied and pasted. `load_table` (CSV, TSV, `.xlsx` with the standard library) and `save_table`. `split_states` keeps properties. 4.27.1: the core no longer aborts when a property changes its type. |
 | 28 | 28a — the packed session file | Done 2026-11-20 (4.26.0): [docs/plans/28-session-format.md](docs/plans/28-session-format.md). `save x.psex`: 1AON 19.6 MB to 1.10 MB, 4V6X 87.2 MB to 3.90 MB, faster to write and to read. First choice in Save Session As; `.pse` stays for PyMOL. |
 | 26 | 26a, 26b — Bg, Builder and Scenes as icons, Draw; the Open button | Done 2026-11-20 (4.20.0, 4.21.0): [docs/plans/26-toolbar-buttons.md](docs/plans/26-toolbar-buttons.md). The bar went from 1096 px to 904 px at 150 %, and is 959 px with Open. Open lists open file, open folder, recent, get by PDB code, by UniProt, predicted structure. |

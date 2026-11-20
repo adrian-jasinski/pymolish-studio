@@ -50,19 +50,71 @@ def is_dark():
 
 # Multiplies whatever scale the OS reports. Needed where the OS reports none
 # (WSLg, bare X11: a 2560x1600 laptop panel shows up as 96 dpi, scale 1).
-SCALES = (1, 1.2, 1.5, 1.8, 2)
+MIN_SCALE, MAX_SCALE = 0.5, 3.0
 DEFAULT_SCALE = 1.5
+# the rows of the scale menu; any whole percent can be typed
+SCALES = (0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3)
 
 
 def ui_scale():
     try:
-        return float(_settings().value("ui/scale", DEFAULT_SCALE))
+        scale = float(_settings().value("ui/scale", DEFAULT_SCALE))
     except (TypeError, ValueError):
         return DEFAULT_SCALE
+    return min(max(scale, MIN_SCALE), MAX_SCALE)
 
 
 def set_ui_scale(scale):
-    _settings().setValue("ui/scale", float(scale))
+    _settings().setValue("ui/scale", min(max(float(scale), MIN_SCALE), MAX_SCALE))
+
+
+def set_scale_live(app, window, old, new, symbol=None):
+    """Change the scale of the running program from `old` to `new`; true
+    when the window now has it. False means: saved, and it applies at the
+    next start, as before 4.31.
+
+    ponytail: Qt reads the factor once and offers no call to change it.
+    QHighDpiScaling::setGlobalFactor is exported by the Qt library but
+    private, so it is called by its symbol name; Qt accepts it once the
+    native windows are gone, which hide() and destroy() arrange while the
+    widgets, the layout and the OpenGL context stay. Tried on Linux (X11),
+    PySide6 6.12. A Qt without the symbol, or one where the ratio does not
+    follow, gives False. Upgrade path: a public call, if Qt gets one."""
+    import ctypes
+    import sys
+
+    Path = QtCore.QLibraryInfo.LibraryPath
+    lib_dir = QtCore.QLibraryInfo.path(Path.LibrariesPath)
+    if sys.platform == "win32":
+        library = os.path.join(QtCore.QLibraryInfo.path(Path.BinariesPath), "Qt6Gui.dll")
+        symbol = symbol or "?setGlobalFactor@QHighDpiScaling@@SAXN@Z"
+    elif sys.platform == "darwin":
+        library = os.path.join(lib_dir, "QtGui.framework", "Versions", "A", "QtGui")
+        symbol = symbol or "_ZN15QHighDpiScaling15setGlobalFactorEd"
+    else:
+        library = os.path.join(lib_dir, "libQt6Gui.so.6")
+        symbol = symbol or "_ZN15QHighDpiScaling15setGlobalFactorEd"
+    try:
+        set_factor = getattr(ctypes.CDLL(library), symbol)
+    except (OSError, AttributeError):
+        return False
+    set_factor.argtypes = [ctypes.c_double]
+    set_factor.restype = None
+
+    before = window.devicePixelRatio()
+    shown = [w for w in app.topLevelWidgets() if w.isVisible()]
+    # the same size on the screen, in the new units, where the screen allows
+    size = window.size() * (old / new)
+    for widget in shown:
+        widget.hide()
+    for native in app.topLevelWindows():
+        native.destroy()
+    set_factor(new)
+    room = window.screen().availableGeometry().size()
+    window.resize(size.boundedTo(room))
+    for widget in shown:
+        widget.show()
+    return abs(window.devicePixelRatio() - before * new / old) < 0.02
 
 
 def object_palette():

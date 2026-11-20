@@ -194,6 +194,8 @@ class PyMOLGLWidget(QtWidgets.QOpenGLWidget):
     ##########################
 
     def paintGL(self):
+        if self.devicePixelRatio() != self.fb_scale:  # see resizeGL
+            self.resizeGL(self.width(), self.height())
         self.pymol.draw()
         self._place_seq_scroll()
         self._timer.start(0)
@@ -227,6 +229,11 @@ class PyMOLGLWidget(QtWidgets.QOpenGLWidget):
         bar.show()
 
     def resizeGL(self, w, h):
+        # The pixel ratio can change under a living widget: the UI scale of
+        # the toolbar, a move to another screen. The window handle that
+        # reported it in initializeGL may be gone by then.
+        if self.devicePixelRatio() != self.fb_scale:
+            self.updateFbScale(self)
         self.pymol.reshape(int(w * self.fb_scale), int(h * self.fb_scale), True)
 
     def updateFbScale(self, context):

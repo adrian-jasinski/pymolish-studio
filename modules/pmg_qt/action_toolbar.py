@@ -334,21 +334,29 @@ class ActionToolbar(QtWidgets.QToolBar):
                 button = self.widgetForAction(self._action(label, target))
                 button.setToolButtonStyle(Style.ToolButtonIconOnly)
 
-        # ponytail: Qt reads the scale once, so a pick needs a restart.
-        # Upgrade path: restart with the session saved and reloaded.
+        # any whole percent from 50 to 300: typed, or one of the rows
+        self._scale = theme.ui_scale()
         self.scale = self._menu_button(
-            "%d%%" % round(theme.ui_scale() * 100),
+            "%d%%" % round(self._scale * 100),
             "Size of text and controls",
             icon="ui scale",
         )
-        group = QtGui.QActionGroup(self)
+        menu = self.scale.menu()
+        self.scale_box = box = QtWidgets.QSpinBox()
+        box.setRange(round(theme.MIN_SCALE * 100), round(theme.MAX_SCALE * 100))
+        box.setSingleStep(10)
+        box.setSuffix(" %")
+        box.setValue(round(self._scale * 100))
+        box.setToolTip("Any value from 50 to 300; Enter applies")
+        box.editingFinished.connect(lambda: self._set_scale(box.value() / 100))
+        field = QtWidgets.QWidgetAction(menu)
+        field.setDefaultWidget(box)
+        menu.addAction(field)
+        menu.addSeparator()
         for scale in theme.SCALES:
-            action = group.addAction(
-                self.scale.menu().addAction("%d%%" % round(scale * 100))
-            )
-            action.setCheckable(True)
-            action.setChecked(scale == theme.ui_scale())
+            action = menu.addAction("%d%%" % round(scale * 100))
             action.triggered.connect(lambda _=False, s=scale: self._set_scale(s))
+        menu.aboutToShow.connect(lambda: box.setValue(round(self._scale * 100)))
 
         self.more = self._menu_button("More", "More view actions", icon="more actions")
         # with its text the bar does not fit the default window at 150 %
@@ -402,10 +410,48 @@ class ActionToolbar(QtWidgets.QToolBar):
         return button
 
     def _set_scale(self, scale):
+        """Save the scale and change the running window to it, once the
+        menu that asked has closed."""
+        if abs(scale - self._scale) < 0.005:
+            return
+        self.scale.menu().close()
+        QtCore.QTimer.singleShot(50, lambda: self._apply_scale(scale))
+
+    def _apply_scale(self, scale, ask=True):
+        old, self._scale = self._scale, scale
         theme.set_ui_scale(scale)
-        QtWidgets.QMessageBox.information(
-            self, "UI Scale", "The new scale applies the next time pymolish starts."
-        )
+        self.scale.setText("%d%%" % round(scale * 100))
+        app = QtWidgets.QApplication.instance()
+        if not theme.set_scale_live(app, self.window(), old, scale):
+            QtWidgets.QMessageBox.information(
+                self, "UI Scale", "The new scale applies the next time pymolish starts."
+            )
+        elif ask and not 0.75 <= scale <= 2:
+            self._confirm_scale(old)
+
+    def _confirm_scale(self, old, seconds=10):
+        """Very small or very large: back to the old scale unless the user
+        says, within ten seconds, that the window is usable."""
+        Box = QtWidgets.QMessageBox
+        box = Box(Box.Icon.Question, "UI Scale", "", Box.StandardButton.NoButton, self)
+        keep = box.addButton("Keep this size", Box.ButtonRole.AcceptRole)
+        box.addButton("Revert", Box.ButtonRole.RejectRole)
+        left = [seconds]
+        timer = QtCore.QTimer(box, interval=1000)
+
+        def tick():
+            box.setText("Keep this size? Back to the old one in %d s." % left[0])
+            left[0] -= 1
+            if left[0] < 0:
+                box.reject()
+
+        timer.timeout.connect(tick)
+        tick()
+        timer.start()
+        box.exec()
+        timer.stop()
+        if box.clickedButton() is not keep:
+            self._apply_scale(old, ask=False)  # the way back asks nothing
 
     def _fill_palettes(self):
         cmd = self.cmd

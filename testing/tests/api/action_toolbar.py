@@ -367,20 +367,46 @@ def test_palette():
 
 def test_scale():
     from unittest import mock
+    from pymol.Qt import QtWidgets
     from pmg_qt import action_toolbar, theme
 
     with mock.patch.object(theme, "ui_scale", return_value=1.8):
         bar = action_toolbar.ActionToolbar(cmd, defaultdict(list))
     assert bar.scale.text() == "180%"
-    actions = bar.scale.menu().actions()
-    assert [a.text() for a in actions] == ["100%", "120%", "150%", "180%", "200%"]
-    assert [a.text() for a in actions if a.isChecked()] == ["180%"]
-    with (
-        mock.patch.object(theme, "set_ui_scale") as save,
-        mock.patch.object(action_toolbar.QtWidgets.QMessageBox, "information"),
-    ):
-        actions[1].trigger()
-    save.assert_called_once_with(1.2)
+    # a field for any whole percent from 50 to 300, then the common steps
+    assert (bar.scale_box.minimum(), bar.scale_box.maximum(), bar.scale_box.value()) == (50, 300, 180)
+    rows = [a.text() for a in bar.scale.menu().actions() if a.text()]
+    assert rows == ["75%", "100%", "125%", "150%", "175%", "200%", "250%", "300%"]
+
+    def pick(run, live):
+        """Run a pick with the live change mocked; what was asked of it."""
+        with (
+            mock.patch.object(theme, "set_ui_scale") as save,
+            mock.patch.object(theme, "set_scale_live", return_value=live) as change,
+            mock.patch.object(action_toolbar.QtWidgets.QMessageBox, "information") as told,
+            mock.patch.object(bar, "_confirm_scale") as confirm,
+            mock.patch.object(action_toolbar.QtCore.QTimer, "singleShot", lambda _, f: f()),
+        ):
+            run()
+        return save.call_args_list, change.call_args_list, told.called, confirm.called
+
+    # a row: saved and changed live, no message
+    save, change, told, confirm = pick(bar.scale.menu().actions()[3].trigger, True)  # 100%
+    assert save[0].args == (1.0,) and change[0].args[2:] == (1.8, 1.0)
+    assert not told and not confirm and bar.scale.text() == "100%"
+    # a typed value
+    bar.scale_box.setValue(137)
+    save, change, told, confirm = pick(bar.scale_box.editingFinished.emit, True)
+    assert save[0].args == (1.37,) and bar.scale.text() == "137%"
+    # the same value again: nothing happens
+    assert pick(bar.scale_box.editingFinished.emit, True)[0] == []
+    # where the live change cannot work: saved, and the old message
+    save, change, told, confirm = pick(lambda: bar._set_scale(1.5), False)
+    assert save[0].args == (1.5,) and told and not confirm
+    # very small or very large asks whether the window is still usable
+    assert pick(lambda: bar._set_scale(3.0), True)[3]
+    assert pick(lambda: bar._set_scale(0.5), True)[3]
+    assert not pick(lambda: bar._set_scale(2.0), True)[3]
 
 
 def test_quick_select():

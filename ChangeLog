@@ -4,6 +4,28 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.31.0
+
+	* UI scale: any value from 50 to 300 %, without a restart
+	  - The scale button of the toolbar has a field for any whole
+	    percent from 50 to 300 and rows for the common steps (75
+	    to 300). The window changes at once; the molecule, the
+	    layout and the panels stay. The window keeps its size on
+	    the screen where the screen allows.
+	  - Below 75 % and above 200 % the program asks "Keep this
+	    size?" and goes back by itself after ten seconds without
+	    an answer, in case the window became unusable.
+	  - The live change uses a function inside Qt that is not part
+	    of its public interface. Where it is missing or has no
+	    effect, the value is saved and the old message "applies
+	    the next time pymolish starts" is shown. Tried on Linux
+	    (X11); Windows and macOS are not tried yet.
+	  - The viewport follows a changed pixel ratio by itself (also
+	    when the window is moved to a screen with another scale).
+	  - Step 27.
+
+2026-11-20 pymolish-studio
+
 	* 4.30.0
 
 	* Action toolbar: quick select

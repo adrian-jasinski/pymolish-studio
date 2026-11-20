@@ -37,6 +37,7 @@ Then 4.26.0 to 4.29.0: the packed session file `.psex` (28a), the property
 table with editing, import and export (22a to 22c), and a fix in the core
 (a property set again with another type ended the program). 4.30.0: the
 quick-select chips and the final layout of the bar; step 26 is finished.
+4.31.0: the UI scale from 50 to 300 %, live on Linux.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -56,7 +57,7 @@ user's original numbers; the letters are milestones of the detailed plans.
 | --- | --- | --- | --- |
 | 1 | **28b** — [One session key for new data](docs/plans/28-session-format.md) | 28a, the packed `.psex` file, shipped in 4.26.0. Left: one key `pymolish` in the session for everything new (table columns, shot list), with unknown entries kept. Built with its first user (22d or step 19), not ahead. | An entry of a "newer" version survives load and save; PyMOL 3 loads the `.pse` written with the key. |
 | 2 | **22d, 22e** — [Property table, the rest](docs/plans/22-property-table.md) | 22a to 22c shipped in 4.27.0 to 4.29.0: the window, editing, columns, copy and paste, import from CSV and Excel, export. Left: 22d, column order and hidden columns kept in the session (with 28b), computed columns (atoms, residues, chains, states, weight, charge), a Columns menu, "follow" (the current row is the only object shown), the window's size between sessions; 22e, a picked atom selects its row. | Each slice has its test. |
-| 3 | **27** — [UI scale 50 to 300 %, live](docs/plans/27-ui-scale.md) | A field for any percent; the window changes at once (worked in a trial on Linux), "Keep this size?" with a revert, the old message where the live change cannot work. Windows and macOS to try in CI. | The GUI test: 150, 100, 225, 150, the viewport still draws. |
+| 3 | **27c** — [UI scale, Windows and macOS](docs/plans/27-ui-scale.md) | 27a and 27b shipped in 4.31.0: any percent from 50 to 300, live on Linux. Left: see in the first CI run whether the live change works on Windows and macOS (the test prints it); where it does not, restart in place or the "next start" message stays. | The CI log of both systems. |
 | 4 | **24** — [Ligand in 2D with its contacts](docs/plans/24-ligand-2d.md) | Command `ligand_2d` and a panel, our own code on rdkit and Qt: the ligand flat, residues around it colored by kind, hydrogen bonds, salt bridges, ring stacking. Interactive both ways: a residue clicked in the drawing is selected in 3D, and what is selected in 3D is ringed in the drawing. A toolbar button, off without a ligand. Three slices. | On 2RH1 the known contacts are found and no two residues overlap. |
 | 5 | **15e, 25b-2** — [Five effects](docs/plans/15-presets.md), [color themes](docs/plans/25-studio-effects.md) | 15e as decided: color steps in the viewport; fog toward a white background; helices as cylinders; ambient occlusion in the soft look (timed on a large surface first); "balls in glass". With them five color themes (clay, blue, sage, mint, night): protein color, ligand color, background, as a group of their own. | Each has a check in the preset tests and a picture. |
 | 6 | **1b** — [Grid surface, an experiment](docs/plans/01-performance-gpu.md) | A second `surface_type`: signed distance grid and marching cubes, with a smoothness value. Times and pictures of 1aon and 4v6x against today's surface, at two smoothness values; then the user decides whether it stays. Moved up: the surface looks wait for it. | The table and the pictures. |
@@ -121,7 +122,7 @@ paint roller is built; say if the rest of the sentence asked for more.
 
 The user's to do, not decisions:
 
-- Merge pull request 9 (`feature11`, 4.19.12 to 4.30.0). `master` on GitHub
+- Merge pull request 9 (`feature11`, 4.19.12 to 4.31.0). `master` on GitHub
   has everything up to 4.19.11 (pull request 8, merged 2026-11-19).
 - The checks marked "first CI run" can be looked at: the icon of the Windows
   program, the release notes, the `chem` and `fix` extras on three systems.

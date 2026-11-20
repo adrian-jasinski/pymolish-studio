@@ -1,7 +1,30 @@
 # 27 — UI scale: any value from 50 % to 300 %, without a restart
 
-[Roadmap](../../PLAN.md) · Request 2026-11-20 · Planned, not built. The live
-change was tried in the real window and worked there.
+[Roadmap](../../PLAN.md) · Request 2026-11-20 · **27a and 27b done
+2026-11-20 in 4.31.0** (the field, the range, the live change on Linux, the
+fallback). 27c, Windows and macOS, is open.
+
+As built, and where it differs from the plan below:
+
+- `theme.set_scale_live` (35 lines) finds the Qt library through
+  `QLibraryInfo`, so it also works inside a bundle. It returns false when
+  the symbol is missing or the pixel ratio did not follow; the toolbar then
+  shows the old "next start" message.
+- "Keep this size?" is asked only below 75 % and above 200 %, not after
+  every change: a step from 150 to 140 does not need a question. The way
+  back asks nothing.
+- The GL widget read the pixel ratio from a window handle that the change
+  destroys; in one of two runs the molecule was then drawn at the old
+  ratio. It now compares the ratio when it is resized and painted. Three
+  runs in the real window after that: 150, 100, 225 (kept), 50 (reverted),
+  150, with the viewport's pixel size right each time and the table window
+  following.
+- Not built: the shortcuts Ctrl+=, Ctrl+- and Ctrl+0, and the option
+  `--ui-scale`. The revert after ten seconds and an exported
+  `QT_SCALE_FACTOR` are the ways out; ask if the shortcuts are wanted.
+- 27c: the test `test_scale_range_and_live` prints "set_scale_live does not
+  work on ..." where the change fails and passes there, so the first CI run
+  on Windows and macOS says which way those systems go.
 
 **The scale button becomes a field that takes any whole percent from 50 to
 300, and the window changes size at once.** This replaces two decisions:

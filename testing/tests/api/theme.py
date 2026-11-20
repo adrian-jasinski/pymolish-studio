@@ -129,3 +129,46 @@ def test_float_docks_as_dialogs():
     fake.installEventFilter = with_filter.append
     theme.float_docks_as_dialogs(fake, {})
     assert with_filter == []
+
+
+def test_scale_range_and_live():
+    """Any scale from 0.5 to 3 is kept; outside values are cut. The live
+    change works on this platform, or says that it did not."""
+    import sys
+    from unittest import mock
+
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    from pymol.Qt import QtWidgets
+    from pmg_qt import theme
+
+    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+    store = {}
+    settings = mock.Mock()
+    settings.value = lambda key, default=None: store.get(key, default)
+    settings.setValue = store.__setitem__
+    with mock.patch.object(theme, "_settings", return_value=settings):
+        for asked, kept in ((0.5, 0.5), (1.37, 1.37), (3.0, 3.0), (0.2, 0.5), (7, 3.0)):
+            theme.set_ui_scale(asked)
+            assert theme.ui_scale() == kept
+        store["ui/scale"] = "25"  # a value written by hand
+        assert theme.ui_scale() == 3.0
+
+    window = QtWidgets.QMainWindow()
+    window.resize(400, 300)
+    window.show()
+    before = window.devicePixelRatio()
+    # a Qt without the function: False, nothing touched
+    assert theme.set_scale_live(app, window, 1.0, 2.0, symbol="no_such_function") is False
+    assert window.devicePixelRatio() == before and window.isVisible()
+    done = theme.set_scale_live(app, window, 1.0, 2.0)
+    try:
+        if done:
+            assert window.devicePixelRatio() == before * 2
+            assert window.isVisible() and window.size().width() == 200  # the same size on the screen
+        else:  # not an error: the program then says "at the next start"
+            print("set_scale_live does not work on", sys.platform, app.platformName())
+            assert sys.platform != "linux" or app.platformName() != "xcb"
+    finally:
+        if done:
+            assert theme.set_scale_live(app, window, 2.0, 1.0)
+        window.close()
