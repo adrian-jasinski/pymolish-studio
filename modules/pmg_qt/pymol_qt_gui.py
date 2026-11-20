@@ -240,6 +240,11 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.timeline_panel)
         self.timeline_panel.hide()
 
+        # property table: a window of its own over the viewport
+        from .property_table import PropertyTable
+        self.property_table = PropertyTable(
+            cmd, self, self.pymolwidget, self.object_panel)
+
         '''
         # command completion
         completer = QtWidgets.QCompleter(cmd.kwhash.keywords, self)
@@ -356,6 +361,8 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
             panels=[
                 ('Builder', self.open_builder_panel),
                 ('Scenes', self.scene_panel_menu_dialog),
+                ('Table', lambda: self.property_table.setVisible(
+                    not self.property_table.isVisible())),
                 # the render dialog is built when the menu is first shown, so
                 # it starts with the current viewport and settings
                 ('Draw', WidgetMenu(self).setSetupUi(self.render_dialog)),
@@ -424,6 +431,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         panels.addAction(self.object_panel.toggleViewAction())
         panels.addAction(self.scene_panel.toggleViewAction())
         panels.addAction(self.timeline_panel.toggleViewAction())
+        panels.addAction(self.property_table.toggleViewAction())
         panels.addAction('Builder', self.open_builder_panel)
         panels.addSeparator()
         panels.addAction('Reset Layout', self.reset_layout)
@@ -521,6 +529,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.restoreState(self._default_state, LAYOUT_VERSION)
         self.ext_window.show()
         self.object_panel.show()
+        self.property_table.stick()
 
     def toggle_ext_window_dockable(self, neverfloat=False):
         '''
@@ -1017,6 +1026,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.object_panel.poll()
         self.scene_panel.poll()
         self.timeline_panel.poll()
+        self.property_table.poll()
 
     def doPrompt(self):
         self.doTypedCommand(self.command_get())

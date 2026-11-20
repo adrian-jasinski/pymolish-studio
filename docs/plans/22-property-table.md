@@ -5,6 +5,25 @@
 stuck to the Objects panel; Excel read with the standard library.
 Replaces the metadata table of [step 3](03-modern-ui.md); step 3 is closed.
 
+**22a done 2026-11-20 in 4.27.0.** Differences from the plan below:
+
+- The widget is a `QTreeWidget` with rows that compare by value, not a
+  `QTreeView` on a model with a proxy: it is what the Objects panel uses,
+  about a third of the code, and one poll of 1,000 objects with 20
+  properties takes 16 ms (the limit was 20). The model is the upgrade if
+  editing or 10,000 rows need it.
+- No Ctrl+T: it is "bond" in the viewport. The Table button and Display >
+  Panels open the window. Esc is not bound yet.
+- The window is placed by its visible area: under WSLg the frame has an
+  invisible margin of 25 px, which put the first version 50 px over the
+  panel. Measured in the real window: opens exactly over the viewport, its
+  right edge on the panel's left edge, and stays there when the main window
+  is moved or made wider.
+- Not exercised: a resize by the real mouse. The size is remembered from
+  the window system's resize event; a script cannot send one.
+- The size is not saved between sessions yet (the first size is the
+  viewport's each time).
+
 **A table with one row per object: row number, a dot that shows or hides the
 object, the name, then one column per property. Cells are edited in place,
 columns are added by hand or come from a CSV or Excel file. It is a window

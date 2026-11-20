@@ -81,6 +81,7 @@ LABELS = {
     "presets": "sliders-horizontal",
     "builder": "hammer",
     "scenes": "camera",
+    "table": "table-2",
     "draw": "aperture",
     "ui scale": "scaling",
     "more actions": "ellipsis",

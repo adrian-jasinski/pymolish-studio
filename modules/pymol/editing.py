@@ -233,6 +233,12 @@ SEE ALSO
                 if is_error(r):
                     break
 
+                # the properties of the state (the data fields of an SDF
+                # record) go with it
+                for prop in _self.get_property_list(object, a) or ():
+                    _self.set_property(
+                        prop, _self.get_property(prop, object, a), name)
+
         _self.delete(sele)
         if _self._raising(r,_self): raise pymol.CmdException
         return r

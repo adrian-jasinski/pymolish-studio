@@ -4,6 +4,30 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.27.0
+
+	* Property table, first part
+	  - A Table button in the toolbar opens a window with one row
+	    per object: row number, a dot that shows or hides the
+	    object (Ctrl+click: only this one), the name, and one
+	    column per object property. Properties are what
+	    cmd.set_property sets and what the data fields of an SDF
+	    file become at load. Group members nest under their group.
+	  - A click on a column header sorts by value; a second click
+	    reverses; the Row header gives the order of the Objects
+	    panel back. The filter box keeps the rows whose name or
+	    any value contains the text.
+	  - The window opens over the viewport with its right edge at
+	    the Objects panel and follows the main window. It can be
+	    resized and closed; dragged elsewhere it stays there, and
+	    Display > Panels > Reset Layout brings it back.
+	  - Read-only so far: editing, import and export follow.
+	  - split_states: the new objects keep the properties of their
+	    state. Until now they were lost.
+	  - Step 22a.
+
+2026-11-20 pymolish-studio
+
 	* 4.26.0
 
 	* A packed session file: .psex
