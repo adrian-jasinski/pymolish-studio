@@ -361,6 +361,16 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
             more=[
                 ('Get View', self.get_view),
                 ('Properties', self.open_props_dialog),
+            ],
+            # the rows of File that bring something in
+            files=[
+                ('Open file...', self.file_open),
+                ('Open folder...', self.file_open_folder),
+                ('Open Recent...', self.open_recent_menu),
+                None,
+                ('Get PDB entry...', self.file_fetch_pdb),
+                ('Get by UniProt...', self.file_fetch_uniprot),
+                ('Get predicted structure...', self.file_fetch_fold),
             ])
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.action_toolbar)
         self.action_toolbar.setVisible(bool(options.external_gui))

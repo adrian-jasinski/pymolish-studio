@@ -21,6 +21,7 @@ def app():
 
 
 def test_toolbar():
+    from pymol.Qt import QtCore, QtWidgets
     from pmg_qt.action_toolbar import ActionToolbar
 
     hits = []
@@ -30,8 +31,25 @@ def test_toolbar():
         callbacks,
         panels=[("Builder", lambda: hits.append("builder"))],
         more=[("Get View", lambda: hits.append("view"))],
+        files=[
+            ("Open file...", lambda: hits.append("open")),
+            ("Open Recent...", QtWidgets.QMenu("Open Recent...")),
+            None,
+            ("Get PDB entry...", lambda: hits.append("pdb")),
+        ],
     )
     texts = {a.text(): a for a in bar.actions()}
+
+    # Open is the first button: a click opens a file, the menu has the rest
+    assert bar.widgetForAction(bar.actions()[0]) is bar.open
+    rows = bar.open.menu().actions()
+    assert [a.text() for a in rows] == ["Open file...", "Open Recent...", "", "Get PDB entry..."]
+    assert rows[1].menu() and rows[2].isSeparator()
+    bar.open.click()
+    rows[3].trigger()
+    assert hits == ["open", "pdb"]
+    del hits[:]
+    assert bar.open.focusPolicy() == QtCore.Qt.FocusPolicy.TabFocus
 
     # selection mode: menu sets the setting, the setting sets the label
     assert bar.selecting.text() == "Residues"

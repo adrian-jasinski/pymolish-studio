@@ -1,5 +1,5 @@
 """
-Action toolbar above the viewport: what a click selects, undo/redo, the view
+Action toolbar above the viewport: open a file, what a click selects, undo/redo, the view
 actions, presets, the object color palette, the background, and on the right
 the panels, the render popup and the UI scale. Every button has a line icon; undo and redo
 show only that. Replaces the grid of quick buttons that sat next to the log.
@@ -102,11 +102,12 @@ def _strip(colors):
 
 
 class ActionToolbar(QtWidgets.QToolBar):
-    def __init__(self, cmd, setting_callbacks, panels=(), more=()):
+    def __init__(self, cmd, setting_callbacks, panels=(), more=(), files=()):
         """setting_callbacks maps a setting index to callables the window
         runs with the new value when that setting changes. panels and more
         are (label, callback or QMenu) pairs for the right side and for the
-        More menu."""
+        More menu. files are such pairs for the Open button, None for a
+        separator; a click on the button itself runs the first."""
         super().__init__("Actions")
         self.setObjectName("toolbar_actions")
         self.setMovable(False)
@@ -115,6 +116,20 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.cmd = cmd
         self._icons = {}  # button or action -> icons.LABELS key
         index = cmd.setting._get_index
+
+        if files:
+            self.open = self._menu_button(
+                "Open", "Open a file", files[0][1], icon="open file"
+            )
+            self.open.setToolButtonStyle(Style.ToolButtonIconOnly)
+            for row in files:
+                if row is None:
+                    self.open.menu().addSeparator()
+                elif isinstance(row[1], QtWidgets.QMenu):
+                    self.open.menu().addMenu(row[1])  # under its own title
+                else:
+                    self.open.menu().addAction(*row)
+            self.addSeparator()
 
         self.selecting = self._menu_button(
             "", "What a click in the viewport selects", icon="select"

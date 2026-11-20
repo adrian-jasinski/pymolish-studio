@@ -4,6 +4,18 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.21.0
+
+	* Action toolbar: an Open button
+	  - The first button of the bar, a folder. A click opens the
+	    file dialog (as File > Open). Its arrow lists: Open file,
+	    Open folder, Open Recent, Get PDB entry, Get by UniProt,
+	    Get predicted structure. They are the rows of the File
+	    menu, which keeps them.
+	  - Step 26b.
+
+2026-11-20 pymolish-studio
+
 	* 4.20.0
 
 	* Action toolbar: shorter
