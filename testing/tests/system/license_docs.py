@@ -50,6 +50,8 @@ def test_upstream_notice():
     tail = read("LICENSE")[-UPSTREAM_LENGTH:]
     assert hashlib.sha256(tail.encode()).hexdigest() == UPSTREAM_SHA256
     assert "MIT License" in read("LICENSE-MIT")
+    # the icon and logo are outside both code licenses and say so
+    assert "NOT under the MIT license" in read("data/pymol/icons/LICENSE")
 
 
 def test_slogans():

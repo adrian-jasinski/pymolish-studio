@@ -2,6 +2,232 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-20 pymolish-studio
+
+	* 4.19.43
+
+	* Licenses
+	  - The application icon and the logo have a notice of their own,
+	    data/pymol/icons/LICENSE. They are the marks of the project
+	    and are not under the MIT license of the code: they may be
+	    passed on unchanged with pymolish-studio and used to refer to
+	    it; a changed version of the program that is given to others
+	    needs its own icon and logo, as it needs its own name. Until
+	    now no license was recorded for them.
+	  - docs/licenses.md: the row for the two images and one more
+	    point in "In short".
+
+2026-11-20 pymolish-studio
+
+	* 4.19.42
+
+	* Removed: the menus the core drew in OpenGL
+	  - Since 4.5.18 the window shows every menu of the viewport as a
+	    Qt menu (right click on empty space, on an atom, on a residue
+	    of the sequence viewer, on a scene button, in the movie
+	    panel). The code that drew such a menu inside the viewport
+	    when no window took it is deleted: layer4/PopUp.cpp and
+	    layer1/Pop.cpp with their headers, and the fallback in
+	    Menu.cpp. 1,224 lines.
+	  - What changes: a program that embeds the viewport through
+	    pymol2 without the pymolish window gets no right-click menu
+	    any more. To get one, set pymol.menu.popup to a function that
+	    takes the menu list (rows of [kind, label, command]) and
+	    shows it.
+	  - The setting internal_gui_mode stays; the text console in the
+	    viewport reads it.
+	  - Step 17e. Step 17 is finished.
+
+2026-11-20 pymolish-studio
+
+	* 4.19.41
+
+	* Removed: the row list of the old object panel
+	  - The core no longer keeps the list of rows the old internal GUI
+	    drew (removed in 4.17.1): the list and its builder, the scroll
+	    position, the mouse state of the panel, and _cmd.scrollto with
+	    pymol.controlling.find, which scrolled that panel. 242 lines.
+	    "find" was never a command and not part of cmd; nothing else
+	    called it.
+	  - No change to objects, groups, their order or the grid: the
+	    places that reset the list now only reset the grid slots, as
+	    they did before besides.
+	  - Step 17d.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.40
+
+	* Performance
+	  - The list of neighbors of the lookup grid (MapType) is no longer
+	    filled with zeros before it is written: every element is
+	    written right after, on all cores. Surface build of 1aon
+	    (59,192 atoms, with a 16x16 ray): 5.35 to 5.60 s before, 5.05
+	    to 5.32 s after, in four paired runs about 0.3 s (5 to 7 %);
+	    the same triangles (the POV-Ray scene is identical byte for
+	    byte). No measurable change for 4v6x (36 s) and for a ray of
+	    the 1aon surface at 800x600 (3.4 to 4.1 s before and after).
+	  - Debug builds check that no element of the list is left
+	    unwritten.
+	  - Step 1b.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.39
+
+	* Core
+	  - Executive.cpp: seven function-local buffers made with malloc
+	    and released with FreeP are std::vector now (the object list
+	    while it is reordered, the stack of visible records of
+	    set_vis, the three buffers of map arithmetic, the selection
+	    indicator texture, and the index, vertex and outlier buffers
+	    of fit). No behavior change. Step 8c, first file.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.38
+
+	* Core
+	  - Removed the #ifdef branches of five macros nothing defines:
+	    PYMOL_COMM, PYMOL_COLL, PYMOL_EDU (product variants of the
+	    commercial build) and _PYMOL_IP_SPLASH, _PYMOL_IP_EXTRAS,
+	    which only they defined. 100 lines in 10 files. No behavior
+	    change: the preprocessed text of all 195 translation units is
+	    identical before and after. Step 8i.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.37
+
+	* Morphing (cmd.* API, was a stub of the commercial build)
+	  - morph name, sele1 [, sele2 [, state1 [, state2 [, refinement
+	    [, steps [, method [, match]]]]]]] creates an object whose
+	    states lead from one conformation to another: two states of
+	    one object, all states of one object (state1=0; back to the
+	    first unless state2=0), or two objects, whose atoms are
+	    paired by "align" or "super" (match). Atoms without a partner
+	    are left out. The conformations are not superposed.
+	  - The method is "linear", now the default: coordinates are
+	    interpolated on straight lines, then every intermediate state
+	    is sculpted (10 cycles per "refinement", local geometry only),
+	    which restores bond lengths, angles and planar groups. A 60
+	    degree hinge motion of a 159 residue protein in 30 states:
+	    0.1 s, mean bond length error half way 0.065 A without and
+	    0.007 A with the default refinement of 3.
+	  - method=rigimol is an error: RigiMOL belongs to the commercial
+	    PyMOL.
+	  - Step 21e.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.36
+
+	* Focal blur (cmd.* API, was a stub of the commercial build)
+	  - focal_blur [aperture [, samples [, ray [, filename]]]] makes a
+	    picture in which only what is near the origin of rotation is
+	    sharp: "samples" images, each with the camera turned by up to
+	    "aperture" degrees around the origin, are averaged. The result
+	    is put on display, so "png" saves it; with a file name it is
+	    written there too. The view is as before afterwards.
+	  - ray=0 uses the picture of the viewport (8 samples of a small
+	    protein: 0.7 s), ray=1 ray traces every sample.
+	  - More samples give a smoother blur; with few, the copies show.
+	  - Step 21d.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.35
+
+	* Pi interactions (cmd.* API, was a stub of the commercial build)
+	  - distance with mode 5 (pi-pi and pi-cation), 6 (pi-pi) and 7
+	    (pi-cation) draws dashes between the centers of planar rings,
+	    and between a ring center and an atom with a positive formal
+	    charge. Before, the modes printed "only available in Incentive
+	    PyMOL" and left an empty object. pi-pi: centers within 4.4 A
+	    and planes within 30 degrees (face to face), or within 5.5 A
+	    and planes more than 60 degrees apart (edge to face).
+	    pi-cation: within 6.6 A and 30 degrees of the ring normal.
+	  - pi_interactions name [, selection1 [, selection2 ...]] is
+	    distance with mode 5 and no labels.
+	  - The rows find > pi interactions > pi-pi and pi-cation of the A
+	    menu now find something.
+	  - Step 21c.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.34
+
+	* Stereochemistry (cmd.* API, was a stub of the commercial build)
+	  - assign_stereo [selection [, state [, method]]] fills the atom
+	    property "stereo" with R or S, from the coordinates and bonds,
+	    with rdkit's CIP rules. Hydrogens and bond orders are not
+	    needed. After it, "label sele, stereo", "select stereo R" and
+	    "iterate" see the labels. The property does not follow an
+	    edit: run the command again.
+	  - Needs rdkit (pip install 'pymolish[chem]'; the downloadable
+	    builds have it). method=schrodinger is an error.
+	  - Label menu: "other properties > stereochemistry" is back. It
+	    runs assign_stereo, then labels.
+	  - Tests: mmpymolx.py went; its two cases are in
+	    stereochemistry.py. The test that needed a Schrodinger
+	    installation is deleted.
+	  - Step 21b.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.33
+
+	* STL export (cmd.* API, was a stub of the commercial build)
+	  - "save file.stl" writes the geometry on display as a binary STL
+	    file: triangles only, no colors. Spheres, sticks and cones are
+	    tessellated as in the USD export (sphere_quality,
+	    stick_quality, cone_quality); surfaces, cartoons and meshes of
+	    triangles go out as they are. Coordinates are in Angstrom, in
+	    camera space, or in model space with geometry_export_mode 1.
+	  - An empty scene raises "no geometry to export". ASCII STL
+	    (binary=0) is not written. Reading STL is still not supported
+	    and now says so with an ordinary error.
+	  - Step 21a.
+
+2026-11-19 pymolish-studio
+
+	* 4.19.32
+
+	* Show menu
+	  - The hover menus "only <representation>" of 4.19.31 are gone:
+	    a representation row is a plain row again that shows it. To
+	    see one representation alone, hide everything first, or use
+	    "Show as" of a right click on a row of the Objects panel.
+	  - Only the cartoon row keeps a hover menu (default, wire,
+	    spring); a click on the row is still "default".
+
+2026-11-19 pymolish-studio
+
+	* 4.19.31
+
+	* Show and hide menus (S and H of the Objects panel, the same
+	  menus of a right click in the viewport and the sequence viewer)
+	  - Show: the submenu "as" is gone. Every representation row now
+	    does both: a click (or Enter) on the row shows it, its hover
+	    menu has "only <representation>", the old "as". The right
+	    click menu of a row of the Objects panel keeps "Show as".
+	  - Show: the cartoon row has the styles default, wire and spring
+	    in its hover menu; a click on the row is "default". New
+	    function preset.cartoon_style(style, selection); the presets
+	    wire and spring use it. "wire" stays a global setting
+	    (cartoon_debug).
+	  - Show: new submenu "hydrogens" (all, polar). A hydrogen is
+	    shown the way the atom it is bound to is drawn (lines, sticks
+	    or spheres).
+	  - Show: cell, organic, main chain, side chain, disulfides,
+	    valence and flag ignore moved into "more". 15 rows, was 21.
+	  - Hide: cell, main chain, side chain, unselected, valence and
+	    flag ignore moved into "more". 17 rows, was 22.
+	  - A menu list row may have a fourth entry, the command of a row
+	    that also has a submenu (pmg_qt.object_panel.fill_menu). The
+	    menus the core draws itself ignore it and only open the
+	    submenu.
+
 2026-11-19 pymolish-studio
 
 	* 4.19.30

@@ -2,6 +2,8 @@
 
 [Roadmap](../../PLAN.md) · Request 2026-11-13
 
+Replaced in part on 2026-11-20: the five fixed scale steps and the restart become any value from 50 to 300 %, live ([step 27](27-ui-scale.md)); the width limit of the bar is set anew in [26d](26-toolbar-buttons.md).
+
 **Every button of the action toolbar gets a line icon, Undo and Redo shrink to
 the icon alone, the interface starts at 150 %, and the scale is picked from a
 button in the toolbar.**

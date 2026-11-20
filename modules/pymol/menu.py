@@ -147,7 +147,6 @@ def obj_motion(self_cmd, obj, frame="0"):
             ]
 
 def rep_action(self_cmd, sele, action) :
-    flag_ignore_action = "set" if action == "hide" else "clear"
     return [
         [ 1, 'wire'       , 'cmd.'+action+'("wire"      ,"'+sele+'")' ],
         [ 1, '  lines'    , 'cmd.'+action+'("lines"     ,"'+sele+'")' ],
@@ -160,26 +159,28 @@ def rep_action(self_cmd, sele, action) :
         [ 1, 'ribbon'     , 'cmd.'+action+'("ribbon"    ,"'+sele+'")' ],
         [ 1, 'cartoon'    , 'cmd.'+action+'("cartoon"   ,"'+sele+'")' ],
         [ 0, ''           , ''                               ],
-        [ 1, 'label'      , 'cmd.'+action+'("labels"    ,"'+sele+'")' ],
-        [ 1, 'cell'       , 'cmd.'+action+'("cell"      ,"'+sele+'")' ],
-        [ 0, ''           , ''                               ],
         [ 1, 'dots'       , 'cmd.'+action+'("dots"      ,"'+sele+'")' ],
         [ 1, 'spheres'    , 'cmd.'+action+'("spheres"   ,"'+sele+'")' ],
         [ 0, ''           , ''                               ],
         [ 1, 'mesh'       , 'cmd.'+action+'("mesh"      ,"'+sele+'")' ],
         [ 1, 'surface'    , 'cmd.'+action+'("surface"   ,"'+sele+'")' ],
-        [ 1, 'flag ignore', [
-            [ 2, 'flag ignore', ''],
-            [ 1, flag_ignore_action, f'cmd.flag("ignore",{sele!r},{flag_ignore_action!r});cmd.rebuild({sele!r})' ],
-            [ 0, '', '' ],
-            [ 2, '\\272Note:\\559 Atoms with the "ignore"', ''],
-            [ 2, '\\559flag are ignored during surface', ''],
-            [ 2, '\\559calculation. By default, all', ''],
-            [ 2, '\\559non-polymer atoms are ignored.', ''],
-        ]],
+        [ 0, ''           , ''                               ],
+        [ 1, 'label'      , 'cmd.'+action+'("labels"    ,"'+sele+'")' ],
         ]
 
+def flag_ignore(sele, action):
+    return [ 1, 'flag ignore', [
+        [ 2, 'flag ignore', ''],
+        [ 1, action, f'cmd.flag("ignore",{sele!r},{action!r});cmd.rebuild({sele!r})' ],
+        [ 0, '', '' ],
+        [ 2, '\\272Note:\\559 Atoms with the "ignore"', ''],
+        [ 2, '\\559flag are ignored during surface', ''],
+        [ 2, '\\559calculation. By default, all', ''],
+        [ 2, '\\559non-polymer atoms are ignored.', ''],
+        ]]
+
 def mol_as(self_cmd, sele):
+    # the "Show as" menu of a right click on a row of the Objects panel
     return (
         [[ 2, 'As:'   , '']]
         +rep_action(self_cmd, sele,'show_as')
@@ -192,25 +193,45 @@ def show_misc(self_cmd, sele):
             [ 1, 'spheres', 'cmd.show("spheres","'+sele+'")'],
             ]
 
-def mol_show(self_cmd, sele):
-    return (
-        [[ 2, 'Show:'      , ''                               ],
-         [ 1, 'as'    , mol_as(self_cmd, sele) ],
-         [ 0, '', '']]
-        + rep_action(self_cmd, sele,'show') +
-        [[ 0, '', ''],
-         [ 1, 'organic' , show_misc(self_cmd, '(organic and ('+sele+'))') ],
-         [ 1, 'main chain' , show_misc(self_cmd, "((byres ("+sele+"))&(bb.))") ],
-         [ 1, 'side chain' , show_misc(self_cmd, "((byres ("+sele+"))&(sc.|"+sele_ms_shared+"))") ],
-         [ 1, 'disulfides' , show_misc(self_cmd, "(byres ((("+sele+
-            ") & r. CYS+CYX & n. SG) & bound_to (("+sele+") & r. CYS+CYX & n. SG))) & n. CA+CB+SG") ]
-         ] +
-         [[ 0, '', ''],
-           [ 1, 'valence', 'cmd.set_bond("valence", "1", "'+sele+'",quiet=1)'],
-         ] )
+def show_hydro(self_cmd, sele):
+    # a hydrogen appears the way the atom it is bound to is drawn
+    def show(hydro):
+        return ';'.join(
+            'cmd.show("%s","(%s) & %s & bound_to rep %s")' % (rep, sele, hydro, rep)
+            for rep in ('lines', 'sticks', 'spheres'))
+    return [[ 2, 'Show:', '' ],
+            [ 1, 'all', show('hydro') ],
+            [ 1, 'polar', show('hydro & !(elem C extend 1)') ],
+            ]
 
-    self_cmd.show("lines","(byres ((" + sele + " & r. CYS+CYX & n. SG) & bound_to ("
-                  + sele + " & r. CYS+CYX & n. SG))) & n. CA+CB+SG")
+def mol_show(self_cmd, sele):
+    reps = rep_action(self_cmd, sele, 'show')
+    # the cartoon row has a submenu and, as fourth entry, a command of its
+    # own: a click shows the default cartoon, the hover menu has the styles
+    styles = [[ 1, style, 'preset.cartoon_style("%s","%s",_self=cmd)' % (style, sele) ]
+              for style in ('default', 'wire', 'spring')]
+    for row in reps:
+        if row[1] == 'cartoon':
+            row[2:] = [styles, styles[0][2]]
+    return (
+        [[ 2, 'Show:'      , ''                               ]]
+        + reps +
+        [[ 0, '', ''],
+         [ 1, 'hydrogens' , show_hydro(self_cmd, sele) ],
+         [ 1, 'more', [
+          [ 2, 'Show:', '' ],
+          [ 1, 'cell'    , 'cmd.show("cell","'+sele+'")' ],
+          [ 0, '', ''],
+          [ 1, 'organic' , show_misc(self_cmd, '(organic and ('+sele+'))') ],
+          [ 1, 'main chain' , show_misc(self_cmd, "((byres ("+sele+"))&(bb.))") ],
+          [ 1, 'side chain' , show_misc(self_cmd, "((byres ("+sele+"))&(sc.|"+sele_ms_shared+"))") ],
+          [ 1, 'disulfides' , show_misc(self_cmd, "(byres ((("+sele+
+             ") & r. CYS+CYX & n. SG) & bound_to (("+sele+") & r. CYS+CYX & n. SG))) & n. CA+CB+SG") ],
+          [ 0, '', ''],
+          [ 1, 'valence', 'cmd.set_bond("valence", "1", "'+sele+'",quiet=1)'],
+          flag_ignore(sele, 'clear'),
+          ]],
+         ] )
 
 def hide_hydro(self_cmd, sele):
     return ( [[ 2, 'Hide:'     , ''                                ],
@@ -225,16 +246,19 @@ def mol_hide(self_cmd, sele):
          [ 0, ''          , ''                                ]]
         + rep_action(self_cmd, sele,'hide') +
         [[ 0, ''          , ''                                ],
-         [ 1, 'main chain', 'cmd.hide("((byres ('+sele+'))&(bb.&!'+sele_ms_shared+'))")' ],
-         [ 1, 'side chain', 'cmd.hide("((byres ('+sele+'))&(sc.&!'+sele_ms_shared+'))")' ],
          [ 1, 'waters'    , 'cmd.hide("(solvent and ('+sele+'))")'     ],
-         [ 0, ''          , ''                                ],
          [ 1, 'hydrogens' , hide_hydro(self_cmd, sele) ],
-         [ 0, ''          , ''                                ],
-         [ 1, 'unselected', 'cmd.hide("(not '+sele+')")'         ],
-         ]
-         + [[ 0, '', ''],
-           [ 1, 'valence', 'cmd.set_bond("valence", "0", "'+sele+'",quiet=1)'],
+         [ 1, 'more', [
+          [ 2, 'Hide:', '' ],
+          [ 1, 'cell'      , 'cmd.hide("cell","'+sele+'")' ],
+          [ 0, '', ''],
+          [ 1, 'main chain', 'cmd.hide("((byres ('+sele+'))&(bb.&!'+sele_ms_shared+'))")' ],
+          [ 1, 'side chain', 'cmd.hide("((byres ('+sele+'))&(sc.&!'+sele_ms_shared+'))")' ],
+          [ 1, 'unselected', 'cmd.hide("(not '+sele+')")'         ],
+          [ 0, '', ''],
+          [ 1, 'valence', 'cmd.set_bond("valence", "0", "'+sele+'",quiet=1)'],
+          flag_ignore(sele, 'set'),
+          ]],
          ] )
 
 
@@ -1501,6 +1525,8 @@ def label_props(self_cmd, sele):
               [ 0, ''               , ''                                  ],
               [ 1, 'text type'      , 'cmd.label("'+sele+'","text_type")'    ],
               [ 1, 'numeric type'   , 'cmd.label("'+sele+'","numeric_type")' ],
+              [ 0, ''               , ''                                  ],
+              [ 1, 'stereochemistry', 'cmd.assign_stereo("'+sele+'");cmd.label("'+sele+'","stereo")' ],
               ]
 
 def label_ids(self_cmd, sele):

@@ -2,6 +2,8 @@
 
 [Roadmap](../../PLAN.md) · Slices 1 to 4 shipped, 5 partly; slice 6 (menus) was done as [step 14](14-menus.md) in 4.13.0
 
+**Closed on 2026-11-20.** The metadata table of this plan (slices 2 and 3, "Table behavior and performance", "Additional ideas") is replaced by the property table of [step 22](22-property-table.md), which is editable and reads the object properties of the core. The open rows below went to 22e, [23b](23-rename-in-panel.md) and question 31 of the roadmap. "Live rescale without restart: skipped" is replaced by [step 27](27-ui-scale.md). The text below is kept as the record of what was built.
+
 **Evolve the existing main window into a clear molecular workspace.** Deliver
 movable, resizable panels and a useful metadata table before replacing every
 internal control. Preserve command-line workflows and existing `.ui` dialogs.
@@ -148,7 +150,7 @@ text path of all five. Its menus, though, are plain data from
 | Reorder and regroup by dragging rows | Use `order` and `group` meanwhile. | Open |
 | Group open/closed shared with the core | Expansion is view state of the tree for now. | Open |
 | Picking an atom selects its row | Viewport-to-panel synchronization. | Open |
-| Menus the core opens (right click in the viewport or on a sequence residue, scene buttons, timeline) | Qt menus since 4.5.18: the core hands its menu list to `pymol.menu.popup`, which the window sets (`popup_at_cursor`). Without a window (`-x` keeps the hook too; `-c` has none) the GL popup is still used. | Done 4.5.18 |
+| Menus the core opens (right click in the viewport or on a sequence residue, scene buttons, timeline) | Qt menus since 4.5.18: the core hands its menu list to `pymol.menu.popup`, which the window sets (`popup_at_cursor`). Without the hook there is no menu: the GL popup of the core went in 4.19.42 ([step 17](17-legacy-ui.md), 17e). | Done 4.5.18 |
 | Sequence viewer, scene buttons | Text still drawn by the core in whole scale steps. The scroll bar of the sequence viewer is a Qt scroll bar since 4.17.0 ([step 18](18-dialogs-scrollbar.md)). | Open |
 | Per-object motion menu (movie column) | Only shown by the old panel when a movie exists. | Open |
 

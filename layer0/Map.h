@@ -27,6 +27,31 @@ struct PyMOLGlobals;
 
 using MapFlag_t = int;
 
+/**
+ * Allocator that leaves ints uninitialized: a vector of n elements made with
+ * it is not zero-filled first. For the neighbor list, of which every element
+ * is written right after allocation, in parallel.
+ */
+template <typename T> struct MapNoInitAllocator : std::allocator<T> {
+  template <typename U> struct rebind {
+    using other = MapNoInitAllocator<U>;
+  };
+  MapNoInitAllocator() = default;
+  template <typename U>
+  MapNoInitAllocator(const MapNoInitAllocator<U>&) noexcept
+  {
+  }
+  template <typename U> void construct(U* p) noexcept
+  {
+    ::new (static_cast<void*>(p)) U;
+  }
+  template <typename U, typename... Args> void construct(U* p, Args&&... args)
+  {
+    ::new (static_cast<void*>(p)) U(std::forward<Args>(args)...);
+  }
+};
+using MapEList_t = std::vector<int, MapNoInitAllocator<int>>;
+
 struct MapType {
   PyMOLGlobals* G;
   float Div;
@@ -37,7 +62,7 @@ struct MapType {
   std::vector<int> Head;
   std::vector<int> Link;
   std::vector<int> EHead;
-  std::vector<int> EList;
+  MapEList_t EList;
   std::vector<int> EMask;
   int NVert;
   Vector3f Max, Min;

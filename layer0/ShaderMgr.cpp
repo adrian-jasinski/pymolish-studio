@@ -455,10 +455,6 @@ void CShaderMgr::Reload_Shader_Variables() {
     SetPreprocVar("bg_image_mode_2_or_3", (bg_image_mode == 2 || bg_image_mode == 3));
   }
 
-#ifdef _PYMOL_IP_EXTRAS
-  SetPreprocVar("volume_mode", SettingGetGlobal_i(G, cSetting_volume_mode));
-#endif
-
   SetPreprocVar("ortho", SettingGetGlobal_i(G, cSetting_ortho));
   SetPreprocVar("depth_cue", SettingGetGlobal_b(G, cSetting_depth_cue)
       && SettingGetGlobal_b(G, cSetting_fog) != 0.0F);

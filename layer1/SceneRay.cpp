@@ -482,6 +482,12 @@ bool SceneRay(PyMOLGlobals * G,
           RayRenderUSDA(ray, charVLA_ptr, mode == cSceneRay_MODE_USDZ);
         }
         break;
+      case cSceneRay_MODE_STL:
+        {
+          *charVLA_ptr = VLACalloc(char, 100000);
+          RayRenderUSDA(ray, charVLA_ptr, false, true);
+        }
+        break;
 
 #ifdef _HAVE_JSON
       case cSceneRay_MODE_GLB:  /* mode 11 is GLB (glTF 2.0 binary) */
@@ -758,10 +764,6 @@ int SceneDeferRay(PyMOLGlobals * G,
         quiet, nullptr, show_timing, antialias);
     if ((mode == 0) && G->HaveGUI &&
         SettingGet<bool>(G, cSetting_auto_copy_images)) {
-#ifdef _PYMOL_IP_EXTRAS
-      PParse(G, "cmd._copy_image(quiet=0)");
-#else
-#endif
     }
   };
   OrthoDefer(G, std::move(deferred));

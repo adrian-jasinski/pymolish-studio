@@ -33,18 +33,6 @@ Z* -------------------------------------------------------------------
 #include "Ortho.h"
 #include "CGO.h"
 
-#define cControlBoxSize DIP2PIXEL(17)
-#define cControlLeftMargin DIP2PIXEL(8)
-#define cControlTopMargin DIP2PIXEL(2)
-#define cControlSpacing DIP2PIXEL(2)
-#define cControlInnerMargin  DIP2PIXEL(4)
-#define cControlSpread DIP2PIXEL(6)
-#define cControlSize DIP2PIXEL(160)
-
-#define cControlButtons 7
-
-#define cControlMinWidth 5
-
 #define SDOF_QUEUE_MASK 0x1F
 
 

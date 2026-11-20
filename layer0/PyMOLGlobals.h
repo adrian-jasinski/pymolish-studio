@@ -68,7 +68,6 @@ class COrtho;
 typedef struct _CWord CWord;
 struct CCGORenderer;
 typedef struct _CCharacter CCharacter;
-struct CPop;
 class CScene;
 struct CSeq;
 struct CSetting;
@@ -127,7 +126,6 @@ struct PyMOLGlobals {
   CWord *Word;
   CCGORenderer *CGORenderer;
   CCharacter *Character;
-  CPop *Pop;
   CScene *Scene;
   CGO *DebugCGO;                /* for debugging rendering */
   CSeq *Seq;

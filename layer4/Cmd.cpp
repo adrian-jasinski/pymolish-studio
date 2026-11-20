@@ -2683,11 +2683,11 @@ static PyObject* CmdGetUSDA(PyObject* self, PyObject* args)
   return APIAutoNone(result);
 }
 
-#ifdef _HAVE_JSON
 /**
- * Return a GLB (binary glTF 2.0) bytes object or None on failure
+ * Return a binary file of the scene's geometry as a bytes object, or None if
+ * there is nothing to export
  */
-static PyObject *CmdGetGLB(PyObject * self, PyObject * args)
+static PyObject* SceneBytes(PyObject* self, PyObject* args, int mode)
 {
   PyMOLGlobals *G = nullptr;
   PyObject *result = nullptr;
@@ -2696,7 +2696,7 @@ static PyObject *CmdGetGLB(PyObject * self, PyObject * args)
   API_SETUP_ARGS(G, self, args, "O", &self);
   API_ASSERT(APIEnterNotModal(G));
 
-  SceneRay(G, 0, 0, cSceneRay_MODE_GLB,
+  SceneRay(G, 0, 0, mode,
       nullptr, &vla, 0.0F, 0.0F, false, nullptr, false, -1);
   APIExit(G);
 
@@ -2710,6 +2710,17 @@ static PyObject *CmdGetGLB(PyObject * self, PyObject * args)
   VLAFreeP(vla);
 
   return APIAutoNone(result);
+}
+
+static PyObject* CmdGetSTL(PyObject* self, PyObject* args)
+{
+  return SceneBytes(self, args, cSceneRay_MODE_STL);
+}
+
+#ifdef _HAVE_JSON
+static PyObject* CmdGetGLB(PyObject* self, PyObject* args)
+{
+  return SceneBytes(self, args, cSceneRay_MODE_GLB);
 }
 #endif // _HAVE_JSON
 
@@ -2864,9 +2875,6 @@ static PyObject *CmdSplash(PyObject * self, PyObject * args)
     }
   } else {
     /* BEGIN PROPRIETARY CODE SEGMENT (see disclaimer in "os_proprietary.h") */
-#ifdef _PYMOL_IP_EXTRAS
-    result = 0;
-#endif
     /* END PROPRIETARY CODE SEGMENT */
   }
   return APIResultCode(result);
@@ -5962,30 +5970,6 @@ static PyObject *CmdOrder(PyObject * self, PyObject * args)
   return APIResult(G, result);
 }
 
-static PyObject *CmdScrollTo(PyObject * self, PyObject * args)
-{
-  PyMOLGlobals *G = nullptr;
-  char *name;
-  int i = 0, r = -1;
-
-  if(!PyArg_ParseTuple(args, "Os|i", &self, &name, &i)) {
-    API_HANDLE_ERROR;
-    ok_raise(1);
-  }
-
-  ok_assert(1, name && name[0]);
-
-  API_SETUP_PYMOL_GLOBALS;
-  ok_assert(2, G && APIEnterBlockedNotModal(G));
-
-  r = ExecutiveScrollTo(G, name, i);
-
-ok_except2:
-  APIExitBlocked(G);
-ok_except1:
-  return Py_BuildValue("i", r);
-}
-
 static PyObject *CmdWindow(PyObject * self, PyObject * args)
 {
   PyMOLGlobals *G = nullptr;
@@ -6267,11 +6251,8 @@ static PyObject* CmdM2ioFirstBlockProperties(PyObject* self, PyObject* args)
   Py_ssize_t length;
   if (!PyArg_ParseTuple(args, "s#", &contents, &length))
     return nullptr;
-#ifdef _PYMOL_IP_EXTRAS
-#else
   PyErr_SetNone(P_IncentiveOnlyException);
   return nullptr;
-#endif
 }
 
 static PyObject* CmdLookAt(PyObject* self, PyObject* args)
@@ -6438,6 +6419,7 @@ static PyMethodDef Cmd_methods[] = {
   {"get_title", CmdGetTitle, METH_VARARGS},
   {"get_type", CmdGetType, METH_VARARGS},
   {"get_usda", CmdGetUSDA, METH_VARARGS},
+  {"get_stl", CmdGetSTL, METH_VARARGS},
   {"get_unused_name", CmdGetUnusedName, METH_VARARGS},
   {"get_version", CmdGetVersion, METH_VARARGS},
   {"get_view", CmdGetView, METH_VARARGS},
@@ -6503,7 +6485,6 @@ static PyMethodDef Cmd_methods[] = {
   {"onoff", CmdOnOff, METH_VARARGS},
   {"onoff_by_sele", CmdOnOffBySele, METH_VARARGS},
   {"order", CmdOrder, METH_VARARGS},
-  {"scrollto", CmdScrollTo, METH_VARARGS},
   {"overlap", CmdOverlap, METH_VARARGS},
   {"paste", CmdPaste, METH_VARARGS},
   {"png", CmdPNG, METH_VARARGS},

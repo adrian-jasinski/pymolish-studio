@@ -542,7 +542,9 @@ SEE ALSO
 
     distance
         '''
-        raise pymol.IncentiveOnlyException()
+        return _self.distance(name, selection1, selection2, mode=5, label=0,
+                quiet=quiet, reset=reset, state=state, state1=state1,
+                state2=state2)
 
     def get_povray(*, _self=cmd):
         '''

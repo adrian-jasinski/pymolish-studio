@@ -1,8 +1,8 @@
 # 17 — Legacy menu rows and the old internal GUI
 
 [Roadmap](../../PLAN.md) · Request 2026-11-18 · **17a done in 4.16.0, 17b in
-4.16.1, 17c in 4.17.1** (2026-11-18, see "Result" before "Questions"). 17d
-waits for step 19; 17e is open.
+4.16.1, 17c in 4.17.1** (2026-11-18), **17d in 4.19.41, 17e in 4.19.42**
+(2026-11-20). See "Result" before "Questions". The step is finished.
 The request answers the open question of [step 3](03-modern-ui.md): the old
 C++ panel is not needed any more.
 
@@ -205,6 +205,63 @@ Checks:
 - Not tested: a 3D mouse (`ControlSdof*` is untouched), stereo modes,
   Windows and macOS.
 
+**17d, 4.19.41. The panel list is gone: 242 lines in 7 files.**
+
+The plan had it wait for the removal of the core's movie panel (19g),
+because that panel was said to line its rows up with the object list. Read
+again on 2026-11-20: after 17c the list had one reader left,
+`ExecutiveScrollTo`, which scrolled the scroll bar of the panel that no
+longer exists. The movie panel counts its rows itself
+(`ExecutiveCountMotions`). So 17d did not need 19g.
+
+| File | What went |
+| --- | --- |
+| `layer3/Executive.cpp` | `PanelListGroup`, `ExecutiveUpdatePanelList`, `ExecutiveScrollTo`, `ExecutiveInvalidatePanelList` (its 10 callers call `ExecutiveInvalidateGridSlots`, the other thing it did), nine `Exec...` margin macros |
+| `layer3/ExecutiveDef.h` | `PanelRec`, the list, the scroll bar, the two enums and 18 fields of the panel's size, mouse and drag state |
+| `layer3/SpecRec.h` | `hilight`, `previous`, `in_panel` |
+| `layer4/Cmd.cpp`, `modules/pymol/controlling.py` | `_cmd.scrollto` and `pymol.controlling.find`. `find` was not in `cmd` and had no caller: it broke nothing, so it went (the rule of 2026-11-19). |
+| `layer1/Control.cpp` | Nine layout macros of the movie buttons that 17c left behind |
+
+Not removed: `ObjectGroup::OpenOrClosed`. `group ..., open` and `close` set
+it and session files store it; the Qt Objects panel keeps its own state
+(the open item "group open/closed shared with the core" of step 3).
+
+**17e, 4.19.42. The menus drawn in OpenGL are gone: 1,224 lines in 13
+files.**
+
+| File | Lines | What went |
+| --- | --- | --- |
+| `layer4/PopUp.cpp`, `PopUp.h` | 996 | The popup menu the core drew and tracked with the mouse |
+| `layer1/Pop.cpp`, `Pop.h` | 179 | The block that held those popups; `G->Pop` |
+| `layer4/Menu.cpp`, `Menu.h` | 23 | The fallback. `MenuShow` hands the list to `pymol.menu.popup` and does nothing without it; `MenuActivate1Arg` returns nothing |
+| `SceneMouse.cpp`, `Ortho.cpp`, `PyMOLGlobals.h` | 8 | The drag of a just-opened scene menu, `PopInit`, `PopFree` |
+| `Wizard.cpp`, `ButMode.cpp`, `Scene.cpp`, `Movie.cpp` | 18 | Includes, and layout macros of the wizard buttons and the mouse mode table that 17c left behind |
+
+`internal_gui_mode` stays, against the plan: the text console in the
+viewport (`Ortho.cpp`) and a side effect in `Setting.cpp` read it too.
+
+What stops working, on purpose: a program that embeds the viewport through
+`pymol2` without the window gets no right-click menu, unless it sets
+`pymol.menu.popup` to a function that takes the menu list (what the window
+does in one line, `pymol_qt_gui.py:227`). The request "release 17" of
+2026-11-20 was taken as the yes to question 4.
+
+Checks for 17d and 17e together (they were built and tested as one tree,
+then committed apart):
+
+- Full Python suite (930 passed) and the Catch2 tests (137 cases).
+- A sanitizer build of the working tree in a fresh scratch copy (address
+  and undefined behavior, the flags of the CI job, asserts on): 909 passed,
+  269 skipped (no rdkit, PDBFixer or OpenMM there), no report, exit code 0.
+- Session files: the round trip of 1rx1 with a measurement, and one with a
+  group, a changed order and a deleted member.
+- Real window on WSLg, simulated right clicks, the list the core hands
+  over recorded: empty space (the main menu, 19 rows), an atom (14), a
+  residue of the sequence viewer (17), a scene button (6). With
+  `pymol.menu.popup = None` a right click does nothing and nothing breaks.
+- Not clicked: the menu of the core's movie panel (it goes through the same
+  `MenuActivate` functions). Not tested: Windows and macOS.
+
 ## Questions
 
 1. `pymolish -x` after the removal: (A) it shows the viewport alone, with
@@ -220,13 +277,16 @@ Checks:
 4. 17e: remove the menus the core draws in OpenGL (969 lines)? Only a
    program that embeds the viewport without the window still sees them.
    Recommended: yes, after asking whether such a program exists.
+   **Answer 2026-11-20: "release 17"; removed in 4.19.42.**
 3. Old-style plugins: only hide the empty submenu (recommended first), or
    delete the Tk shims, after which a plugin written for the Tk window no
    longer adds its rows? **Answer: delete everything Tk.**
 
 ## Deleted
 
-Filled in as slices ship.
+Per slice, in "Result": 17a five menu rows; 17b three Python files (316
+lines); 17c 2,694 lines of panel code; 17d 242 lines of panel state; 17e
+1,224 lines of GL menus.
 
 ## Skipped
 

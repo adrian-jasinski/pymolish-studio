@@ -217,6 +217,42 @@ Question:
 1. Cholesterol from a crystal structure (`CLR`) counts as ligand, not as
    membrane. Right?
 
+## Request 2026-11-19: one list in Show, shorter Show and Hide (14e)
+
+Done in 4.19.31 and 4.19.32.
+
+- **Show had every representation twice**: flat, and again under "as".
+  Now one list: a row shows the representation. 4.19.31 gave every row a
+  hover menu "only <representation>" (the old "as"); the user took it out
+  the same day (4.19.32): hide everything, then show, does the same.
+- **cartoon**: the only row with a hover menu: default, wire and spring
+  (`preset.cartoon_style`, shared with the presets wire and spring). A
+  click on the row is "default". Wire is the global `cartoon_debug`: it
+  changes the cartoon of every object.
+- **hydrogens** is new in Show (all, polar): a hydrogen appears the way
+  the atom it is bound to is drawn. Nothing drawn there, nothing shown.
+- **"more"** holds what is rarely used. Show: cell, organic, main chain,
+  side chain, disulfides, valence, flag ignore. Hide: cell, main chain,
+  side chain, unselected, valence, flag ignore. Show has 15 rows (was
+  21), Hide 17 (was 22).
+- **A row with a submenu and a command of its own** is a menu list row
+  with a fourth entry. `object_panel._RowClick` makes it clickable: Qt
+  alone only opens the submenu. The menus the core draws (17e) ignore
+  the fourth entry: there such a row only opens its submenu.
+- "Show as" of the right-click menu of a panel row stays (`menu.mol_as`).
+- Checked in the real window: the hover of cartoon lists the styles, a
+  click on the row shows the cartoon and closes the menu.
+- Checks: `testShowHide` in `testing/tests/api/menu.py`,
+  `test_row_with_submenu_and_command` in `object_panel.py`.
+
+| Option | Taken | Why |
+| --- | --- | --- |
+| "only" row in the hover menu of each row | no | Built in 4.19.31, removed in 4.19.32: an arrow on every row for what "hide everything" already does. |
+| Shift+click for "only" | no | Shorter, but only the caption would tell. |
+| A switch "add / replace" on top | no | The same row would do two things. |
+| Flat list, one row per representation | yes | The user's choice: nothing to learn. |
+| Grouped rows (wire with lines and nonbonded in its hover) | no | 8 rows, but the parts need a hover. |
+
 ## Skipped
 
 - Rewriting `menu.py` as data tables or native `QMenu` code.

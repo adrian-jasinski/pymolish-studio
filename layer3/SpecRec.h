@@ -19,13 +19,10 @@ public:
 
   /* not pickled */
   int sele_color;
-  int hilight;                  /* 0 = none, 1 = name, 2 = group control (if any) */
-  int previous;
   int cand_id;
   SpecRec *group;
   int group_member_list_id;
   int in_scene;
-  int in_panel;
   int grid_slot;
   CGO *gridSlotSelIndicatorsCGO;
 

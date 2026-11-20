@@ -1,7 +1,9 @@
 # 21 — Features of the commercial build: removed, kept, to rebuild
 
 [Roadmap](../../PLAN.md) · Request 2026-11-19 · **Removals done in 4.19.18
-to 4.19.26. The seven rebuilds are planned, none is built.** Answers of the
+to 4.19.26. 21a to 21e built in 4.19.33 to 4.19.37. 21f was decided on
+2026-11-20 and is to build; 21g was decided the same day (option C) and is
+to build last.** Answers of the
 user from 2026-11-19 are applied: all Maestro support removed, a command is
 enough for stereochemistry, stubs that break nothing else removed.
 
@@ -61,6 +63,14 @@ recommended one is marked.
 
 ### 21a — STL export
 
+**Done in 4.19.33, option A.** `RayRenderUSDA` got a second output: the
+meshes it already builds (tessellated solids, the scene's triangles) are
+written as binary STL facets, 60 lines in `layer1/USD.cpp`; `_cmd.get_stl`
+shares its body with `get_glb`. Checked besides the test: spheres, sticks
+and a surface of a fragment give closed meshes with unit normals that point
+outward (positive signed volume). Not checked: a slicer or another program
+reading the file.
+
 - **Now:** `save file.stl` and `cmd.get_stlstr` raise. Reading STL
   (`read_stlstr`) raises too.
 - **Options**
@@ -77,6 +87,16 @@ recommended one is marked.
 - **Size:** about 60 lines. No dependency.
 
 ### 21b — Stereochemistry (R/S)
+
+**Done in 4.19.34, option A.** 25 lines in
+`modules/pymol/stereochemistry/__init__.py`: each object of the selection
+goes to rdkit as a MOL block, unsanitized (a PDB file has no bond orders or
+charges, and the CIP rules need neither), `AssignStereochemistryFrom3D`,
+labels back with `alter`. 1oky (2,475 atoms, 301 centers) takes 0.03 s.
+Label > other properties > stereochemistry is back. Not looked at: atoms
+with alternate coordinates (both copies go into the MOL block), and
+rdkit's newer, slower CIP labeler, which differs from the classic rules in
+rare cases.
 
 - **Now:** `assign_stereo` raises. The atom property and selection keyword
   `stereo` exist and are always empty.
@@ -99,6 +119,15 @@ recommended one is marked.
   | `mmpymolx.py::testStereo`, `testStereoPYMOL2782` | Rewrite with a call to `assign_stereo` before each check, move into `stereochemistry.py`; `mmpymolx.py` then has nothing left and goes. |
 
 ### 21c — Pi interactions
+
+**Done in 4.19.35, option A, with 5 lines instead of 150.** The plan was
+wrong about what was missing: the finder `FindPiInteractions` (rings, cations,
+the distance and angle rules) was already in `layer3/Interactions.cpp`,
+compiled and never called. Only `ObjectDistNewFromSele` refused modes 5 to 7.
+It now calls the finder, and `pi_interactions` calls `distance` with mode 5.
+Checked besides the test: the two menu rows on 1rx1 give four and one
+dashes. Not looked at: structures without formal charges on lysine and
+arginine (the finder asks the core to assign them), several states.
 
 - **Now:** `cmd.pi_interactions` raises. The menu rows find > pi-pi and
   pi-cation are there and call `distance` with mode 6 and 7, which prints
@@ -123,6 +152,16 @@ recommended one is marked.
 
 ### 21d — Focal blur
 
+**Done in 4.19.36.** 45 lines in `experimenting.py`, as planned: the camera
+positions lie on a sunflower pattern inside the aperture, `png` hands each
+image over in memory, `QImage` decodes and encodes, numpy averages. The
+result goes on display with `load_png` and `movie=0`; with the default the
+picture became a movie frame and the core's movie panel took 26 pixels from
+the viewport. Checked in the real window on WSLg (1rx1, 8 samples, 0.7 s)
+and ray traced (12 samples, 9 s). Not done: a blur that grows with the
+distance in depth only; turning the camera also blurs what is far to the
+side.
+
 - **Now:** `focal_blur` raises.
 - **Plan:** the published method of the command's own docstring (Underhaug,
   Vertrees, Holder): render `samples` images, each with the camera turned a
@@ -133,6 +172,19 @@ recommended one is marked.
   something: the result differs from a single sharp image.
 
 ### 21e — Morphing
+
+**Done in 4.19.37, option A.** 110 lines in `modules/pymol/morphing.py`.
+States of one object are interpolated as they are; two objects are paired
+through the alignment object of `align` or `super`. The refinement uses the
+sculpting of the core with the mask for bonds, angles, pyramids, planes and
+lines only (`sculpt_field_mask` 0x1F), so that the restraints taken from
+the first conformation do not pull the intermediates back to it; the two
+ends are not touched. Measured on 1rx1 with one half turned by 60 degrees
+(1,268 atoms, 30 states): 0.02 s without refinement, 0.11 s with 3; mean
+bond length error half way 0.065 A, 0.012 A after 1, 0.007 A after 3,
+0.004 A after 10. Not looked at: clashes between the two halves on the
+way (the mask leaves van der Waals terms out), nucleic acids, the look
+of the movie in the window.
 
 - **Now:** `morph` raises for both methods.
 - **Options**
@@ -154,8 +206,21 @@ recommended one is marked.
 
 ### 21f — Rendering details
 
-Three unrelated items; each can be taken or dropped alone. Still open:
-question 1.
+Three unrelated items; each can be taken or dropped alone.
+
+**Decided 2026-11-20, as recommended:** smooth edges with FXAA (item 1,
+option A); sphere modes 10 and 11 dropped, the setting capped at 9, the
+test and its two reference images deleted (item 2, option B); the
+background image stored inside the session file (item 3, option A). The
+answer covers the two things that needed a yes: deleting the two image
+files, and the change of what a PSE contains.
+
+Since 2026-11-20 there is a second place for the picture: the session key
+of [step 28](28-session-format.md). With it PyMOL would still see the file
+name in the setting instead of text it cannot use. Option A stands as
+decided unless question 29 of the roadmap says otherwise. The FXAA pass is
+also what a shadow pass for the floor of [step 25](25-studio-effects.md)
+would follow.
 
 **1. Smooth edges in the viewport.** Edges of sticks, spheres and cartoons
 look like small stairs on screen, because each pixel is either object or
@@ -239,19 +304,25 @@ the rest. All five broke nothing, so all five are gone: `help_setting`,
 implementation and it works. Only a source comment still calls it
 proprietary.
 
-What still raises `IncentiveOnlyException` is exactly what 21a to 21e
-rebuild: `get_stlstr`, `read_stlstr`, `assign_stereo`, `pi_interactions`,
-`focal_blur`, `morph`. When the last of them is built, the exception, the
-test flags `incentive` and `properties` and the option `-n` go too.
+State at 4.19.37: no command raises `IncentiveOnlyException` any more.
+`read_stlstr` raises an ordinary error (reading STL stays skipped). What is
+left of the machinery: the exception class, its one user
+`incentive_format_not_available_func` in `importing.py`, the option `-n`
+(`incentive_product`), the test flags `incentive` and `properties`. Five
+test files still carry the mark, all for 21f and 21g: `settings.py`
+(`testAA`), `cgos/reps.py` (sphere modes), `jira/PYMOL-1571.py`,
+`jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`. All of it goes with the last of
+those two slices.
 
 ## Questions
 
 1. 21f: which of the three rendering details are wanted, and with which
    option? Recommended: smooth edges with FXAA (A), sphere modes 10 and 11
    dropped (B), background image stored in the session (A). The last one
-   changes what a PSE contains.
+   changes what a PSE contains. **Answer 2026-11-20: as recommended.**
 2. 21g: is option C the right size (snapshots for edits, the coordinate ring
    for moves), or is undo of coordinates, as today, enough for now?
+   **Answer 2026-11-20: as recommended, option C.**
 
 Answered 2026-11-19: Maestro, remove all of it (done, 4.19.24). 21b, the
 command is enough (option A). The stubs outside the request: remove what

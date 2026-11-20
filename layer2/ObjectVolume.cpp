@@ -736,10 +736,6 @@ void ObjectVolume::render(RenderInfo* info)
   ObjectVolumeState* vs = nullptr;
   float volume_layers =
       SettingGet_f(I->G, I->Setting.get(), nullptr, cSetting_volume_layers);
-#ifdef _PYMOL_IP_EXTRAS
-  short volume_mode = SettingGetGlobal_i(G, cSetting_volume_mode);
-  short ortho = SettingGetGlobal_i(G, cSetting_ortho);
-#endif
   /* make this a setting? */
   GLint alpha_func;
   GLfloat alpha_ref;
@@ -823,8 +819,6 @@ void ObjectVolume::render(RenderInfo* info)
       }
 
       vs->textures[1] =
-#ifdef _PYMOL_IP_EXTRAS
-#endif
           createColorTexture(G, colors, volume_nColors);
 
       tex::env(tex::env_name::ENV_MODE, tex::env_param::REPLACE);
@@ -935,10 +929,6 @@ void ObjectVolume::render(RenderInfo* info)
       shaderPrg->Set1i("carvemaskFlag", vs->textures[2] != 0);
       shaderPrg->Set1f("volumeScale", 1.0 / vs->ramp_range);
       shaderPrg->Set1f("volumeBias", (-vs->ramp_min) / vs->ramp_range);
-
-      // for pre-integrated rendering
-#ifdef _PYMOL_IP_EXTRAS
-#endif
 
       // background and fog stuff
       {

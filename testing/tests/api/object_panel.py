@@ -78,6 +78,55 @@ def test_fill_menu():
     assert [a.text() for a in more.menu().actions()] == ["hide"]
 
 
+def test_row_with_submenu_and_command():
+    # a submenu row with a fourth entry: Enter or a click runs it and
+    # closes the menu, a row without one only opens its submenu
+    from pymol.Qt import QtCore, QtGui, QtWidgets
+    from pmg_qt.object_panel import fill_menu
+
+    cmd.fragment("ala")
+    cmd.show_as("lines")
+    popup = QtWidgets.QMenu()
+    only = [[1, "only", 'cmd.show_as("sticks","ala")']]
+    fill_menu(
+        popup,
+        [[1, "sticks", only, 'cmd.show("sticks","ala")'], [1, "more", only]],
+        cmd,
+    )
+    sticks, more = popup.actions()
+
+    def enter(action):
+        popup.setActiveAction(action)
+        event = QtGui.QKeyEvent(
+            QtCore.QEvent.Type.KeyPress,
+            QtCore.Qt.Key.Key_Return,
+            QtCore.Qt.KeyboardModifier.NoModifier,
+        )
+        QtWidgets.QApplication.sendEvent(popup, event)
+
+    def click(action):
+        from PySide6.QtTest import QTest
+
+        QTest.mouseClick(
+            popup,
+            QtCore.Qt.MouseButton.LeftButton,
+            pos=popup.actionGeometry(action).center(),
+        )
+
+    enter(more)
+    assert not cmd.count_atoms("rep sticks")
+    for run in (enter, click):
+        cmd.hide("sticks")
+        popup.popup(QtCore.QPoint(0, 0))
+        run(sticks)
+        assert cmd.count_atoms("rep sticks") == cmd.count_atoms("ala")
+        assert cmd.count_atoms("rep lines")  # shown on top, not "as"
+        assert not popup.isVisible()
+    sticks.menu().aboutToShow.emit()
+    sticks.menu().actions()[0].trigger()
+    assert not cmd.count_atoms("rep lines")
+
+
 def test_context_menu():
     from pmg_qt.object_panel import context_menu
 
@@ -94,18 +143,24 @@ def test_context_menu():
         ("g", "object:group", "group"),
         ("s", "selection", "selection"),
     ):
-        flat = [
-            "%s %s" % (verb, word) for verb in ("rename", "duplicate", "delete")
-        ]
+        flat = ["%s %s" % (verb, word) for verb in ("rename", "duplicate", "delete")]
         assert texts(name, kind) == ["Show as", "Color"] + flat + rest
     cmd.pseudoatom("p")
     cmd.distance("d", "p", "m and name CA")
-    assert texts("d", "object:measurement") == ["Color", "rename", "delete", "Action", "Show", "Hide"]
+    assert texts("d", "object:measurement") == [
+        "Color",
+        "rename",
+        "delete",
+        "Action",
+        "Show",
+        "Hide",
+    ]
     # a flat row runs its command, a submenu is filled when opened
     popup = context_menu(None, cmd, "m", "object:molecule")
     actions = {a.text(): a for a in popup.actions()}
     actions["Show as"].menu().aboutToShow.emit()
     assert "cartoon" in [a.text() for a in actions["Show as"].menu().actions()]
+    actions["Show as"].menu().actions()[-1].trigger()  # label: a flat row
     actions["duplicate object"].trigger()
     assert cmd.count_atoms("m_cpy") == cmd.count_atoms("m")
     actions["delete object"].trigger()

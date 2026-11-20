@@ -140,10 +140,46 @@ def _swatch(color):
     return QtGui.QIcon(pixmap)
 
 
+class _RowClick(QtCore.QObject):
+    """For a menu row that has a submenu and a command of its own: a click
+    or Enter on the row runs the command, hover or the right arrow opens
+    the submenu. Qt alone only opens the submenu."""
+
+    pressed = None
+
+    def eventFilter(self, menu, event):
+        kind = event.type()
+        if kind == QtCore.QEvent.Type.MouseButtonPress:
+            self.pressed = menu.actionAt(event.position().toPoint())
+            return False
+        if kind == QtCore.QEvent.Type.MouseButtonRelease:
+            action = menu.actionAt(event.position().toPoint())
+            if action is not self.pressed:  # the release of another click
+                return False
+        elif kind == QtCore.QEvent.Type.KeyPress and event.key() in (
+            Qt.Key.Key_Return,
+            Qt.Key.Key_Enter,
+        ):
+            action = menu.activeAction()
+        else:
+            return False
+        if not (action and action.property("row_click")):
+            return False
+        action.trigger()
+        while isinstance(menu.parent(), QtWidgets.QMenu):
+            menu = menu.parent()
+        menu.close()
+        return True
+
+
+_row_click = _RowClick()
+
+
 def fill_menu(menu, entries, cmd):
     """Fill a QMenu from a pymol.menu list of [kind, label, command]:
     kind 0 separator, 1 item, 2 title; command is a command string, a
-    submenu list, or a callable returning one (filled when first opened)."""
+    submenu list, or a callable returning one (filled when first opened).
+    A submenu row may have a fourth entry: the command of the row itself."""
 
     def fill_once(sub, command):
         if sub.isEmpty():
@@ -169,6 +205,10 @@ def fill_menu(menu, entries, cmd):
             sub = menu.addMenu(text)
             sub.aboutToShow.connect(lambda s=sub, c=command: fill_once(s, c))
             action = sub.menuAction()
+            if len(entry) > 3:
+                action.triggered.connect(lambda _=False, c=entry[3]: cmd.do(c, echo=0))
+                action.setProperty("row_click", True)
+                menu.installEventFilter(_row_click)
         icon = menu_icon(text, color or menu.palette().text().color())
         if icon or color:
             action.setIcon(icon or _swatch(color))
@@ -187,9 +227,8 @@ def context_menu(parent, cmd, name, kind):
         sub = popup.addMenu(title)
         sub.aboutToShow.connect(lambda: sub.isEmpty() and fill_menu(sub, rows(), cmd))
 
-    show_as = [row[2] for row in entries(1) if row[1] == "as"]
-    if show_as:
-        later("Show as", lambda: show_as[0])
+    if buttons[1] == "mol_show":
+        later("Show as", lambda: menus.mol_as(cmd, name))
     if buttons[4]:
         later("Color", lambda: entries(4))
     popup.addSeparator()

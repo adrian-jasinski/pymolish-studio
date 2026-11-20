@@ -1116,11 +1116,9 @@ void SceneRelease(Block* block, int button, int x, int y, int mod, double when)
           } break;
           case 3:
             if (I->Pressed == I->Over) {
-              Block* block = MenuActivate1Arg(G, I->LastWinX,
+              MenuActivate1Arg(G, I->LastWinX,
                   I->LastWinY + 20, /* scene menu */
                   I->LastWinX, I->LastWinY, true, "scene_menu", elem->name.c_str());
-              if (block)
-                block->drag(x, y, mod);
               ungrab = false;
             }
             break;

@@ -29,14 +29,8 @@
 #include "Setting.h"
 #include "P.h"
 #include "Text.h"
-#include "Menu.h"
 #include "CGO.h"
 #include "Movie.h"
-
-#define cButModeLineHeight DIP2PIXEL(12)
-#define cButModeLeftMargin DIP2PIXEL(2)
-#define cButModeTopMargin DIP2PIXEL(1)
-#define cButModeBottomMargin DIP2PIXEL(2)
 
 struct CButMode : public Block {
   CodeType Code[cButModeCount + 1] {};

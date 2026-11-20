@@ -84,3 +84,20 @@ them, a pip install needs `pip install 'pymolish[fix]'`.
 | Command | What it does | Example |
 | --- | --- | --- |
 | `palette [name [, recolor]]` | Sets the colors that new objects cycle through. | `palette vivid` |
+
+## PyMOL commands that needed the commercial build
+
+These commands exist in open-source PyMOL only as stubs that raise
+"Incentive-Only-Error". Here they work (4.19.33 to 4.19.37).
+
+| Command | What it does | Example |
+| --- | --- | --- |
+| `save file.stl` | Writes the geometry on display as a binary STL file (triangles, no colors), for 3D printing. | `save model.stl` |
+| `assign_stereo [selection [, state]]` | Fills the atom property `stereo` with R or S, with rdkit. Then `label`, `select stereo R` and `iterate` see it. Also in the window: L > other properties > stereochemistry. | `assign_stereo organic` |
+| `pi_interactions name [, selection1 [, selection2]]` | Dashes between ring centers (pi-pi) and between a ring center and a positive charge (pi-cation). `distance` with mode 6 or 7 gives one kind only. In the window: A > find > pi interactions. | `pi_interactions pi, 1rx1` |
+| `focal_blur [aperture [, samples [, ray [, filename]]]]` | A picture in which only what is near the origin of rotation is sharp. | `focal_blur 3.0, 50, ray=1` |
+| `morph name, sele1 [, sele2 [, state1 [, state2 [, refinement [, steps]]]]]` | An object whose states lead from one conformation to another: straight lines, then sculpting of every intermediate state. | `morph mout, 1akeA, 4akeA` |
+
+`assign_stereo` needs rdkit, as `clean` does. RigiMOL morphing, reading STL
+and the readers for Maestro, MOE and Phase files are not part of this
+program.

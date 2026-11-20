@@ -1,0 +1,37 @@
+The pymolish-studio icon and logo
+=================================
+
+Files: pymolish.png and logo.png in this folder, docs/img/logo-dark.png,
+and copies of them in other sizes or file formats.
+
+The icon and the logo are the marks of the pymolish-studio project: they
+tell people that a program or a page is pymolish-studio. They were generated
+with ChatGPT for this project and belong to Adrian Jasinski, the author of
+pymolish-studio.
+
+They are NOT under the MIT license of the code (LICENSE-MIT) and not under
+the Open-Source PyMOL license (LICENSE). All rights are reserved, except
+for the permissions below.
+
+You may, without asking:
+
+- copy and pass on the files unchanged, together with pymolish-studio: in
+  its source code, in its downloadable builds, in packages of it whose
+  changes are limited to what packaging needs, and in mirrors;
+- use them unchanged to refer to pymolish-studio: in articles, talks,
+  teaching material, lists of software and links to the project.
+
+You may not, without written permission:
+
+- use them, or an image that can be confused with them, as the icon or logo
+  of another program. A changed version of pymolish-studio that you give to
+  others is another program in this sense: give it its own icon and logo,
+  as it needs its own name;
+- change them, other than resizing them or converting the file format;
+- use them in a way that suggests that the pymolish-studio project or its
+  author made, supports or recommends your product or service.
+
+Nothing here limits what the two code licenses allow you to do with the
+code, and nothing here limits uses that the law allows anyway.
+
+PyMOL is a trademark of Schrodinger, LLC. This notice makes no claim to it.

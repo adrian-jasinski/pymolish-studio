@@ -75,7 +75,6 @@
 #include "Scene.h"
 #include "ScenePicking.h"
 #include "SceneRay.h"
-#include "ScrollBar.h"
 #include "SculptCache.h"
 #include "Seeker.h"
 #include "Selector.h"
@@ -1496,64 +1495,6 @@ static void ExecutiveUpdateGridSlots(PyMOLGlobals* G, int force)
   }
 }
 
-void ExecutiveInvalidatePanelList(PyMOLGlobals* G)
-{
-  CExecutive* I = G->Executive;
-  I->Panel.clear();
-  ExecutiveInvalidateGridSlots(G);
-}
-
-/**
- * Add all members which belong to group
- */
-static void PanelListGroup(
-    CExecutive* I, SpecRec const* group, unsigned level, bool hide_underscore)
-{
-  for (auto& rec : pymol::make_list_adapter(I->Spec)) {
-    if (rec.group != group) {
-      continue;
-    }
-
-    assert(!rec.in_panel);
-
-    if (rec.isHiddenNotRecursive(hide_underscore)) {
-      continue;
-    }
-
-    if (!level) {
-      assert(!rec.group_name[0]);
-      rec.group_name[0] =
-          0; /* force open any cycles which have been created... */
-    }
-
-    I->Panel.emplace_back(&rec, level);
-    rec.in_panel = true;
-
-    if (auto obj_group = dynamic_cast<ObjectGroup*>(rec.obj)) {
-      auto& panelitem = I->Panel.back();
-      panelitem.is_group = true;
-      if (obj_group->OpenOrClosed) {
-        panelitem.is_open = true;
-        PanelListGroup(I, &rec, level + 1, hide_underscore);
-      }
-    }
-  }
-}
-
-static void ExecutiveUpdatePanelList(PyMOLGlobals* G)
-{
-  CExecutive* I = G->Executive;
-  int hide_underscore = SettingGetGlobal_b(G, cSetting_hide_underscore_names);
-  if (I->Panel.empty()) {
-    for (auto& rec : pymol::make_list_adapter(I->Spec)) {
-      rec.in_panel = false;
-    }
-
-    /* brute-force & inefficient -- need to optimize algorithm */
-    PanelListGroup(I, nullptr, 0, hide_underscore);
-  }
-}
-
 void ExecutiveInvalidateSceneMembers(PyMOLGlobals* G)
 {
   CExecutive* I = G->Executive;
@@ -1605,7 +1546,7 @@ void ExecutiveInvalidateGroups(PyMOLGlobals* G, bool force)
   }
   I->ValidGroups = false;
   ExecutiveInvalidateSceneMembers(G);
-  ExecutiveInvalidatePanelList(G);
+  ExecutiveInvalidateGridSlots(G);
   /* any changes to group structure means that we need to check scene
      members */
 }
@@ -1667,7 +1608,7 @@ void ExecutiveUpdateGroups(PyMOLGlobals* G, bool force)
     /* note that it is possible to have infinite loops -- these must be
        allowed for later in the group expansion routine(s) */
     I->ValidGroups = true;
-    ExecutiveInvalidatePanelList(G);
+    ExecutiveInvalidateGridSlots(G);
   }
 }
 
@@ -1808,75 +1749,6 @@ static SpecRec* ExecutiveAnyCaseNameMatch(PyMOLGlobals* G, const char* name)
     }
   }
   return (result);
-}
-
-/**
- * Scroll the i'th match in the object menu panel to the top.
- * Scroll to last match if i < 0 and to first match if i > #-1.
- * Open groups if hit is inside.
- * Highlight the hit (same as mouse click highlight).
- *
- * Returns the number of hits
- */
-int ExecutiveScrollTo(PyMOLGlobals* G, const char* name, int i)
-{
-  CExecutive* I = G->Executive;
-  int pos = 0, numhits = 0;
-  ObjectGroup* group;
-  SpecRec *tmp, *spec = nullptr, *first = nullptr;
-  int ignore_case = SettingGetGlobal_b(G, cSetting_ignore_case);
-  int j, lendiff, plen = strlen(name);
-
-  ok_assert(1, I->Spec);
-
-  // i'th substring match, skip the "all" item
-  for (tmp = I->Spec->next; tmp; tmp = tmp->next) {
-    lendiff = strlen(tmp->name) - plen;
-    for (j = 0; j <= lendiff; j++)
-      if (WordMatchNoWild(G, name, tmp->name + j, ignore_case)) {
-        if (numhits++ == i || i < 0)
-          spec = tmp;
-        if (!first)
-          first = tmp;
-        break;
-      }
-    tmp->hilight = 0;
-  }
-
-  // if i was out of range
-  if (!spec)
-    spec = first;
-
-  ok_assert(1, spec);
-
-  // flash button until panel is clicked for the next time
-  spec->hilight = 1;
-
-  // open parent groups
-  for (tmp = spec->group; tmp; tmp = tmp->group) {
-    if (!(tmp->type == cExecObject && tmp->obj->type == cObjectGroup))
-      break;
-    group = (ObjectGroup*) tmp->obj;
-    if (!group->OpenOrClosed) {
-      group->OpenOrClosed = 1;
-      ExecutiveInvalidatePanelList(G);
-    }
-  }
-
-  // in case any parent got opened
-  ExecutiveUpdatePanelList(G);
-
-  // scroll that record to the top
-  for (auto const& panelitem : I->Panel) {
-    if (panelitem.spec == spec) {
-      I->m_ScrollBar.setValueNoCheck(pos);
-      return numhits;
-    }
-    pos++;
-  }
-
-ok_except1:
-  return numhits;
 }
 
 void ExecutiveUpdateColorDepends(PyMOLGlobals* G, ObjectMolecule* mol)
@@ -3059,16 +2931,13 @@ pymol::Result<> ExecutiveOrder(
   int n_names = ExecutiveCountNames(G);
 
   if (n_names) {
-    SpecRec **list, **subset, **sorted;
-    int* index = nullptr;
+    std::vector<SpecRec*> list(n_names), subset(n_names), sorted(n_names);
+    std::vector<int> index(n_names);
+    bool sorted_added = false;
     int n_sel;
     int source_row = -1;
     int min_row = -1;
-    list = pymol::malloc<SpecRec*>(n_names);
-    subset = pymol::calloc<SpecRec*>(n_names);
-    sorted = pymol::calloc<SpecRec*>(n_names);
-    index = pymol::malloc<int>(n_names);
-    if (list && subset) {
+    {
       /* create an array of current names */
       {
         int a = 0;
@@ -3081,7 +2950,7 @@ pymol::Result<> ExecutiveOrder(
 #ifndef NDEBUG
         auto const list_size =
 #endif
-            SpecRecListPopulate(list, I->Spec, "");
+            SpecRecListPopulate(list.data(), I->Spec, "");
         assert(list_size == n_names);
         /* unlink them */
         for (a = 0; a < n_names; a++) {
@@ -3141,11 +3010,11 @@ pymol::Result<> ExecutiveOrder(
       }
       /* sort the selected entries, if requested */
       if (sort) {
-        UtilCopyMem(subset, sorted, sizeof(SpecRec*) * n_sel);
+        std::copy_n(sorted.begin(), n_sel, subset.begin());
         {
           int a;
-          UtilSortIndexGlobals(
-              G, n_sel, subset, index, (UtilOrderFnGlobals*) ReorderOrderFn);
+          UtilSortIndexGlobals(G, n_sel, subset.data(), index.data(),
+              (UtilOrderFnGlobals*) ReorderOrderFn);
           for (a = 0; a < n_sel; a++) {
             sorted[a] = subset[index[a]];
           }
@@ -3159,7 +3028,7 @@ pymol::Result<> ExecutiveOrder(
         int flag;
         for (a = 0; a < n_names; a++) {
           flag = false;
-          if (sorted) { /* not yet added */
+          if (!sorted_added) {
             switch (location) {
             case -1: /* top */
               if (a == 1)
@@ -3191,7 +3060,7 @@ pymol::Result<> ExecutiveOrder(
                   spec = last;
               }
             }
-            FreeP(sorted);
+            sorted_added = true;
           }
           if (list[a]) {
             if (last)
@@ -3201,7 +3070,7 @@ pymol::Result<> ExecutiveOrder(
               spec = last;
           }
         }
-        if (sorted) { /* still not yet readded? */
+        if (!sorted_added) {
           for (b = 0; b < n_sel; b++) {
             if (sorted[b]) {
               if (last)
@@ -3216,12 +3085,8 @@ pymol::Result<> ExecutiveOrder(
         OrthoDirty(G);
         SeqChanged(G);
       }
-      FreeP(index);
-      FreeP(sorted);
-      FreeP(list);
-      FreeP(subset);
     }
-    ExecutiveInvalidatePanelList(G);
+    ExecutiveInvalidateGridSlots(G);
   }
   WordListFreeP(word_list);
   return {};
@@ -3246,13 +3111,6 @@ pymol::vla<ObjectMolecule*> ExecutiveGetObjectMoleculeVLA(
 }
 
 /* #define ExecLineHeight 18 */
-#define ExecClickMargin DIP2PIXEL(2)
-#define ExecTopMargin 0
-#define ExecToggleMargin DIP2PIXEL(2)
-#define ExecLeftMargin DIP2PIXEL(1)
-#define ExecRightMargin 0
-#define ExecToggleWidth DIP2PIXEL(17)
-#define ExecToggleSize DIP2PIXEL(16)
 #define ExecToggleTextShift DIP2PIXEL(4)
 
 int ExecutiveSetDrag(PyMOLGlobals* G, const char* name, int quiet, int mode)
@@ -4491,7 +4349,7 @@ int ExecutiveSetVisFromPyDict(PyMOLGlobals* G, PyObject* dict)
   PyObject *key, *list, *col;
   PyObject* vis_list = nullptr;
   Py_ssize_t pos = 0;
-  SpecRec *rec, *grec, **recstack = nullptr;
+  SpecRec *rec, *grec;
   int n_vis;
   int rep;
   int a;
@@ -4506,7 +4364,8 @@ int ExecutiveSetVisFromPyDict(PyMOLGlobals* G, PyObject* dict)
     ExecutiveInvalidateSceneMembers(G);
 
     // stack for putative visible records
-    recstack = pymol::calloc<SpecRec*>(PyDict_Size(dict) + 1);
+    std::vector<SpecRec*> recstack_buf(PyDict_Size(dict) + 1);
+    SpecRec** recstack = recstack_buf.data();
 
     while (PyDict_Next(dict, &pos, &key, &list)) {
       if (!PConvPyStrToStr(key, name, sizeof(WordType))) {
@@ -4577,7 +4436,6 @@ int ExecutiveSetVisFromPyDict(PyMOLGlobals* G, PyObject* dict)
         ExecutiveInvalidateSceneMembers(G);
       }
     }
-    mfree(recstack);
   }
   return ok;
 }
@@ -5210,7 +5068,7 @@ static int ExecutiveSetNamedEntries(
         ListAppend(I->Spec, rec, next, SpecRec);
         ExecutiveAddKey(I, rec);
         ExecutiveInvalidateGroups(G, false);
-        ExecutiveInvalidatePanelList(G);
+        ExecutiveInvalidateGridSlots(G);
       } else {
         ListElemFree(rec);
       }
@@ -5968,9 +5826,6 @@ int ExecutiveSetSession(
   return (ok);
 }
 
-#define ExecScrollBarMargin DIP2PIXEL(1)
-#define ExecScrollBarWidth DIP2PIXEL(13)
-
 /**
  * @param sele object name (or single-object atom selection expression)
  * @param state object state (only for maps, ignored for molecules)
@@ -6598,9 +6453,8 @@ pymol::Result<> ExecutiveMapSet(PyMOLGlobals* G, const char* name,
       int n_pnt =
           (ms->Field->points->size() / ms->Field->points->base_size) / 3;
       float* pnt = (float*) ms->Field->points->data.data();
-      float* r_value = pymol::malloc<float>(n_pnt);
-      float* l_value = pymol::calloc<float>(n_pnt);
-      int* present = pymol::calloc<int>(n_pnt);
+      std::vector<float> r_value(n_pnt), l_value(n_pnt);
+      std::vector<int> present(n_pnt);
       std::vector<std::uint8_t> inside(n_pnt);
       SpecRec* rec;
 
@@ -6611,12 +6465,13 @@ pymol::Result<> ExecutiveMapSet(PyMOLGlobals* G, const char* name,
             if (rec->obj->type == cObjectMap) {
               ObjectMap* obj = (ObjectMap*) rec->obj;
               if (ObjectMapInterpolate(
-                      obj, src_state, pnt, r_value, inside.data(), n_pnt)) {
+                      obj, src_state, pnt, r_value.data(), inside.data(),
+                      n_pnt)) {
                 int a;
-                float* rv = r_value;
-                float* lv = l_value;
+                float* rv = r_value.data();
+                float* lv = l_value.data();
                 auto* flg = inside.data();
-                int* pre = present;
+                int* pre = present.data();
 
                 switch (operator_) {
                 case cMapOperatorCopy:
@@ -6737,12 +6592,12 @@ pymol::Result<> ExecutiveMapSet(PyMOLGlobals* G, const char* name,
 
       {
         int a;
-        float* lv = l_value;
-        int* pre = present;
+        float* lv = l_value.data();
+        int* pre = present.data();
 
         switch (operator_) {
         case cMapOperatorUnique:
-          lv = l_value;
+          lv = l_value.data();
           for (a = 0; a < n_pnt; a++) {
             if (*lv < 0.0F)
               *lv = 0.0F;
@@ -6750,8 +6605,8 @@ pymol::Result<> ExecutiveMapSet(PyMOLGlobals* G, const char* name,
           }
           break;
         case cMapOperatorAverage:
-          lv = l_value;
-          pre = present;
+          lv = l_value.data();
+          pre = present.data();
           for (a = 0; a < n_pnt; a++) {
             if (*pre)
               *lv /= *pre;
@@ -6763,11 +6618,9 @@ pymol::Result<> ExecutiveMapSet(PyMOLGlobals* G, const char* name,
 
       /* copy after calculation so that operand can include target */
 
-      memcpy(ms->Field->data->data.data(), l_value, n_pnt * sizeof(float));
+      memcpy(ms->Field->data->data.data(), l_value.data(),
+          n_pnt * sizeof(float));
 
-      FreeP(present);
-      FreeP(l_value);
-      FreeP(r_value);
       TrackerDelIter(I_Tracker, iter_id);
     }
   }
@@ -8034,8 +7887,7 @@ static void ExecutiveRegenerateTextureForSelector(
     PyMOLGlobals* G, int round_points, int* widths_arg)
 {
   CExecutive* I = G->Executive;
-  unsigned char* temp_buffer =
-      pymol::malloc<unsigned char>(widths_arg[0] * widths_arg[0] * 4);
+  std::vector<unsigned char> temp_buffer(widths_arg[0] * widths_arg[0] * 4);
   int a, b;
   float mid_point, disty, distx, dist, wminusd;
   float widths[] = {
@@ -8049,7 +7901,7 @@ static void ExecutiveRegenerateTextureForSelector(
         &I->selectorTexturePosX, &I->selectorTexturePosY);
     I->selectorTextureAllocatedSize = widths_arg[0];
   }
-  q = temp_buffer;
+  q = temp_buffer.data();
   if (round_points) {
     for (b = 0; b < widths_arg[0]; b++) {
       disty = fabs(mid_point - b);
@@ -8115,8 +7967,7 @@ static void ExecutiveRegenerateTextureForSelector(
     }
   }
   TextureFillNewSubtexture(G, widths_arg[0], widths_arg[0],
-      I->selectorTexturePosX, I->selectorTexturePosY, temp_buffer);
-  FreeP(temp_buffer);
+      I->selectorTexturePosX, I->selectorTexturePosY, temp_buffer.data());
 }
 
 /**
@@ -10393,7 +10244,6 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
   ObjectMoleculeOpRec op1;
   ObjectMoleculeOpRec op2;
   OrthoLineType buffer;
-  int* flag;
   int ok = true;
   int repeat;
   float v1[3], *v2;
@@ -10494,39 +10344,42 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
 
       if (ok && op1.nvv1 && op2.nvv1 && (matchmaker > 0)) {
         /* matchmaker 0 is the default... by internal atom ordering only */
-        int* idx1 = pymol::malloc<int>(op1.nvv1);
-        int* idx2 = pymol::malloc<int>(op2.nvv1);
+        std::vector<int> idx1(op1.nvv1), idx2(op2.nvv1);
         int sort_flag = false;
-        if (!(idx1 && idx2))
-          ok = false;
-        else {
+        {
           switch (matchmaker) {
           case 1: /* by atom info-based ordering */
-            UtilSortIndexGlobals(G, op1.nvv1, op1.ai1VLA, idx1,
+            UtilSortIndexGlobals(G, op1.nvv1, op1.ai1VLA, idx1.data(),
                 (UtilOrderFnGlobals*) fAtomOrdered);
-            UtilSortIndexGlobals(G, op2.nvv1, op2.ai1VLA, idx2,
+            UtilSortIndexGlobals(G, op2.nvv1, op2.ai1VLA, idx2.data(),
                 (UtilOrderFnGlobals*) fAtomOrdered);
             sort_flag = true;
             break;
           case 2: /* by matching atom identifiers */
             UtilSortIndex(
-                op1.nvv1, op1.ai1VLA, idx1, (UtilOrderFn*) fAtomIDOrdered);
+                op1.nvv1, op1.ai1VLA, idx1.data(),
+                (UtilOrderFn*) fAtomIDOrdered);
             UtilSortIndex(
-                op2.nvv1, op2.ai1VLA, idx2, (UtilOrderFn*) fAtomIDOrdered);
+                op2.nvv1, op2.ai1VLA, idx2.data(),
+                (UtilOrderFn*) fAtomIDOrdered);
             sort_flag = true;
             break;
           case 3: /* by matching atom ranks */
             UtilSortIndex(
-                op1.nvv1, op1.ai1VLA, idx1, (UtilOrderFn*) fAtomRankOrdered);
+                op1.nvv1, op1.ai1VLA, idx1.data(),
+                (UtilOrderFn*) fAtomRankOrdered);
             UtilSortIndex(
-                op2.nvv1, op2.ai1VLA, idx2, (UtilOrderFn*) fAtomRankOrdered);
+                op2.nvv1, op2.ai1VLA, idx2.data(),
+                (UtilOrderFn*) fAtomRankOrdered);
             sort_flag = true;
             break;
           case 4: /* by internal atom indexes (stored in temp1 kludge field) */
             UtilSortIndex(
-                op1.nvv1, op1.ai1VLA, idx1, (UtilOrderFn*) fAtomTemp1Ordered);
+                op1.nvv1, op1.ai1VLA, idx1.data(),
+                (UtilOrderFn*) fAtomTemp1Ordered);
             UtilSortIndex(
-                op2.nvv1, op2.ai1VLA, idx2, (UtilOrderFn*) fAtomTemp1Ordered);
+                op2.nvv1, op2.ai1VLA, idx2.data(),
+                (UtilOrderFn*) fAtomTemp1Ordered);
             sort_flag = true;
             break;
           }
@@ -10539,7 +10392,7 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
                 ok = false;
               else {
                 UtilApplySortedIndices(
-                    op1.nvv1, idx1, 3 * sizeof(float), op1.vv1, tmp);
+                    op1.nvv1, idx1.data(), 3 * sizeof(float), op1.vv1, tmp);
                 VLAFreeP(op1.vv1);
                 op1.vv1 = tmp;
               }
@@ -10550,7 +10403,7 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
                 ok = false;
               else {
                 UtilApplySortedIndices(
-                    op1.nvv1, idx1, sizeof(int), op1.vc1, tmp);
+                    op1.nvv1, idx1.data(), sizeof(int), op1.vc1, tmp);
                 VLAFreeP(op1.vc1);
                 op1.vc1 = tmp;
               }
@@ -10561,7 +10414,7 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
                 ok = false;
               else {
                 UtilApplySortedIndices(
-                    op1.nvv1, idx1, sizeof(int), op1.vp1, tmp);
+                    op1.nvv1, idx1.data(), sizeof(int), op1.vp1, tmp);
                 VLAFreeP(op1.vp1);
                 op1.vp1 = tmp;
               }
@@ -10572,7 +10425,8 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
                 ok = false;
               else {
                 UtilApplySortedIndices(
-                    op1.nvv1, idx1, sizeof(AtomInfoType*), op1.ai1VLA, tmp);
+                    op1.nvv1, idx1.data(), sizeof(AtomInfoType*), op1.ai1VLA,
+                    tmp);
                 VLAFreeP(op1.ai1VLA);
                 op1.ai1VLA = tmp;
               }
@@ -10584,7 +10438,7 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
                 ok = false;
               else {
                 UtilApplySortedIndices(
-                    op2.nvv1, idx2, 3 * sizeof(float), op2.vv1, tmp);
+                    op2.nvv1, idx2.data(), 3 * sizeof(float), op2.vv1, tmp);
                 VLAFreeP(op2.vv1);
                 op2.vv1 = tmp;
               }
@@ -10595,7 +10449,7 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
                 ok = false;
               else {
                 UtilApplySortedIndices(
-                    op2.nvv1, idx2, sizeof(int), op2.vc1, tmp);
+                    op2.nvv1, idx2.data(), sizeof(int), op2.vc1, tmp);
                 VLAFreeP(op2.vc1);
                 op2.vc1 = tmp;
               }
@@ -10606,7 +10460,7 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
                 ok = false;
               else {
                 UtilApplySortedIndices(
-                    op2.nvv1, idx2, sizeof(int), op2.vp1, tmp);
+                    op2.nvv1, idx2.data(), sizeof(int), op2.vp1, tmp);
                 VLAFreeP(op2.vp1);
                 op2.vp1 = tmp;
               }
@@ -10617,7 +10471,8 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
                 ok = false;
               else {
                 UtilApplySortedIndices(
-                    op2.nvv1, idx2, sizeof(AtomInfoType*), op2.ai1VLA, tmp);
+                    op2.nvv1, idx2.data(), sizeof(AtomInfoType*), op2.ai1VLA,
+                    tmp);
                 VLAFreeP(op2.ai1VLA);
                 op2.ai1VLA = tmp;
               }
@@ -10685,28 +10540,28 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
 
           if (n_pair) {
             if (op1.vv1)
-              PackSortedIndices(n_pair, idx1, 3 * sizeof(float), op1.vv1);
+              PackSortedIndices(n_pair, idx1.data(), 3 * sizeof(float),
+                  op1.vv1);
             if (op1.vc1)
-              PackSortedIndices(n_pair, idx1, sizeof(int), op1.vc1);
+              PackSortedIndices(n_pair, idx1.data(), sizeof(int), op1.vc1);
             if (op1.vp1)
-              PackSortedIndices(n_pair, idx1, sizeof(int), op1.vp1);
+              PackSortedIndices(n_pair, idx1.data(), sizeof(int), op1.vp1);
             if (op1.ai1VLA)
               PackSortedIndices(
-                  n_pair, idx1, sizeof(AtomInfoType*), op1.ai1VLA);
+                  n_pair, idx1.data(), sizeof(AtomInfoType*), op1.ai1VLA);
 
             if (op2.vv1)
-              PackSortedIndices(n_pair, idx2, 3 * sizeof(float), op2.vv1);
+              PackSortedIndices(n_pair, idx2.data(), 3 * sizeof(float),
+                  op2.vv1);
             if (op2.vc1)
-              PackSortedIndices(n_pair, idx2, sizeof(int), op2.vc1);
+              PackSortedIndices(n_pair, idx2.data(), sizeof(int), op2.vc1);
             if (op2.vp1)
-              PackSortedIndices(n_pair, idx2, sizeof(int), op2.vp1);
+              PackSortedIndices(n_pair, idx2.data(), sizeof(int), op2.vp1);
             if (op2.ai1VLA)
               PackSortedIndices(
-                  n_pair, idx2, sizeof(AtomInfoType*), op2.ai1VLA);
+                  n_pair, idx2.data(), sizeof(AtomInfoType*), op2.ai1VLA);
           }
         }
-        FreeP(idx1);
-        FreeP(idx2);
       } else if (op1.nvv1 != op2.nvv1) {
         snprintf(buffer, std::size(buffer), "Atom counts between selections don't match (%d vs %d)",
             op1.nvv1, op2.nvv1);
@@ -10766,7 +10621,7 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
               "Executive-Warning: Ordering requested but not well "
               "defined.\n" ENDFB(G);
             } else {
-              FitVertexRec* vert = pymol::malloc<FitVertexRec>(n_pair);
+              std::vector<FitVertexRec> vert(n_pair);
 
               if (sort_flag1) {
                 float *src, *dst;
@@ -10777,7 +10632,7 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
                   copy3f(src, dst);
                   src += 3;
                 }
-                UtilSortInPlace(G, vert, n_pair, sizeof(FitVertexRec),
+                UtilSortInPlace(G, vert.data(), n_pair, sizeof(FitVertexRec),
                     (UtilOrderFn*) fVertexOrdered);
                 dst = op1.vv1;
                 for (a = 0; a < n_pair; a++) {
@@ -10796,7 +10651,7 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
                   copy3f(src, dst);
                   src += 3;
                 }
-                UtilSortInPlace(G, vert, n_pair, sizeof(FitVertexRec),
+                UtilSortInPlace(G, vert.data(), n_pair, sizeof(FitVertexRec),
                     (UtilOrderFn*) fVertexOrdered);
                 dst = op2.vv1;
                 for (a = 0; a < n_pair; a++) {
@@ -10805,8 +10660,6 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
                   dst += 3;
                 }
               }
-
-              FreeP(vert);
             }
           }
         }
@@ -10834,9 +10687,9 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
               int n_next = n_pair;
               AtomInfoType **ai1, **ai2;
 
-              flag = pymol::malloc<int>(n_pair);
+              std::vector<bool> flag(n_pair);
 
-              if (flag) {
+              {
                 for (a = 0; a < n_pair; a++) {
                   MatrixTransformTTTfN3f(1, v1, op2.ttt, op1.vv1 + (a * 3));
                   v2 = op2.vv1 + (a * 3);
@@ -10871,7 +10724,6 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
                       __func__, n_pair - n_next, b, rms ENDFB(G);
                 }
                 n_pair = n_next;
-                FreeP(flag);
                 if (n_pair) {
                   rms = MatrixFitRMSTTTf(
                       G, n_pair, op1.vv1, op2.vv1, nullptr, op2.ttt);
@@ -14214,7 +14066,7 @@ void ExecutivePurgeSpec(PyMOLGlobals* G, SpecRec* rec, bool save)
   }
 
   ExecutiveInvalidateGroups(G, false);
-  ExecutiveInvalidatePanelList(G);
+  ExecutiveInvalidateGridSlots(G);
   switch (rec->type) {
   case cExecObject:
     if (I->LastEdited == rec->obj)
@@ -14362,7 +14214,7 @@ pymol::Result<> ExecutiveDeleteStates(
     ObjectMoleculeDeleteStates(mol, states);
   }
   SceneChanged(G);
-  ExecutiveInvalidatePanelList(G);
+  ExecutiveInvalidateGridSlots(G);
   return {};
 }
 
@@ -14377,7 +14229,7 @@ void ExecutiveReAddSpec(PyMOLGlobals* G, std::vector<DiscardedRec>& specs)
     TrackerLink(I->Tracker, rec->cand_id, I->all_obj_list_id, 1);
     ListInsertAt(I->Spec, rec, pos);
     ExecutiveAddKey(I, rec);
-    ExecutiveInvalidatePanelList(G);
+    ExecutiveInvalidateGridSlots(G);
     if (rec->type == cExecObject) {
       rec->in_scene = SceneObjectAdd(G, rec->obj);
     }
@@ -14615,7 +14467,7 @@ void ExecutiveManageObject(
       TrackerLink(I->Tracker, rec->cand_id, I->all_obj_list_id, 1);
       ListAppend(I->Spec, rec, next, SpecRec);
       ExecutiveAddKey(I, rec);
-      ExecutiveInvalidatePanelList(G);
+      ExecutiveInvalidateGridSlots(G);
 
       ExecutiveDoAutoGroup(G, rec);
     }
@@ -14686,7 +14538,7 @@ void ExecutiveManageSelection(PyMOLGlobals* G, const char* name)
     TrackerLink(I->Tracker, rec->cand_id, I->all_sel_list_id, 1);
     ListAppend(I->Spec, rec, next, SpecRec);
     ExecutiveAddKey(I, rec);
-    ExecutiveInvalidatePanelList(G);
+    ExecutiveInvalidateGridSlots(G);
   }
   assert(rec);
   if (!hidden_name) {
@@ -15766,7 +15618,7 @@ void ExecutiveSetOrderOf(PyMOLGlobals* G, const std::vector<OrderRec>& recs)
     ListInsertAt(I->Spec, detachedRec, oRec.pos);
   }
   if (!recs.empty()) {
-    ExecutiveInvalidatePanelList(G);
+    ExecutiveInvalidateGridSlots(G);
   }
 }
 

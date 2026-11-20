@@ -127,7 +127,7 @@ save round trip. `layer1/` changes: real GUI.
   | --- | --- |
   | `layer1/CGOGL.cpp`, `SceneRender.cpp`, `ScenePicking.cpp`, `Picking.cpp` (OpenGL drawing and picking) | 2,682 |
   | `layer1/SceneMouse.cpp`, `layer3/Interactions.cpp`, `layer1/ScrollBar.cpp` (mouse) | 2,130 |
-  | `layer4/PopUp.cpp`, `Menu.cpp` (viewport menus) | 696 |
+  | `layer4/PopUp.cpp`, `Menu.cpp` (viewport menus; `PopUp.cpp` deleted in 4.19.42) | 696 |
   | `layer0/GenericBuffer.cpp`, `ShaderPrg.cpp`, `PostProcess.cpp`, `layerGraphics/gl/GLVertexBuffer.cpp` (GPU buffers, shaders) | 890 |
   | `layer2/ObjectCurve.cpp`, `RepSphereImmediate.cpp`, `RepSphereGenerate.cpp` | 520 |
   | `ov/src/OVOneToAny.cpp`, `OVRandom.cpp` | 300 |
@@ -203,7 +203,17 @@ save round trip. `layer1/` changes: real GUI.
 **8i done 2026-11-16 in 4.14.2.** Two more macros of the same kind went in
 4.19.19 with [step 21](21-commercial-features.md): `NO_MMLIBS` (always
 defined) and the atom-typing blocks behind `_PYMOL_IP_EXTRAS` (never
-defined). Twelve `_PYMOL_IP_EXTRAS` guards in eight files are left.
+defined). The remaining guards went in 4.19.38: `_PYMOL_IP_EXTRAS` and
+`_PYMOL_IP_SPLASH`, and the three product macros that alone defined them
+(`PYMOL_COMM`, `PYMOL_COLL`, `PYMOL_EDU`): 100 lines in 10 files, same tool
+and same proof (195 translation units, two configurations, identical
+hashes), then the suite, Catch2 (137 cases) and a PSE round trip. The
+sanitizer job was not run for it: the compiler sees the same text. What the
+removal lays bare, not removed because it is not neutral:
+`_cmd.get_m2io_first_block_properties` always raises and has no caller
+(Maestro went in 4.19.24); two empty `auto_copy_images` branches in
+`Scene.cpp` and `SceneRay.cpp`; the macros `AXPYMOL_EVAL`, `JYMOL_EVAL` and
+`PYMOL_EVAL` next to them in `Ortho.cpp` were not surveyed.
 
 - 12 macros, one commit each (`59cc08ee` to `374acdcc`) and a last pass for
   conditions that name two of them: 2,207 lines gone from 97 files.
@@ -237,6 +247,32 @@ defined). Twelve `_PYMOL_IP_EXTRAS` guards in eight files are left.
   inside a removed branch, so those blocks are dead as well, but shader text
   has no such proof: it needs a real GUI check on each renderer path. Other
   macros were not surveyed again (the 2026-11-14 list was taken as given).
+
+**8c started 2026-11-19 in 4.19.39: `Executive.cpp`.**
+
+- Seven function-local buffers went from `pymol::malloc` / `calloc` plus
+  `FreeP` to `std::vector`: `ExecutiveReorder` (four arrays; the old code
+  freed one of them half way and used the null pointer as the mark "already
+  put back", now a `bool`), `ExecutiveSetVisFromPyDict` (the stack of
+  visible records; the pointer still walks up and down, over a vector),
+  `ExecutiveMapSet` (three buffers), the selection indicator texture, and
+  in `ExecutiveRMS` the two index arrays, the vertex array and the outlier
+  flags. 13 allocations and 16 frees gone; the null checks after `malloc`
+  went with them (a failed allocation now throws).
+- Left in the file: the `free` calls of `ExecutiveCEAlign` (the arrays come
+  from `ccealignmodule.cpp` and change with that file), and raw `new` /
+  `delete` (32 / 9), which are objects handed to the object list.
+- Not neutral in one point, on purpose: a vector zero-fills where `malloc`
+  did not. The buffers are per call, not per atom pair.
+- Checks: the suite (929 passed) and Catch2; a sanitizer build of the
+  working tree in a scratch copy (address and undefined behavior, the flags
+  of the CI job): 908 passed, 269 skipped (no rdkit, PDBFixer or OpenMM
+  there), no report, exit code 0. `set_vis` had no test: added
+  `viewing.py::testGetSetVis`, run in both builds. The selection indicator
+  texture is drawn only in a window: checked on WSLg, the markers of a
+  selection appear and grow with `selection_width`. A PSE round trip.
+  Not run: `compare.py` (the machine was busy with the sanitizer build;
+  none of the seven functions is on a profile of the benchmark rows).
 
 ## Review 2026-11-14: is it finished, and what is next
 

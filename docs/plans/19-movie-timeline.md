@@ -6,6 +6,8 @@ the shot list (D), the strip (A), record (E), tours (F), effects (G), easing
 plan and what is still open is under "Result, 4.18.0".
 Replaces row 8 of the workspace table in [step 3](03-modern-ui.md)
 ("Timeline. Not planned").
+Since 2026-11-20: the shot list is stored under the session key of
+[step 28](28-session-format.md), which is built first.
 
 **A docked panel under the viewport that shows the movie as a storyboard:
 the scenes as blocks with their thumbnails, as wide as they last in seconds.
@@ -233,11 +235,15 @@ movie replaced from outside, opening by itself).
 5. Keep the shot list after a restart? It would be one more entry in the
    session file (PSE); older versions would ignore it. Recommended: yes,
    but it changes file output, so it needs your word.
+   **2026-11-20: "decide by yourself". Decided: yes.**
 6. Shorten the Movie menu? Program > Camera Loop, Scene Loop and State
    Loop (58 rows) do what Add and Tour do now. Recommended: remove them.
+   **2026-11-20: decided as recommended, remove them.**
 7. Remove the keyframe strip the core draws under the viewport (19g)? It
    is the only editor for object motions and hand-made keyframes.
    Recommended: keep it until someone misses nothing in the panel.
+   **2026-11-20: decided as recommended, it stays. 19g is not planned;
+   step 17 no longer waits for it.**
 0. Which of D to I should be built, and is the recommended order right?
    Recommended: D, A, E, F, I, then H and G.
 1. A, B or C?

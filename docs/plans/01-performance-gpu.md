@@ -46,6 +46,89 @@ Open, waits for the user ([PLAN.md](../../PLAN.md), "Waiting for the user"): a l
 
 Next candidates: sticks on the GPU (20 ms per frame of 1aon on the integrated GPU, the slowest representation there), lines as triangles on every driver (on llvmpipe 150 objects of lines draw in 35 ms as triangles and 75 ms as GL lines), the two advancing-front passes of the triangulation, `h_add` (1.6 s for 59k atoms, same as PyMOL 3).
 
+## Status 2026-11-19, later: a profile of the surface build
+
+No profiler is installed, so the main thread was sampled every 2 ms of wall
+time by a small preloaded library (a `SIGALRM` handler that keeps
+`backtrace()`), and the addresses were resolved with `nm`. 1aon as mmCIF
+(59,192 atoms), `show_as surface` and `ray 16, 16`, 6.3 s under the sampler:
+
+| Where | Seconds | Share |
+| --- | --- | --- |
+| Triangulation: `FollowActives` 1.44, `TriangleFill` 0.36, `TrianglePointsToSurface` 0.12, `TriangleActivateEdges` 0.08, `TriangleAdd` 0.07 | 2.1 | 33 % |
+| `SurfaceJobRun` itself (the dot loops inlined into it) | 0.73 | 12 % |
+| Memory fills in libc called from `MapSetupExpress` 0.34 and `MapSetupExpressPerp` 0.26 | 0.60 | 10 % |
+| `SurfaceJobEliminateCloseDots` | 0.33 | 6 % |
+| Ray of 16x16 (`triangle3fv`, `BasisMakeMap`, transforms) | about 0.6 | 10 % |
+| `RepSurface::recolor` | 0.15 | 3 % |
+
+By CPU time instead of wall time, 40 % of 11 s is libgomp: the 32 threads
+spin while they wait between the parallel loops. It costs no wall time
+here; it is why the fans start.
+
+1b change in 4.19.40, from the third row: the neighbor list `EList` was a
+`std::vector<int>` built with its size, which zero-fills it on one thread,
+and was then written completely by the parallel loop. It now has an
+allocator that leaves the ints uninitialized (`MapNoInitAllocator`, 20 lines
+in `Map.h`). Fastest of three builds per run:
+
+| | Before | After |
+| --- | --- | --- |
+| 1aon, surface build + ray 16x16 | 5.53 s (4.19.39), 5.35, 5.46 and 5.60 s (4.19.17 on Python 3.14) | 5.16, 5.05, 5.09, 5.32 s |
+| 1aon surface, ray 800x600 | 3.88, 3.84, 3.64, 4.00 s | 3.83, 3.54, 3.43, 4.07 s: inside the noise |
+| 4v6x, surface build + ray 16x16 | 35.6, 38.5 s | 35.7, 35.9 s: no measurable change |
+| Geometry of the 1aon surface (`get_povray`, 494 MB) | sha256 a988657cd9ae3448 | the same |
+
+The gain is about 0.3 s (5 to 7 %), less than the 0.6 s of the profile row:
+the pages are still touched for the first time, now by the loop that fills
+them. The last pair of each row was measured on a warm laptop.
+
+Check left behind: in a build without `NDEBUG` the list is filled with a
+marker first and an `assert` finds any element the loop did not write. Run
+in a sanitizer build of the working tree (address and undefined behavior,
+asserts on): the suite (909 passed, no report) and a surface of 1aon with a
+200x150 ray, which goes through both functions with millions of entries.
+
+Next candidates, from the table: the triangulation is now a third of the
+build and still one thread; `FollowActives` has the three passes inlined, so
+the next step there is a profile per pass (a build with `-g`, or timers).
+`SurfaceJobEliminateCloseDots` (0.33 s). The spinning of idle OpenMP threads
+(`OMP_WAIT_POLICY=passive` is the knob; its effect on wall time is not
+measured).
+
+## Status 2026-11-20: what others do (web search)
+
+Asked for: solutions that speed up something in 1b, or that keep the window
+usable while something is built. Each row was held against this code; only
+row 4 was measured here.
+
+| # | Found | What it means here | Verdict |
+| --- | --- | --- | --- |
+| 1 | Qt's own guidance and the forum practice: compute on a worker thread, hand over plain data with a signal, upload to the GPU on the GUI thread. Rendering from a worker into a `QOpenGLWidget` is the route people report bugs with. [Qt threading basics](https://doc.qt.io/qt-6.8/thread-basics.html), [QOpenGLWidget and threads](https://forum.qt.io/post/565597) | It is option A of the table above, and `SurfaceJob` already has its input and its result apart. Nothing new to choose. | **Supports option A** (question 1). |
+| 2 | The setting `async_builds` of PyMOL, which the mailing list recommends for large sessions. | It is in this code (off by default): objects and states are built on several threads, but the GUI thread waits until all are done. It shortens a freeze with many objects; it does not remove one, and one large surface gains nothing. | **Not the answer** to the freeze. |
+| 3 | ChimeraX left the analytic surface (MSMS) for a grid: signed distance to the atoms enlarged by the probe, marching cubes, probes on those vertices, a second distance grid, marching cubes again. Works at any size, about 3 times the triangles at 0.5 A, 30 s for a 100,000 atom ribosome in the unoptimized version of 2013. EDTSurf is the same family. [Goddard, surface algorithms](https://www.cgl.ucsf.edu/chimera/data/surface-oct2013/surface.html), [EDTSurf](https://pmc.ncbi.nlm.nih.gov/articles/PMC2779860) | The triangulation here is an advancing front: one thread, a third of the build (profile above). Every step of the grid method is a loop over grid cells, and a parallel marching cubes is already in `layer0/marching_cubes.cpp`. The price: a different, smoother surface with more triangles, so more to draw and to ray trace. EDTSurf's code has no stated license: read the paper, do not copy the code. | **The largest candidate, and an experiment first**: build it as a second `surface_type`, time 1aon and 4v6x, compare pictures. The look changes, so it is the user's choice (question 19). |
+| 4 | libgomp lets idle threads spin before they sleep (`GOMP_SPINCOUNT` 300,000 when nothing is set); `OMP_WAIT_POLICY=passive` makes them sleep at once. [libgomp manual](https://gcc.gnu.org/onlinedocs/libgomp/GOMP_005fSPINCOUNT.html) | Measured here, 1aon, three surface builds and a ray of 800x600: wall time the same (builds 5.66 to 5.90 s against 5.52 to 6.01 s), CPU time 223 and 228 s against 191 and 188 s, 16 % less. `GOMP_SPINCOUNT=10000`: 185 s. | **Cheap and measured**: set the policy at start unless the user set one (question 18). Saves heat and battery, not time. |
+| 5 | GPU surfaces: QuickSES and its base (Hermosilla 2017) in CUDA, contour build-up on the GPU. [QuickSES](https://diglib.eg.org/items/bf030581-4b55-4781-8c73-712e8cc0d589/full), [Krone 2010](https://cg.ivd.kit.edu/downloads/bcb10_147.pdf) | CUDA is excluded by `AGENTS.md` §2.3; a GLSL compute version needs OpenGL 4.3, which macOS does not have (GPU compute gate below). | **Skip.** |
+| 6 | Gaussian density surfaces: QuickSurf of VMD, interactive for millions of atoms on a GPU. [VMD QuickSurf](https://tcbg.illinois.edu/Research/vmd/current/ug/node73.html) | Not a solvent excluded surface: no sharp grooves, a blob. This program can already do it by hand (`map_new` with a Gaussian, then `isosurface`). | **Skip** as a default; a preset could offer it for very large structures. |
+| 7 | Sticks: one quad per cylinder and a ray cast per pixel (impostors) is the standard; VTK reported 20 times fewer triangles. [VTK rendering engine](https://www.kitware.com/rendering-engine-improvements-in-vtk/), [HyperBalls](https://hal.archives-ouvertes.fr/hal-00645162) | Already the case: `stick_as_cylinders` and `render_as_cylinders` are on. What is left is cost per pixel, so the next measurement is frame time against window size and zoom, not a new technique. | **Nothing to adopt.** |
+
+## Decisions 2026-11-20
+
+Since the second request of that day the grid surface has a second use:
+with a smoothness value it is the rounded "blob" surface of
+[step 25](25-studio-effects.md) (25b). The experiment should record pictures
+at two smoothness values next to its times.
+
+| Question | Answer | What follows |
+| --- | --- | --- |
+| A large surface freezes the window | **A, build it on a worker thread.** | The next large item of 1b. `SurfaceJob` leaves the GUI thread; the status line says "building surface"; the surface appears when it is ready. To settle while building: what happens when the atoms change during a job (drop the result and start again), and the headless path, which must still wait. Checks: 1aon and 4v6x in the real window, the suite, the sanitizer job. |
+| Idle OpenMP threads (row 4 above) | **Yes.** | `OMP_WAIT_POLICY=passive` at start, before the core loads, unless the user set the variable or `GOMP_SPINCOUNT`. One line next to the place that picks the GPU on WSL. Numbers again after the change. |
+| Grid surface (row 3 above) | **Yes, as an experiment.** | A second `surface_type` with the distance grid and the marching cubes of `layer0/marching_cubes.cpp`. Table: build time, triangles, memory and ray time for 1aon and 4v6x against today's surface; pictures side by side. Then the user decides whether it stays, and for which sizes. Written from the description of the method, not from EDTSurf's code. |
+
+Order: the one-line change first, the worker thread next, the experiment
+last. With a worker thread the build time matters less; the experiment
+then answers how much shorter the wait can get.
+
 ## Evidence and corrections
 
 - Reuse [performance tests](../../testing/tests/performance), especially

@@ -51,7 +51,6 @@ Z* -------------------------------------------------------------------
 #include"ObjectDist.h"
 #include"ObjectGadget.h"
 #include"Seq.h"
-#include"Menu.h"
 #include"View.h"
 #include"ObjectSlice.h"
 #include"Text.h"
@@ -3864,11 +3863,6 @@ static void SceneImage(PyMOLGlobals* G, const Extent2D& extent, int antialias,
     out_img->setVecData(std::move(outbuf));
   } else if(call_raw_image_callback(G)) {
   } else if(G->HaveGUI && SettingGetGlobal_b(G, cSetting_auto_copy_images)) {
-#ifdef _PYMOL_IP_EXTRAS
-    if(IncentiveCopyToClipboard(G, di->quiet)) {
-    }
-#else
-#endif
   }
 }
 

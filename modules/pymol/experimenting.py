@@ -194,12 +194,64 @@ ARGUMENTS
 
     filename = str: write image to file {default: temporary}
 
+NOTES
+
+    The camera is turned a little around the origin of rotation for every
+    sample and the images are averaged, so what is far from the origin
+    gets blurred. The result is put on display; "png" saves it.
+
 AUTHORS
 
-    Jarl Underhaug, Jason Vertrees and Thomas Holder
+    Jarl Underhaug, Jason Vertrees and Thomas Holder (method)
 
 EXAMPLES
 
     focal_blur 3.0, 50
         '''
-        raise pymol.IncentiveOnlyException()
+        import math
+        import os
+        import tempfile
+        import numpy
+        from pymol.Qt import QtGui
+
+        aperture, samples, ray = float(aperture), int(samples), int(ray)
+        if samples < 1:
+            raise pymol.CmdException('focal_blur: samples must be 1 or more')
+
+        rgba = QtGui.QImage.Format.Format_RGBA8888
+        view = _self.get_view()
+        total = None
+
+        try:
+            for i in range(samples):
+                # sunflower pattern: the samples cover the aperture evenly
+                radius = aperture * math.sqrt((i + 0.5) / samples)
+                angle = i * 2.39996323
+                _self.set_view(view)
+                _self.turn('x', radius * math.cos(angle))
+                _self.turn('y', radius * math.sin(angle))
+                image = QtGui.QImage.fromData(
+                    _self.png(None, ray=ray, quiet=1)).convertToFormat(rgba)
+                data = numpy.frombuffer(image.constBits(), numpy.uint8)
+                total = data.astype(float) if total is None else total + data
+        finally:
+            _self.set_view(view)
+
+        average = (total / samples + 0.5).astype(numpy.uint8).tobytes()
+        tmp = None if filename else tempfile.mkstemp('.png')
+        if tmp:
+            os.close(tmp[0])
+            filename = tmp[1]
+        filename = _self.exp_path(filename)
+
+        try:
+            if not QtGui.QImage(average, image.width(), image.height(),
+                                4 * image.width(), rgba).save(filename, 'PNG'):
+                raise pymol.CmdException('focal_blur: cannot write ' + filename)
+            _self.load_png(filename, movie=0, quiet=1)
+        finally:
+            if tmp:
+                os.unlink(filename)
+
+        if not int(quiet):
+            print(' focal_blur: average of %d images' % samples)

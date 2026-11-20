@@ -4,6 +4,8 @@
 Where the request said "think about", the options are listed with the one
 that was built; each can still be changed in one or two lines.
 
+Replaced in part on 2026-11-20: "Background" becomes "Bg" with a new icon ([26a](26-toolbar-buttons.md)), and the names on the right side of the bar may go ([26d](26-toolbar-buttons.md), question 26).
+
 **Palette and Background carry their names, Zoom, Orient and Rock are
 icons only. The icons are larger and drawn with heavier lines. What is
 chosen is blue. The palette menu defines palettes of the user, and the
@@ -94,9 +96,10 @@ of 1248.
 1. Blue hover in every menu of the program (right-click menus, the menu
    bar), not only in the menus of the toolbar? One rule in `pymol.sty`.
    Recommended: yes, so that there is one style.
+   **Answer 2026-11-20: yes. To build.**
 2. Icons: 20 px with line width 2 as built, or B or C?
 3. Should Orient also act only on what is visible, like Zoom now?
-   Recommended: yes.
+   Recommended: yes. **Answer 2026-11-20: yes. To build.**
 
 ## Skipped
 

@@ -58,7 +58,7 @@ void RayRenderVRML1(CRay * I, int width, int height,
 void RayRenderVRML2(CRay * I, int width, int height,
                     char **vla_ptr, float front, float back,
                     float fov, float angle, float z_corr);
-void RayRenderUSDA(CRay* I, char** vla_ptr, bool ar);
+void RayRenderUSDA(CRay* I, char** vla_ptr, bool ar, bool stl = false);
 void RayRenderObjMtl(CRay * I, int width, int height, char **objVLA_ptr,
                      char **mtlVLA_ptr, float front, float back, float fov,
                      float angle, float z_corr);
