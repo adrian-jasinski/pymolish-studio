@@ -109,12 +109,24 @@ def set_scale_live(app, window, old, new, symbol=None):
         widget.hide()
     for native in app.topLevelWindows():
         native.destroy()
+    # Qt warns "Should only be called when no windows exist" while a window
+    # object exists, and they all do: only their native windows are gone
+    handler = QtCore.qInstallMessageHandler(lambda *_: None)
     set_factor(new)
+    QtCore.qInstallMessageHandler(handler)
     room = window.screen().availableGeometry().size()
     window.resize(size.boundedTo(room))
     for widget in shown:
         widget.show()
-    return abs(window.devicePixelRatio() - before * new / old) < 0.02
+    done = abs(window.devicePixelRatio() - before * new / old) < 0.02
+    if done:
+        # Icons and pictures were drawn for the old scale and would be
+        # stretched. Whatever is tinted draws itself again when the theme
+        # changes: the same event does it here.
+        change = QtCore.QEvent(QtCore.QEvent.Type.PaletteChange)
+        for widget in app.allWidgets():
+            app.sendEvent(widget, change)
+    return done
 
 
 def object_palette():

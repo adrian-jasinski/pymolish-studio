@@ -4,6 +4,22 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.37.1
+
+	* Fix: UI scale changed in the running window
+	  - The icons of the toolbar and of the States panel were
+	    blurred after a change: they stayed pictures made for the
+	    old scale, and so did every icon made later, because Qt
+	    keeps the application's pixel ratio from the start. Icons
+	    are made for the ratio of the screens now, and after a
+	    change everything that draws icons draws them again.
+	  - "QHighDpiScaling::setFactor: Should only be called when no
+	    windows exist" is no longer printed. Qt says it whenever a
+	    window object exists; the change works all the same.
+	  - Step 30c.
+
+2026-11-20 pymolish-studio
+
 	* 4.37.0
 
 	* Property table: values at the left, a new icon, no message

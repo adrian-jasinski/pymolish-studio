@@ -153,18 +153,46 @@ def test_scale_range_and_live():
         store["ui/scale"] = "25"  # a value written by hand
         assert theme.ui_scale() == 3.0
 
+    from pymol.Qt import QtCore, QtGui
+    from pmg_qt import icons
+
+    class Tinted(QtWidgets.QWidget):  # like the toolbar: it draws icons
+        drawn = 0
+
+        def changeEvent(self, event):
+            if event.type() == QtCore.QEvent.Type.PaletteChange:
+                Tinted.drawn += 1
+            super().changeEvent(event)
+
+    def icon_side():
+        icon = icons.menu_icon("undo", QtGui.QColor("black"))
+        return icon.availableSizes()[0].width()
+
     window = QtWidgets.QMainWindow()
+    window.setCentralWidget(Tinted())
     window.resize(400, 300)
     window.show()
     before = window.devicePixelRatio()
+    side = icon_side()
+    said = []
+    handler = QtCore.qInstallMessageHandler(lambda kind, context, text: said.append(text))
     # a Qt without the function: False, nothing touched
     assert theme.set_scale_live(app, window, 1.0, 2.0, symbol="no_such_function") is False
     assert window.devicePixelRatio() == before and window.isVisible()
+    Tinted.drawn = 0
     done = theme.set_scale_live(app, window, 1.0, 2.0)
+    QtCore.qInstallMessageHandler(handler)
     try:
+        # 30c: Qt's "QHighDpiScaling::setFactor: Should only be called when
+        # no windows exist" is not printed
+        assert not [text for text in said if "QHighDpiScaling" in text]
         if done:
             assert window.devicePixelRatio() == before * 2
             assert window.isVisible() and window.size().width() == 200  # the same size on the screen
+            # 30c: what draws icons is told to draw them again, and an
+            # icon made now has the pixels of the new scale
+            assert Tinted.drawn >= 1
+            assert icon_side() == 2 * side
         else:  # not an error: the program then says "at the next start"
             print("set_scale_live does not work on", sys.platform, app.platformName())
             assert sys.platform != "linux" or app.platformName() != "xcb"

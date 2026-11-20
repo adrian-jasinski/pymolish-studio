@@ -118,7 +118,9 @@ def menu_icon(label, color, size=16, stroke=1.5, accent=None):
     while the pointer is over its button and while the button is checked."""
     name = LABELS.get(label) or LABELS.get(label.split(" ")[0])
     if name:
-        ratio = QtWidgets.QApplication.instance().devicePixelRatio()
+        # of the screens: the application's own value is one Qt keeps from
+        # the start, and a live change of the UI scale leaves it as it was
+        ratio = max(s.devicePixelRatio() for s in QtWidgets.QApplication.screens())
         icon = QtGui.QIcon(_pixmap(name, color.name(), ratio, size, stroke))
         if accent is not None:
             pixmap = _pixmap(name, accent.name(), ratio, size, stroke)
