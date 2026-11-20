@@ -248,11 +248,18 @@ def testPresets(request):
         'ligand sites', 'protein interface', 'protein-protein interaction',
         'antibody and antigen', 'cartoon transparency',
         'show solvent',
-        'theme clay', 'theme blue', 'theme sage', 'theme mint', 'theme night',
-        'floor', 'floor with mirror image', 'no floor',
+        'theme', 'light', 'floor']
+    assert [row[1] for row in m if row[0] == 2] == ['Preset:']
+    # 30d: themes, lights and the floor each have a submenu
+    def sub(name):
+        assert d[name][0][0] == 2  # under a caption
+        return [row[1] for row in d[name] if row[0] == 1]
+    assert sub('theme') == ['clay', 'blue', 'sage', 'mint', 'night']
+    assert sub('light') == [
         'standard light', 'figure', 'soft', 'flat', 'comic', 'sketch',
         'x-ray', 'studio', 'top light', 'soft shadow']
-    assert [row[1] for row in m if row[0] == 2] == ['Preset:']
+    assert sub('floor') == ['floor', 'floor with mirror image', 'no floor']
+    lights = _to_dict(d['light'])
     from pymol import preset
     request.addfinalizer(lambda: setattr(preset, 'solvent', False))
     cmd.do(d['show solvent'], echo=0)
@@ -260,9 +267,9 @@ def testPresets(request):
     cmd.do(d['glass'], echo=0)
     assert cmd.count_atoms('rep surface') > 0
     request.addfinalizer(lambda: preset.look('default'))
-    cmd.do(d['comic'], echo=0)
+    cmd.do(lights['comic'], echo=0)
     assert cmd.get_setting_int('ray_trace_mode') == 3
-    cmd.do(d['standard light'], echo=0)
+    cmd.do(lights['standard light'], echo=0)
     assert cmd.get_setting_int('ray_trace_mode') == 0
     # cartoon transparency lasts until the next preset
     cmd.do(_to_dict(d['cartoon transparency'])['50%'], echo=0)

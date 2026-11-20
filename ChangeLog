@@ -4,6 +4,36 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.38.0
+
+	* Presets menu: submenus for themes, lights and the floor; no
+	  preset colors a cartoon or a surface
+	  - The menu has 21 rows in place of 33: the presets, the two
+	    switches, and the submenus "theme", "light" and "floor".
+	    The themes read "clay", "blue", ... without "theme" in
+	    front.
+	  - No row but a theme changes the color of a cartoon or of a
+	    surface. A surface drawn by a preset has, over each
+	    residue, the color of its carbons, also where an earlier
+	    preset colored the other atoms by element.
+	  - API change, preset.default: it colors the atoms that are
+	    no carbon by element and leaves the carbons. Before, it
+	    gave the carbons the object's color, or green.
+	  - API change, preset.glass and preset.illustration: the
+	    surface is no longer white.
+	  - API change, preset.interaction: the surface is no longer
+	    orange with white contact areas. It has the colors of the
+	    chains, and orange within 4.5 A of another chain.
+	    preset.antibody: the antigen is no longer sand-colored;
+	    the epitope stays orange.
+	  - API change, technical, pretty, publication and the ligand
+	    presets: a modified residue of the protein (a
+	    phosphoserine) keeps the color of the protein. Before, its
+	    side chain was colored like a ligand.
+	  - Step 30d.
+
+2026-11-20 pymolish-studio
+
 	* 4.37.1
 
 	* Fix: UI scale changed in the running window

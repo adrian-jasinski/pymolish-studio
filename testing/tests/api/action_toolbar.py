@@ -99,7 +99,11 @@ def test_toolbar():
     rows = [a.text() for a in bar.presets.menu().actions()]
     assert "technical" in rows
     assert "simple" not in rows
-    assert "figure" in rows  # the looks, last group of the list
+    # 30d: themes, lights and the floor each in a submenu, filled when opened
+    subs = {a.text(): a.menu() for a in bar.presets.menu().actions() if a.menu()}
+    assert {"theme", "light", "floor"} <= set(subs) and "figure" not in rows
+    subs["light"].aboutToShow.emit()
+    assert "figure" in [a.text() for a in subs["light"].actions()]
 
     texts["Builder"].trigger()
     more = {a.text(): a for a in bar.more.menu().actions()}

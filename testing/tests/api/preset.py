@@ -24,29 +24,62 @@ def testSimple():
     _assertSimpleReps()
 
 
-def testKeepsCartoonColors(request):
-    # 15l: no row of the menu but "default" colors the cartoon, of a
-    # protein (guide atoms) or of a nucleic acid (P and the bases). The
-    # color themes are the exception that was asked for (2026-11-20,
-    # question 32): coloring is what they are for; test_themes has them.
+def _menuRows(rows, path=''):
+    """(label, command) of every row of a menu and of its submenus; a row
+    of a submenu is labelled "submenu > row"."""
+    for row in rows:
+        if row[0] == 1 and isinstance(row[2], str):
+            yield path + row[1], row[2]
+        elif row[0] == 1:
+            yield from _menuRows(row[2], path + row[1] + ' > ')
+
+
+def testKeepsCartoonAndSurfaceColors(request):
+    # 15l, 30d: no row of the menu colors the cartoon, of a protein (guide
+    # atoms) or of a nucleic acid (P and the bases), and none colors a
+    # surface. Two exceptions. The color themes: coloring is what they
+    # are for (2026-11-20, question 32); test_themes has them. The two
+    # presets for complexes: the surface is orange where chains touch,
+    # and only there.
     from pymol import menu
     cmd.load(testing.datafile('1oky.pdb.gz'))
     cmd.fab('ACDEFGHIK', 'pep', chain='B')
     cmd.load(testing.datafile('1bna.cif'), 'dna')
     cmd.color('yellow')
-    request.addfinalizer(lambda: preset.look('default'))
+    yellow, orange = 6, cmd.get_color_index('orange')
+    request.addfinalizer(cmd.reinitialize)  # light, background, the floor
+    request.addfinalizer(lambda: cmd.stage('off'))
     request.addfinalizer(lambda: setattr(preset, 'solvent', False))
-    rows = menu.presets(cmd, 'all') + menu.preset_ligand_sites(cmd, 'all')
-    ran = 0
-    for row in rows:
-        if (row[0] == 1 and isinstance(row[2], str) and row[1] != 'default'
-                and not row[1].startswith('theme ')):
-            cmd.do(row[2], echo=0)
-            assert _colors('guide | (dna & polymer)') == {6}, row[1]
-            ran += 1
-    assert ran > 20
-    preset.default('all')  # the reset still colors
-    assert len(_colors('dna & polymer')) > 1
+
+    def surface():
+        # the color a surface is drawn in: its own, else the atom's. Not
+        # the nitrogen that is all there is of the last residue of 1oky:
+        # it has no carbon to take a color from. Not the ligand and the
+        # water of "ligand sites": flagged "ignore" (25), they have no
+        # surface.
+        stored.drawn = set()
+        cmd.iterate('rep surface & byres elem C & !flag 25', 'stored.drawn.add('
+                    'color if s.surface_color in (None, -1) else s.surface_color)')
+        return stored.drawn
+
+    ran = surfaces = 0
+    for label, command in _menuRows(menu.presets(cmd, 'all')):
+        if label.startswith('theme > '):
+            continue
+        before = surface()
+        cmd.do(command, echo=0)
+        assert _colors('guide | (dna & polymer)') == {yellow}, label
+        if label in ('protein-protein interaction', 'antibody and antigen'):
+            assert surface() == {yellow, orange}, label  # not the whole surface
+        elif 'from_menu' in command:  # a preset: it draws everything anew
+            assert surface() <= {yellow}, label
+        else:  # transparency, solvent, a light, the floor: what was there
+            assert surface() == before, label
+        for name in cmd.get_names('public_objects'):  # nor through the object
+            assert cmd.get('surface_color', name) == 'default', label
+        ran += 1
+        surfaces += bool(surface())
+    assert ran > 30 and surfaces >= 8
 
 
 def _surfaceColors(selection):
@@ -67,9 +100,12 @@ def testInteraction():
     preset.interaction('all')
     assert cmd.count_atoms('rep surface') == cmd.count_atoms('polymer')
     assert cmd.count_atoms('rep cartoon | rep sticks') == 0
-    # the surface: orange, white where chains touch; the atoms keep theirs
-    assert _surfaceColors('one | two') == {index('white'), index('orange')}
-    assert _surfaceColors('far') == {index('orange')}
+    # 30d: the surface is orange where chains touch and has no color of
+    # its own elsewhere; the atoms keep theirs
+    assert index('orange') in _surfaceColors('one | two')
+    assert _surfaceColors('(one | two) & elem C') <= {None, index('orange')}
+    assert _surfaceColors('far & elem C') == {None}
+    assert _surfaceColors('far & elem O') == _colors('far & elem C')
     assert _colors('all') == before
     assert '_p_tmp' not in cmd.get_names('all')
     # the next preset undoes the surface and its colors
@@ -93,10 +129,10 @@ def testAntibody():
     before = _colors('guide')
     preset.antibody('all')
     assert _colors('guide') == before  # 15l: the cartoon keeps its colors
-    # the antigen: a surface, sand with the epitope in orange
+    # the antigen: a surface in its own colors with the epitope in orange
     assert cmd.count_atoms('rep surface') == cmd.count_atoms('ag')
     assert cmd.count_atoms('rep cartoon') == cmd.count_atoms('m | m2')
-    assert _surfaceColors('ag') <= {index('wheat'), index('orange')}
+    assert _surfaceColors('ag & elem C') <= {None, index('orange')}
     assert index('orange') in _surfaceColors('ag')
     assert _surfaceColors('m | m2') == {None}
     assert cmd.count_atoms('rep sticks & (m | m2)') > 0
@@ -131,12 +167,12 @@ def testEnabledOnly(request):
                 for r in ('lines', 'sticks', 'cartoon', 'surface', 'spheres')]
 
     before = reps('hidden')
-    request.addfinalizer(lambda: preset.look('default'))
+    request.addfinalizer(cmd.reinitialize)  # light, background, the floor
+    request.addfinalizer(lambda: cmd.stage('off'))
     request.addfinalizer(lambda: setattr(preset, 'solvent', False))  # the solvent row
-    for row in menu.presets(cmd, 'enabled'):
-        if row[0] == 1 and isinstance(row[2], str):
-            cmd.do(row[2], echo=0)
-            assert reps('hidden') == before, row[1]
+    for label, command in _menuRows(menu.presets(cmd, 'enabled')):
+        cmd.do(command, echo=0)
+        assert reps('hidden') == before, label
     rows = dict((r[1], r[2]) for r in menu.cartoon_transparency(cmd, 'enabled'))
     cmd.do(rows['50%'], echo=0)
     assert cmd.get_setting_float('cartoon_transparency', 'shown') == 0.5
@@ -218,15 +254,23 @@ def testDefault():
     assert cmd.count_atoms('rep spheres') == 0
     assert cmd.count_atoms('rep lines') == cmd.count_atoms()
     assert cmd.count_atoms('rep nonbonded & solvent') == cmd.count_atoms('solvent')
-    # object color must be preserved for carbons
+    # 30d: the carbons keep the color they have, the rest is by element
     color_set = set()
     cmd.iterate('elem C', 'color_set.add(color)', space=locals())
     assert sorted(color_set) == sorted([6])
+    assert len(_colors('not elem C')) > 2
+    cmd.color('blue', 'elem C and resi 100-120')  # not the object's color
+    preset.default('1oky')
+    assert _colors('elem C and resi 100-120') == {cmd.get_color_index('blue')}
 
 
 def testGlass():
     cmd.load(testing.datafile('1oky.pdb.gz'))
     preset.glass('all')
+    # 30d: no white; the color of the carbons, also over the oxygens
+    assert cmd.get('surface_color', '1oky') == 'default'
+    carbons = _colors('polymer & elem C')
+    assert len(carbons) == 1 and _surfaceColors('polymer & elem O') == carbons
     assert cmd.count_atoms('rep surface') == cmd.count_atoms('polymer')
     assert cmd.count_atoms('rep cartoon & guide') == cmd.count_atoms('guide')
     assert cmd.count_atoms('rep sticks & organic') == cmd.count_atoms('organic')

@@ -86,6 +86,7 @@ def test_lights():
     assert cmd.get_setting_int("light_count") == 2
     from pymol import menu
 
-    rows = [r[1] for r in menu.presets(cmd, "all") if r[0] == 1]
-    assert rows.index("floor") < rows.index("standard light") < rows.index("top light")
-    assert "floor with mirror image" in rows and "no floor" in rows
+    # 30d: each in a submenu of the preset menu
+    subs = {r[1]: [x[1] for x in r[2] if x[0] == 1] for r in menu.presets(cmd, "all") if isinstance(r[2], list)}
+    assert subs["floor"] == ["floor", "floor with mirror image", "no floor"]
+    assert subs["light"].index("standard light") < subs["light"].index("top light")
