@@ -301,3 +301,76 @@ def test_wizard():
     assert cmd.get_wizard() is None
     panel.wizard.refresh()
     assert panel.wizard.isHidden()
+
+
+def test_rename_in_place():
+    from unittest import mock
+
+    from pymol.Qt import QtCore, QtWidgets
+    from PySide6.QtTest import QTest
+    from pmg_qt.object_panel import ObjectPanel
+
+    Key = QtCore.Qt.Key
+    events = QtWidgets.QApplication.processEvents
+    cmd.fragment("ala")
+    cmd.fragment("gly")
+    cmd.select("sele", "name CA")
+    panel = ObjectPanel(cmd)
+    panel.show()
+    panel.refresh()
+
+    def open_editor():
+        events()  # the editor opens once the caller has returned
+        # a closed editor is only deleted by a running event loop
+        return [e for e in panel.tree.findChildren(QtWidgets.QLineEdit) if e.isVisible()][-1]
+
+    def edit(name, text, key=Key.Key_Return):
+        assert panel.rename(name)
+        editor = open_editor()
+        shown = editor.text()
+        editor.setText(text)
+        QTest.keyClick(editor, key)
+        events()
+        return shown
+
+    # Enter renames; a space becomes "_"
+    assert edit("ala", "my ala") == "ala"
+    assert "my_ala" in cmd.get_names() and "ala" not in cmd.get_names()
+    assert "my_ala" in panel.items and "ala" not in panel.items
+    # Esc, a taken name and an empty name do not
+    edit("my_ala", "other", Key.Key_Escape)
+    edit("my_ala", "gly")
+    edit("my_ala", "  ")
+    assert sorted(cmd.get_names()) == ["gly", "my_ala"]
+    # a selection is edited without its brackets and gets them back
+    assert edit("sele", "site") == "sele"
+    assert "site" in cmd.get_names("selections")
+    assert panel.items["site"].text(0) == "(site)"
+    # "all" and unknown rows cannot be renamed
+    assert not panel.rename("all")
+    assert not panel.rename("nothing")
+    # F2 is the current row
+    panel.tree.setCurrentItem(panel.items["gly"])
+    assert panel.rename()
+
+    # the poll leaves an open editor alone and catches up afterwards
+    editor = open_editor()
+    cmd.fragment("ser")
+    panel.refresh()
+    assert editor.isVisible() and "ser" not in panel.items
+    QTest.keyClick(editor, Key.Key_Escape)
+    events()
+    assert "ser" in panel.items and "gly" in panel.items
+
+    # the "rename" rows of the menus: the panel when a window set the hook,
+    # the wizard that types into the viewport without one
+    rows = [r for r in menu.mol_action(cmd, "gly") if r[1].startswith("rename")]
+    assert [r[2] for r in rows] == ['menu.rename("gly")']
+    with mock.patch.object(menu, "rename_hook", panel.rename):
+        cmd.do(rows[0][2], echo=0)
+        editor = open_editor()
+        assert cmd.get_wizard() is None and editor.text() == "gly"
+        QTest.keyClick(editor, Key.Key_Escape)
+    cmd.do(rows[0][2], echo=0)
+    assert type(cmd.get_wizard()).__name__ == "Renaming"
+    cmd.set_wizard()

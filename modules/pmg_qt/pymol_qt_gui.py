@@ -225,6 +225,8 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         # menus the core opens (right click in the viewport, sequence
         # viewer, scene buttons) are Qt menus; object_panel imported pymol.menu
         pymol.menu.popup = lambda entries: popup_at_cursor(self, entries, cmd)
+        # their "rename" rows edit the name on the row of the panel
+        pymol.menu.rename_hook = self.object_panel.rename
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.object_panel)
         self.resizeDocks([self.object_panel], [300], Qt.Orientation.Horizontal)
 

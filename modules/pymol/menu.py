@@ -21,6 +21,20 @@ sele_ms_shared = '(n. CA|n. N&r. PRO)'
 # returns true when it shows the menu, so the viewport does not draw it.
 popup = None
 
+# A GUI that edits a name where it is written sets this to a callable taking
+# the name of an object or selection; it returns true when it took the rename.
+rename_hook = None
+
+
+def rename(name):
+    """The "rename" row of an object or selection: the name is edited in
+    place where a window offers that, else typed into the viewport (the
+    renaming wizard: pymolish -x, an embedded viewport)."""
+    if not (rename_hook and rename_hook(name)):
+        import pymol
+
+        pymol.cmd.wizard("renaming", name)
+
 # text colors for delete and remove items
 del_col = r'\933'
 rem_col = r'\933'
@@ -1219,7 +1233,7 @@ def sele_action(self_cmd, sele, picked=0):
     # picked: the "actions" submenu of a right click on a selected atom,
     # whose parent menu already has drag and clean
     return [[ 2, 'Action:'       ,''                        ],
-              [ 1, 'rename selection', 'cmd.wizard("renaming","'+sele+'")'          ],
+              [ 1, 'rename selection', 'menu.rename("'+sele+'")'          ],
               [ 1, 'duplicate selection'      ,'cmd.select(None,"'+sele+'")'          ],
               [ 1, del_col + 'delete selection', 'cmd.delete("'+sele+'")'          ],
               [ 0, ''               ,''                             ],
@@ -1287,7 +1301,7 @@ def mol_action(self_cmd, sele, group=0):
     from pymol import grouping
     kind = 'group' if group else 'object'
     return [[ 2, 'Action:'     , ''                       ],
-            [ 1, 'rename ' + kind, 'cmd.wizard("renaming","'+sele+'")'          ],
+            [ 1, 'rename ' + kind, 'menu.rename("'+sele+'")'          ],
             [ 1, 'duplicate group', 'cmd.copy_group("'+sele+'")' ] if group else
             [ 1, 'duplicate object', 'cmd.copy(cmd.get_unused_name("'+sele+'_cpy",0),"'+sele+'",zoom=0)' ],
             [ 1, del_col + 'delete ' + kind, 'cmd.delete("'+sele+'")'    ],
@@ -1324,7 +1338,7 @@ def slice_action(self_cmd, sele):
               [ 1, 'dynamic grid on' , 'cmd.set("slice_dynamic_grid",1,"'+sele+'")'    ],
               [ 1, 'dynamic grid off', 'cmd.set("slice_dynamic_grid",0,"'+sele+'")'    ],
               [ 0, ''             , ''                       ],
-              [ 1, 'rename'       , 'cmd.wizard("renaming","'+sele+'")'          ],
+              [ 1, 'rename'       , 'menu.rename("'+sele+'")'          ],
               [ 1, 'group' , lambda: move_to_group(self_cmd, sele) ],
               [ 0, ''             , ''                       ],
               [ 1, del_col + 'delete', 'cmd.delete("'+sele+'")'    ],
@@ -1335,7 +1349,7 @@ def simple_action(self_cmd, sele):
             [ 1, 'drag'       , 'cmd.drag("'+sele+'")'          ],
             [ 1, 'reset'       , 'cmd.reset(object="'+sele+'")'          ],
             [ 0, ''             , ''                       ],
-            [ 1, 'rename'       , 'cmd.wizard("renaming","'+sele+'")'          ],
+            [ 1, 'rename'       , 'menu.rename("'+sele+'")'          ],
             [ 1, 'group' , lambda: move_to_group(self_cmd, sele) ],
             [ 0, ''             , ''                       ],
             [ 1, del_col + 'delete', 'cmd.delete("'+sele+'")'    ],
@@ -1418,7 +1432,7 @@ def map_action(self_cmd, sele):
             [ 0, ''             , ''                       ],
             [ 1, 'matrix_copy'  , mat_tran(self_cmd, sele, 1) ],
             [ 0, ''             , '' ],
-            [ 1, 'rename'       , 'cmd.wizard("renaming","'+sele+'")'          ],
+            [ 1, 'rename'       , 'menu.rename("'+sele+'")'          ],
             [ 1, 'group' , lambda: move_to_group(self_cmd, sele) ],
             [ 0, ''             , ''                       ],
             [ 1, del_col + 'delete', 'cmd.delete("'+sele+'")'    ],
@@ -1450,7 +1464,7 @@ def surface_action(self_cmd, sele):
             [ 1, 'drag' , 'cmd.drag("'+sele+'")' ],
             [ 1, 'reset'       , 'cmd.reset(object="'+sele+'")'          ],
             [ 0, ''             , ''                       ],
-            [ 1, 'rename'       , 'cmd.wizard("renaming","'+sele+'")'          ],
+            [ 1, 'rename'       , 'menu.rename("'+sele+'")'          ],
             [ 1, 'group' , lambda: move_to_group(self_cmd, sele) ],
             [ 0, ''             , ''                       ],
             [ 1, del_col + 'delete', 'cmd.delete("'+sele+'")'    ],
@@ -1463,7 +1477,7 @@ def mesh_action(self_cmd, sele):
             [ 1, 'drag' , 'cmd.drag("'+sele+'")' ],
             [ 1, 'reset'       , 'cmd.reset(object="'+sele+'")'          ],
             [ 0, ''             , ''                       ],
-            [ 1, 'rename'       , 'cmd.wizard("renaming","'+sele+'")'          ],
+            [ 1, 'rename'       , 'menu.rename("'+sele+'")'          ],
             [ 1, 'group' , lambda: move_to_group(self_cmd, sele) ],
             [ 0, ''             , ''                       ],
             [ 1, del_col + 'delete', 'cmd.delete("'+sele+'")'    ],

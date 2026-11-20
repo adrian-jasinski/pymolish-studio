@@ -1,6 +1,14 @@
 # 23 — Rename in the Objects panel
 
-[Roadmap](../../PLAN.md) · Request 2026-11-20 · Planned, not built.
+[Roadmap](../../PLAN.md) · Request 2026-11-20 · **23a done 2026-11-20 in
+4.24.0.** 23b (rows moved by dragging) is open, any time.
+
+Built as planned, with two differences. A taken name gives a line in the log
+and no rename, but the editor does not stay open: Qt has closed it by then,
+and opening it again would lose what was typed. The hook is for objects and
+selections only: the one row that renames a scene belongs to the scene
+buttons of the core, which [17f](17-legacy-ui.md) deletes. Tried in the
+real window: F2, typing, Enter, and the "rename" row of the menu.
 
 **A name is changed where it is written: F2 or "rename" on a row of the
 Objects panel opens a text field on that row. The green line in the viewport

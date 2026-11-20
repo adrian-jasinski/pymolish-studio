@@ -458,6 +458,7 @@ class ObjectPanel(QtWidgets.QDockWidget):
         self.cmd = cmd
         self.rows = []
         self.items = {}
+        self._editing = None  # the name being renamed in place
 
         self.tree = tree = QtWidgets.QTreeWidget()
         tree.setHeaderLabels(["Name"] + [letter for letter, _ in BUTTONS])
@@ -474,6 +475,9 @@ class ObjectPanel(QtWidgets.QDockWidget):
         )
         tree.viewport().setAttribute(Qt.WidgetAttribute.WA_Hover)
         tree.setExpandsOnDoubleClick(False)
+        # a click toggles and a double click zooms: only rename() edits
+        tree.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        tree.itemDelegate().closeEditor.connect(self._edit_closed)
         tree.setSelectionMode(
             QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection
         )
@@ -500,6 +504,9 @@ class ObjectPanel(QtWidgets.QDockWidget):
         space.activated.connect(
             lambda: tree.currentItem() and self._toggle(tree.currentItem())
         )
+        f2 = QtGui.QShortcut(Qt.Key.Key_F2, tree)
+        f2.setContext(Qt.ShortcutContext.WidgetShortcut)
+        f2.activated.connect(self.rename)
 
         self.filter = QtWidgets.QLineEdit()
         self.filter.setPlaceholderText("Filter by name")
@@ -538,6 +545,8 @@ class ObjectPanel(QtWidgets.QDockWidget):
         QtCore.QTimer.singleShot(0, self.poll)
 
     def refresh(self):
+        if self._editing:  # a rebuild would close the editor of a rename
+            return
         rows = snapshot(self.cmd)
         if rows == self.rows:
             return
@@ -626,6 +635,50 @@ class ObjectPanel(QtWidgets.QDockWidget):
             self.cmd.enable(name)
             self.cmd.zoom(name, animate=-1)
             self.refresh()
+
+    def rename(self, name=None):
+        """Edit the name of an object or selection on its row (F2, the
+        "rename" rows through pymol.menu.rename_hook); without a name, the
+        current row. True when the row exists and can be renamed."""
+        if name is not None:
+            self.show()  # asked for from a menu of the viewport
+            self.refresh()
+        item = self.items.get(name) if name else self.tree.currentItem()
+        if item is None or item.data(0, UserRole)[1] == "all":
+            return False
+
+        def edit():  # once the menu that asked has closed
+            name = item.data(0, UserRole)[0]
+            if self.items.get(name) is not item or self._editing:
+                return
+            self._editing = name
+            with QtCore.QSignalBlocker(self.tree):
+                item.setText(0, name)  # a selection without its brackets
+                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
+            self.tree.setCurrentItem(item)
+            self.tree.editItem(item, 0)
+
+        QtCore.QTimer.singleShot(0, edit)
+        return True
+
+    def _edit_closed(self, *_):
+        """Enter, Esc or a click elsewhere ended the editor."""
+        cmd = self.cmd
+        old, self._editing = self._editing, None
+        item = self.items.get(old)
+        new = cmd.get_legal_name(item.text(0).strip()) if item else ""
+        if new and new != old:
+            if new in cmd.get_names("all"):
+                print(" Rename: the name '%s' is taken." % new)
+            else:
+                try:
+                    cmd.set_name(old, new)
+                except CmdException as error:  # a selection keyword
+                    print(error)
+        self.rows = []  # rebuild: the new name, or the old text back
+        self.refresh()
+        if new in self.items:
+            self.tree.setCurrentItem(self.items[new])
 
     def _popup(self, item, button, position):
         entries = menu_entries(self.cmd, *item.data(0, UserRole), button)

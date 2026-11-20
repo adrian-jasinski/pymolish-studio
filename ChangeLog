@@ -4,6 +4,24 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.24.0
+
+	* Objects panel: rename on the row
+	  - F2 on a row, or "rename" in its menus, opens a text field
+	    on the row with the old name selected. Enter renames, Esc
+	    cancels. A space becomes "_"; a name that is taken is
+	    refused with a line in the log. The row "all" cannot be
+	    renamed.
+	  - The green "Renaming ... to:" line in the viewport is no
+	    longer used by the window. It remains for a viewport
+	    without the window (pymolish -x): pymol.menu.rename starts
+	    it when no window took the rename.
+	  - The "rename" rows of the menus run menu.rename(name)
+	    instead of cmd.wizard("renaming", name).
+	  - Step 23a.
+
+2026-11-20 pymolish-studio
+
 	* 4.23.1
 
 	* Less CPU time while surfaces are built
