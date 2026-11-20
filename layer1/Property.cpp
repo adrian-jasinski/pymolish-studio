@@ -219,8 +219,9 @@ int PropertyUniqueSetTypedValue(PyMOLGlobals* G, int unique_id,
         if (value) {  /* if redefining value */
           switch (prop_type) {
           case PropertyType::Float:
-            if (std::get<double>(entry->value) != *(double*) value ||
-                entry->type != prop_type) {
+            // the type first: a value of another type holds no double
+            if (entry->type != prop_type ||
+                std::get<double>(entry->value) != *(double*) value) {
               if (entry->type == PropertyType::String &&
                   std::holds_alternative<int>(entry->value)) {
                 OVLexicon_DecRef(I->string_values, std::get<int>(entry->value));
@@ -231,8 +232,8 @@ int PropertyUniqueSetTypedValue(PyMOLGlobals* G, int unique_id,
             }
             break;
           default:
-            if (std::get<int>(entry->value) != *(int*) value ||
-                entry->type != prop_type) {
+            if (entry->type != prop_type ||
+                std::get<int>(entry->value) != *(int*) value) {
               if (entry->type == PropertyType::String &&
                   std::holds_alternative<int>(entry->value)) {
                 OVLexicon_DecRef(I->string_values, std::get<int>(entry->value));

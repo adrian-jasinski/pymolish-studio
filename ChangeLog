@@ -4,6 +4,18 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.27.1
+
+	* Fix: a property set again with another type ended the program
+	  - cmd.set_property on a property that already had a value of
+	    another type (a number, then a text; a whole number over a
+	    decimal one) aborted with std::bad_variant_access. The old
+	    value was read as the new type before the types were
+	    compared. Found while building the editing of the property
+	    table.
+
+2026-11-20 pymolish-studio
+
 	* 4.27.0
 
 	* Property table, first part
