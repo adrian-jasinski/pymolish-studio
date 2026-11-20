@@ -4,6 +4,23 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.32.0
+
+	* New command: ligand_2d
+	  - "ligand_2d [ligand [, cutoff [, filename]]]" draws a ligand
+	    flat with the residues around it: colored by kind
+	    (hydrophobic, polar, negative, positive, glycine), with
+	    lines for hydrogen bonds, salt bridges, ring stacking and
+	    cation-ring contacts, and a legend. It writes SVG or PNG;
+	    without a file name it lists the contacts.
+	  - Without a ligand argument it takes the largest small
+	    molecule of the objects that are switched on.
+	  - Needs rdkit (extra "chem", in the downloadable builds).
+	  - The window for it, with clicks that select in 3D, follows.
+	  - Step 24a.
+
+2026-11-20 pymolish-studio
+
 	* 4.31.0
 
 	* UI scale: any value from 50 to 300 %, without a restart

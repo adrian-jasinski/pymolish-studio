@@ -1,7 +1,23 @@
 # 24 — Ligand in 2D with its contacts
 
-[Roadmap](../../PLAN.md) · Request 2026-11-20 · Planned, not built. A
-62-line prototype ran; its picture is below.
+[Roadmap](../../PLAN.md) · Request 2026-11-20 · **24a done 2026-11-20 in
+4.32.0:** the command `ligand_2d` with finder, layout and picture. The panel
+(24b) and the contour and halos (24c) are open.
+
+![2RH1, carazolol](../img/ligand-2d.png)
+
+As built: `modules/pymol/ligand2d.py`, 330 lines, no Qt. The picture is
+drawn by rdkit itself (shapes, text and lines in pixel coordinates), so the
+command writes SVG and PNG without a window. Found in 2RH1: Asp113 salt
+bridge, hydrogen bonds to Ser203, Asn312 and Tyr316, ring stacking with
+Phe193 and Phe290, 17 residues, 0.2 s. In 1OKY (the test): the two hinge
+hydrogen bonds of staurosporine, Ser160 and Ala162, and Glu166 at its amine.
+Differences from the plan: lines have no arrow heads and do not tell
+backbone from side chain; the ring grows instead of a second ring; charged
+groups of the ligand are found by pattern (amines, amidines, acids), since
+deposited ligands carry no charges; ring stacking is by distance of ring
+centers only, without the angle; the largest ligand is the default, so
+glycerol and buffer come last. The prototype's picture is replaced.
 
 **A flat drawing of the ligand with the residues around it and the contacts
 between them, in the style of Maestro's ligand interaction diagram. A button
@@ -29,7 +45,7 @@ flat coordinates from rdkit, residues within 4 Å, hydrogen bonds from
 they touch, SVG rendered by Qt. 0.06 s. Three hydrogen bonds found (Ser203,
 Asn312, Tyr316), 17 residues.
 
-![prototype](../img/plan-ligand-2d.png)
+(The prototype's picture is replaced by the one at the top.)
 
 What it shows: the approach works with what is installed, and the hard part
 is not finding contacts but the layout (residues overlap; Asp113's salt
