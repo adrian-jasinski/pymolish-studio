@@ -380,6 +380,8 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
                 ('Get PDB entry...', self.file_fetch_pdb),
                 ('Get by UniProt...', self.file_fetch_uniprot),
                 ('Get predicted structure...', self.file_fetch_fold),
+                None,
+                ('Import table...', lambda: self.property_table.import_dialog()),
             ])
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.action_toolbar)
         self.action_toolbar.setVisible(bool(options.external_gui))

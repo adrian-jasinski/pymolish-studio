@@ -295,3 +295,23 @@ def test_copy_paste():
     table._write(table._selected_cells(), None)
     assert all("score" not in (cmd.get_property_list(n) or ()) for n in ("lig_a", "lig_b"))
     assert cmd.get_property("score", "lig_c") == 2
+
+
+def test_export(tmp_path):
+    from pymol import tables
+    from pymol.Qt import QtCore
+
+    _scene()
+    table = _table()
+    table.tree.sortByColumn(3, QtCore.Qt.SortOrder.AscendingOrder)
+    table.filter.setText("lig_")
+    table.tree.header().hideSection(4)  # note
+    path = str(tmp_path / "shown.csv")
+    table.export(path)
+    # the rows shown in the order shown, the columns shown; no group row
+    assert tables.read_table(path) == [
+        ["name", "score"],
+        ["lig_b", "-10.25"],
+        ["lig_c", "-8"],
+        ["lig_a", "-6.5"],
+    ]

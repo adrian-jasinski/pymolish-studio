@@ -33,6 +33,9 @@ Then all of order 1, 4.21.0 to 4.25.0: the Open button (26b), the palette
 (step 20, finished), sleeping idle threads (1b), rename on the row of the
 Objects panel (23a), and the scene buttons of the core deleted (17f). The
 table below starts again at order 1.
+Then 4.26.0 to 4.29.0: the packed session file `.psex` (28a), the property
+table with editing, import and export (22a to 22c), and a fix in the core
+(a property set again with another type ended the program).
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -51,7 +54,7 @@ user's original numbers; the letters are milestones of the detailed plans.
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
 | 1 | **28b** — [One session key for new data](docs/plans/28-session-format.md) | 28a, the packed `.psex` file, shipped in 4.26.0. Left: one key `pymolish` in the session for everything new (table columns, shot list), with unknown entries kept. Built with its first user (22d or step 19), not ahead. | An entry of a "newer" version survives load and save; PyMOL 3 loads the `.pse` written with the key. |
-| 2 | **22** — [Property table](docs/plans/22-property-table.md) | A window of its own that lies over the viewport, its right edge stuck to the Objects panel; it can be closed and resized. Row number, a dot that shows or hides the object, name, one column per property. Cells edited in place, columns added by hand or from CSV and Excel (read with the standard library), export to CSV. Five slices, 22a to 22e. | Each slice has its test; 1,000 objects with 20 properties scroll and sort without a pause. |
+| 2 | **22d, 22e** — [Property table, the rest](docs/plans/22-property-table.md) | 22a to 22c shipped in 4.27.0 to 4.29.0: the window, editing, columns, copy and paste, import from CSV and Excel, export. Left: 22d, column order and hidden columns kept in the session (with 28b), computed columns (atoms, residues, chains, states, weight, charge), a Columns menu, "follow" (the current row is the only object shown), the window's size between sessions; 22e, a picked atom selects its row. | Each slice has its test. |
 | 3 | **26c, 26d** — [Quick select and the layout of the bar](docs/plans/26-toolbar-buttons.md) | Chips P, L, S, a menu with chains and more, All, none. One row: everything an icon except Residues, Presets and Draw; Palette loses its name with this slice. | Each chip selects the atoms of its expression; no button starts in the overflow menu at 150 %. |
 | 4 | **27** — [UI scale 50 to 300 %, live](docs/plans/27-ui-scale.md) | A field for any percent; the window changes at once (worked in a trial on Linux), "Keep this size?" with a revert, the old message where the live change cannot work. Windows and macOS to try in CI. | The GUI test: 150, 100, 225, 150, the viewport still draws. |
 | 5 | **24** — [Ligand in 2D with its contacts](docs/plans/24-ligand-2d.md) | Command `ligand_2d` and a panel, our own code on rdkit and Qt: the ligand flat, residues around it colored by kind, hydrogen bonds, salt bridges, ring stacking. Interactive both ways: a residue clicked in the drawing is selected in 3D, and what is selected in 3D is ringed in the drawing. A toolbar button, off without a ligand. Three slices. | On 2RH1 the known contacts are found and no two residues overlap. |
@@ -119,7 +122,7 @@ paint roller is built; say if the rest of the sentence asked for more.
 
 The user's to do, not decisions:
 
-- Merge pull request 9 (`feature11`, 4.19.12 to 4.25.0). `master` on GitHub
+- Merge pull request 9 (`feature11`, 4.19.12 to 4.29.0). `master` on GitHub
   has everything up to 4.19.11 (pull request 8, merged 2026-11-19).
 - The checks marked "first CI run" can be looked at: the icon of the Windows
   program, the release notes, the `chem` and `fix` extras on three systems.

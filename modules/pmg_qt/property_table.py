@@ -8,8 +8,11 @@ the viewport, its right edge against the Objects panel, until it is dragged
 elsewhere. The table keeps no data: it shows and changes what the core holds.
 """
 
+import csv
+
 from pymol import CmdException
 from pymol.Qt import QtCore, QtGui, QtWidgets
+from pymol.Qt.utils import getSaveFileNameWithExt
 
 from .object_panel import context_menu, snapshot
 
@@ -153,7 +156,15 @@ class PropertyTable(QtWidgets.QDockWidget):
         body = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(body)
         layout.setContentsMargins(4, 4, 4, 4)
-        self.buttons = QtWidgets.QHBoxLayout()  # more of them with import
+        self.buttons = QtWidgets.QHBoxLayout()
+        for text, tip, run in (
+            ("Import", "Set properties from a CSV or Excel file", self.import_dialog),
+            ("Export", "Write the rows and columns shown as CSV", self.export_dialog),
+        ):
+            button = QtWidgets.QPushButton(text)
+            button.setToolTip(tip)
+            button.clicked.connect(lambda _=False, run=run: run())
+            self.buttons.addWidget(button)
         self.buttons.addWidget(add)
         self.buttons.addWidget(self.filter, 1)
         layout.addLayout(self.buttons)
@@ -402,6 +413,50 @@ class PropertyTable(QtWidgets.QDockWidget):
         )
         if answer == Button.Yes:
             self.delete_column(column)
+
+    def import_dialog(self):
+        """Import: pick a file, set the properties, say what happened."""
+        self.show()
+        filename = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Import table", "", "Tables (*.csv *.tsv *.txt *.xlsx);;All files (*)"
+        )[0]
+        if not filename:
+            return
+        try:
+            matched, skipped, added = self.cmd.load_table(filename)
+        except (CmdException, OSError, ValueError, KeyError) as error:
+            QtWidgets.QMessageBox.warning(self, "Import table", str(error))
+            return
+        self.refresh(force=True)
+        lines = ["%d rows matched an object." % matched]
+        if skipped:
+            more = ", ..." if len(skipped) > 5 else ""
+            lines.append(
+                "%d rows named no object: %s%s" % (len(skipped), ", ".join(skipped[:5]), more)
+            )
+        if added:
+            lines.append("New columns: %s" % ", ".join(added))
+        QtWidgets.QMessageBox.information(self, "Import table", "\n".join(lines))
+
+    def export(self, filename):
+        """The rows shown and the columns shown, as CSV."""
+        tree = self.tree
+        header = tree.header()
+        columns = sorted(
+            (c for c in range(NAME, tree.columnCount()) if not header.isSectionHidden(c)),
+            key=header.visualIndex,
+        )
+        with open(filename, "w", newline="", encoding="utf-8") as handle:
+            out = csv.writer(handle)
+            out.writerow(["name", *(tree.headerItem().text(c) for c in columns[1:])])
+            for item in self._shown():
+                if item.data(NAME, UserRole)[1] != "object:group":
+                    out.writerow([item.text(c) for c in columns])
+
+    def export_dialog(self):
+        filename = getSaveFileNameWithExt(self, "Export table", "", filter="CSV (*.csv)")
+        if filename:
+            self.export(filename)
 
     def _block(self):
         """The selected cells, or the current one, as (rows shown, columns

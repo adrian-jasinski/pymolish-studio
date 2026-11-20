@@ -482,6 +482,7 @@ from .properties import \
 
 from . import palettes
 from .palettes import palette
+from .tables import load_table, save_table
 
 from . import batch
 from .batch import export_objects, load_files

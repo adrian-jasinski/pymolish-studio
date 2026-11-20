@@ -84,6 +84,8 @@ them, a pip install needs `pip install 'pymolish[fix]'`.
 | Command | What it does | Example |
 | --- | --- | --- |
 | `palette [name [, recolor]]` | Sets the colors that new objects cycle through. | `palette vivid` |
+| `load_table filename [, object_column]` | Sets object properties from a CSV, TSV or Excel (`.xlsx`, first sheet) file: one row per object, matched by name; new headers become new properties. | `load_table scores.csv` |
+| `save_table filename [, selection]` | Writes the properties of the objects as CSV. | `save_table scores.csv` |
 
 ## PyMOL commands that needed the commercial build
 

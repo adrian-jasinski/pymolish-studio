@@ -30,6 +30,21 @@ right: Qt's tree view walks rows. An edit is applied after Qt has closed the
 editor. Found on the way and fixed in 4.27.1: the core ended the program
 when a property was set again with another type.
 
+**22c done 2026-11-20 in 4.29.0** (`load_table`, `save_table`, Import and
+Export in the table, "Import table..." in the Open button). The Excel reader
+is 45 lines on `zipfile` and `xml.etree`. Checked against a workbook written
+by openpyxl 3.1.5 in a throwaway environment (not a dependency): numbers,
+text with a comma, non-ASCII text, booleans, an empty row, a second sheet
+that is ignored; a date arrives as its day number (46346), as the help
+says. Not checked: a file saved by Excel itself, which also stores the
+result of a formula (openpyxl does not). `load_table` has no `key`
+argument: `object_column` does that job. The words "true" and "false"
+become booleans; the core decides that.
+
+Open: 22d (column order and hidden columns in the session with 28b,
+computed columns, follow mode), 22e (a picked atom selects its row), the
+Columns menu to hide columns, the size of the window between sessions.
+
 **A table with one row per object: row number, a dot that shows or hides the
 object, the name, then one column per property. Cells are edited in place,
 columns are added by hand or come from a CSV or Excel file. It is a window

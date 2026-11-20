@@ -4,6 +4,29 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.29.0
+
+	* Property table: import and export
+	  - New command "load_table file": reads a CSV, TSV or Excel
+	    (.xlsx, first sheet) file and sets object properties from
+	    it. A row goes to the object named in the column "name",
+	    "title", "object", "id" or "entry", else in the first
+	    column; object_column= names another. Rows that name no
+	    object are skipped and counted. A header that is no
+	    property yet becomes a new column; an empty cell leaves
+	    the property as it is.
+	  - Excel files are read without a new package. Limits: the
+	    first sheet, a formula gives its stored result, a date
+	    arrives as Excel's day number, .xls is not read.
+	  - New command "save_table file [, selection]": the
+	    properties of the objects as CSV.
+	  - In the table: Import and Export buttons. Export writes the
+	    rows and columns that are shown, in the order shown. The
+	    Open button of the toolbar has "Import table...".
+	  - Step 22c.
+
+2026-11-20 pymolish-studio
+
 	* 4.28.0
 
 	* Property table: editing
