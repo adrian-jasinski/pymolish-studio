@@ -724,6 +724,17 @@ SEE ALSO
     def load_pse(filename, partial=0, quiet=1, format='pse', *, _self=cmd):
         try:
             contents = _self.file_read(filename)
+            # by the mark, not by the name: a renamed file still loads
+            if contents[:4] == b"PSEX":
+                import lzma
+                if contents[4] != 1:
+                    raise pymol.CmdException(
+                        'this session needs a newer pymolish-studio '
+                        '(psex format %d)' % contents[4])
+                try:
+                    contents = lzma.decompress(contents[8:])
+                except (lzma.LZMAError, EOFError) as e:
+                    raise pymol.CmdException('damaged session file (%s)' % e)
             session = io.pkl.fromString(contents)
         except AttributeError as e:
             raise pymol.CmdException('PSE contains objects which cannot be unpickled (%s)' % str(e))
@@ -1393,6 +1404,7 @@ EXAMPLE
         'png': 'pymol.viewing:load_png',
         'pse': load_pse,
         'psw': load_pse,
+        'psex': load_pse,
         'ply': load_ply,
         'r3d': load_r3d,
         'cc1': load_cc1,

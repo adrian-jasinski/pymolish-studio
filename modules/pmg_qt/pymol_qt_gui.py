@@ -713,7 +713,9 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
     @PopupOnException.decorator
     def session_save_as(self, fname=''):
+        # the first one is what a name without an extension gets
         formats = [
+            'pymolish Session, packed (*.psex)',
             'PyMOL Session File (*.pse *.pze *.pse.gz)',
             'PyMOL Show File (*.psw *.pzw *.psw.gz)',
         ]
@@ -725,7 +727,8 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
                 filter=';;'.join(formats))
         if fname:
             self.initialdir = os.path.dirname(fname)
-            self.cmd.save(fname, format='pse', quiet=0)
+            packed = fname.lower().endswith('.psex')
+            self.cmd.save(fname, format='psex' if packed else 'pse', quiet=0)
             self.recent_filenames_add(fname)
 
     def render_dialog(self, widget=None):

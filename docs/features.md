@@ -123,6 +123,9 @@ Each row was unused, outdated or had a better replacement.
 
 - The `cmd` API and the plugin loader: [Writing a plugin](plugins.md).
 - Reading and writing PDB, mmCIF, SDF/MOL and PSE sessions; PNG export.
+- `.psex`, a packed session: the content of a `.pse` in a fraction of the
+  size (1AON: 19.6 MB as `.pse`, 1.1 MB as `.psex`), written faster. PyMOL
+  itself reads `.pse`, which stays available.
 - Ray tracing, movies, the POV-Ray renderer, the VMD molfile plugins.
 
 What comes next is in the [roadmap](../PLAN.md).

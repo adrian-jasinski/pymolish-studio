@@ -4,6 +4,26 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.26.0
+
+	* A packed session file: .psex
+	  - "save work.psex" writes what a .pse holds, packed: atoms
+	    and coordinates as bytes, then lzma. 1AON: 19.6 MB as .pse,
+	    1.1 MB as .psex; 4V6X: 87.2 MB and 3.9 MB. Writing and
+	    reading are faster too (4V6X: saved in 0.8 s against
+	    1.5 s, loaded in 0.2 s against 1.0 s).
+	  - File > Save Session As offers it first; a name typed
+	    without an extension gets .psex. "PyMOL Session File
+	    (.pse)" is the second choice and is what PyMOL reads.
+	    Save Session (Ctrl+S) keeps the type the session has.
+	  - "load" tells the two apart by the first bytes of the file,
+	    not by the name. A file cut short or written by a newer
+	    format gives an error and loads nothing.
+	  - Every .pse loads as before; nothing is converted.
+	  - Step 28a.
+
+2026-11-20 pymolish-studio
+
 	* 4.25.0
 
 	* Removed: the scene buttons drawn in the viewport

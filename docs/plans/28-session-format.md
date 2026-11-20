@@ -1,8 +1,19 @@
 # 28 — Session format: is a new one needed?
 
 [Roadmap](../../PLAN.md) · Request 2026-11-20 ("think if we need a new
-session format ... e.g. psex") · Planned, not built. Sizes and compatibility
-were measured.
+session format ... e.g. psex") · **28a done 2026-11-20 in 4.26.0.** 28b (the
+one session key for new data) is built with its first user, the table
+columns of 22d or the shot list of step 19: a module nothing calls is not
+written ahead.
+
+Result of 28a, measured with the shipped code: 1AON 19.6 MB to 1.10 MB,
+4V6X 87.2 MB to 3.90 MB (18 and 22 times smaller). The pickle is written
+with protocol 4, which stores the packed bytes as they are: that is the
+difference to the 1.4 MB of the trial below, which used the protocol of a
+`.pse`. Save 0.20 s against 0.30 s (1AON), 0.78 s against 1.53 s (4V6X);
+load 0.04 s against 0.21 s and 0.20 s against 0.99 s. `load` goes by the
+first bytes, so a renamed file loads. Not done: a file association in the
+bundles (they have none for `.pse` either).
 
 **Short answer: no new format is needed to store the new options, a `.pse`
 can carry them today. A new file type is still worth having for size: the

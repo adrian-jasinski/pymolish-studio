@@ -72,7 +72,7 @@ a command; the Tab key completes names.
 
 | To keep | Do | Command |
 | --- | --- | --- |
-| Everything, to continue later | File > Save Session | `save work.pse` |
+| Everything, to continue later | File > Save Session | `save work.psex` (small; `save work.pse` for PyMOL) |
 | A picture | File > Export Image As > PNG | `png picture.png, dpi=300, ray=1` |
 | The molecule itself | File > Export Molecule | `save model.pdb` |
 
