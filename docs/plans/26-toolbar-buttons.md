@@ -1,7 +1,16 @@
 # 26 — Action toolbar: Bg, Open, quick select, and room for all of it
 
-[Roadmap](../../PLAN.md) · Request 2026-11-20 · Planned, not built. The
-widths below were measured in the real window at 150 %.
+[Roadmap](../../PLAN.md) · Request 2026-11-20 · **Done 2026-11-20: 26a in
+4.20.0, 26b in 4.21.0, 26c and 26d in 4.30.0.** The widths below were
+measured in the real window at 150 %.
+
+The bar as built, left to right: Open, Residues, the chips P L S ... All and
+"nothing", Undo, Redo, Zoom, Orient, Rock, Presets, Palette, Bg, then
+Builder, Scenes, Table, Draw, the scale, More. It is 1154 px wide at 150 %
+(the estimate was 1140 to 1210) and the default window opens that wide.
+Residues, Presets, Bg, Draw and the scale keep a text. Differences from the
+plan: "Bg" keeps its two letters (the request asked for them), the chips are
+29 to 38 px wide, and the 2D button of step 24 is not there yet.
 
 **Three additions to the action toolbar: "Background" becomes "Bg" with a
 better icon (26a), an Open button stands before Residues (26b), and a row of

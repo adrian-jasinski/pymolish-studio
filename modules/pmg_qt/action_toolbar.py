@@ -49,6 +49,25 @@ BACKGROUND_SETTINGS = (
 )
 # toolbar icons: side in pixels, and line width on the 24 px grid of the
 # drawings (menus use 16 and 1.5)
+# Quick select: (letter, what it selects in words, selection expression).
+# The first group are the chips of the bar, the second the rows of "...".
+KINDS = (
+    ("P", "protein", "polymer.protein"),
+    ("L", "ligands", "organic"),
+    ("S", "water", "solvent"),
+)
+MORE_KINDS = (
+    ("Nucleic acid", "polymer.nucleic"),
+    ("Ions and metals", "inorganic"),
+    None,  # the chains of the objects that are switched on go here
+    ("Backbone", "backbone"),
+    ("Side chains", "sidechain"),
+    ("Hydrogens", "hydro"),
+    None,
+    ("Near the selection, 5 \u00c5", "byres (sele around 5)"),
+    ("Invert", "not sele"),
+)
+MAX_CHAINS = 20
 ICON = 20
 STROKE = 2
 ACCENT = "#1e4fb8"  # the A button of the Objects panel; also in pymol.sty
@@ -143,6 +162,42 @@ class ActionToolbar(QtWidgets.QToolBar):
         setting_callbacks[index("mouse_selection_mode")].append(self._show_selecting)
         self._show_selecting(cmd.get_setting_int("mouse_selection_mode"))
 
+        # Quick select: one click selects a kind of molecule in the objects
+        # that are switched on. One widget, so the chips stand close.
+        chips = QtWidgets.QWidget()
+        row = QtWidgets.QHBoxLayout(chips)
+        row.setContentsMargins(0, 0, 0, 0)
+        row.setSpacing(2)
+        self.chips = {}
+
+        def chip(text, tip, run=None):
+            button = QtWidgets.QToolButton(objectName="chip")
+            button.setText(text)
+            button.setToolTip(tip)
+            button.setToolButtonStyle(Style.ToolButtonTextOnly)
+            if run:
+                button.clicked.connect(run)
+            row.addWidget(button)
+            self.chips[text] = button
+            return button
+
+        hint = " (Shift adds, Ctrl takes away)"
+        for letter, what, expression in KINDS:
+            chip(
+                letter,
+                "Select %s%s" % (what, hint),
+                lambda _=False, e=expression, w=what: self.quick_select(e, w),
+            )
+        dots = chip("\u22ef", "Select more: chains, nucleic acid, ions ...")
+        dots.setMenu(QtWidgets.QMenu(dots))
+        dots.setPopupMode(Popup.InstantPopup)
+        dots.menu().aboutToShow.connect(self._fill_kinds)
+        chip("All", "Select everything" + hint, lambda: self.quick_select("all", "atoms"))
+        none = chip("None", "Select nothing", self.select_nothing)
+        none.setToolButtonStyle(Style.ToolButtonIconOnly)
+        self._icons[none] = "select nothing"
+        self.addWidget(chips)
+
         self.addSeparator()
         for text, run in (("Undo", cmd.undo), ("Redo", cmd.redo)):
             # the name stays the tooltip and the accessible name
@@ -165,8 +220,7 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.rock = self._action("Rock", cmd.rock)
         self.rock.setCheckable(True)
         # The view actions show only their icon: the name is the tooltip and
-        # the accessible name. The room goes to the text of Palette, which
-        # needs the explanation more.
+        # the accessible name.
         self.zoom.setToolButtonStyle(Style.ToolButtonIconOnly)
         for action in (orient, self.rock):
             self.widgetForAction(action).setToolButtonStyle(Style.ToolButtonIconOnly)
@@ -179,8 +233,11 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.presets.menu().aboutToShow.connect(self._fill_presets)
 
         self.colors = self._menu_button(
-            "Palette", "Colors of objects and chains", icon="color"
+            "Palette", "Palette: colors of objects and chains", icon="color"
         )
+        # one row for all buttons: only Residues, Presets, Draw and the
+        # scale keep a text (docs/plans/26-toolbar-buttons.md, 26d)
+        self.colors.setToolButtonStyle(Style.ToolButtonIconOnly)
         # The palettes the user defined here earlier. Like the saved choice
         # below, not with -k, which means no user configuration.
         if pymol.invocation.options.pymolrc is not None:
@@ -467,6 +524,61 @@ class ActionToolbar(QtWidgets.QToolBar):
     def _show_selecting(self, value):
         self.selecting.setText(SELECTING[int(value)])
         self.selecting.menu().actions()[int(value)].setChecked(True)
+
+    def quick_select(self, expression, what):
+        """Select `expression` in the objects that are switched on, as
+        "sele". With Shift it is added to the selection, with Ctrl taken
+        away from it. Nothing found: a line in the log, "sele" stays."""
+        cmd = self.cmd
+        have = "sele" in cmd.get_names("selections")
+        if "sele" in expression.split() and not have:
+            print(" Select: there is no selection yet.")
+            return
+        target = "(%s) and enabled" % expression
+        if not cmd.count_atoms(target):
+            print(" Select: no %s in the visible objects." % what)
+            return
+        modifiers = QtWidgets.QApplication.keyboardModifiers()
+        if have and modifiers & Qt.KeyboardModifier.ShiftModifier:
+            target = "sele or (%s)" % target
+        elif have and modifiers & Qt.KeyboardModifier.ControlModifier:
+            target = "sele and not (%s)" % target
+        cmd.select("sele", target, enable=1, quiet=0)
+
+    def select_nothing(self):
+        cmd = self.cmd
+        if "sele" in cmd.get_names("selections"):
+            cmd.select("sele", "none")
+        cmd.deselect()
+
+    def _fill_kinds(self):
+        menu = self.chips["\u22ef"].menu()
+        menu.clear()
+        for row in MORE_KINDS:
+            if row is not None:
+                label, expression = row
+                menu.addAction(
+                    label,
+                    lambda e=expression, w=label.lower(): self.quick_select(e, w),
+                )
+                continue
+            menu.addSeparator()
+            if menu.actions()[-2].text() == "Ions and metals":  # the chains
+                chains = self.cmd.get_chains("enabled")
+                for chain in chains[:MAX_CHAINS]:
+                    menu.addAction(
+                        "Chain %s" % (chain or "(no name)"),
+                        lambda c=chain: self.quick_select(
+                            "chain '%s'" % c, "chain %s" % c
+                        ),
+                    )
+                if len(chains) > MAX_CHAINS:
+                    note = menu.addAction(
+                        "%d more: A > select in the Objects panel" % (len(chains) - MAX_CHAINS)
+                    )
+                    note.setEnabled(False)
+                if chains:
+                    menu.addSeparator()
 
     def _zoom_visible(self):
         """Fill the viewport with what is shown, centered. Hidden objects

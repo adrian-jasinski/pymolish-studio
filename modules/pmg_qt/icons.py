@@ -75,6 +75,7 @@ LABELS = {
     "last": "skip-forward",
     # action toolbar
     "open file": "folder-open",
+    "select nothing": "ban",
     "undo": "undo-2",
     "redo": "redo-2",
     "rock": "rotate-3d",

@@ -125,16 +125,19 @@ def test_icons():
         for b in bar.findChildren(QtWidgets.QToolButton)
         if b.objectName() != "qt_toolbar_ext_button"  # Qt's overflow arrow
     ]
-    assert len(buttons) == 14
-    assert [b.text() for b in buttons if b.icon().isNull()] == []
+    assert len(buttons) == 20
+    # every button has an icon, but the letter chips of quick select
+    assert [b.text() for b in buttons if b.icon().isNull()] == ["P", "L", "S", "\u22ef", "All"]
     IconOnly = QtCore.Qt.ToolButtonStyle.ToolButtonIconOnly
     assert sorted(b.toolTip() for b in buttons if b.toolButtonStyle() == IconOnly) == [
             "Builder",
             "More view actions",
             "Orient",
+            "Palette: colors of objects and chains",
             "Redo",
             "Rock",
             "Scenes",
+            "Select nothing",
             "Undo",
             "Zoom on what is visible",
         ]
@@ -378,3 +381,59 @@ def test_scale():
     ):
         actions[1].trigger()
     save.assert_called_once_with(1.2)
+
+
+def test_quick_select():
+    from unittest import mock
+
+    from pymol.Qt import QtCore, QtWidgets
+    from pmg_qt.action_toolbar import ActionToolbar
+
+    Modifier = QtCore.Qt.KeyboardModifier
+    bar = ActionToolbar(cmd, defaultdict(list))
+
+    def held(modifier):
+        return mock.patch.object(
+            QtWidgets.QApplication, "keyboardModifiers", return_value=modifier
+        )
+
+    # nothing loaded: nothing selected, nothing raised
+    bar.chips["P"].click()
+    bar.chips["None"].click()
+    assert "sele" not in cmd.get_names("selections")
+
+    cmd.load(testing.datafile("1oky.pdb.gz"), "m")
+    cmd.fragment("ala", "hidden")
+    cmd.disable("hidden")
+    for letter, expression in (("P", "polymer.protein"), ("L", "organic"), ("S", "solvent")):
+        bar.chips[letter].click()
+        # only in the objects that are switched on
+        assert cmd.count_atoms("sele") == cmd.count_atoms("m and " + expression) > 0
+    bar.chips["All"].click()
+    assert cmd.count_atoms("sele") == cmd.count_atoms("m")
+
+    bar.chips["L"].click()
+    ligand = cmd.count_atoms("sele")
+    with held(Modifier.ShiftModifier):  # add
+        bar.chips["S"].click()
+    assert cmd.count_atoms("sele") == ligand + cmd.count_atoms("m and solvent")
+    with held(Modifier.ControlModifier):  # take away
+        bar.chips["L"].click()
+    assert cmd.count_atoms("sele") == cmd.count_atoms("m and solvent")
+
+    # "...": the chains of the objects that are switched on, and more
+    more = bar.chips["\u22ef"].menu()
+    more.aboutToShow.emit()
+    rows = {a.text(): a for a in more.actions()}
+    assert [t for t in rows if t.startswith("Chain ")] == ["Chain %s" % c for c in cmd.get_chains("m")]
+    rows["Chain A"].trigger()
+    assert cmd.count_atoms("sele") == cmd.count_atoms("m and chain A")
+    bar.chips["L"].click()
+    rows["Invert"].trigger()
+    assert cmd.count_atoms("sele") == cmd.count_atoms("m and not organic")
+    before = cmd.count_atoms("sele")
+    rows["Nucleic acid"].trigger()  # none here: the selection stays
+    assert cmd.count_atoms("sele") == before
+
+    bar.chips["None"].click()
+    assert cmd.count_atoms("sele") == 0

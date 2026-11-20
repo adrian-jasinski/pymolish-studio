@@ -20,6 +20,20 @@
     font-weight:    600;
 }
 
+/* The quick-select chips: letters in a thin frame, close together. */
+#toolbar_actions QToolButton#chip
+{
+    padding:        3px 5px;
+    min-width:      1em;
+    border:         1px solid rgba(128, 128, 128, 0.45);
+    border-radius:  5px;
+}
+
+#toolbar_actions QToolButton#chip::menu-indicator
+{
+    image:          none;
+}
+
 /* Blue for what is chosen and for what the pointer is on: the text of the
    selection mode, a checked button, a hovered button. palette(link) is a
    blue that reads on the window color of either theme; the icons follow in

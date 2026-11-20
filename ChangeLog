@@ -4,6 +4,24 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.30.0
+
+	* Action toolbar: quick select
+	  - Chips after the selection mode: P selects the protein, L the
+	    ligands, S the water, All everything, in the objects that
+	    are switched on. The result is the selection "sele". With
+	    Shift a click adds to the selection, with Ctrl it takes
+	    away. The last chip selects nothing.
+	  - The chip with three dots lists more: nucleic acid, ions and
+	    metals, each chain of the objects that are switched on,
+	    backbone, side chains, hydrogens, everything within 5 A of
+	    the selection, and the inverse.
+	  - Palette shows only its icon now, so that the bar stays one
+	    row: the names of Residues, Presets and Draw remain.
+	  - Steps 26c and 26d.
+
+2026-11-20 pymolish-studio
+
 	* 4.29.0
 
 	* Property table: import and export
