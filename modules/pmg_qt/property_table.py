@@ -1,11 +1,14 @@
 """
 Property table: one row per object, with its row number, a dot that shows or
 hides the object, its name and one column per object property
-(cmd.set_property, the data fields of an SDF file). A window of its own that
-lies over the viewport, its right edge against the Objects panel, until it
-is dragged elsewhere. The table keeps no data: it shows what the core holds.
+(cmd.set_property, the data fields of an SDF file). Cells are edited in
+place, columns are added, renamed and deleted from the header, blocks are
+copied and pasted as tab-separated text. A window of its own that lies over
+the viewport, its right edge against the Objects panel, until it is dragged
+elsewhere. The table keeps no data: it shows and changes what the core holds.
 """
 
+from pymol import CmdException
 from pymol.Qt import QtCore, QtGui, QtWidgets
 
 from .object_panel import context_menu, snapshot
@@ -60,6 +63,13 @@ class _Row(QtWidgets.QTreeWidgetItem):
         )
 
 
+class _NoEditor(QtWidgets.QStyledItemDelegate):
+    """Row and In are not edited."""
+
+    def createEditor(self, *_):
+        return None
+
+
 class PropertyTable(QtWidgets.QDockWidget):
     def __init__(self, cmd, window, viewport, panel):
         """viewport is the widget the table opens over, panel the dock its
@@ -70,6 +80,8 @@ class PropertyTable(QtWidgets.QDockWidget):
         self.viewport, self.panel = viewport, panel
         self.rows = None
         self.columns = []  # property names, in the order they first appeared
+        self.extra = set()  # columns added here that no object has a value for
+        self._header = None  # the columns the tree was built with
         self.items = {}
         self._stuck = True
         self._target = None  # where place() last put the table
@@ -84,7 +96,17 @@ class PropertyTable(QtWidgets.QDockWidget):
         tree.setSelectionMode(
             QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection
         )
-        tree.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        # cells, so that a block can be copied, pasted, emptied or edited
+        tree.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
+        Trigger = QtWidgets.QAbstractItemView.EditTrigger
+        tree.setEditTriggers(
+            Trigger.DoubleClicked | Trigger.EditKeyPressed | Trigger.AnyKeyPressed
+        )
+        tree.setTabKeyNavigation(True)  # Tab and Shift+Tab walk the cells
+        self._no_editor = _NoEditor(tree)
+        for column in (ROW, IN):
+            tree.setItemDelegateForColumn(column, self._no_editor)
+        tree.itemChanged.connect(self._edited)
         # as in the Objects panel: a dot, lit when the object is shown
         tree.setStyleSheet(
             "QTreeView::item { padding: 3px 6px; }"
@@ -106,6 +128,22 @@ class PropertyTable(QtWidgets.QDockWidget):
         space.activated.connect(
             lambda: tree.currentItem() and self._toggle(tree.currentItem())
         )
+        Standard = QtGui.QKeySequence.StandardKey
+        for key, run in (
+            (Standard.Copy, self.copy),
+            (Standard.Paste, self.paste),
+            (Standard.Delete, lambda: self._write(self._selected_cells(), None)),
+        ):
+            shortcut = QtGui.QShortcut(QtGui.QKeySequence(key), tree)
+            shortcut.setContext(Qt.ShortcutContext.WidgetShortcut)
+            shortcut.activated.connect(run)
+        header = tree.header()
+        header.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        header.customContextMenuRequested.connect(self._header_menu)
+
+        add = QtWidgets.QPushButton("+ Column")
+        add.setToolTip("Add an empty column")
+        add.clicked.connect(lambda: self._ask_column())
 
         self.filter = QtWidgets.QLineEdit()
         self.filter.setPlaceholderText("Filter by name or value")
@@ -115,7 +153,10 @@ class PropertyTable(QtWidgets.QDockWidget):
         body = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(body)
         layout.setContentsMargins(4, 4, 4, 4)
-        layout.addWidget(self.filter)
+        self.buttons = QtWidgets.QHBoxLayout()  # more of them with import
+        self.buttons.addWidget(add)
+        self.buttons.addWidget(self.filter, 1)
+        layout.addLayout(self.buttons)
         layout.addWidget(tree, 1)
         self.setWidget(body)
 
@@ -138,44 +179,50 @@ class PropertyTable(QtWidgets.QDockWidget):
         if self.isVisible():
             self.refresh()
 
-    def refresh(self):
+    def refresh(self, force=False):
         rows = table_rows(self.cmd)
-        if rows == self.rows:
+        if rows == self.rows and not force:
             return
-        columns = [c for c in self.columns if any(c in r[4] for r in rows)]
+        columns = [
+            c for c in self.columns if c in self.extra or any(c in r[4] for r in rows)
+        ]
         for row in rows:
             columns += [p for p in row[4] if p not in columns]
         shape = [(r[0], r[1], r[3]) for r in rows]
-        same = columns == self.columns and shape == [
+        same = columns == self._header and shape == [
             (r[0], r[1], r[3]) for r in self.rows or ()
         ]
         self.rows, self.columns = rows, columns
         tree = self.tree
         tree.setSortingEnabled(False)  # not once per cell
-        if not same:
-            self._rebuild(rows)
-        for order, row in enumerate(rows):
-            self._fill(self.items[row[0]], order, row)
+        with QtCore.QSignalBlocker(tree):  # these are not edits
+            if not same:
+                self._rebuild(rows)
+            for order, row in enumerate(rows):
+                self._fill(self.items[row[0]], order, row)
         tree.setSortingEnabled(True)
         self._apply_filter()
 
     def _rebuild(self, rows):
-        """Recreate the items; keep collapsed groups and the row selection."""
+        """Recreate the items; keep collapsed groups."""
         tree = self.tree
         collapsed = {
             n for n, i in self.items.items() if i.childCount() and not i.isExpanded()
         }
-        selected = {n for n, i in self.items.items() if i.isSelected()}
         first = tree.columnCount() < len(FIXED)
         tree.clear()
         tree.setColumnCount(len(FIXED) + len(self.columns))
         tree.setHeaderLabels([*FIXED, *self.columns])
+        self._header = list(self.columns)
         self.items = {}
         for name, kind, _, _, _ in rows:
             item = _Row()
             item.setData(NAME, UserRole, (name, kind))
             # the dot toggles in _clicked, with Ctrl for "only this one"
-            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
+            item.setFlags(
+                (item.flags() | Qt.ItemFlag.ItemIsEditable)
+                & ~Qt.ItemFlag.ItemIsUserCheckable
+            )
             item.setTextAlignment(ROW, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
             self.items[name] = item
         root = tree.invisibleRootItem()
@@ -183,7 +230,6 @@ class PropertyTable(QtWidgets.QDockWidget):
             self.items.get(parent, root).addChild(self.items[name])
         for name, item in self.items.items():
             item.setExpanded(name not in collapsed)
-            item.setSelected(name in selected)
         if first:  # then the user's widths are kept
             em = tree.fontMetrics().height()
             for column, width in ((ROW, 4), (IN, 3), (NAME, 14)):
@@ -225,16 +271,178 @@ class PropertyTable(QtWidgets.QDockWidget):
             return
         self._numbering = True
         number = 0
+        with QtCore.QSignalBlocker(self.tree):
+            for item in self._shown():
+                group = item.data(NAME, UserRole)[1] == "object:group"
+                number += not group
+                item.setText(ROW, "" if group else str(number))
+        self._numbering = False
+
+    def _shown(self):
+        """The rows that are shown, top to bottom."""
         walk = QtWidgets.QTreeWidgetItemIterator(
             self.tree, QtWidgets.QTreeWidgetItemIterator.IteratorFlag.NotHidden
         )
+        items = []
         while walk.value():
-            item = walk.value()
-            group = item.data(NAME, UserRole)[1] == "object:group"
-            number += not group
-            item.setText(ROW, "" if group else str(number))
+            items.append(walk.value())
             walk += 1
-        self._numbering = False
+        return items
+
+    # ---- editing ----
+
+    def _selected_cells(self):
+        return [
+            (self.tree.itemFromIndex(i), i.column()) for i in self.tree.selectedIndexes()
+        ]
+
+    def _write(self, cells, text):
+        """Set the property cells among `cells` (item, column) to `text`;
+        None or "" deletes the property. The core picks the type: a whole
+        number, a number, else text."""
+        for item, column in cells:
+            if column >= len(FIXED):
+                self.cmd.set_property(
+                    self.columns[column - len(FIXED)],
+                    text.strip() if text and text.strip() else None,
+                    item.data(NAME, UserRole)[0],
+                )
+        self.refresh(force=True)
+
+    def _edited(self, item, column):
+        """An editor closed with a new text. Applied once Qt is done with
+        the editor: a refresh in the middle of its commit leaves it open."""
+        name = item.data(NAME, UserRole)[0]
+        text = item.text(column)
+        # with several cells of the column selected, the edit goes to all
+        cells = [c for c in self._selected_cells() if c[1] == column]
+        if (item, column) not in cells:
+            cells = [(item, column)]
+        QtCore.QTimer.singleShot(0, lambda: self._apply(name, cells, column, text))
+
+    def _apply(self, name, cells, column, text):
+        cmd = self.cmd
+        if column == NAME:
+            new = cmd.get_legal_name(text.strip())  # spaces to _
+            if new and new != name:
+                if new in cmd.get_names("all"):
+                    print(" Rename: the name '%s' is taken." % new)
+                else:
+                    try:
+                        cmd.set_name(name, new)
+                    except CmdException as error:  # a selection keyword
+                        print(error)
+            self.refresh(force=True)
+        else:
+            live = set(map(id, self.items.values()))  # not rebuilt meanwhile
+            self._write([c for c in cells if id(c[0]) in live], text)
+
+    def add_column(self, name):
+        """An empty column; it becomes a property with its first value."""
+        name = name.strip()
+        if name and name not in self.columns and name not in FIXED:
+            self.extra.add(name)
+            self.columns.append(name)
+            self.refresh(force=True)
+            return True
+        return False
+
+    def rename_column(self, old, new):
+        new = new.strip()
+        if not new or new in self.columns or new in FIXED:
+            return False
+        for name, _, _, _, props in self.rows:
+            if old in props:
+                self.cmd.set_property(new, props[old], name)
+                self.cmd.set_property(old, None, name)
+        self.columns[self.columns.index(old)] = new  # it keeps its place
+        self.extra.discard(old)
+        self.extra.add(new)
+        self.refresh(force=True)
+        return True
+
+    def delete_column(self, column):
+        """Delete the property from every object."""
+        for name, _, _, _, props in self.rows:
+            if column in props:
+                self.cmd.set_property(column, None, name)
+        self.extra.discard(column)
+        self.refresh(force=True)
+
+    def _ask_column(self, old=None):
+        """The dialog behind "+ Column" and "Rename column"."""
+        name, ok = QtWidgets.QInputDialog.getText(
+            self, "Rename column" if old else "New column", "Name:", text=old or ""
+        )
+        if ok and not (self.rename_column(old, name) if old else self.add_column(name)):
+            QtWidgets.QMessageBox.information(
+                self, "Column", "'%s' is empty or the name of a column." % name.strip()
+            )
+
+    def _header_menu(self, position):
+        header = self.tree.header()
+        column = header.logicalIndexAt(position)
+        menu = QtWidgets.QMenu(header)
+        menu.addAction("Add column...", lambda: self._ask_column())
+        if column >= len(FIXED):
+            name = self.columns[column - len(FIXED)]
+            menu.addAction("Rename column...", lambda: self._ask_column(name))
+            menu.addAction("Delete column", lambda: self._ask_delete(name))
+        menu.exec(header.mapToGlobal(position))
+
+    def _ask_delete(self, column):
+        Button = QtWidgets.QMessageBox.StandardButton
+        count = sum(column in row[4] for row in self.rows)
+        answer = QtWidgets.QMessageBox.question(
+            self,
+            "Delete column",
+            "Delete '%s' and its %d values? This cannot be undone." % (column, count),
+            Button.Yes | Button.Cancel,
+            Button.Cancel,
+        )
+        if answer == Button.Yes:
+            self.delete_column(column)
+
+    def _block(self):
+        """The selected cells, or the current one, as (rows shown, columns
+        in the order shown): what a copy takes and where a paste starts."""
+        tree = self.tree
+        cells = self._selected_cells()
+        if not cells and tree.currentItem():
+            cells = [(tree.currentItem(), tree.currentColumn())]
+        visual = tree.header().visualIndex
+        chosen = {id(item) for item, _ in cells}
+        rows = [item for item in self._shown() if id(item) in chosen]
+        columns = sorted({column for _, column in cells}, key=visual)
+        return rows, columns
+
+    def copy(self):
+        """The block of the selected cells as tab-separated text."""
+        rows, columns = self._block()
+        lines = ["\t".join(item.text(c) for c in columns) for item in rows]
+        QtWidgets.QApplication.clipboard().setText("\n".join(lines))
+
+    def paste(self):
+        """Tab-separated text into the property cells, from the first
+        selected cell to the right and down the rows shown."""
+        rows, columns = self._block()
+        text = QtWidgets.QApplication.clipboard().text()
+        if not rows or not text:
+            return
+        tree = self.tree
+        shown = self._shown()
+        shown = shown[shown.index(rows[0]) :]
+        order = sorted(range(tree.columnCount()), key=tree.header().visualIndex)
+        order = order[order.index(columns[0]) :]
+        for item, line in zip(shown, text.rstrip("\n").split("\n")):
+            for column, value in zip(order, line.split("\t")):
+                if column >= len(FIXED):
+                    self.cmd.set_property(
+                        self.columns[column - len(FIXED)],
+                        value.strip() or None,
+                        item.data(NAME, UserRole)[0],
+                    )
+        self.refresh(force=True)
 
     # ---- clicks ----
 

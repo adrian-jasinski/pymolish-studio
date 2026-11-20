@@ -24,6 +24,12 @@ Replaces the metadata table of [step 3](03-modern-ui.md); step 3 is closed.
 - The size is not saved between sessions yet (the first size is the
   viewport's each time).
 
+**22b done 2026-11-20 in 4.28.0** (cells, names, columns, copy, paste,
+Delete). Differences: Tab applies and moves to the cell below, not to the
+right: Qt's tree view walks rows. An edit is applied after Qt has closed the
+editor. Found on the way and fixed in 4.27.1: the core ended the program
+when a property was set again with another type.
+
 **A table with one row per object: row number, a dot that shows or hides the
 object, the name, then one column per property. Cells are edited in place,
 columns are added by hand or come from a CSV or Excel file. It is a window

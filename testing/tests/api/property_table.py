@@ -1,7 +1,8 @@
 """
 Property table: rows and nesting, the In dot, columns from object properties
 and SDF data fields, sorting by value, the filter, row numbers, identity
-after rename and delete. split_states keeps properties.
+after rename and delete; editing cells and names, columns added, renamed and
+deleted, copy and paste of a block. split_states keeps properties.
 Headless (offscreen QApplication).
 """
 
@@ -177,3 +178,120 @@ def test_many_rows():
     for _ in range(5):
         table.refresh()  # nothing changed: read and compare
     assert (time.time() - start) / 5 < 0.1
+
+
+def _edit(item, column, text):
+    """What a closed editor does; the table applies it from the event loop."""
+    from pymol.Qt import QtWidgets
+
+    item.setText(column, text)
+    QtWidgets.QApplication.processEvents()
+
+
+def test_edit_cells():
+    _scene()
+    table = _table()
+    a, b, c = (table.items[n] for n in ("lig_a", "lig_b", "lig_c"))
+    # the text of a cell becomes a whole number, a number or text
+    for text, value in (("-7.25", -7.25), ("12", 12), ("see note", "see note"), (" 3e2 ", 300.0)):
+        _edit(a, 3, text)  # what a closed editor does
+        assert cmd.get_property("score", "lig_a") == value
+        assert type(cmd.get_property("score", "lig_a")) is type(value)
+    # an emptied cell deletes the property
+    _edit(a, 3, "")
+    assert "score" not in (cmd.get_property_list("lig_a") or ())
+    assert a.text(3) == ""
+    # with several cells of the column selected, the edit goes to all
+    b.setSelected(False)
+    for item in (b, c):
+        table.tree.setCurrentItem(item, 3, table.tree.selectionModel().SelectionFlag.Select)
+    _edit(c, 3, "1.5")
+    assert [cmd.get_property("score", n) for n in ("lig_b", "lig_c")] == [1.5, 1.5]
+    # a new property for an object that had none
+    _edit(table.items["protein"], 4, "target")
+    assert cmd.get_property("note", "protein") == "target"
+    # Row and In have no editor
+    assert table.tree.itemDelegateForColumn(0).createEditor(None, None, None) is None
+
+
+def test_edit_name():
+    _scene()
+    table = _table()
+    _edit(table.items["lig_a"], 2, "pose one")
+    assert "pose_one" in cmd.get_names() and "lig_a" not in cmd.get_names()
+    assert table.items["pose_one"].text(3) == "-6.5"  # its values came along
+    _edit(table.items["pose_one"], 2, "lig_b")  # taken: refused, text back
+    _edit(table.items["pose_one"], 2, " ")
+    assert "pose_one" in cmd.get_names()
+    assert table.items["pose_one"].text(2) == "pose_one"
+
+
+def test_columns():
+    _scene()
+    table = _table()
+    tree = table.tree
+
+    def labels():
+        return [tree.headerItem().text(c) for c in range(3, tree.columnCount())]
+
+    assert table.add_column(" stars ")
+    assert not table.add_column("stars") and not table.add_column("Name")
+    assert not table.add_column("")
+    assert labels() == ["score", "note", "stars"]
+    table.refresh()  # an empty column of the user outlives a poll
+    assert labels() == ["score", "note", "stars"]
+    _edit(table.items["lig_a"], 5, "3")
+    assert cmd.get_property("stars", "lig_a") == 3
+
+    assert table.rename_column("score", "docking score")
+    assert not table.rename_column("note", "stars")
+    assert labels() == ["docking score", "note", "stars"]  # it keeps its place
+    assert cmd.get_property("docking score", "lig_b") == -10.25
+    assert "score" not in cmd.get_property_list("lig_b")
+
+    table.delete_column("docking score")
+    assert labels() == ["note", "stars"]
+    assert all("docking score" not in (cmd.get_property_list(n) or ()) for n in ("lig_a", "lig_b", "lig_c"))
+
+
+def test_copy_paste():
+    from pymol.Qt import QtWidgets
+
+    Select = QtWidgets.QAbstractItemView.SelectionMode  # noqa: F841
+    _scene()
+    cmd.ungroup("poses")
+    cmd.delete("poses")
+    table = _table()
+    tree = table.tree
+    flag = tree.selectionModel().SelectionFlag
+    clipboard = QtWidgets.QApplication.clipboard()
+
+    tree.clearSelection()
+    for name in ("lig_a", "lig_b"):
+        for column in (2, 3, 4):
+            tree.setCurrentItem(table.items[name], column, flag.Select)
+    table.copy()
+    assert clipboard.text() == "lig_a\t-6.5\t\nlig_b\t-10.25\tbest"
+
+    # a block from a spreadsheet, pasted at lig_b / score: to the right and down
+    clipboard.setText("1\tone\n2\ttwo\n3\tthree\n")
+    tree.clearSelection()
+    tree.setCurrentItem(table.items["lig_b"], 3, flag.Select)
+    table.paste()
+    assert [cmd.get_property("score", n) for n in ("lig_a", "lig_b", "lig_c", "protein")] == [-6.5, 1, 2, 3]
+    assert [cmd.get_property("note", n) for n in ("lig_b", "lig_c", "protein")] == ["one", "two", "three"]
+
+    # a paste never renames and never touches Row or In
+    clipboard.setText("x\ty\tz\t9")
+    tree.clearSelection()
+    tree.setCurrentItem(table.items["lig_a"], 0, flag.Select)
+    table.paste()
+    assert "lig_a" in cmd.get_names() and cmd.get_property("score", "lig_a") == 9
+
+    # Delete empties the selected cells
+    tree.clearSelection()
+    for name in ("lig_a", "lig_b"):
+        tree.setCurrentItem(table.items[name], 3, flag.Select)
+    table._write(table._selected_cells(), None)
+    assert all("score" not in (cmd.get_property_list(n) or ()) for n in ("lig_a", "lig_b"))
+    assert cmd.get_property("score", "lig_c") == 2

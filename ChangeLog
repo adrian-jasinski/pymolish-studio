@@ -4,6 +4,27 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.28.0
+
+	* Property table: editing
+	  - A double click, F2 or typing on a cell edits it. The value
+	    becomes a whole number, a decimal number or text, by what
+	    was typed. Emptying a cell deletes the property. With
+	    several cells of one column selected, the edit goes to all
+	    of them. Tab applies and edits the cell below.
+	  - The Name cell renames the object.
+	  - "+ Column" adds an empty column; a right click on a column
+	    header renames or deletes the column (deleting asks first:
+	    it deletes the property from every object).
+	  - Ctrl+C copies the selected cells as tab-separated text,
+	    Ctrl+V pastes such text from the first selected cell to
+	    the right and down (from a spreadsheet, for instance),
+	    Delete empties the selected cells. A paste changes only
+	    property cells, never a name.
+	  - Step 22b.
+
+2026-11-20 pymolish-studio
+
 	* 4.27.1
 
 	* Fix: a property set again with another type ended the program
