@@ -12,6 +12,30 @@ its times and pictures this part of the plan is written again. No preset
 that only sets surface settings and no new setting is added before that.
 Question 32: the color themes are built, as a group of their own.
 
+**25a-1 done 2026-11-20 in 4.34.0:** the command `stage` and three light
+setups.
+
+![stage](../img/stage.jpg)
+
+From the left: floor with the look "top light" (3.7 s for 560 x 420), "soft
+shadow" (26 s), "studio" (41 s), and the mirror image with "top light"
+(9 s). As built, and where it differs from the plan below:
+
+- `stage` is geometry only: modes `floor`, `mirror`, `off`. The light is not
+  its business: "shadow" and "soft" of the plan became the looks "top
+  light" and "soft shadow", next to "studio". A "soft box" look was not
+  added; the look "soft" of step 15 is that already.
+- The far edge of the floor showed as a line. Fog toward the background and
+  a rear clipping plane moved back by the depth of the scene hide it; "off"
+  puts fog, clipping and view back.
+- The floor has the background color, 6 % darker (10 % lighter on a dark
+  background). No gradient is set.
+- `zoom` and `orient` without arguments count the floor: a CGO has an
+  extent like any object. The Zoom button of the toolbar does not.
+- The soft shadow is four hard shadows close together: it reads as soft
+  from a distance, not up close. A real soft shadow is the shadow pass of
+  25a-2, which is not planned now.
+
 **Two things from 3D programs like Blender: a floor under the molecule that
 takes its shadow or its mirror image (25a), and surfaces that look like
 glossy plastic, tinted glass or soft clay (25b). Both become rows of the
@@ -52,7 +76,7 @@ would be something pymolish has that the others do not.
 
 ### Trial (2RH1, cartoon, 640 x 440, ray traced)
 
-![floor trials](../img/plan-floor.jpg)
+(The trial pictures are replaced by the one at the top, made with the command.)
 
 Left: a floor and one light from above, 6 s. Middle: four lights close to
 each other, so the shadow has a soft edge, 18 s. Right: a see-through floor

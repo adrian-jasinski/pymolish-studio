@@ -38,7 +38,8 @@ table with editing, import and export (22a to 22c), and a fix in the core
 (a property set again with another type ended the program). 4.30.0: the
 quick-select chips and the final layout of the bar; step 26 is finished.
 4.31.0: the UI scale from 50 to 300 %, live on Linux. 4.32.0 and 4.33.0:
-the ligand in 2D, as a command and as a panel.
+the ligand in 2D, as a command and as a panel. 4.34.0: `stage`, a floor
+with shadow or mirror image, and three light setups.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -63,12 +64,11 @@ user's original numbers; the letters are milestones of the detailed plans.
 | 5 | **15e, 25b-2** — [Five effects](docs/plans/15-presets.md), [color themes](docs/plans/25-studio-effects.md) | 15e as decided: color steps in the viewport; fog toward a white background; helices as cylinders; ambient occlusion in the soft look (timed on a large surface first); "balls in glass". With them five color themes (clay, blue, sage, mint, night): protein color, ligand color, background, as a group of their own. | Each has a check in the preset tests and a picture. |
 | 6 | **1b** — [Grid surface, an experiment](docs/plans/01-performance-gpu.md) | A second `surface_type`: signed distance grid and marching cubes, with a smoothness value. Times and pictures of 1aon and 4v6x against today's surface, at two smoothness values; then the user decides whether it stays. Moved up: the surface looks wait for it. | The table and the pictures. |
 | 7 | **25b** — [Surface looks and the blob](docs/plans/25-studio-effects.md) | Not planned in detail yet (answer to question 25): written again with the result of order 6. Until then no surface look and no new setting is added. The trial pictures (glossy, candy glass, clay, night) are in the plan. | A new plan section after order 6. |
-| 8 | **25a** — [Floor, shadow, mirror, lights](docs/plans/25-studio-effects.md) | Command `stage`: a floor under the molecule with a shadow, a soft shadow, or a mirror image; three light setups. The shadow is ray traced only; the viewport shows the floor and the mirror. | The floor lies under every visible atom, `off` leaves nothing behind; ray times. |
-| 9 | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | The shot list goes into the session file. The 58 Program rows of the Movie menu go. Dragging on the strip. The keyframe strip of the core (19g) stays for now. The list goes under the key of step 28. | A session with a shot list loads here with the list and loads in 4.19.x without it; the menu test. |
-| 10 | **21f** — [Three rendering details](docs/plans/21-commercial-features.md) | `sphere_mode` is capped at 9, its test and two reference images go. The background image is stored inside the session file. Smooth edges in the viewport with an FXAA shader. The picture is stored in the setting, as decided. | Each old test passes or is deleted with its item. |
-| 11 | **15b** — [Outline in the viewport](docs/plans/15-presets.md) | An edge pass over the drawn picture for the looks figure, soft, flat, comic and sketch. The line is black on a light background and light on a dark one. It is the same kind of pass as FXAA, so it comes right after it. | Frame time before and after; pictures on black and on white. |
-| 12 | **1b** — [Surface on a worker thread](docs/plans/01-performance-gpu.md) | A large surface is built off the GUI thread: the window stays usable, the status line says it is being built, the surface appears when ready. Headless runs still wait. | 1aon and 4v6x in the real window; the suite and the sanitizer job. |
-| 13 | **21g** — [Undo of more than the last move](docs/plans/21-commercial-features.md) | Snapshots for commands that add, remove or edit; the existing coordinate ring for moves. Three slices: the stack with create, delete, remove and the builder's edits; Undo and Redo in the toolbar say what they will undo; the rest of the test list. After it the error "only in Incentive PyMOL", the test mark `incentive` and the option `-n` go. | The 26 undo tests and the three jira tests pass, then the `incentive` mark comes off. |
+| 8 | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | The shot list goes into the session file. The 58 Program rows of the Movie menu go. Dragging on the strip. The keyframe strip of the core (19g) stays for now. The list goes under the key of step 28. | A session with a shot list loads here with the list and loads in 4.19.x without it; the menu test. |
+| 9 | **21f** — [Three rendering details](docs/plans/21-commercial-features.md) | `sphere_mode` is capped at 9, its test and two reference images go. The background image is stored inside the session file. Smooth edges in the viewport with an FXAA shader. The picture is stored in the setting, as decided. | Each old test passes or is deleted with its item. |
+| 10 | **15b** — [Outline in the viewport](docs/plans/15-presets.md) | An edge pass over the drawn picture for the looks figure, soft, flat, comic and sketch. The line is black on a light background and light on a dark one. It is the same kind of pass as FXAA, so it comes right after it. | Frame time before and after; pictures on black and on white. |
+| 11 | **1b** — [Surface on a worker thread](docs/plans/01-performance-gpu.md) | A large surface is built off the GUI thread: the window stays usable, the status line says it is being built, the surface appears when ready. Headless runs still wait. | 1aon and 4v6x in the real window; the suite and the sanitizer job. |
+| 12 | **21g** — [Undo of more than the last move](docs/plans/21-commercial-features.md) | Snapshots for commands that add, remove or edit; the existing coordinate ring for moves. Three slices: the stack with create, delete, remove and the builder's edits; Undo and Redo in the toolbar say what they will undo; the rest of the test list. After it the error "only in Incentive PyMOL", the test mark `incentive` and the option `-n` go. | The 26 undo tests and the three jira tests pass, then the `incentive` mark comes off. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 | any time | **23b** — [Rows moved by dragging](docs/plans/23-rename-in-panel.md) | Reorder and regroup in the Objects panel with the mouse. Carried over from step 3. | The drop goes through a function a test calls. |
 | any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
@@ -77,7 +77,7 @@ The session key and the rest of the table come first, then the scale and
 the 2D ligand. For surfaces the grid surface of 1b comes first (order 6);
 the surface looks are planned with its result. The old order is kept
 behind: timeline, rendering details, outline, the surface on a worker
-thread, and undo, the largest, last. Orders 10 and 11 share their shader
+thread, and undo, the largest, last. Orders 9 and 10 share their shader
 pass. 5c (release builds without GitHub Actions) is shelved: the builds stay
 on GitHub for now. GPU compute is not on the critical path.
 
@@ -123,7 +123,7 @@ paint roller is built; say if the rest of the sentence asked for more.
 
 The user's to do, not decisions:
 
-- Merge pull request 9 (`feature11`, 4.19.12 to 4.33.0). `master` on GitHub
+- Merge pull request 9 (`feature11`, 4.19.12 to 4.34.0). `master` on GitHub
   has everything up to 4.19.11 (pull request 8, merged 2026-11-19).
 - The checks marked "first CI run" can be looked at: the icon of the Windows
   program, the release notes, the `chem` and `fix` extras on three systems.

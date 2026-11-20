@@ -86,6 +86,7 @@ them, a pip install needs `pip install 'pymolish[fix]'`.
 | `palette [name [, recolor]]` | Sets the colors that new objects cycle through. | `palette vivid` |
 | `load_table filename [, object_column]` | Sets object properties from a CSV, TSV or Excel (`.xlsx`, first sheet) file: one row per object, matched by name; new headers become new properties. | `load_table scores.csv` |
 | `ligand_2d [ligand [, cutoff [, filename]]]` | Draws a ligand flat with the residues around it and its contacts (hydrogen bonds, salt bridges, ring stacking), as SVG or PNG; without a file name it lists the contacts. Needs rdkit. | `ligand_2d resn CAU, filename=lig.svg` |
+| `stage [mode [, selection]]` | A floor under what is shown; ray traced, the molecule casts its shadow on it. `stage mirror` adds a mirror image, `stage off` removes it. | `stage` |
 | `save_table filename [, selection]` | Writes the properties of the objects as CSV. | `save_table scores.csv` |
 
 ## PyMOL commands that needed the commercial build

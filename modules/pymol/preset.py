@@ -680,6 +680,21 @@ LOOKS = {
     # the X-Ray light of the Lighting plugin
     'x-ray': dict(ambient=1, direct=-0.6, reflect=-0.6, shininess=0,
                   specular=0),
+    # Three lights as photographers set them: a key light high on the left,
+    # a weak fill from the right, a rim light from behind for the outline.
+    'studio': dict(light_count=4, light=[-0.55, -0.7, -0.6],
+                   light2=[0.7, -0.1, -0.7], light3=[0.2, -0.3, 0.9],
+                   ambient=0.18, direct=0.25, reflect=0.75, specular=0.6,
+                   shininess=40),
+    # one light from straight above: a strong shadow on the floor of "stage"
+    'top light': dict(light_count=2, light=[-0.15, -1.0, -0.35], ambient=0.3,
+                      direct=0.15, reflect=0.8, ray_shadow=1),
+    # the same from four lights ten degrees apart: the shadow has a soft
+    # edge, and the ray tracer takes three to four times as long
+    'soft shadow': dict(light_count=5, light=[-0.15, -1.0, -0.35],
+                        light2=[-0.3, -1.0, -0.25], light3=[0.0, -1.0, -0.45],
+                        light4=[-0.05, -1.0, -0.2], ambient=0.3, direct=0.15,
+                        reflect=0.8, ray_shadow=1),
 }
 
 

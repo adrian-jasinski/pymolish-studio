@@ -4,6 +4,28 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.34.0
+
+	* New command: stage, a floor under the molecule
+	  - "stage" puts a floor under what is shown, horizontal for
+	    the view of the moment, and tilts the view 20 degrees so
+	    that it is seen. A ray-traced picture has the shadow of the
+	    molecule on it. "stage mirror" adds a reflected copy seen
+	    through the floor, also in the viewport. "stage off"
+	    removes both and puts the view and the fog back.
+	  - The floor fades into the background with distance, so its
+	    far edge does not show.
+	  - Presets menu: "floor", "floor with mirror image", "no
+	    floor", and three new light setups: "top light" (one light
+	    from above, a strong shadow), "soft shadow" (four lights
+	    close together; three to four times slower) and "studio"
+	    (key, fill and rim light).
+	  - The viewport shows the floor and the mirror image, not the
+	    shadow: that needs Draw > Ray.
+	  - Step 25a.
+
+2026-11-20 pymolish-studio
+
 	* 4.33.0
 
 	* Ligand in 2D: the panel

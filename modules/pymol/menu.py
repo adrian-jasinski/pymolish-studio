@@ -804,6 +804,11 @@ def presets(self_cmd, sele):
               [ 1, 'hide solvent' if preset.solvent else 'show solvent',
                 'preset.show_solvent(%d,"%s",_self=cmd)' % (not preset.solvent, sele) ],
               [ 0, '', '' ],
+              # a floor under what is shown: its shadow when ray traced
+              [ 1, 'floor', 'cmd.stage("floor", quiet=0)' ],
+              [ 1, 'floor with mirror image', 'cmd.stage("mirror", quiet=0)' ],
+              [ 1, 'no floor', 'cmd.stage("off")' ],
+              [ 0, '', '' ],
               # light and outline of the whole scene, whatever the menu is on
             ] + [
               [ 1, 'standard light' if name == 'default' else name,
