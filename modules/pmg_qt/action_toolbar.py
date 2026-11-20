@@ -326,13 +326,14 @@ class ActionToolbar(QtWidgets.QToolBar):
         )
         self.addWidget(spacer)
 
+        self.panel_actions = {}
         for label, target in panels:
             if isinstance(target, QtWidgets.QMenu):
                 self._menu_button(label, label).setMenu(target)
             else:
                 # a panel button shows only its icon; the name is the tooltip
-                button = self.widgetForAction(self._action(label, target))
-                button.setToolButtonStyle(Style.ToolButtonIconOnly)
+                action = self.panel_actions[label] = self._action(label, target)
+                self.widgetForAction(action).setToolButtonStyle(Style.ToolButtonIconOnly)
 
         # any whole percent from 50 to 300: typed, or one of the rows
         self._scale = theme.ui_scale()
@@ -570,6 +571,18 @@ class ActionToolbar(QtWidgets.QToolBar):
     def _show_selecting(self, value):
         self.selecting.setText(SELECTING[int(value)])
         self.selecting.menu().actions()[int(value)].setChecked(True)
+
+    def set_ligand(self, present):
+        """The 2D button works when an object that is switched on has a
+        ligand; else it says why not."""
+        action = self.panel_actions.get("2D")
+        if action:
+            action.setEnabled(present)
+            action.setToolTip(
+                "Ligand in 2D with its contacts"
+                if present
+                else "No ligand in the visible objects"
+            )
 
     def quick_select(self, expression, what):
         """Select `expression` in the objects that are switched on, as

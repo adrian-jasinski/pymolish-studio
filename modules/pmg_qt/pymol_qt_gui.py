@@ -240,6 +240,12 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.timeline_panel)
         self.timeline_panel.hide()
 
+        from .ligand_panel import LigandPanel
+        self.ligand_panel = LigandPanel(cmd, self)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.ligand_panel)
+        self.ligand_panel.hide()
+        self._ligand_key = None  # the objects the 2D button was last judged for
+
         # property table: a window of its own over the viewport
         from .property_table import PropertyTable
         self.property_table = PropertyTable(
@@ -361,6 +367,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
             panels=[
                 ('Builder', self.open_builder_panel),
                 ('Scenes', self.scene_panel_menu_dialog),
+                ('2D', self.ligand_panel.open),
                 ('Table', lambda: self.property_table.setVisible(
                     not self.property_table.isVisible())),
                 # the render dialog is built when the menu is first shown, so
@@ -434,6 +441,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         panels.addAction(self.scene_panel.toggleViewAction())
         panels.addAction(self.timeline_panel.toggleViewAction())
         panels.addAction(self.property_table.toggleViewAction())
+        panels.addAction(self.ligand_panel.toggleViewAction())
         panels.addAction('Builder', self.open_builder_panel)
         panels.addSeparator()
         panels.addAction('Reset Layout', self.reset_layout)
@@ -1029,6 +1037,14 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.scene_panel.poll()
         self.timeline_panel.poll()
         self.property_table.poll()
+        self.ligand_panel.poll()
+        # the 2D button is for objects with a ligand; judged again when the
+        # objects that are switched on change
+        key = tuple(self.cmd.get_names('public', enabled_only=1))
+        if key != self._ligand_key:
+            self._ligand_key = key
+            self.action_toolbar.set_ligand(bool(self.cmd.count_atoms(
+                'organic and not polymer and enabled')))
 
     def doPrompt(self):
         self.doTypedCommand(self.command_get())

@@ -69,21 +69,22 @@ SCALE = 20  # pixels per unit of rdkit's 2D coordinates: a bond is 1.5 long
 
 def ligands(selection="enabled", *, _self=cmd):
     """The small molecules in `selection` with at least six heavy atoms, as
-    (label, selection), the largest first: glycerol and buffer come last."""
+    (label, selection). The one with the most protein atoms around it comes
+    first: the ligand in its pocket, before lipids, sugars and buffer on the
+    surface."""
     found = {}
     _self.iterate(
         "(%s) and organic and not polymer and not hydro" % selection,
         "found[model, segi, chain, resn, resi] = found.get((model, segi, chain, resn, resi), 0) + 1",
         space={"found": found},
     )
-    return [
-        (
-            "%s %s%s" % (key[3], key[2], key[4]),
-            "/%s/%s/%s/%s`%s/" % key,
-        )
-        for key, count in sorted(found.items(), key=lambda item: -item[1])
-        if count >= 6
-    ]
+    rows = []
+    for key, count in found.items():
+        if count >= 6:
+            sele = "/%s/%s/%s/%s`%s/" % key
+            near = _self.count_atoms("polymer and not hydro within %f of (%s)" % (CUTOFF, sele))
+            rows.append((-near, -count, "%s %s%s" % (key[3], key[2], key[4]), sele))
+    return [(label, sele) for _, _, label, sele in sorted(rows)]
 
 
 def _center(points):

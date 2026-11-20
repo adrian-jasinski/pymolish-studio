@@ -4,6 +4,26 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.33.0
+
+	* Ligand in 2D: the panel
+	  - A button in the toolbar (a hexagon) opens the panel
+	    "Ligand 2D" with the picture of ligand_2d, in the colors of
+	    the window. The button works when an object that is
+	    switched on has a ligand.
+	  - A click on a residue in the picture selects it in the
+	    viewport and shows it as sticks; Ctrl+click adds; a double
+	    click zooms on it. The other way too: residues that are
+	    selected in the viewport are ringed in blue in the picture.
+	  - A list picks among several ligands; the one with the most
+	    protein around it is first, so a lipid or a buffer molecule
+	    on the surface is not what opens. Refresh finds ligands and
+	    contacts again. Save writes SVG or PNG.
+	  - The picture is as large as the panel allows.
+	  - Step 24b.
+
+2026-11-20 pymolish-studio
+
 	* 4.32.0
 
 	* New command: ligand_2d

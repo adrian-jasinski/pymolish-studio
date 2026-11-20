@@ -10,7 +10,7 @@ Builder, Scenes, Table, Draw, the scale, More. It is 1154 px wide at 150 %
 (the estimate was 1140 to 1210) and the default window opens that wide.
 Residues, Presets, Bg, Draw and the scale keep a text. Differences from the
 plan: "Bg" keeps its two letters (the request asked for them), the chips are
-29 to 38 px wide, and the 2D button of step 24 is not there yet.
+29 to 38 px wide. The 2D button of step 24 came in 4.33.0: 1195 px.
 
 **Three additions to the action toolbar: "Background" becomes "Bg" with a
 better icon (26a), an Open button stands before Residues (26b), and a row of

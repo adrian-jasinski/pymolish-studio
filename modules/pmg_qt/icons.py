@@ -83,6 +83,7 @@ LABELS = {
     "builder": "hammer",
     "scenes": "camera",
     "table": "table-2",
+    "2d": "hexagon",
     "draw": "aperture",
     "ui scale": "scaling",
     "more actions": "ellipsis",

@@ -51,7 +51,7 @@ def test_ligands_and_contacts():
         cmd.ligand_2d()
     cmd.load(testing.datafile("1oky.pdb.gz"), "m")
     found = ligand2d.ligands()
-    assert found[0] == ("STU A1368", "/m//A/STU`1368/")  # the largest first
+    assert found[0] == ("STU A1368", "/m//A/STU`1368/")  # the one in the pocket first
     assert {label.split()[0] for label, _ in found[1:]} == {"GOL"}
     cmd.disable("m")
     assert ligand2d.ligands() == []  # only in what is switched on

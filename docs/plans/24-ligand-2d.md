@@ -19,6 +19,22 @@ deposited ligands carry no charges; ring stacking is by distance of ring
 centers only, without the angle; the largest ligand is the default, so
 glycerol and buffer come last. The prototype's picture is replaced.
 
+**24b done 2026-11-20 in 4.33.0:** the panel and the toolbar button.
+
+![the panel](../img/ligand-panel.png)
+
+`modules/pmg_qt/ligand_panel.py`, 190 lines. Tried in the real window on
+2RH1: the button is off before a structure is loaded and on after; the
+panel opens with carazolol; a real mouse click on Asp113 selects its 8
+atoms and shows sticks; a selection made in the viewport rings Asn312 and
+Asp113 at the next poll. Differences from the plan: the panel is docked on
+the left, 420 px wide, not floating (2D and 3D side by side; it can be
+floated like any panel); the picture is scaled to the panel; the default
+ligand is the one with the most protein atoms within 4 A, not the largest
+(in 2RH1 the largest is a cholesterol on the surface). Not built: the
+distance in a tooltip, "Show in 3D" dashes, Tab through the residues: they
+move to 24c with the contour, the halos and the metal contacts.
+
 **A flat drawing of the ligand with the residues around it and the contacts
 between them, in the style of Maestro's ligand interaction diagram. A button
 in the action toolbar, enabled when a visible object has a ligand. Clicking a

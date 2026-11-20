@@ -463,3 +463,15 @@ def test_quick_select():
 
     bar.chips["None"].click()
     assert cmd.count_atoms("sele") == 0
+
+
+def test_ligand_button():
+    from pmg_qt.action_toolbar import ActionToolbar
+
+    bar = ActionToolbar(cmd, defaultdict(list), panels=[("2D", lambda: None)])
+    action = bar.panel_actions["2D"]
+    bar.set_ligand(False)
+    assert not action.isEnabled() and action.toolTip() == "No ligand in the visible objects"
+    bar.set_ligand(True)
+    assert action.isEnabled() and "2D" in action.toolTip()
+    ActionToolbar(cmd, defaultdict(list)).set_ligand(True)  # a bar without the button
