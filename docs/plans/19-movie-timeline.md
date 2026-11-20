@@ -6,6 +6,8 @@ the shot list (D), the strip (A), record (E), tours (F), effects (G), easing
 plan and what is still open is under "Result, 4.18.0".
 Replaces row 8 of the workspace table in [step 3](03-modern-ui.md)
 ("Timeline. Not planned").
+Since 2026-11-20: the shot list is stored under the session key of
+[step 28](28-session-format.md), which is built first.
 
 **A docked panel under the viewport that shows the movie as a storyboard:
 the scenes as blocks with their thumbnails, as wide as they last in seconds.

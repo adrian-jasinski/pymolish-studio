@@ -114,6 +114,11 @@ row 4 was measured here.
 
 ## Decisions 2026-11-20
 
+Since the second request of that day the grid surface has a second use:
+with a smoothness value it is the rounded "blob" surface of
+[step 25](25-studio-effects.md) (25b). The experiment should record pictures
+at two smoothness values next to its times.
+
 | Question | Answer | What follows |
 | --- | --- | --- |
 | A large surface freezes the window | **A, build it on a worker thread.** | The next large item of 1b. `SurfaceJob` leaves the GUI thread; the status line says "building surface"; the surface appears when it is ready. To settle while building: what happens when the atoms change during a job (drop the result and start again), and the headless path, which must still wait. Checks: 1aon and 4v6x in the real window, the suite, the sanitizer job. |

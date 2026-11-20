@@ -9,6 +9,7 @@ order numbers are the ones the roadmap used.
 | Step | Detailed plan | Recommendation |
 | --- | --- | --- |
 | 0 | [UI engine research](docs/plans/00-ui-engine.md) | PySide6 + Qt Widgets; preserve the renderer while simplifying bindings. |
+| 3 | [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Named docks with a saved layout, the Objects panel in Qt, the action toolbar on top and the command area at the bottom, the dark theme, the UI scale, scenes as a dock, Qt menus. Closed on 2026-11-20 without its metadata table: the property table of [step 22](docs/plans/22-property-table.md) replaces it. Its open rows went to 22e (a picked atom selects its row), 23b (rows moved by dragging) and question 31 (scene buttons and sequence text drawn by the core); the spacing of dialogs is fixed when a dialog is touched. |
 | 2 | [Code and dependencies](docs/plans/02-cleanup-dependencies.md) | One feature removal per PR; trace dependencies before deleting. |
 | 4 | [Features and external libraries](docs/plans/04-extensibility.md) | Preserve `cmd` and the existing loader; document small integration patterns. |
 | 5 | [Builds and test binaries](docs/plans/05-builds-binaries.md) | Improve incremental builds and deliver test artifacts before large changes. |
@@ -27,8 +28,9 @@ order numbers are the ones the roadmap used.
 
 ## Finished work, in execution order
 
-The letters identify milestones in the detailed plans. Order 5 (measured
-optimization and workspace increments) is still open and stays in the roadmap.
+The letters identify milestones in the detailed plans. Of order 5 (measured
+optimization and workspace increments) the optimization is still open and
+stays in the roadmap; the workspace half closed with step 3 on 2026-11-20.
 
 | Order | Work | Exit condition | Result |
 | --- | --- | --- | --- |
@@ -89,12 +91,29 @@ nothing is built yet.
 | 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g, order 8. To build. |
 | 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b, order 7. To build. |
 
-14 was answered by "release 17" (4.19.42). No question is open.
+14 was answered by "release 17" (4.19.42). Questions 20 to 32, from the
+second request of that day, are open in the roadmap.
+
+Old decisions replaced by the second request of 2026-11-20 (ten features,
+steps 22 to 29). The request said: where the new plans contradict the old
+ones, the new ones win. Nothing of this is built yet.
+
+| Old decision | Where it was | Replaced by |
+| --- | --- | --- |
+| A read-only metadata table, one of the slices of step 3; "no editable grid". | Plan 3, slices 2 and 3, "Acceptance checks and scope" | [Step 22](docs/plans/22-property-table.md): an editable table on the object properties of the core, with import and export. Step 3 is closed. |
+| Rename through the wizard that types into the viewport. | Plan 14 (the row "rename" of the A menu) | [Step 23](docs/plans/23-rename-in-panel.md): the name is edited on the row. |
+| "Palette and Background carry their names." | Plan 20 | [26a](docs/plans/26-toolbar-buttons.md): "Bg" and a new icon. |
+| The bar must fit 940 px; names on Builder, Scenes and Draw/Ray. | Plans 7 and 20 | [26d](docs/plans/26-toolbar-buttons.md): the bar is 1096 px today and about 1140 to 1210 px with the new buttons as icons (question 26). |
+| UI scale in five steps from 100 to 200 %, applied at the next start; "live rescale without restart: skipped". | Plans 3 and 7 | [Step 27](docs/plans/27-ui-scale.md): any value from 50 to 300 %, live where Qt allows it. |
+| The shot list goes "into the session file". | Plan 19 | Unchanged in substance: it goes under the one key of [step 28](docs/plans/28-session-format.md), which is built first. The background picture of 21f stays as decided unless question 29 moves it. |
+| A look leaves the background alone; a preset keeps the protein colors. | Plan 15, 15g and 15h | Still true for looks and presets. The color themes of [25b](docs/plans/25-studio-effects.md) set both, as a group of their own (question 32). |
+| The version: the second number once per roadmap step. | `AGENTS.md` §5 | [Step 29](docs/plans/29-versioning.md), once question 30 is answered; `AGENTS.md` keeps the old rule until then. |
 
 ## Finished milestones of open steps
 
-Steps 1, 3, 8, 15, 19 and 21 stay in the roadmap. These parts of them have
-shipped.
+Steps 1, 8, 15, 19 and 21 stay in the roadmap. These parts of them have
+shipped. The rows of steps 3, 17 and 18, which are finished, are kept here
+as the record of their milestones.
 
 | Step | Milestone | Result |
 | --- | --- | --- |

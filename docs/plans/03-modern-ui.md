@@ -2,6 +2,8 @@
 
 [Roadmap](../../PLAN.md) · Slices 1 to 4 shipped, 5 partly; slice 6 (menus) was done as [step 14](14-menus.md) in 4.13.0
 
+**Closed on 2026-11-20.** The metadata table of this plan (slices 2 and 3, "Table behavior and performance", "Additional ideas") is replaced by the property table of [step 22](22-property-table.md), which is editable and reads the object properties of the core. The open rows below went to 22e, [23b](23-rename-in-panel.md) and question 31 of the roadmap. "Live rescale without restart: skipped" is replaced by [step 27](27-ui-scale.md). The text below is kept as the record of what was built.
+
 **Evolve the existing main window into a clear molecular workspace.** Deliver
 movable, resizable panels and a useful metadata table before replacing every
 internal control. Preserve command-line workflows and existing `.ui` dialogs.

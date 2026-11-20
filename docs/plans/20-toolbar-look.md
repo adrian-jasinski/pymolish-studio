@@ -4,6 +4,8 @@
 Where the request said "think about", the options are listed with the one
 that was built; each can still be changed in one or two lines.
 
+Replaced in part on 2026-11-20: "Background" becomes "Bg" with a new icon ([26a](26-toolbar-buttons.md)), and the names on the right side of the bar may go ([26d](26-toolbar-buttons.md), question 26).
+
 **Palette and Background carry their names, Zoom, Orient and Rock are
 icons only. The icons are larger and drawn with heavier lines. What is
 chosen is blue. The palette menu defines palettes of the user, and the

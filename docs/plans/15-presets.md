@@ -188,6 +188,10 @@ since 15g: black on a light background, light on a dark one.
   salmon, ...), the pattern of [step 11](11-color-palettes.md). One line and
   the docstring.
 
+Since 2026-11-20, second request: 15e is built together with the surface
+looks and color themes of [step 25](25-studio-effects.md) (25b), which add
+rows to the same menu and use the same code.
+
 **15e, more effects. Approved 2026-11-20: all five of the question**
 (color steps, fog, helices as cylinders, ambient occlusion in the soft look,
 balls in glass). The sixth row of the table, glow and blur, was not part of

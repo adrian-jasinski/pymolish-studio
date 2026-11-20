@@ -215,6 +215,13 @@ background image stored inside the session file (item 3, option A). The
 answer covers the two things that needed a yes: deleting the two image
 files, and the change of what a PSE contains.
 
+Since 2026-11-20 there is a second place for the picture: the session key
+of [step 28](28-session-format.md). With it PyMOL would still see the file
+name in the setting instead of text it cannot use. Option A stands as
+decided unless question 29 of the roadmap says otherwise. The FXAA pass is
+also what a shadow pass for the floor of [step 25](25-studio-effects.md)
+would follow.
+
 **1. Smooth edges in the viewport.** Edges of sticks, spheres and cartoons
 look like small stairs on screen, because each pixel is either object or
 background. Ray-traced images do not have this; the live view does.
