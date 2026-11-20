@@ -2,6 +2,8 @@
 
 [Roadmap](../../PLAN.md) · Request 2026-11-14 · Done in 4.10.0, see
 [Status](#status).
+One more palette, 11b, was planned on 2026-11-20 and is not built: see
+[the end](#11b--a-palette-from-the-users-brand-colors).
 
 **Five named palettes replace the order in which new objects get their color
 (today green, cyan, light magenta, ...). Picked in the toolbar, remembered,
@@ -150,3 +152,127 @@ Asked for on 2026-11-16 after using it.
   on white.
 - **The neighbor distance in the test is 0.2** (was 0.14, set by the old
   pastel list).
+
+## 11b — a palette from the user's brand colors
+
+Request 2026-11-20: the colors of a brand book as an object palette, under
+another name, filled up to a full palette like the others. **Planned
+2026-11-20 at 4.39.0. Not built: questions 33 to 35 of
+[PLAN.md](../../PLAN.md) are open.** The brand book is the user's file and
+is not in the repo.
+
+**One more row in the palette menu: the five colors of the brand book, and
+seven more in the same strong tone for the hues the brand does not have. It
+is one entry of data; the menu, the completion and the test pick it up by
+themselves.**
+
+### What the brand book gives
+
+Eight colors. White, black and a light grey (`f4f4f4`) cannot color an
+object. Five are left. The contrast is the WCAG number of the test, which
+asks for 3 or more.
+
+| Color | Value | In the book | On black | On white |
+| --- | --- | --- | --- | --- |
+| turquoise | `00f4d6` | main | 14.9 | 1.4 |
+| blue | `016afa` | main | 4.4 | 4.7 |
+| cyan | `00caff` | main | 10.9 | 1.9 |
+| indigo | `4300ff` | complementary | 2.7 | 7.8 |
+| deep purple | `471396` | complementary | 1.8 | 11.7 |
+
+Measured on 2026-11-20 with the functions of
+`testing/tests/api/palettes.py`:
+
+- **Half the color wheel is missing.** All five lie between turquoise and
+  purple (hue 173 to 264 of 360). Five objects would be two cyans and three
+  blue-violets.
+- **No background fits all five.** Two are below 3 on black, two on white.
+- **A dark version cannot keep both complementary colors.** Lifted to 3 on
+  black with the hue kept they become `5a1fff` and `6f21e4`, 0.13 apart; the
+  test asks 0.2 between neighbors, and they look the same.
+- **Size of the others:** vivid 21, deep 15, pastel 12, soft 22,
+  colorblind 18, nord 8, dracula 7, catppuccin 11, chimerax 10.
+
+### The seven added colors
+
+One for each hue the brand lacks, in the tone of its main colors (full
+saturation, middle lightness): pink `ff3d9a`, red `ff4d4d`, orange `ff8a00`,
+yellow `ffd900`, lime `9be800`, green `1fd655`, magenta `c61aff`.
+
+Brand colors and added ones alternate, so that neighbors differ. The first
+two objects get brand colors, and all five brand colors are among the first
+ten, which is what the strip in the menu shows.
+
+### Options
+
+Picture of A and B on black and on white, next to vivid and chimerax:
+`plan_images/palette-options.png`.
+
+**Question 33, the name.** Lowercase letters, digits and `_`. Not the name
+of a color theme (clay, blue, sage, mint, night): those stand in the menu
+next to it.
+
+- `halo` (recommended): the brand's mark is a glowing ring. Short, and it
+  says nothing about hue, which fits a palette that has every hue.
+- `lagoon`: after the turquoise and the blues the palette starts with.
+- `prism`: after the full range of hues.
+
+**Question 34, the colors.**
+
+- **A (recommended): twelve colors, the five as published, "any
+  background".**
+  `00f4d6 016afa ff3d9a 00caff ffd900 4300ff 9be800 ff4d4d 471396 1fd655
+  c61aff ff8a00`.
+  Neighbors are at least 0.56 apart, the closest pair 0.23 (turquoise and
+  cyan, both from the book). On black the deep purple has 1.8 and the indigo
+  2.7, the other ten 4.4 or more; on white six are below 3. This is how
+  colorblind (lowest 1.7 on black) and chimerax (2.2) are listed: values as
+  published, any background, no contrast test.
+- **B: eleven colors, "dark background".** The same without the deep purple
+  and with the indigo lifted to `5a1fff` (3.1 on black). It passes the
+  contrast test, but only three of the five values are the book's.
+
+**Question 35, the source.**
+
+- **Not named (recommended):** the user asked for another name, so nothing
+  in the program, `docs/features.md` or `ChangeLog` names the brand. The
+  comment in `palettes.py` says: five colors of a brand book, seven added.
+- **Named** in the comment and in `docs/features.md`, as for nord, dracula
+  and chimerax.
+
+### Steps, after the answers
+
+1. `modules/pymol/palettes.py`: the entry after `chimerax` (`:67`), the name
+   in the docstring of `palette` (`:149`) and its background in NOTES
+   (`:163`).
+2. `testing/tests/api/palettes.py:59`: the name in the list of `test_data`.
+   That test then checks the entry: 1 to 30 colors, none twice, neighbors
+   more than 0.2 apart, and with B the contrast on black. No new test: the
+   change is data.
+3. `docs/features.md:55`: one row and one sentence;
+   `docs/img/palette-<name>.png`, a strip 28 px high with 20 px per color
+   like the nine there (chimerax, ten colors: 208 x 28).
+4. A look in the real window: the menu with eleven rows at 100 and 150 %,
+   twelve objects as cartoon and as sticks, on black and on white.
+5. `ChangeLog` and the version: a new palette is a step of `X`, as chimerax
+   was (4.22.0).
+
+Commit: `ui(palette): <name>, ...`. Nothing changes in the toolbar
+(`modules/pmg_qt/action_toolbar.py:457` reads `PALETTES`), the completion
+(`modules/pymol/completing.py:46`) or the session code.
+
+One case to know: a palette the user made under the chosen name is skipped
+at start with the message "is a built-in palette"
+(`action_toolbar.py:244`). It stays in the settings; renaming it there is
+by hand.
+
+### Skipped
+
+- A second palette for a white background, the way vivid has deep:
+  turquoise and cyan have 1.4 and 1.9 on white. Built when asked for.
+- Only the brand's hues, in tints and shades: closest to the book, but
+  objects could not be told apart.
+- More than twelve colors: the closest pair is at 0.23 already, a
+  thirteenth would be a tint of one that is there.
+- A color theme (protein, ligand, background) or a window theme in these
+  colors, the typeface and the mark of the brand book: not asked for.

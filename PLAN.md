@@ -72,6 +72,7 @@ user's original numbers; the letters are milestones of the detailed plans.
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 | any time | **23b** — [Rows moved by dragging](docs/plans/23-rename-in-panel.md) | Reorder and regroup in the Objects panel with the mouse. Carried over from step 3. | The drop goes through a function a test calls. |
 | any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
+| after the answers | **11b** — [A palette from the user's brand colors](docs/plans/11-color-palettes.md#11b--a-palette-from-the-users-brand-colors) | Request of 2026-11-20, planned the same day: the five colors of a brand book as an object palette under another name, with seven added colors for the hues the brand lacks. One entry of data, its name in the test, a row and a strip in `docs/features.md`. Waits for questions 33 to 35. | The data test passes with the new name; the menu and twelve objects looked at on black and on white. |
 
 The session key and the rest of the table come first, then the scale and
 the 2D ligand. For surfaces the grid surface of 1b comes first (order 6);
@@ -116,7 +117,18 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-No question is open. Questions 20 to 32 were answered on 2026-11-20; the
+Three questions are open, all for 11b, the palette from the user's brand
+colors ([plan](docs/plans/11-color-palettes.md#11b--a-palette-from-the-users-brand-colors),
+picture `plan_images/palette-options.png`). The first option is the
+recommended one.
+
+| No. | Question | Options |
+| --- | --- | --- |
+| 33 | The name of the palette. | `halo`, `lagoon`, `prism`, or another: lowercase letters, digits, `_`. |
+| 34 | The colors. | A: twelve, the five of the brand book as published, listed for any background (deep purple 1.8 and indigo 2.7 on black). B: eleven for a dark background, indigo lifted, deep purple left out. |
+| 35 | Is the brand named as the source? | No, as the palette has another name. Yes, in the comment and in `docs/features.md`, as for nord and chimerax. |
+
+Questions 20 to 32 were answered on 2026-11-20; the
 answers, with the version each one shipped in, are under "Decided by the
 user" in [PLAN-DONE.md](PLAN-DONE.md).
 
