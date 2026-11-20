@@ -88,6 +88,11 @@ LABELS = {
     "ui scale": "scaling",
     "more actions": "ellipsis",
     "more": "ellipsis",
+    # the row under the object list
+    "mouse mode": "mouse",
+    "seq": "letter-text",
+    "wizard": "wand-sparkles",
+    "command line": "square-terminal",
 }
 
 

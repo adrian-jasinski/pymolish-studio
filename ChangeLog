@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.42.0
+
+	* Icons in the row under the object list
+	  - Each of the four buttons has an icon. The mouse mode keeps
+	    its name and SEQ its letters beside the icon; Wizard and
+	    the command line show the icon alone, the name is the
+	    tooltip. SEQ now stands before Wizard.
+	  - The icons of SEQ and of the command line are blue while
+	    they are on.
+	  - Measured at 150 %: the row needs 254 px of its 292, the
+	    buttons are 23 px high (21 before).
+	  - Step 32a.
+
+2026-11-20 pymolish-studio
+
 	* 4.41.0
 
 	* Palette "halo"

@@ -374,3 +374,31 @@ def test_rename_in_place():
     cmd.do(rows[0][2], echo=0)
     assert type(cmd.get_wizard()).__name__ == "Renaming"
     cmd.set_wizard()
+
+
+def test_footer_icons():
+    """The row under the object list (the window builds it): tinted icons,
+    another tint while a switch is on, and the icon of a button with an
+    action survives a click."""
+    from pymol.Qt import QtGui, QtWidgets
+    from pmg_qt import icons
+    from pmg_qt.pymol_qt_gui import PyMOLQtGUI
+
+    class Window(QtWidgets.QWidget):
+        _set_footer_icons = PyMOLQtGUI._set_footer_icons
+
+    for label in ("mouse mode", "seq", "wizard", "command line"):
+        assert label in icons.LABELS
+    window = Window()
+    window._set_footer_icons()  # before the row exists: nothing to do
+    button, seq = QtWidgets.QToolButton(), QtWidgets.QToolButton()
+    action = QtGui.QAction("SEQ", checkable=True)
+    seq.setDefaultAction(action)
+    window._footer_icons = ((button, "mouse mode"), (action, "seq"))
+    window._set_footer_icons()
+    assert not button.icon().isNull()
+    action.trigger()
+    assert seq.isChecked() and not seq.icon().isNull()
+    Mode, State = QtGui.QIcon.Mode, QtGui.QIcon.State
+    off = seq.icon().pixmap(16, 16, Mode.Normal, State.Off).toImage()
+    assert seq.icon().pixmap(16, 16, Mode.Normal, State.On).toImage() != off

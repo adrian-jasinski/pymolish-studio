@@ -21,6 +21,7 @@ from pymol.Qt.utils import (getSaveFileNameWithExt, UpdateLock, WidgetMenu,
 from .pymol_gl_widget import PyMOLGLWidget
 from . import keymapping
 from . import theme
+from .icons import menu_icon
 
 from pmg_qt import properties_dialog, file_dialogs
 
@@ -393,32 +394,45 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.action_toolbar)
         self.action_toolbar.setVisible(bool(options.external_gui))
 
-        # toggle bar under the object list
+        # toggle bar under the object list: an icon each, and a text where
+        # it says more than the drawing (the mouse mode is a state)
         mouse = QtWidgets.QToolButton()
         mouse.setToolTip('Mouse mode')
         mouse.setMenu(self.menudict['Mouse'])
         self.setting_callbacks[cmd.setting._get_index('button_mode_name')].append(
             mouse.setText)
         mouse.setText(cmd.get('button_mode_name'))
+        seq = QtWidgets.QToolButton()
+        # the button copies text, icon and tooltip from its action at
+        # every click: they are set on the action
+        seq_action = SettingAction(self, cmd, 'seq_view', 'SEQ')
+        seq_action.setToolTip('Sequence viewer')
+        seq.setDefaultAction(seq_action)
         wizard = QtWidgets.QToolButton()
         wizard.setText('Wizard')
+        wizard.setToolTip('Wizard')
         wizard.setMenu(self.menudict['Wizard'])
-        seq = QtWidgets.QToolButton()
-        seq.setDefaultAction(SettingAction(self, cmd, 'seq_view', 'SEQ'))
-        seq.setToolTip('Sequence viewer')
         command = QtWidgets.QToolButton()
-        command.setText('>_')
+        command.setText('Command line')
         command.setToolTip('Command line and log')
         command.setCheckable(True)
         command.setChecked(bool(options.external_gui))
         command.clicked.connect(lambda on: self.ext_window.setVisible(on))
         self.ext_window.toggleViewAction().toggled.connect(command.setChecked)
-        for button in (mouse, wizard, seq, command):
+        Style = Qt.ToolButtonStyle
+        for button in (mouse, seq, wizard, command):
             button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
+            button.setToolButtonStyle(
+                Style.ToolButtonIconOnly if button in (wizard, command)
+                else Style.ToolButtonTextBesideIcon)
             # the mouse mode name is long: it takes the spare width
             self.object_panel.footer.addWidget(button, button is mouse)
         mouse.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
                             QtWidgets.QSizePolicy.Policy.Fixed)
+        self._footer_icons = (
+            (mouse, 'mouse mode'), (seq_action, 'seq'),
+            (wizard, 'wizard'), (command, 'command line'))
+        self._set_footer_icons()
 
         # extra key mappings (MacPyMOL compatible)
         QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+O'), self).activated.connect(self.file_open)
@@ -979,6 +993,18 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.scene_panel.raise_()
         self.scene_panel.refresh()
         self.scene_panel.list.setFocus()
+
+    def _set_footer_icons(self):
+        color = self.palette().buttonText().color()
+        accent = self.palette().link().color()  # while on, as in the toolbar
+        # getattr: a palette change can come before the row is built
+        for target, label in getattr(self, '_footer_icons', ()):
+            target.setIcon(menu_icon(label, color, accent=accent))
+
+    def changeEvent(self, event):
+        if event.type() == QtCore.QEvent.Type.PaletteChange:
+            self._set_footer_icons()  # tinted: the theme and the UI scale
+        super().changeEvent(event)
 
     def timeline_panel_dialog(self):
         self.timeline_panel.show()
