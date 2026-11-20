@@ -26,7 +26,9 @@ def testSimple():
 
 def testKeepsCartoonColors(request):
     # 15l: no row of the menu but "default" colors the cartoon, of a
-    # protein (guide atoms) or of a nucleic acid (P and the bases)
+    # protein (guide atoms) or of a nucleic acid (P and the bases). The
+    # color themes are the exception that was asked for (2026-11-20,
+    # question 32): coloring is what they are for; test_themes has them.
     from pymol import menu
     cmd.load(testing.datafile('1oky.pdb.gz'))
     cmd.fab('ACDEFGHIK', 'pep', chain='B')
@@ -37,7 +39,8 @@ def testKeepsCartoonColors(request):
     rows = menu.presets(cmd, 'all') + menu.preset_ligand_sites(cmd, 'all')
     ran = 0
     for row in rows:
-        if row[0] == 1 and isinstance(row[2], str) and row[1] != 'default':
+        if (row[0] == 1 and isinstance(row[2], str) and row[1] != 'default'
+                and not row[1].startswith('theme ')):
             cmd.do(row[2], echo=0)
             assert _colors('guide | (dna & polymer)') == {6}, row[1]
             ran += 1
@@ -338,3 +341,31 @@ def testLook(request):
     preset.look('default')
     assert cmd.get_setting_float('ambient') == pytest.approx(0.14, abs=5e-8)
     assert cmd.get_setting_int('light_count') == 2
+
+
+def test_themes(request):
+    """A theme colors protein and ligand carbons and sets a two-color
+    background; representations and the light stay."""
+    saved = [cmd.get(k) for k in ("bg_rgb", "bg_rgb_top", "bg_rgb_bottom", "bg_gradient")]
+    request.addfinalizer(lambda: [cmd.set(k, v) for k, v in zip(("bg_rgb", "bg_rgb_top", "bg_rgb_bottom", "bg_gradient"), saved)])
+    cmd.load(testing.datafile("1oky.pdb.gz"), "m")
+    cmd.fragment("ala", "other")
+    reps = cmd.count_atoms("rep lines")
+    light = cmd.get("ambient")
+    other = cmd.get_color_tuple(cmd.get_object_color_index("other"))
+
+    def color_of(selection):
+        found = set()
+        cmd.iterate(selection, "found.add(color)", space={"found": found})
+        return {tuple(round(c * 255) for c in cmd.get_color_tuple(i)) for i in found}
+
+    for name, (protein, ligand, top, bottom) in preset.THEMES.items():
+        preset.theme(name, "m")
+        rgb = lambda text: tuple(int(text[i:i + 2], 16) for i in (2, 4, 6))
+        assert color_of("m and polymer") == {rgb(protein)}
+        assert color_of("m and organic and elem C") == {rgb(ligand)}
+        assert len(color_of("m and resn STU and not elem C")) > 1  # N and O keep theirs
+        assert cmd.get_setting_int("bg_gradient") == 1
+        assert tuple(round(c * 255) for c in cmd.get_color_tuple(cmd.get("bg_rgb_bottom"))) == rgb(bottom)
+    assert cmd.get_color_tuple(cmd.get_object_color_index("other")) == other  # not in the selection
+    assert cmd.count_atoms("rep lines") == reps and cmd.get("ambient") == light

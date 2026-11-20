@@ -698,6 +698,33 @@ LOOKS = {
 }
 
 
+# Color themes: one soft color for the protein, one that stands out for the
+# carbons of the ligands, and a two-color background that goes with them.
+# Unlike a look or a preset, a theme sets colors and the background, and
+# nothing else; it combines with any of them.
+THEMES = {  # name: (protein, ligand carbons, background top, bottom)
+    'clay': ('0xE9C9A8', '0xC8553D', '0xF7EFE6', '0xEBDCCB'),
+    'blue': ('0x8EC5E8', '0xE8D44A', '0xEAF4FB', '0xD6E8F5'),
+    'sage': ('0xA9C4B0', '0x4F7C8A', '0xF6F6F1', '0xE4E8E0'),
+    'mint': ('0xA8D5BA', '0x2F6F5E', '0xF4FBF7', '0xE3F2EA'),
+    'night': ('0x7FA6E8', '0xF0A050', '0x1B2338', '0x0D1220'),
+}
+
+
+def theme(name, selection='*', _self=cmd):
+    '''
+    Color the protein and the ligands of `selection` and set the background
+    as THEMES[name] says.
+    '''
+    protein, ligand, top, bottom = THEMES[name]
+    _self.color(protein, '(%s) and polymer' % selection)
+    _self.color(ligand, '(%s) and organic and elem C' % selection)
+    _self.set('bg_rgb', top)  # fog and the outline color follow it
+    _self.set('bg_rgb_top', top)
+    _self.set('bg_rgb_bottom', bottom)
+    _self.set('bg_gradient', 1)
+
+
 def look(name, _self=cmd):
     '''
     Give the whole scene the light and outline of LOOKS[name]. The

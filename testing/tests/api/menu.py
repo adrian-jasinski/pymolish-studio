@@ -248,6 +248,7 @@ def testPresets(request):
         'ligand sites', 'protein interface', 'protein-protein interaction',
         'antibody and antigen', 'cartoon transparency',
         'show solvent',
+        'theme clay', 'theme blue', 'theme sage', 'theme mint', 'theme night',
         'floor', 'floor with mirror image', 'no floor',
         'standard light', 'figure', 'soft', 'flat', 'comic', 'sketch',
         'x-ray', 'studio', 'top light', 'soft shadow']

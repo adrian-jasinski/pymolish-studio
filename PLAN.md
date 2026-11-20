@@ -39,7 +39,8 @@ table with editing, import and export (22a to 22c), and a fix in the core
 quick-select chips and the final layout of the bar; step 26 is finished.
 4.31.0: the UI scale from 50 to 300 %, live on Linux. 4.32.0 and 4.33.0:
 the ligand in 2D, as a command and as a panel. 4.34.0: `stage`, a floor
-with shadow or mirror image, and three light setups.
+with shadow or mirror image, and three light setups. 4.35.0: five color
+themes.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -61,7 +62,7 @@ user's original numbers; the letters are milestones of the detailed plans.
 | 2 | **22d, 22e** — [Property table, the rest](docs/plans/22-property-table.md) | 22a to 22c shipped in 4.27.0 to 4.29.0: the window, editing, columns, copy and paste, import from CSV and Excel, export. Left: 22d, column order and hidden columns kept in the session (with 28b), computed columns (atoms, residues, chains, states, weight, charge), a Columns menu, "follow" (the current row is the only object shown), the window's size between sessions; 22e, a picked atom selects its row. | Each slice has its test. |
 | 3 | **27c** — [UI scale, Windows and macOS](docs/plans/27-ui-scale.md) | 27a and 27b shipped in 4.31.0: any percent from 50 to 300, live on Linux. Left: see in the first CI run whether the live change works on Windows and macOS (the test prints it); where it does not, restart in place or the "next start" message stays. | The CI log of both systems. |
 | 4 | **24c** — [Ligand in 2D, the rest](docs/plans/24-ligand-2d.md) | 24a and 24b shipped in 4.32.0 and 4.33.0: the command `ligand_2d` and the panel with clicks both ways. Left: the contour around the pocket, grey halos on ligand atoms open to the solvent, metal contacts, the contacts as dashes in the viewport, the distance in a tooltip, Tab through the residues. | A picture next to the reference; the dashes go when the panel closes. |
-| 5 | **15e, 25b-2** — [Five effects](docs/plans/15-presets.md), [color themes](docs/plans/25-studio-effects.md) | 15e as decided: color steps in the viewport; fog toward a white background; helices as cylinders; ambient occlusion in the soft look (timed on a large surface first); "balls in glass". With them five color themes (clay, blue, sage, mint, night): protein color, ligand color, background, as a group of their own. | Each has a check in the preset tests and a picture. |
+| 5 | **15e** — [Five effects](docs/plans/15-presets.md) | As decided: color steps in the viewport; fog toward a white background; helices as cylinders; ambient occlusion in the soft look (timed on a large surface first); "balls in glass". The color themes that were to come with them shipped in 4.35.0. | Each has a check in the preset tests and a picture. |
 | 6 | **1b** — [Grid surface, an experiment](docs/plans/01-performance-gpu.md) | A second `surface_type`: signed distance grid and marching cubes, with a smoothness value. Times and pictures of 1aon and 4v6x against today's surface, at two smoothness values; then the user decides whether it stays. Moved up: the surface looks wait for it. | The table and the pictures. |
 | 7 | **25b** — [Surface looks and the blob](docs/plans/25-studio-effects.md) | Not planned in detail yet (answer to question 25): written again with the result of order 6. Until then no surface look and no new setting is added. The trial pictures (glossy, candy glass, clay, night) are in the plan. | A new plan section after order 6. |
 | 8 | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | The shot list goes into the session file. The 58 Program rows of the Movie menu go. Dragging on the strip. The keyframe strip of the core (19g) stays for now. The list goes under the key of step 28. | A session with a shot list loads here with the list and loads in 4.19.x without it; the menu test. |
@@ -123,7 +124,7 @@ paint roller is built; say if the rest of the sentence asked for more.
 
 The user's to do, not decisions:
 
-- Merge pull request 9 (`feature11`, 4.19.12 to 4.34.0). `master` on GitHub
+- Merge pull request 9 (`feature11`, 4.19.12 to 4.35.0). `master` on GitHub
   has everything up to 4.19.11 (pull request 8, merged 2026-11-19).
 - The checks marked "first CI run" can be looked at: the icon of the Windows
   program, the release notes, the `chem` and `fix` extras on three systems.

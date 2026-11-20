@@ -804,6 +804,12 @@ def presets(self_cmd, sele):
               [ 1, 'hide solvent' if preset.solvent else 'show solvent',
                 'preset.show_solvent(%d,"%s",_self=cmd)' % (not preset.solvent, sele) ],
               [ 0, '', '' ],
+              # colors of protein and ligand, and the background
+            ] + [
+              [ 1, 'theme ' + name,
+                'preset.theme("%s","%s",_self=cmd)' % (name, sele) ] for name in preset.THEMES
+            ] + [
+              [ 0, '', '' ],
               # a floor under what is shown: its shadow when ray traced
               [ 1, 'floor', 'cmd.stage("floor", quiet=0)' ],
               [ 1, 'floor with mirror image', 'cmd.stage("mirror", quiet=0)' ],

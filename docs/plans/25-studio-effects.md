@@ -36,6 +36,19 @@ shadow" (26 s), "studio" (41 s), and the mirror image with "top light"
   from a distance, not up close. A real soft shadow is the shadow pass of
   25a-2, which is not planned now.
 
+**25b-2 done 2026-11-20 in 4.35.0:** the five color themes.
+
+![themes](../img/themes.jpg)
+
+Clay, blue, sage, mint, night: `preset.theme(name, selection)` and five rows
+"theme ..." in the Presets menu. A theme colors the protein, the carbons of
+the ligands, and sets a two-color background; nothing else. The test that
+says "no preset but default colors the cartoon" (15l) now leaves the theme
+rows out, with the reason. Not built: the themes as five palettes and five
+backgrounds of their own in those two menus; ask if wanted. The ligand
+color of sage and mint is a dark blue-green, not the film's near white,
+which does not show on those light backgrounds.
+
 **Two things from 3D programs like Blender: a floor under the molecule that
 takes its shadow or its mirror image (25a), and surfaces that look like
 glossy plastic, tinted glass or soft clay (25b). Both become rows of the

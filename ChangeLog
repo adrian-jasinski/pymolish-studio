@@ -4,6 +4,20 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.35.0
+
+	* Presets menu: five color themes
+	  - "theme clay", "theme blue", "theme sage", "theme mint" and
+	    "theme night": one soft color for the protein, one that
+	    stands out for the carbons of the ligands, and a two-color
+	    background that goes with them. A theme changes colors and
+	    the background only, so it combines with any preset and
+	    any light; in the toolbar it acts on the objects that are
+	    switched on.
+	  - Step 25b, the themes.
+
+2026-11-20 pymolish-studio
+
 	* 4.34.0
 
 	* New command: stage, a floor under the molecule
