@@ -161,7 +161,7 @@ class ActionToolbar(QtWidgets.QToolBar):
             ("Reset view", "reset"),
         ):
             self.zoom.menu().addAction(label, lambda c=command: cmd.do(c, echo=0))
-        orient = self._action("Orient", lambda: cmd.orient(animate=1.0))
+        orient = self._action("Orient", self._orient_visible)
         self.rock = self._action("Rock", cmd.rock)
         self.rock.setCheckable(True)
         # The view actions show only their icon: the name is the tooltip and
@@ -473,6 +473,12 @@ class ActionToolbar(QtWidgets.QToolBar):
         and hidden atoms do not count; with nothing shown, with everything."""
         cmd = self.cmd
         cmd.zoom("visible" if cmd.count_atoms("visible") else "all", animate=1.0)
+
+    def _orient_visible(self):
+        """Turn the long axes of what is shown into the screen plane; the
+        same atoms as _zoom_visible."""
+        cmd = self.cmd
+        cmd.orient("visible" if cmd.count_atoms("visible") else "all", animate=1.0)
 
     def _fill_presets(self):
         menu = self.presets.menu()

@@ -96,10 +96,11 @@ of 1248.
 1. Blue hover in every menu of the program (right-click menus, the menu
    bar), not only in the menus of the toolbar? One rule in `pymol.sty`.
    Recommended: yes, so that there is one style.
-   **Answer 2026-11-20: yes. To build.**
+   **Answer 2026-11-20: yes. Done in 4.23.0:** the rule is `QMenu::item:selected`, with the menu bar; a checked row is written in blue everywhere.
 2. Icons: 20 px with line width 2 as built, or B or C?
 3. Should Orient also act only on what is visible, like Zoom now?
-   Recommended: yes. **Answer 2026-11-20: yes. To build.**
+   Recommended: yes. **Answer 2026-11-20: yes. Done in 4.23.0**
+   (`_orient_visible`; the command `orient` is unchanged).
 
 ## Skipped
 

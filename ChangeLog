@@ -4,6 +4,20 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.23.0
+
+	* Menus and Orient
+	  - Every menu of the program shows the row under the pointer
+	    in blue with white text, and a chosen row in blue letters:
+	    the menu bar, the right-click menus, the menus of the
+	    Objects panel. Until now only the menus of the toolbar did.
+	  - Orient in the toolbar acts on what is shown, like Zoom: a
+	    hidden object no longer pulls the view. With nothing shown
+	    it acts on everything. The command "orient" is unchanged.
+	  - Step 20, the two follow-ups.
+
+2026-11-20 pymolish-studio
+
 	* 4.22.0
 
 	* Palette "chimerax"

@@ -87,6 +87,12 @@ def test_toolbar():
     bar.zoom.click()
     assert cmd.get_view()[11] == pytest.approx(near, abs=5e-2)
     assert [a.text() for a in bar.zoom.menu().actions()][:2] == ["Visible", "Everything"]
+    # Orient too: the hidden object does not pull the view toward it
+    texts["Orient"].trigger()
+    assert cmd.get_view()[11] == pytest.approx(near, abs=2.0)
+    cmd.enable("far")
+    texts["Orient"].trigger()
+    assert cmd.get_view()[11] < near * 3
     cmd.delete("far")
 
     bar.presets.menu().aboutToShow.emit()
