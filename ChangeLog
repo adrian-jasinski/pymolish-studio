@@ -4,6 +4,28 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.36.0
+
+	* Ligand 2D: circles, larger text, tones for a light and a dark
+	  window, a larger legend
+	  - A residue is a circle with its name and number in larger
+	    text. Its fill runs from a lighter to a deeper tone of the
+	    color of its kind, inside an outline of the same color.
+	  - On a dark window the fills are deep, the outlines bright
+	    and the text white; on a light window the other way round.
+	    The contact lines are lighter on dark, and the ring around
+	    a selected residue is the blue of the window's links.
+	  - The legend has larger text and marks and wraps into rows:
+	    its end was cut off in a narrow picture. The picture has
+	    less empty margin.
+	  - A PNG written by "ligand_2d" has plain fills; the SVG and
+	    the panel have the tones.
+	  - Fix: "qt.svg: Invalid path data; path truncated", printed
+	    three times whenever the panel drew its picture.
+	  - Step 30a.
+
+2026-11-20 pymolish-studio
+
 	* 4.35.0
 
 	* Presets menu: five color themes

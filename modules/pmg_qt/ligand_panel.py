@@ -172,8 +172,7 @@ class LigandPanel(QtWidgets.QDockWidget):
         top = (self.picture.height() - self._size[1] * scale) / 2
         x, y = (position.x() - left) / scale, (position.y() - top) / scale
         for residue, (px, py) in zip(self.residues, self.places):
-            half_w, half_h = ligand2d.BOX[0] / 2, ligand2d.BOX[1] / 2
-            if math.hypot((x - px) / half_w, (y - py) / half_h) <= 1:  # in the ellipse
+            if math.hypot(x - px, y - py) <= ligand2d.SIZE / 2:  # in the circle
                 return residue
         return None
 

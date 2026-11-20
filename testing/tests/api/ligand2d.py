@@ -19,11 +19,23 @@ except ImportError:
 needs_rdkit = pytest.mark.skipif(not rdkit, reason="rdkit not installed")
 
 
-def _apart(places, box=ligand2d.BOX):
-    """No two residue shapes overlap: their centers are a box width apart."""
+def _apart(places, size=ligand2d.SIZE):
+    """No two residue circles overlap: their centers are a circle apart."""
     return all(
-        math.dist(a, b) >= box[0] for i, a in enumerate(places) for b in places[i + 1 :]
+        math.dist(a, b) >= size for i, a in enumerate(places) for b in places[i + 1 :]
     )
+
+
+def test_legend_fits():
+    # 30a: the legend wraps into rows; no entry starts beyond the picture
+    for width, most in ((344, 5), (429, 4), (1200, 2)):
+        entries, rows = ligand2d._legend(width)
+        assert [name for name, _, _ in entries] == [*ligand2d.COLORS, *ligand2d.LINES]
+        assert rows <= most and rows == entries[-1][2] + 1
+        assert all(14 <= x < width - 60 for _, x, _ in entries), width
+        first_line = len(ligand2d.COLORS)  # the contacts start a row
+        assert entries[first_line][1] == 14
+        assert entries[first_line][2] > entries[first_line - 1][2]
 
 
 def test_layout():
@@ -81,8 +93,27 @@ def test_picture(tmp_path):
     assert all(0 < x < size[0] and 0 < y < size[1] for x, y in places)  # inside
     root = ElementTree.fromstring(svg)
     assert root.tag.endswith("svg")
-    # a filled shape and its outline per residue, and six for the legend
-    assert svg.count("<ellipse") == 2 * len(residues) + 6
+    # a filled circle and its outline per residue and per kind of the legend
+    kinds = len(ligand2d.COLORS)
+    ellipses = [e for e in root.iter() if e.tag.endswith("ellipse")]
+    assert len(ellipses) == 2 * (len(residues) + kinds)
+    assert all(e.get("rx") == e.get("ry") for e in ellipses)
+    assert float(ellipses[0].get("rx")) == ligand2d.SIZE / 2
+    # 30a: each fill is the gradient of its kind
+    assert svg.count("<linearGradient") == kinds
+    assert svg.count("fill:url(#") == len(residues) + kinds
+    assert "fill:url(#%s)" % residues[0]["kind"] in ellipses[0].get("style")
+    # rdkit writes a space as a path without data; Qt warns about those
+    assert "d=''" not in svg
+    # on a dark window: other tones, deep fills under white text
+    dark = ligand2d.draw(mol, residues, background=(0.2, 0.2, 0.2), ink=(0.9, 0.9, 0.9))[0]
+    stops = lambda text: text[text.index("<defs>") : text.index("</defs>")]
+    assert stops(dark) != stops(svg)
+    for color in ligand2d.COLORS.values():
+        top, bottom, edge, ink = ligand2d._tones(color, True)
+        assert sum(top) > sum(bottom) and sum(ink) - sum(top) > 1.2
+        top, bottom, edge, ink = ligand2d._tones(color, False)
+        assert sum(top) > sum(bottom) > sum(edge) and sum(bottom) - sum(ink) > 1.2
     png, _, _ = ligand2d.draw(mol, residues, svg=False)
     assert png[:8] == b"\x89PNG\r\n\x1a\n"
     assert ligand2d.draw(mol, residues, selected={0})[0] != svg  # the blue ring

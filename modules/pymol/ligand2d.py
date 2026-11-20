@@ -63,7 +63,9 @@ LIGAND_POSITIVE = (
     "[NX3]-C(=[NX2,NX3+])",
 )
 LIGAND_NEGATIVE = ("[OX1,OX2H1,OX1-]-,=[C,P,S]=O", "[O-]")
-BOX = (58, 40)  # a residue's ellipse in pixels
+SIZE = 52  # a residue's circle, across, in pixels
+FONT = 14  # the names in the circles
+LEGEND = (16, 28, 20, 32)  # the legend: font, height of a row, circle, line
 SCALE = 20  # pixels per unit of rdkit's 2D coordinates: a bond is 1.5 long
 
 
@@ -202,18 +204,18 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
     return mol, result
 
 
-def layout(points, anchors, box=BOX, gap=6):
+def layout(points, anchors, size=SIZE, gap=6):
     """Where the residues go: `points` are the ligand atoms in pixels,
     `anchors` the ligand atoms each residue is near. Each residue stands on
     a ring around the ligand at the angle of its atoms; neighbors are pushed
-    apart until the boxes are `gap` pixels apart, and the ring grows when
+    apart until the circles are `gap` pixels apart, and the ring grows when
     they do not fit. Returns the centers and the ring's radius."""
     if not anchors:
         return [], 0.0
     cx, cy = _center(points)
     reach = max(math.dist((cx, cy), p) for p in points)
-    step = box[0] + gap  # along the ring
-    radius = max(reach + box[0] * 0.9, len(anchors) * step / (2 * math.pi))
+    step = size + gap  # along the ring
+    radius = max(reach + size * 0.9, len(anchors) * step / (2 * math.pi))
     need = step / radius
     angles = []
     for group in anchors:
@@ -242,25 +244,66 @@ def layout(points, anchors, box=BOX, gap=6):
     return places, radius
 
 
+def _mix(color, other, share):
+    return tuple(a + (b - a) * share for a, b in zip(color, other))
+
+
+def _tones(color, dark):
+    """A residue's circle in the color of its kind: the fill at the top and
+    at the bottom, the outline, the text. On a dark window deep fills, a
+    bright outline and white text; on a light one the other way round."""
+    black, white = (0, 0, 0), (1, 1, 1)
+    if dark:
+        return _mix(color, black, 0.45), _mix(color, black, 0.7), color, white
+    return _mix(color, white, 0.6), color, _mix(color, black, 0.45), (0.1, 0.1, 0.1)
+
+
+def _legend(width):
+    """Where the entries of the legend go: (name, x, row) for the kinds,
+    then for the contacts from a row of their own, in rows that fit
+    `width`; and the number of rows."""
+    font, _, dot, dash = LEGEND
+    entries, row = [], -1
+    for names, mark in ((COLORS, dot), (LINES, dash)):
+        x, row = 14, row + 1
+        for name in names:
+            # ponytail: 0.55 of the font size per letter, measured on
+            # rdkit's font; a text measured by the drawer if a name is cut
+            wide = mark + 8 + 0.55 * font * len(name) + 16
+            if x + wide > width and x > 14:
+                x, row = 14, row + 1
+            entries.append((name, x, row))
+            x += wide
+    return entries, row + 1
+
+
 def draw(mol, residues, svg=True, selected=(), background=(1, 1, 1), ink=(0, 0, 0)):
     """The picture as SVG text or PNG bytes, its size, and for each residue
     its center in pixels (for clicks). `selected` are indices of residues to
-    ring in blue."""
+    ring in blue. `ink` is the color of the text beside the shapes: a light
+    one means a dark window, and the residues are drawn for that."""
+    import re
+
     from rdkit.Chem.Draw import rdMolDraw2D
     from rdkit.Geometry import Point2D
 
+    dark = sum(ink) > 1.5
     conformer = mol.GetConformer()
     flat = [(conformer.GetAtomPosition(i).x, conformer.GetAtomPosition(i).y) for i in range(mol.GetNumAtoms())]
     center = _center(flat)
     reach = max(math.dist(center, p) for p in flat) * SCALE
-    ring = max(reach + BOX[0] * 0.9, len(residues) * (BOX[0] + 6) / (2 * math.pi))
-    side = int(2 * (ring + BOX[0]) + 30)
-    legend = 46
+    ring = max(reach + SIZE * 0.9, len(residues) * (SIZE + 6) / (2 * math.pi))
+    # the circles reach half a circle past the ring; at least as wide as two
+    # contacts of the legend side by side
+    side = max(344, int(2 * ring + SIZE + 20))
+    entries, rows = _legend(side)
+    font, high, dot, dash = LEGEND
+    legend = rows * high + 12
     size = (side, side + legend)
     drawer = (rdMolDraw2D.MolDraw2DSVG if svg else rdMolDraw2D.MolDraw2DCairo)(*size)
     options = drawer.drawOptions()
     options.fixedBondLength = SCALE  # per unit, despite its name
-    if sum(ink) > 1.5:  # light on dark
+    if dark:
         rdMolDraw2D.SetDarkMode(options)
     # the background by hand: rdkit's own moves with the offset below and
     # would leave the strip of the legend bare
@@ -274,7 +317,8 @@ def draw(mol, residues, svg=True, selected=(), background=(1, 1, 1), ink=(0, 0, 
     places, _ = layout(points, [sorted(r["atoms"]) for r in residues])
 
     def line(a, b, color, dashed, width=2):
-        drawer.SetColour(color)
+        # the contact colors are picked for white: lighter on a dark window
+        drawer.SetColour(_mix(color, (1, 1, 1), 0.35) if dark else color)
         drawer.SetLineWidth(width)
         if not dashed:
             drawer.DrawLine(Point2D(*a), Point2D(*b), True)
@@ -289,41 +333,71 @@ def draw(mol, residues, svg=True, selected=(), background=(1, 1, 1), ink=(0, 0, 
                 True,
             )
 
+    def circle(x, y, radius, kind, ringed=False):
+        """A filled circle and its outline; returns the color for text."""
+        top, bottom, edge, text = _tones(COLORS[kind], dark)
+        corner = Point2D(x - radius, y - radius), Point2D(x + radius, y + radius)
+        drawer.SetFillPolys(True)
+        drawer.SetLineWidth(1)  # the fill's own edge stays under the outline
+        drawer.SetColour(_mix(top, bottom, 0.5))  # a PNG keeps this one
+        drawer.DrawEllipse(*corner, True)
+        drawer.SetFillPolys(False)
+        drawer.SetLineWidth(4 if ringed else 2)
+        blue = (0.35, 0.63, 0.94) if dark else (0.12, 0.31, 0.72)  # the links
+        drawer.SetColour(blue if ringed else edge)
+        drawer.DrawEllipse(*corner, True)
+        return text
+
     drawer.SetFillPolys(False)
     for residue, place in zip(residues, places):  # the lines under the shapes
         for name, group in residue["contacts"]:
             color, dashed = LINES[name]
             line(place, _center([points[i] for i in group]), color, dashed)
-    drawer.SetFontSize(11)
+    drawer.SetFontSize(FONT)
     for number, (residue, (x, y)) in enumerate(zip(residues, places)):
-        corner = Point2D(x - BOX[0] / 2, y - BOX[1] / 2), Point2D(x + BOX[0] / 2, y + BOX[1] / 2)
-        drawer.SetFillPolys(True)
-        drawer.SetColour(COLORS[residue["kind"]])
-        drawer.DrawEllipse(*corner, True)
-        drawer.SetFillPolys(False)
-        drawer.SetLineWidth(3 if number in selected else 1)
-        drawer.SetColour((0.12, 0.31, 0.72) if number in selected else (0.35, 0.35, 0.35))
-        drawer.DrawEllipse(*corner, True)
-        drawer.SetColour((0, 0, 0))  # on the light fills of every kind
-        drawer.DrawString(residue["label"][0], Point2D(x, y - 7), 0, True)  # 0: centered
-        drawer.DrawString(residue["label"][1], Point2D(x, y + 8), 0, True)
+        drawer.SetColour(circle(x, y, SIZE / 2, residue["kind"], number in selected))
+        drawer.DrawString(residue["label"][0], Point2D(x, y - 8), 0, True)  # 0: centered
+        drawer.DrawString(residue["label"][1], Point2D(x, y + 9), 0, True)
     # legend: the kinds, then the contacts
-    x, y = 14, size[1] - 32
-    for kind, color in COLORS.items():
-        drawer.SetFillPolys(True)
-        drawer.SetColour(color)
-        drawer.DrawEllipse(Point2D(x, y - 6), Point2D(x + 16, y + 6), True)
+    drawer.SetFontSize(font)
+    for name, x, row in entries:
+        y = side + 6 + (row + 0.5) * high
+        if name in COLORS:
+            circle(x + dot / 2, y, dot / 2, name)
+            mark = dot
+        else:
+            line((x, y), (x + dash, y), *LINES[name], width=3)
+            mark = dash
         drawer.SetColour(ink)
-        drawer.DrawString(kind, Point2D(x + 22, y), 1, True)  # 1: from the left
-        x += 34 + 7 * len(kind)
-    x, y = 14, size[1] - 12
-    for name, (color, dashed) in LINES.items():
-        line((x, y), (x + 26, y), color, dashed)
-        drawer.SetColour(ink)
-        drawer.DrawString(name, Point2D(x + 32, y), 1, True)
-        x += 46 + 7 * len(name)
+        drawer.DrawString(name, Point2D(x + mark + 8, y), 1, True)  # 1: from the left
     drawer.FinishDrawing()
-    return drawer.GetDrawingText(), size, places
+    text = drawer.GetDrawingText()
+    if svg:
+        # rdkit writes a space in a text as a path without data, and Qt
+        # prints a warning for each
+        text = re.sub(r"<path d=''[^>]*/>\n?", "", text)
+        # rdkit has no gradients: the filled circles come in the order they
+        # were drawn, and each gets the gradient of its kind
+        kinds = iter([r["kind"] for r in residues] + list(COLORS))
+        text = re.sub(
+            r"(<ellipse[^>]*?fill:)#\w{6}",
+            lambda found: "%surl(#%s)" % (found.group(1), next(kinds)),
+            text,
+        )
+        stops = "<stop offset='%d' stop-color='#%02X%02X%02X'/>"
+        gradients = "".join(
+            "<linearGradient id='%s' x1='0' y1='0' x2='0' y2='1'>%s%s</linearGradient>"
+            % (
+                kind,
+                *(
+                    stops % (at, *(round(c * 255) for c in tone))
+                    for at, tone in enumerate(_tones(color, dark)[:2])
+                ),
+            )
+            for kind, color in COLORS.items()
+        )
+        text = text.replace("<!-- END OF HEADER -->", "<defs>%s</defs>" % gradients, 1)
+    return text, size, places
 
 
 def ligand_2d(ligand="", cutoff=CUTOFF, filename="", quiet=1, *, _self=cmd):
