@@ -16,6 +16,7 @@ questions 18 and 19.
 Same day: the user answered questions 1, 3 to 7, 13, 15, 16, 18 and 19. The
 answers are in the table below and in the detailed plans; none of that work is
 built yet.
+Then 3 (the icon and logo got a notice of their own, 4.19.43) and 17 (undo).
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -42,14 +43,14 @@ user's original numbers; the letters are milestones of the detailed plans.
 | 5 | **15b** — [Outline in the viewport](docs/plans/15-presets.md) | An edge pass over the drawn picture for the looks figure, soft, flat, comic and sketch. The line is black on a light background and light on a dark one. It is the same kind of pass as FXAA, so it comes right after it. | Frame time before and after; pictures on black and on white. |
 | 6 | **1b** — [Surface on a worker thread](docs/plans/01-performance-gpu.md) | A large surface is built off the GUI thread: the window stays usable, the status line says it is being built, the surface appears when ready. Headless runs still wait. | 1aon and 4v6x in the real window; the suite and the sanitizer job. |
 | 7 | **1b** — [Grid surface, an experiment](docs/plans/01-performance-gpu.md) | A second `surface_type`: signed distance grid and marching cubes. Times and pictures of 1aon and 4v6x against today's surface; then the user decides whether it stays. | The table and the pictures. |
+| 8 | **21g** — [Undo of more than the last move](docs/plans/21-commercial-features.md) | Snapshots for commands that add, remove or edit; the existing coordinate ring for moves. Three slices: the stack with create, delete, remove and the builder's edits; Undo and Redo in the toolbar say what they will undo; the rest of the test list. After it the error "only in Incentive PyMOL", the test mark `incentive` and the option `-n` go. | The 26 undo tests and the three jira tests pass, then the `incentive` mark comes off. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 | any time | **3** — [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Rows moved by dragging, a picked atom selects its row, sequence viewer text and scene buttons still drawn by the core, spacing of the remaining dialogs. | Each increment ships in a reviewable test build. |
 | any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
-| waits | **21g** — [Undo of more than the last move](docs/plans/21-commercial-features.md) | Question 17 has no answer yet. With the last slice of step 21 the error "only in Incentive PyMOL", the test mark `incentive` and the option `-n` go. | The old undo tests pass, then the `incentive` mark comes off. |
 
 The order is by size and by what is seen first: three one-line changes, then
-presets, the timeline, the rendering details, and the two large pieces of 1b
-last. Order 4 and 5 share their shader pass. 5c (release builds without
+presets, the timeline, the rendering details, the two large pieces of 1b, and
+undo, the largest, last. Order 4 and 5 share their shader pass. 5c (release builds without
 GitHub Actions) left the table: the builds stay on GitHub for now. GPU
 compute is not on the critical path.
 
@@ -84,13 +85,9 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-| # | Decision | Where it is described | What it holds up |
-| --- | --- | --- | --- |
-| 3 | The icon and the logo: under which license do they ship? MIT like the new code (recommended: one rule for everything this project added), or no license, all rights with you? Who made them is answered. | [09-icons-logo.md](docs/plans/09-icons-logo.md), `docs/licenses.md` | One cell of the license list; no code |
-| 17 | 21g: undo by snapshots for edits plus the coordinate ring for moves (C, recommended), or coordinates only, as today, for now? | [21-commercial-features.md](docs/plans/21-commercial-features.md), 21g | 21g, and the end of step 21 |
-
-Answered on 2026-11-20, see "Decided by the user" in
-[PLAN-DONE.md](PLAN-DONE.md): 1, 4, 5, 6, 7, 13, 15, 16, 18, 19.
+Nothing waits for an answer. All questions asked up to 2026-11-20 are
+answered; the answers are under "Decided by the user" in
+[PLAN-DONE.md](PLAN-DONE.md).
 
 The user's to do, not decisions:
 

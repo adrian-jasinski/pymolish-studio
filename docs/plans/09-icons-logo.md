@@ -116,10 +116,18 @@ Differences from the plan above:
 
 Open:
 
-- **Rights line** for the two images: who made them is answered
-  (2026-11-20): generated with ChatGPT for this project, owned by the user.
-  `docs/licenses.md` says so. Still open: under which license they ship
-  (question 3 of the roadmap).
+- **Rights line** for the two images: delivered 2026-11-20 (4.19.43).
+  Generated with ChatGPT for this project, owned by the user. The user
+  asked for "a license that is good for trade marks":
+
+  | | Option | Note |
+  | --- | --- | --- |
+  | A | A notice of their own, `data/pymol/icons/LICENSE`: not under the code licenses; unchanged copies may travel with pymolish-studio and may be used to refer to it; a changed version of the program needs its own icon and logo. **Taken.** | What projects with a protected logo do (OpenOffice, Snikket, Quarto: the logo is kept out of the code license and a short policy says what is allowed). It rests on the images being the marks of the project, not on copyright, which matters because purely AI-generated pictures may have no copyright. The price: the repository holds two files that are not free in the sense of the code; a fork must replace them, as this fork replaced the PyMOL logo. |
+  | B | CC BY-ND 4.0: unchanged copies with credit, no changed versions. | A standard text, and it says itself that it gives no trademark rights. But it lets anyone use the unchanged logo on their own product. |
+  | C | MIT, like the code. | Anyone may change the logo and use it for anything: the opposite of what was asked. |
+
+  Not done, and not a job for code: a search for similar marks, and a
+  registration. The notice is plain language, not reviewed by a lawyer.
 - **Windows artifact:** icon on `pymolish.exe` not looked at; first CI run.
 - **Logo on dark pages:** `logo.png` has near-black text on a transparent
   background. The README uses the icon for that reason.

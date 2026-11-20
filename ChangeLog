@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-20 pymolish-studio
 
+	* 4.19.43
+
+	* Licenses
+	  - The application icon and the logo have a notice of their own,
+	    data/pymol/icons/LICENSE. They are the marks of the project
+	    and are not under the MIT license of the code: they may be
+	    passed on unchanged with pymolish-studio and used to refer to
+	    it; a changed version of the program that is given to others
+	    needs its own icon and logo, as it needs its own name. Until
+	    now no license was recorded for them.
+	  - docs/licenses.md: the row for the two images and one more
+	    point in "In short".
+
+2026-11-20 pymolish-studio
+
 	* 4.19.42
 
 	* Removed: the menus the core drew in OpenGL

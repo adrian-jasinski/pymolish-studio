@@ -14,6 +14,10 @@ not affiliated with or endorsed by Schrodinger, LLC.
 - **Give your version its own name.** Do not present it as PyMOL or as a
   Schrodinger product, and do not use the name Schrodinger to advertise it.
   `LICENSE` lists the few phrases with "PyMOL(TM)" that are allowed.
+- **And its own icon and logo.** The pymolish-studio icon and logo are not
+  under the code licenses: they travel unchanged with pymolish-studio and
+  may be used to refer to it, see their
+  [notice](../data/pymol/icons/LICENSE).
 - **No warranty.** The software comes as it is.
 
 Why two licenses: the code that came from Open-Source PyMOL keeps its
@@ -31,7 +35,7 @@ part, its license and the file the license was read from.
 | --- | --- | --- |
 | Code from [Open-Source PyMOL](https://github.com/schrodinger/pymol-open-source), Copyright (C) Schrodinger, LLC | Open-Source PyMOL license | [LICENSE](../LICENSE) |
 | Code added by pymolish-studio: new files, and changes inside files from Open-Source PyMOL | MIT | [LICENSE-MIT](../LICENSE-MIT) |
-| Application icon and logo, `data/pymol/icons/` | Generated with ChatGPT (an AI image generator) for this project; owned by the author of pymolish-studio. No license is attached to them yet. | none |
+| Application icon and logo, `data/pymol/icons/` and `docs/img/logo-dark.png` | Not under the two code licenses. They are the marks of the project, generated with ChatGPT and owned by its author: pass them on unchanged with pymolish-studio and use them to refer to it; a changed version needs its own. | [LICENSE](../data/pymol/icons/LICENSE) |
 
 A file from Open-Source PyMOL that pymolish-studio changed is under both
 licenses, so a copy of the software needs both files.

@@ -40,7 +40,7 @@ optimization and workspace increments) is still open and stays in the roadmap.
 | 7 | **6 — states panel** | States of a trajectory and frames of a movie are stepped, played and timed from one panel. | Done 2026-11-13 (4.6.0): [docs/plans/06-states-panel.md](docs/plans/06-states-panel.md) |
 | 8 | **7 — toolbar icons and UI scale** | Every toolbar button has an icon; the interface starts at 150 % and the scale is picked in the toolbar. | Done 2026-11-13 (4.7.0): [docs/plans/07-toolbar-icons-scale.md](docs/plans/07-toolbar-icons-scale.md) |
 | 9 | **10a — README and license text** | The repository presents itself as a fork with both license files. | Done 2026-11-14 (4.9.0): [docs/plans/10-readme-license.md](docs/plans/10-readme-license.md). 14a, the other half of order 9, shipped in 4.10.1. |
-| 10 | **9 — icon and logo** | Window and bundle show the new art; nothing shows the PyMOL logo. | Done 2026-11-14 (4.8.0): [docs/plans/09-icons-logo.md](docs/plans/09-icons-logo.md). Open: the rights line for the two images, a look at the Windows artifact. |
+| 10 | **9 — icon and logo** | Window and bundle show the new art; nothing shows the PyMOL logo. | Done 2026-11-14 (4.8.0): [docs/plans/09-icons-logo.md](docs/plans/09-icons-logo.md). The rights line for the two images came on 2026-11-20 (4.19.43). Open: a look at the Windows artifact. |
 | 10 | **10b — images in the README** | README shows the logo and one screenshot. | Done 2026-11-14 (4.9.0): the icon and [docs/img/window.png](docs/img/window.png). The icon is used, not `logo.png`: its dark text does not show on a dark page. |
 | 11 | **11 — color palettes** | A palette picked in the toolbar colors new objects and is back after a restart. | Done 2026-11-14 (4.10.0): [docs/plans/11-color-palettes.md](docs/plans/11-color-palettes.md). `util.cbc` still uses the PyMOL order. |
 | 12 | **12a to 12e — native commands** | Kept plugin commands work without the plugin, from the command line and from File, Build and the group menu. | Done 2026-11-14 (4.11.0 to 4.11.4): [docs/commands.md](docs/commands.md). 12a groups, 12b folder load and export, 12c UniProt and predicted structures, 12d SMILES with rdkit, 12e sequence search and ligand clusters. The plugin in `~/.pymol/startup` still wins over the native names: remove it. |
@@ -77,7 +77,7 @@ nothing is built yet.
 | # | Decision | Where it goes |
 | --- | --- | --- |
 | 1 | A large surface is built on a worker thread (option A). | 1b, order 6 of the roadmap. To build. |
-| 3 | The icon and the logo were generated with ChatGPT; the user owns them. | `docs/licenses.md`, plan 9. Written down. Which license they ship under is still asked. |
+| 3 | The icon and the logo were generated with ChatGPT; the user owns them. They get "a license that is good for trade marks". | Done in 4.19.43: `data/pymol/icons/LICENSE`, a notice outside the two code licenses (unchanged copies travel with the program and may refer to it; a changed version needs its own). `docs/licenses.md`, plan 9. |
 | 4 | The release builds stay on GitHub Actions for now. | 5c is shelved; nothing was built for it. Plan 5. |
 | 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b, order 5. To build. |
 | 6 | The ChimeraX object colors become a palette. | 15c, order 1. To build. |
@@ -86,9 +86,10 @@ nothing is built yet.
 | 15 | As recommended: blue hover in every menu; Orient acts only on what is visible. | Step 20, order 1. To build. |
 | 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f, order 4. To build. |
 | 18 | As recommended: idle OpenMP threads sleep at once. | 1b, order 1. To build. |
+| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g, order 8. To build. |
 | 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b, order 7. To build. |
 
-Not answered: 17 (21g, undo). 14 was answered by "release 17" (4.19.42).
+14 was answered by "release 17" (4.19.42). No question is open.
 
 ## Finished milestones of open steps
 

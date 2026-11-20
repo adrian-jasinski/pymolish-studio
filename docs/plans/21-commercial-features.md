@@ -2,7 +2,8 @@
 
 [Roadmap](../../PLAN.md) · Request 2026-11-19 · **Removals done in 4.19.18
 to 4.19.26. 21a to 21e built in 4.19.33 to 4.19.37. 21f was decided on
-2026-11-20 and is to build; 21g waits for an answer.** Answers of the
+2026-11-20 and is to build; 21g was decided the same day (option C) and is
+to build last.** Answers of the
 user from 2026-11-19 are applied: all Maestro support removed, a command is
 enough for stereochemistry, stubs that break nothing else removed.
 
@@ -314,6 +315,7 @@ those two slices.
    changes what a PSE contains. **Answer 2026-11-20: as recommended.**
 2. 21g: is option C the right size (snapshots for edits, the coordinate ring
    for moves), or is undo of coordinates, as today, enough for now?
+   **Answer 2026-11-20: as recommended, option C.**
 
 Answered 2026-11-19: Maestro, remove all of it (done, 4.19.24). 21b, the
 command is enough (option A). The stubs outside the request: remove what
