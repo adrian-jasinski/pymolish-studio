@@ -4,6 +4,14 @@ CHANGE LOG
 
 2026-11-23 pymolish-studio
 
+	* 4.55.0
+
+	- C in the panel: the row "ball and stick only" is gone; ball and stick
+	  is colored from C > by rep > ball and stick, as every other
+	  representation.
+
+2026-11-23 pymolish-studio
+
 	* 4.54.0
 
 	- S and H in the panel: the rows "wire", "sticks" and "nb_spheres" are

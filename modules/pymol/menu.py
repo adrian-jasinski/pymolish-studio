@@ -742,7 +742,6 @@ def mol_color(self_cmd, sele):
          [ 1, 'by chain' , by_chain(self_cmd, sele) ],
          [ 1, 'by ss  '  , by_ss(self_cmd, sele) ],
          [ 1, 'by rep'  , by_rep(self_cmd, sele) ],
-         [ 1, 'ball and stick only', by_rep_sub(self_cmd, 'ball and stick', 'ball_and_stick_color', sele) ],
          [ 1, '\\900s\\950p\\990e\\090c\\099t\\059r\\009u\\555m', spectrum(self_cmd, sele) ],
          [ 0, ''                                , ''                 ],
          [ 1, 'auto', color_auto(self_cmd, sele) ],

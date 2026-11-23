@@ -521,7 +521,7 @@ def testBallAndStickMenus():
     assert list(sub) == ['ball size', 'bond thickness']
     cmd.do(_to_dict(sub['ball size'])['large 0.50'], echo=0)
     cmd.do(_to_dict(sub['bond thickness'])['thick 0.18'], echo=0)
-    cmd.do(_to_dict(_to_dict(menu.mol_color(cmd, 'm1'))['ball and stick only'])['by element'], echo=0)
+    cmd.do(_to_dict(_to_dict(_to_dict(menu.mol_color(cmd, 'm1'))['by rep'])['ball and stick'])['by element'], echo=0)
     assert cmd.get_setting_float('ball_and_stick_scale', 'm1') == 0.5
     assert cmd.get_setting_float('ball_and_stick_bond_radius', 'm1') == pytest.approx(0.18)
     assert cmd.get('ball_and_stick_color', 'm1') == 'atomic'  # on the object
@@ -535,4 +535,4 @@ def testBallAndStickMenus():
     cmd.do(_to_dict(menu.mol_hide(cmd, 'm1'))['ball and stick'], echo=0)
     assert cmd.count_atoms('rep ball_and_stick') == 0 and cmd.count_atoms('rep lines') == 10
     colors = _to_dict(menu.mol_color(cmd, 'm1'))
-    assert 'ball and stick only' in colors
+    assert 'ball and stick only' not in colors and 'by rep' in colors
