@@ -25,6 +25,10 @@ written under `pymolish_unique_settings` (question 62); it does not draw
 the representation. 34c: twenty presets and the view at load (question
 63); "simple" and "default" still draw ligands as lines.
 
+**Changed 2026-11-23 in 4.53.0, at the user's request:** `ball_and_stick_scale`
+defaults to 0.25, not 0.31; S > ball and stick in the panel holds only ball
+size and bond thickness (4.52.0 added the menus).
+
 **Ball-and-stick gets its own visibility, sizes, colors and bond orders.
 Showing, hiding or styling it must not change lines, sticks or spheres.**
 Ligands drawn by molecular presets use it by default once it is complete.

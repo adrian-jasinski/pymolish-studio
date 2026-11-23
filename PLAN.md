@@ -48,7 +48,7 @@ and 34b, 34c, 11c, 36a). Steps 22, 28, 34, 35 and 36 are finished and step
 Questions 57 to 59 were built with their recommended answers; five new
 questions, 61 to 65, came out of the work.
 
-**Shipped state, checked 2026-11-23: 4.51.0.** Built since 4.19.43,
+**Shipped state, checked 2026-11-23: 4.53.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
@@ -68,6 +68,7 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.47.0 | Scenes keep the style of presets and colorings. |
 | 4.48.0 to 4.49.0 | The representation `ball_and_stick`; ligands drawn with it by the presets and when a structure is loaded. |
 | 4.50.0 to 4.51.0 | `color_cpk`; `ligand_next`, the next ligand with its polar contacts. |
+| 4.52.0 to 4.53.0 | Ball and stick in the S, H and C menus of the panel; S > ball and stick holds only ball size and bond thickness; balls 0.25 of the atom radius by default (was 0.31). |
 
 Of the ten features requested on 2026-11-20, nine have a working version.
 The tenth, the surface looks, waits for the grid surface of 1b. Steps 20, 26,
