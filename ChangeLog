@@ -4,6 +4,52 @@ CHANGE LOG
 
 2026-11-23 pymolish-studio
 
+	* 4.48.0
+
+	* New representation: ball_and_stick
+	  - `show ball_and_stick, organic`, `hide`, `as`, `toggle` and
+	    the selection `rep ball_and_stick`: a ball on every atom and
+	    its bonds as thin sticks, with a visibility of its own.
+	    Sticks, spheres and lines can be shown beside it, and
+	    `hide everything` hides it too. In the menus: "ball and
+	    stick" under show, hide and as; "hydrogens" follows it.
+	  - Three new settings, each for all, an object or atoms
+	    (`set name, value, selection`; `unset` goes back):
+	    ball_and_stick_scale (0.31: the ball is 0.31 of the atom's
+	    radius, the basis of sphere_scale), ball_and_stick_bond_radius
+	    (0.12; a bond is as thin as its thinner end) and
+	    ball_and_stick_color (the atom's color; "atomic" colors by
+	    element whatever color the atoms have). In the color menu:
+	    by representation > ball and stick, with "by element".
+	  - stick_radius, stick_color, stick_ball*, stick_transparency,
+	    stick_h_scale, valence, sphere_scale, sphere_color and
+	    line_width do not change it, and its settings change no
+	    stick, sphere or line (a test compares the ray tracer's
+	    primitives).
+	  - Bonds always show their order: two and three cylinders for
+	    double and triple, a solid and a broken one for aromatic.
+	    Each half of a bond has the color of its atom's ball
+	    (question 59, the recommended answer). An atom without bonds
+	    is a ball. The molecule is not changed by being drawn.
+	  - Scenes keep its visibility and settings; .pse and .psex too.
+	  - PyMOL 3.2.0a and a session with it (tried): loads, ray
+	    traces, recalls scenes and saves; the representation is not
+	    drawn there. Found on the way: PyMOL ends when it saves a
+	    session that has a setting it does not know on an atom, so
+	    those are written under a session key of their own,
+	    "pymolish_unique_settings". PyMOL drops them when it saves.
+	  - Measured in the window, 1AON with all 59,192 atoms: a frame
+	    takes 23.6 ms as ball_and_stick, 24.2 ms as sticks plus
+	    spheres of the same sizes, 23.0 ms as sticks alone. A real
+	    click on a ball picks its atom.
+	  - Built by the stick code with its own visibility bit and
+	    settings. Shared with sticks: the quality settings
+	    (stick_quality, stick_use_shader, stick_round_nub,
+	    half_bonds, hide_long_bonds, the side chain helpers). It is
+	    never transparent. Steps 34a and 34b.
+
+2026-11-23 pymolish-studio
+
 	* 4.47.0
 
 	* Scenes keep the style of presets and colorings

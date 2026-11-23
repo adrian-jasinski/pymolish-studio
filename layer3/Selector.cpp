@@ -98,6 +98,7 @@ static WordKeyValue rep_names[] = {
   {"mesh", cRepMeshBit},
   {"nonbonded", cRepNonbondedBit},
   {"ellipsoid", cRepEllipsoidBit},
+  {"ball_and_stick", cRepBallAndStickBit},
   {"",},
 };
 

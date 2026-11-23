@@ -1157,6 +1157,10 @@ void CoordSet::invalidateRep(cRep_t type, cRepInv_t level)
     if (Obj)
       Obj->RepVisCacheValid = false;
   }
+  // ball-and-stick is built by the stick code: what rebuilds sticks (bonds,
+  // the quality settings they share) rebuilds it too
+  if (type == cRepCyl)
+    invalidateRep(cRepBallAndStick, level);
   /* graphical representations need redrawing */
   if(level == cRepInvVisib) {
     /* cartoon_side_chain_helper */
@@ -1284,6 +1288,7 @@ void CoordSet::update(int state)
   OrthoBusyFast(G, 0, cRepCnt);
   RepUpdateMacro(cRepLine, RepWireBondNew, state);
   RepUpdateMacro(cRepCyl, RepCylBondNew, state);
+  RepUpdateMacro(cRepBallAndStick, RepBallAndStickNew, state);
   RepUpdateMacro(cRepDot, RepDotNew, state);
   RepUpdateMacro(cRepMesh, RepMeshNew, state);
   RepUpdateMacro(cRepSphere, RepSphereNew, state);
@@ -1488,6 +1493,7 @@ void CoordSet::render(RenderInfo * info)
     case cRepSurface:
     case cRepEllipsoid:
     case cRepCyl:
+    case cRepBallAndStick:
     case cRepCartoon:
     case cRepSphere:
       if (render_both) {

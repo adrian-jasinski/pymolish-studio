@@ -362,7 +362,11 @@ def testShowHide():
     rows = {row[1].strip(): row for row in show if row[0] == 1}
     assert 'as' not in rows and 'valence' not in rows
     assert list(rows)[-2:] == ['hydrogens', 'more']
-    assert len(rows) == 15 and len(hide) == 17
+    assert len(rows) == 16 and len(hide) == 18  # with ball and stick
+    cmd.do(rows['ball and stick'][2], echo=0)
+    assert cmd.count_atoms('rep ball_and_stick') == cmd.count_atoms('m1')
+    cmd.do(hide['ball and stick'], echo=0)
+    assert cmd.count_atoms('rep ball_and_stick') == 0
     for more in (rows['more'][2], hide['more']):
         assert {'cell', 'valence', 'flag ignore'} <= set(_to_dict(more))
     for menu_ in (show, menu.mol_hide(cmd, 'm1'), menu.mol_as(cmd, 'm1')):

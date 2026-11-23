@@ -14,9 +14,22 @@ from pymol import cmd, preset, setting, stage, testing
 
 # written by a preset, but no appearance
 NOT_STYLE = {"auto_classify_atoms", "auto_show_classified"}
-ATOM_SETTINGS = ("sphere_scale", "stick_radius", "cartoon_color", "sphere_color", "stick_color")
+ATOM_SETTINGS = (
+    "sphere_scale",
+    "stick_radius",
+    "cartoon_color",
+    "sphere_color",
+    "stick_color",
+)
 OBJECT_SETTINGS = ("stick_radius", "cartoon_transparency", "surface_color", "valence")
-GLOBAL_SETTINGS = ("ambient", "ray_trace_mode", "light_count", "light", "bg_rgb", "depth_cue")
+GLOBAL_SETTINGS = (
+    "ambient",
+    "ray_trace_mode",
+    "light_count",
+    "light",
+    "bg_rgb",
+    "depth_cue",
+)
 
 
 def _written_by_presets():
@@ -82,7 +95,8 @@ def _look(objects=("m",)):
         for name in cmd.get_names("objects")
     }
     bonds = [
-        cmd.get_bond(name, "all", quiet=1) for name in ("stick_radius", "stick_color", "valence")
+        cmd.get_bond(name, "all", quiet=1)
+        for name in ("stick_radius", "stick_color", "valence")
     ]
     world = [cmd.get_setting_tuple(name) for name in GLOBAL_SETTINGS]
     return atoms, objects, bonds, world, cmd.get_color_tuple("mine")
@@ -128,12 +142,21 @@ def _style_b():
 def test_a_b_a():
     a = _style_a()
     b = _style_b()
-    assert a != b and a[0] != b[0] and a[1] != b[1] and a[2] != b[2] and a[3] != b[3] and a[4] != b[4]
+    assert (
+        a != b
+        and a[0] != b[0]
+        and a[1] != b[1]
+        and a[2] != b[2]
+        and a[3] != b[3]
+        and a[4] != b[4]
+    )
     atoms = cmd.count_atoms()
     for name, look in (("a", a), ("b", b), ("a", a), ("b", b)):
         cmd.scene(name, "recall", animate=0)
         now = _look()
-        for part, was, got in zip(("atoms", "objects", "bonds", "world", "color"), look, now):
+        for part, was, got in zip(
+            ("atoms", "objects", "bonds", "world", "color"), look, now
+        ):
             assert was == got, "%s of scene %s" % (part, name)
     assert cmd.count_atoms() == atoms  # nothing of the molecule is touched
 
@@ -199,7 +222,9 @@ def test_parts():
     cmd.scene("plain", "store", settings=0)
     cmd.scene("a", "recall", animate=0)
     cmd.scene("plain", "recall", animate=0)
-    assert _look()[1:] == a[1:] and [atom[4:] for atom in _look()[0]] == [atom[4:] for atom in a[0]]
+    assert _look()[1:] == a[1:] and [atom[4:] for atom in _look()[0]] == [
+        atom[4:] for atom in a[0]
+    ]
 
 
 if not hasattr(cmd, "index_list"):
@@ -235,8 +260,12 @@ def test_session(tmp_path, ext):
     cmd.scene("b", "recall", animate=0)
     cmd.scene("a", "recall", animate=0)
     now = _look()
-    assert [atom[:4] for atom in now[0]] == [atom[:4] for atom in a[0]]  # as it always did
-    assert [atom[4:] for atom in now[0]] == [atom[4:] for atom in b[0]] and now[1:] == b[1:]
+    assert [atom[:4] for atom in now[0]] == [
+        atom[:4] for atom in a[0]
+    ]  # as it always did
+    assert [atom[4:] for atom in now[0]] == [atom[4:] for atom in b[0]] and now[
+        1:
+    ] == b[1:]
 
 
 def test_movie_visits_scenes():

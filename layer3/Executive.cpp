@@ -5331,6 +5331,11 @@ int ExecutiveGetSession(
   PyDict_SetItemString(dict, "unique_settings", tmp);
   Py_XDECREF(tmp);
 
+  tmp = SettingUniqueAsPyList(G, true);
+  if (PyList_Size(tmp)) // a key PyMOL does not read: see cSettingPymolishFirst
+    PyDict_SetItemString(dict, "pymolish_unique_settings", tmp);
+  Py_XDECREF(tmp);
+
   if (partial) { /* mark this as a partial session */
 
     PyDict_SetItemString(dict, "partial", PConvAutoNone(Py_None));
@@ -5612,6 +5617,10 @@ int ExecutiveSetSession(
     tmp = PyDict_GetItemString(session, "unique_settings");
     if (tmp) {
       ok = SettingUniqueFromPyList(G, tmp, partial_restore);
+    }
+    if (ok) { // added to the above, with the same ids
+      SettingUniqueFromPyList(G,
+          PyDict_GetItemString(session, "pymolish_unique_settings"), true);
     }
 
     if (tmp || (!partial_session)) { /* ignore missing if partial restore */

@@ -150,7 +150,10 @@ int SettingUniqueCheck(PyMOLGlobals * G, int unique_id, int setting_id);
 PyObject *SettingUniqueGetPyObject(PyMOLGlobals * G, int unique_id, int index);
 
 void SettingUniqueResetAll(PyMOLGlobals * G);
-PyObject *SettingUniqueAsPyList(PyMOLGlobals * G);
+/// Atom and bond level settings for a session: [[id, [[setting, type,
+/// value], ...]], ...]. The settings PyMOL knows, or with `pymolish` the
+/// others; they go under two keys of the session (see cSettingPymolishFirst).
+PyObject *SettingUniqueAsPyList(PyMOLGlobals * G, bool pymolish = false);
 int SettingUniqueFromPyList(PyMOLGlobals * G, PyObject * list, int partial_restore);
 int SettingUniqueConvertOldSessionID(PyMOLGlobals * G, int old_unique_id);
 
@@ -238,6 +241,15 @@ int SettingCheckFontID(PyMOLGlobals * G, CSetting * set1, CSetting * set2, int f
 
 // The following defines the enum with all cSetting_<settingname> indices
 #include "SettingInfo.h"
+
+/**
+ * The first setting PyMOL does not have. Set on an atom or a bond, such a
+ * setting is kept out of the "unique_settings" of a session and stored
+ * under "pymolish_unique_settings": PyMOL 3.2 loads a session that has one
+ * in its own list but ends when it saves it (it reads its table of settings
+ * past the end). At the object and the global level PyMOL skips them.
+ */
+constexpr int cSettingPymolishFirst = cSetting_ball_and_stick_scale;
 
 #define cStereo_default              0  /* stereo_mode=0 only used for startup */
 #define cStereo_quadbuffer           1

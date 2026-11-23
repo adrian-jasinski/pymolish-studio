@@ -22,6 +22,8 @@ struct CoordSet;
 struct RenderInfo;
 
 Rep *RepCylBondNew(CoordSet * cset, int state);
+/// The same builder for cRepBallAndStick: its own visibility and settings
+Rep *RepBallAndStickNew(CoordSet * cset, int state);
 void RepCylBondRenderImmediate(CoordSet * cs, RenderInfo * info);
 
 #endif

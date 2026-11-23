@@ -169,6 +169,7 @@ def rep_action(self_cmd, sele, action) :
         [ 1, 'licorice'   , 'cmd.'+action+'("licorice"  ,"'+sele+'")' ],
         [ 1, '  sticks'   , 'cmd.'+action+'("sticks"    ,"'+sele+'")' ],
         [ 1, '  nb_spheres','cmd.'+action+'("nb_spheres","'+sele+'")' ],
+        [ 1, 'ball and stick', 'cmd.'+action+'("ball_and_stick","'+sele+'")' ],
         [ 0, ''           , ''                               ],
         [ 1, 'ribbon'     , 'cmd.'+action+'("ribbon"    ,"'+sele+'")' ],
         [ 1, 'cartoon'    , 'cmd.'+action+'("cartoon"   ,"'+sele+'")' ],
@@ -212,7 +213,7 @@ def show_hydro(self_cmd, sele):
     def show(hydro):
         return ';'.join(
             'cmd.show("%s","(%s) & %s & bound_to rep %s")' % (rep, sele, hydro, rep)
-            for rep in ('lines', 'sticks', 'spheres'))
+            for rep in ('lines', 'sticks', 'spheres', 'ball_and_stick'))
     return [[ 2, 'Show:', '' ],
             [ 1, 'all', show('hydro') ],
             [ 1, 'polar', show('hydro & !(elem C extend 1)') ],
@@ -465,8 +466,11 @@ def by_rep_sub(self_cmd, rep, setting, sele):
     expr = 'cmd.set("%s", "{0}", %s, quiet=0)' % (setting, repr(sele))
     r = [[ 2, rep.capitalize(), '' ]]
     r += all_colors_generic(self_cmd, expr)
+    r += [[ 0 , '', '' ]]
+    if setting == 'ball_and_stick_color':
+        # the balls only: the atoms keep their colors for everything else
+        r += [[ 1, 'by element', expr.format('atomic') ]]
     r += [
-        [ 0 , '', '' ],
         [ 1 , 'unset', 'cmd.unset("%s", %s, quiet=0)' % (setting, repr(sele)) ],
     ]
     return r
@@ -531,6 +535,7 @@ rep_setting_lists = [
         ('', ''),
         ('dots', 'dot_color'),
         ('spheres', 'sphere_color'),
+        ('ball and stick', 'ball_and_stick_color'),
         ('', ''),
         ('mesh', 'mesh_color'),
         ('surface', 'surface_color'),

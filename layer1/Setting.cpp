@@ -770,78 +770,47 @@ int SettingUniqueFromPyList(PyMOLGlobals * G, PyObject * list, int partial_resto
 /**
  * @pre GIL
  */
-PyObject *SettingUniqueAsPyList(PyMOLGlobals * G)
+PyObject *SettingUniqueAsPyList(PyMOLGlobals * G, bool pymolish)
 {
   assert(PyGILState_Check());
 
-  PyObject *result = nullptr;
   CSettingUnique *I = G->SettingUnique;
-  {
-    auto n_entry = I->id2offset.size();
-    result = PyList_New(n_entry);
-    if(result) {
-      n_entry = 0;
-      for (auto id2offset : I->id2offset) {
-        PyObject *setting_list = nullptr;
-        auto unique_id = id2offset.first;
-        auto offset = id2offset.second;
-        {
-          int n_set = 0;
-
-          /* count number of settings for this unique_id */
-
-          auto save_offset = offset;
-          while(offset) {
-            auto entry = &I->entry[offset];
-            n_set++;
-            offset = entry->next;
-          }
-
-          /* create and insert list for each setting */
-
-          setting_list = PyList_New(n_set);
-          n_set = 0;
-          offset = save_offset;
-          while(offset) {
-            PyObject *setting_entry = PyList_New(3);
-            auto entry = &I->entry[offset];
-            int type = SettingInfo[entry->setting_id].type;
-            PyList_SetItem(setting_entry, 0, PyInt_FromLong(entry->setting_id));
-            PyList_SetItem(setting_entry, 1, PyInt_FromLong(type));
-            switch (type) {
-            case cSetting_int:
-            case cSetting_color:
-            case cSetting_boolean:
-              PyList_SetItem(setting_entry, 2, PyInt_FromLong(entry->value.int_));
-              break;
-            case cSetting_float:
-              PyList_SetItem(setting_entry, 2,
-                             PyFloat_FromDouble(*(float *) &entry->value.float_));
-              break;
-	    case cSetting_float3:
-	      PyList_SetItem(setting_entry, 2,
-			     PConvFloatArrayToPyList((float *) &entry->value.float3_, 3));
-	      break;
-            }
-            PyList_SetItem(setting_list, n_set, setting_entry);
-            n_set++;
-            offset = entry->next;
-          }
-        }
-
-        /* add this unique_id set into the overall list */
-
-        {
-          PyObject *unique_list = PyList_New(2);
-          PyList_SetItem(unique_list, 0, PyInt_FromLong(unique_id));
-          PyList_SetItem(unique_list, 1, setting_list);
-          PyList_SetItem(result, n_entry, unique_list);
-        }
-        n_entry++;
+  PyObject *result = PyList_New(0);
+  for (auto id2offset : I->id2offset) {
+    PyObject *setting_list = PyList_New(0);
+    for (auto offset = id2offset.second; offset; offset = I->entry[offset].next) {
+      auto entry = &I->entry[offset];
+      if ((entry->setting_id >= cSettingPymolishFirst) != pymolish)
+        continue;
+      int type = SettingInfo[entry->setting_id].type;
+      PyObject *value = nullptr;
+      switch (type) {
+      case cSetting_int:
+      case cSetting_color:
+      case cSetting_boolean:
+        value = PyInt_FromLong(entry->value.int_);
+        break;
+      case cSetting_float:
+        value = PyFloat_FromDouble(entry->value.float_);
+        break;
+      case cSetting_float3:
+        value = PConvFloatArrayToPyList(entry->value.float3_, 3);
+        break;
+      default:
+        continue;
       }
+      PyObject *setting_entry = Py_BuildValue("[iiN]", entry->setting_id, type, value);
+      PyList_Append(setting_list, setting_entry);
+      Py_DECREF(setting_entry);
     }
+    if (PyList_Size(setting_list)) {
+      PyObject *unique_list = Py_BuildValue("[iO]", id2offset.first, setting_list);
+      PyList_Append(result, unique_list);
+      Py_DECREF(unique_list);
+    }
+    Py_DECREF(setting_list);
   }
-  return (PConvAutoNone(result));
+  return result;
 }
 
 int SettingSetSmart_i(PyMOLGlobals * G, CSetting * set1, CSetting * set2, int index,
@@ -2181,6 +2150,12 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
   case cSetting_stick_as_cylinders:
   case cSetting_stick_good_geometry:
     ExecutiveInvalidateRep(G, inv_sele, cRepCyl, cRepInvRep);
+    SceneChanged(G);
+    break;
+  case cSetting_ball_and_stick_scale:
+  case cSetting_ball_and_stick_bond_radius:
+  case cSetting_ball_and_stick_color:
+    ExecutiveInvalidateRep(G, inv_sele, cRepBallAndStick, cRepInvRep);
     SceneChanged(G);
     break;
   case cSetting_line_use_shader:

@@ -530,7 +530,8 @@ USAGE
 ARGUMENTS
 
     representation = lines, spheres, mesh, ribbon, cartoon, sticks,
-       dots, surface, labels, extent, nonbonded, nb_spheres, slice,
+       dots, surface, labels, extent, nonbonded, nb_spheres, ball_and_stick,
+       slice,
        extent, slice, dashes, angles, dihedrals, cgo, cell, callback,
        or everything
 
@@ -567,7 +568,8 @@ USAGE
 ARGUMENTS
     
     representation = lines, spheres, mesh, ribbon, cartoon, sticks,
-        dots, surface, labels, extent, nonbonded, nb_spheres, slice,
+        dots, surface, labels, extent, nonbonded, nb_spheres, ball_and_stick,
+       slice,
         extent, slice, dashes, angles, dihedrals, cgo, cell, callback,
         volume or everything
 
