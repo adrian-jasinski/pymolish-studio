@@ -185,7 +185,10 @@ def test_sdf_fields_and_split_states(tmp_path):
     assert cmd.get_property("docking_score", "pose0002") == -5.1
     cmd.delete("hits")
     table = _table()
-    assert [table.items[n].text(3) for n in ("pose0001", "pose0002")] == ["-6.4", "-5.1"]
+    assert [table.items[n].text(3) for n in ("pose0001", "pose0002")] == [
+        "-6.4",
+        "-5.1",
+    ]
 
 
 def test_many_rows():
@@ -218,7 +221,12 @@ def test_edit_cells():
     table = _table()
     a, b, c = (table.items[n] for n in ("lig_a", "lig_b", "lig_c"))
     # the text of a cell becomes a whole number, a number or text
-    for text, value in (("-7.25", -7.25), ("12", 12), ("see note", "see note"), (" 3e2 ", 300.0)):
+    for text, value in (
+        ("-7.25", -7.25),
+        ("12", 12),
+        ("see note", "see note"),
+        (" 3e2 ", 300.0),
+    ):
         _edit(a, 3, text)  # what a closed editor does
         assert cmd.get_property("score", "lig_a") == value
         assert type(cmd.get_property("score", "lig_a")) is type(value)
@@ -229,7 +237,9 @@ def test_edit_cells():
     # with several cells of the column selected, the edit goes to all
     b.setSelected(False)
     for item in (b, c):
-        table.tree.setCurrentItem(item, 3, table.tree.selectionModel().SelectionFlag.Select)
+        table.tree.setCurrentItem(
+            item, 3, table.tree.selectionModel().SelectionFlag.Select
+        )
     _edit(c, 3, "1.5")
     assert [cmd.get_property("score", n) for n in ("lig_b", "lig_c")] == [1.5, 1.5]
     # a new property for an object that had none
@@ -276,7 +286,10 @@ def test_columns():
 
     table.delete_column("docking score")
     assert labels() == ["note", "stars"]
-    assert all("docking score" not in (cmd.get_property_list(n) or ()) for n in ("lig_a", "lig_b", "lig_c"))
+    assert all(
+        "docking score" not in (cmd.get_property_list(n) or ())
+        for n in ("lig_a", "lig_b", "lig_c")
+    )
 
 
 def test_copy_paste():
@@ -303,8 +316,14 @@ def test_copy_paste():
     tree.clearSelection()
     tree.setCurrentItem(table.items["lig_b"], 3, flag.Select)
     table.paste()
-    assert [cmd.get_property("score", n) for n in ("lig_a", "lig_b", "lig_c", "protein")] == [-6.5, 1, 2, 3]
-    assert [cmd.get_property("note", n) for n in ("lig_b", "lig_c", "protein")] == ["one", "two", "three"]
+    assert [
+        cmd.get_property("score", n) for n in ("lig_a", "lig_b", "lig_c", "protein")
+    ] == [-6.5, 1, 2, 3]
+    assert [cmd.get_property("note", n) for n in ("lig_b", "lig_c", "protein")] == [
+        "one",
+        "two",
+        "three",
+    ]
 
     # a paste never renames and never touches Row or In
     clipboard.setText("x\ty\tz\t9")
@@ -318,7 +337,9 @@ def test_copy_paste():
     for name in ("lig_a", "lig_b"):
         tree.setCurrentItem(table.items[name], 3, flag.Select)
     table._write(table._selected_cells(), None)
-    assert all("score" not in (cmd.get_property_list(n) or ()) for n in ("lig_a", "lig_b"))
+    assert all(
+        "score" not in (cmd.get_property_list(n) or ()) for n in ("lig_a", "lig_b")
+    )
     assert cmd.get_property("score", "lig_c") == 2
 
 
@@ -340,3 +361,160 @@ def test_export(tmp_path):
         ["lig_c", "-8"],
         ["lig_a", "-6.5"],
     ]
+
+
+def _labels(table):
+    """The property columns shown, in the order shown."""
+    tree, header = table.tree, table.tree.header()
+    columns = sorted(range(3, tree.columnCount()), key=header.visualIndex)
+    return [tree.headerItem().text(c) for c in columns if not tree.isColumnHidden(c)]
+
+
+@pytest.mark.parametrize("ext", ["pse", "psex"])
+def test_columns_in_the_session(tmp_path, ext):
+    """22d: the order of the columns, the hidden and the empty ones come
+    back with a session, in a table that is open and in a new one."""
+    from pymol import session_extra
+
+    _scene()
+    table = _table()
+    table.add_column("comment")  # empty: no object has it
+    assert _labels(table) == ["score", "note", "comment"]
+    table.tree.header().moveSection(5, 3)  # comment before score
+    table.set_hidden("note", True)
+    assert _labels(table) == ["comment", "score"]
+    assert session_extra.entries["table"] == {
+        "columns": ["comment", "score", "note"],
+        "hidden": ["note"],
+        "empty": ["comment"],
+    }
+    path = str(tmp_path / ("layout." + ext))
+    cmd.save(path)
+
+    # a new session: nothing of the old columns is left
+    cmd.reinitialize()
+    table.refresh()
+    assert _labels(table) == [] and table.hidden == set() and table.extra == set()
+    cmd.fragment("ala", "other")
+    cmd.set_property("note", "x", "other")
+    table.refresh()
+    assert _labels(table) == ["note"]
+
+    cmd.load(path)
+    table.refresh()  # the open table follows the session
+    assert _labels(table) == ["comment", "score"]
+    assert table.hidden == {"note"} and table.extra == {"comment"}
+    fresh = _table()  # and so does a table opened later
+    assert _labels(fresh) == ["comment", "score"]
+    table.set_hidden("note", False)
+    assert _labels(table) == ["comment", "score", "note"]
+
+    # what is not a list of names is ignored
+    session_extra.entries["table"] = {
+        "columns": "score",
+        "hidden": [3, "note"],
+        "empty": None,
+    }
+    table.refresh()
+    assert _labels(table) == ["score"]
+
+
+def test_columns_menu_and_counted():
+    """22d: the Columns button hides and shows columns and adds columns
+    the core counts, as ordinary properties."""
+    from pymol import util
+    from pmg_qt import property_table
+
+    _scene()
+    cmd.alter("lig_a and name N", "formal_charge = 1")
+    cmd.create("lig_b", "lig_b", 1, 2)  # a second state
+    table = _table()
+    table._fill_columns_menu()
+    menu = table.columns_button.menu()
+    rows = {a.text(): a for a in menu.actions() if a.text()}
+    assert list(rows) == ["Add counted", "Refresh counted", "score", "note"]
+    counted = [a.text() for a in rows["Add counted"].menu().actions() if a.text()]
+    assert counted == [*property_table.COMPUTED, "all of them"]
+    assert rows["score"].isChecked()
+    rows["score"].trigger()  # unchecked: hidden
+    assert table.hidden == {"score"} and _labels(table) == ["note"]
+    table._fill_columns_menu()
+    score = [a for a in menu.actions() if a.text() == "score"][0]
+    assert not score.isChecked()
+    score.trigger()
+    assert _labels(table) == ["score", "note"]
+
+    table.add_computed()
+    assert _labels(table) == ["score", "note", *property_table.COMPUTED]
+    for name in ("lig_a", "lig_b", "protein"):
+        assert cmd.get_property("atoms", name) == cmd.count_atoms("%" + name)
+        assert cmd.get_property("residues", name) == 1
+        assert cmd.get_property("chains", name) == len(cmd.get_chains("%" + name))
+        assert cmd.get_property("weight", name) == pytest.approx(
+            util.compute_mass("%" + name), abs=0.01
+        )
+    assert [cmd.get_property("states", n) for n in ("lig_a", "lig_b")] == [1, 2]
+    assert [cmd.get_property("charge", n) for n in ("lig_a", "lig_b")] == [1, 0]
+    assert "atoms" not in (cmd.get_property_list("poses") or ())  # groups have none
+
+    # counted when asked: a change shows after "Refresh counted"
+    cmd.remove("lig_a and hydro")
+    table.refresh()
+    assert cmd.get_property("atoms", "lig_a") != cmd.count_atoms("%lig_a")
+    table._fill_columns_menu()
+    [a for a in menu.actions() if a.text() == "Refresh counted"][0].trigger()
+    assert cmd.get_property("atoms", "lig_a") == cmd.count_atoms("%lig_a")
+
+
+def test_follow():
+    """22d: with Follow checked only the object of the current row is
+    shown, with the groups it is in."""
+    _scene()
+    table = _table()
+    tree = table.tree
+
+    def enabled():
+        return set(cmd.get_names("objects", enabled_only=1))
+
+    everything = enabled()
+    tree.setCurrentItem(table.items["lig_a"], 2)
+    assert enabled() == everything  # not checked: rows are just rows
+    table.follow.setChecked(True)  # the current row at once
+    assert enabled() == {"poses", "lig_a"}
+    tree.setCurrentItem(table.items["lig_b"], 2)
+    assert enabled() == {"poses", "lig_b"}
+    tree.setCurrentItem(table.items["protein"], 2)
+    assert enabled() == {"protein"}
+    tree.setCurrentItem(table.items["poses"], 2)  # a group is no step
+    assert enabled() == {"protein"}
+    table.follow.setChecked(False)
+    tree.setCurrentItem(table.items["lig_c"], 2)
+    assert enabled() == {"protein"}
+
+
+def test_pick_selects_the_row():
+    """22e: the row of the object an atom was picked in becomes current,
+    once per pick; a pick is no step of Follow."""
+    _scene()
+    cmd.delete("sele")
+    table = _table()
+    tree = table.tree
+    table.follow.setChecked(True)
+    tree.setCurrentItem(table.items["protein"], 2)
+    shown = set(cmd.get_names("objects", enabled_only=1))
+
+    cmd.edit("lig_b and name CA")  # pk1
+    table._follow_pick()
+    assert tree.currentItem() is table.items["lig_b"]
+    assert set(cmd.get_names("objects", enabled_only=1)) == shown
+    tree.setCurrentItem(table.items["protein"], 2)
+    table._follow_pick()  # the same pick again: the user's row stays
+    assert tree.currentItem() is table.items["protein"]
+
+    cmd.unpick()
+    cmd.select("sele", "lig_c and name CA")  # a click in viewing mode
+    table._follow_pick()
+    assert tree.currentItem() is table.items["lig_c"]
+    cmd.select("sele", "name CA")  # several objects: no row
+    table._follow_pick()
+    assert tree.currentItem() is table.items["lig_c"]

@@ -4,6 +4,34 @@ CHANGE LOG
 
 2026-11-23 pymolish-studio
 
+	* 4.45.0
+
+	* Property table: columns kept in the session, counted columns,
+	  Follow, the row of a picked atom
+	  - The order of the columns, the hidden ones and the empty ones
+	    added by hand are saved with a session (.pse and .psex) and
+	    come back when it is loaded, also in a table that is open.
+	  - New button Columns: a check mark per column hides or shows
+	    it; "Add counted" writes atoms, residues, chains, states,
+	    weight or charge of each molecule as ordinary properties (so
+	    they are saved and exported); "Refresh counted" counts again.
+	  - New box Follow: only the object of the current row is shown,
+	    with the groups it is in. Up and Down step through the
+	    objects, as for docking poses.
+	  - An atom picked or clicked in the viewport makes the row of
+	    its object the current one.
+	  - Ctrl+click on a dot also shows the groups the object is in.
+	  - The size given to the table window is kept between starts.
+	  - New in a session: the key "pymolish", one entry per feature
+	    (now "table"). Entries of a newer pymolish are kept and
+	    written back. PyMOL 3.2.0a loads a .pse with the key
+	    (tried). A session of a table never opened has no such key.
+	  - Tried in the real window at 150 %: the row of buttons needs
+	    440 px, a click on an atom selects its row. Steps 28b, 22d
+	    and 22e. Not built: sequence length as a counted column.
+
+2026-11-23 pymolish-studio
+
 	* 4.44.0
 
 	* Scenes panel: one click recalls a scene

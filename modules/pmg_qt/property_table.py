@@ -3,14 +3,19 @@ Property table: one row per object, with its row number, a dot that shows or
 hides the object, its name and one column per object property
 (cmd.set_property, the data fields of an SDF file). Cells are edited in
 place, columns are added, renamed and deleted from the header, blocks are
-copied and pasted as tab-separated text. A window of its own that lies over
-the viewport, its right edge against the Objects panel, until it is dragged
-elsewhere. The table keeps no data: it shows and changes what the core holds.
+copied and pasted as tab-separated text. The Columns button hides columns and
+adds counted ones (atoms, residues, ...); with Follow checked only the object
+of the current row is shown; the row of an object an atom was picked in
+becomes the current one. A window of its own that lies over the viewport, its
+right edge against the Objects panel, until it is dragged elsewhere. The
+table keeps no data: it shows and changes what the core holds. The order of
+the columns, the hidden and the empty ones go into the session
+(pymol.session_extra).
 """
 
 import csv
 
-from pymol import CmdException
+from pymol import CmdException, session_extra
 from pymol.Qt import QtCore, QtGui, QtWidgets
 from pymol.Qt.utils import getSaveFileNameWithExt
 
@@ -22,6 +27,36 @@ Checked, Unchecked = Qt.CheckState.Checked, Qt.CheckState.Unchecked
 FIXED = ("Row", "In", "Name")
 MOLECULE = "object:molecule"
 ROW, IN, NAME = range(3)
+# columns the core can count; written as ordinary properties when asked for
+COMPUTED = ("atoms", "residues", "chains", "states", "weight", "charge")
+
+
+def computed(cmd, name, columns=COMPUTED):
+    """{column: value} of a molecule for the names of COMPUTED in `columns`."""
+    sele = "%" + name
+    values = {}
+    if "atoms" in columns:
+        values["atoms"] = cmd.count_atoms(sele)
+    if "chains" in columns:
+        values["chains"] = len(cmd.get_chains(sele))
+    if "states" in columns:
+        values["states"] = cmd.count_states(sele)
+    if "weight" in columns:
+        from pymol import util
+
+        values["weight"] = round(util.compute_mass(sele, _self=cmd), 2)
+    if "residues" in columns or "charge" in columns:
+        seen, charge = set(), [0]
+        cmd.iterate(
+            sele,
+            "seen.add((segi, chain, resi)); charge[0] += formal_charge",
+            space={"seen": seen, "charge": charge},
+        )
+        if "residues" in columns:
+            values["residues"] = len(seen)
+        if "charge" in columns:
+            values["charge"] = charge[0]
+    return {c: values[c] for c in COMPUTED if c in values}  # in that order
 
 
 def table_rows(cmd):
@@ -87,6 +122,10 @@ class PropertyTable(QtWidgets.QDockWidget):
         self.rows = None
         self.columns = []  # property names, in the order they first appeared
         self.extra = set()  # columns added here that no object has a value for
+        self.hidden = set()  # columns the Columns menu hides
+        self._kept = None  # what the session keeps of the columns
+        self._picked = None  # the objects of the last pick
+        self._picking = False
         self._header = None  # the columns the tree was built with
         self.items = {}
         self._stuck = True
@@ -103,7 +142,9 @@ class PropertyTable(QtWidgets.QDockWidget):
             QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection
         )
         # cells, so that a block can be copied, pasted, emptied or edited
-        tree.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems)
+        tree.setSelectionBehavior(
+            QtWidgets.QAbstractItemView.SelectionBehavior.SelectItems
+        )
         Trigger = QtWidgets.QAbstractItemView.EditTrigger
         tree.setEditTriggers(
             Trigger.DoubleClicked | Trigger.EditKeyPressed | Trigger.AnyKeyPressed
@@ -125,6 +166,8 @@ class PropertyTable(QtWidgets.QDockWidget):
         tree.header().setSectionsMovable(True)
         tree.header().setFirstSectionMovable(False)
         tree.model().layoutChanged.connect(self._number)  # after a sort
+        tree.header().sectionMoved.connect(lambda *_: self._remember())
+        tree.currentItemChanged.connect(self._followed)
         tree.itemClicked.connect(self._clicked)
         tree.itemDoubleClicked.connect(self._double_clicked)
         tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -151,6 +194,19 @@ class PropertyTable(QtWidgets.QDockWidget):
         add.setToolTip("Add an empty column")
         add.clicked.connect(lambda: self._ask_column())
 
+        self.columns_button = QtWidgets.QPushButton("Columns")
+        self.columns_button.setToolTip("Hide and show columns; add counted ones")
+        self.columns_button.setMenu(QtWidgets.QMenu(self.columns_button))
+        self.columns_button.menu().aboutToShow.connect(self._fill_columns_menu)
+
+        self.follow = QtWidgets.QCheckBox("Follow")
+        self.follow.setToolTip(
+            "Show only the object of the current row: Up and Down step through the objects"
+        )
+        self.follow.toggled.connect(
+            lambda on: on and self._followed(tree.currentItem())
+        )
+
         self.filter = QtWidgets.QLineEdit()
         self.filter.setPlaceholderText("Filter by name or value")
         self.filter.setClearButtonEnabled(True)
@@ -169,6 +225,8 @@ class PropertyTable(QtWidgets.QDockWidget):
             button.clicked.connect(lambda _=False, run=run: run())
             self.buttons.addWidget(button)
         self.buttons.addWidget(add)
+        self.buttons.addWidget(self.columns_button)
+        self.buttons.addWidget(self.follow)
         self.buttons.addWidget(self.filter, 1)
         layout.addLayout(self.buttons)
         layout.addWidget(tree, 1)
@@ -192,8 +250,13 @@ class PropertyTable(QtWidgets.QDockWidget):
     def poll(self):
         if self.isVisible():
             self.refresh()
+            self._follow_pick()
 
     def refresh(self, force=False):
+        kept = session_extra.entries.get("table")
+        if kept is not self._kept:  # another session was loaded, or a new one begun
+            self._adopt(kept)
+            force = True
         rows = table_rows(self.cmd)
         if rows == self.rows and not force:
             return
@@ -216,6 +279,45 @@ class PropertyTable(QtWidgets.QDockWidget):
                 self._fill(self.items[row[0]], order, row)
         tree.setSortingEnabled(True)
         self._apply_filter()
+        self._remember()
+
+    def _adopt(self, kept):
+        """The columns as a session kept them; as new without one."""
+        self._kept = kept
+        kept = kept if isinstance(kept, dict) else {}
+
+        def names(key):
+            value = kept.get(key)
+            return (
+                [n for n in value if isinstance(n, str)]
+                if isinstance(value, list)
+                else []
+            )
+
+        self.columns = names("columns")
+        self.extra = set(names("empty")) & set(self.columns)
+        self.hidden = set(names("hidden"))
+        self._header = None  # build the tree again
+        header = self.tree.header()
+        with QtCore.QSignalBlocker(header):  # the order is in self.columns now
+            for logical in range(header.count()):
+                header.moveSection(header.visualIndex(logical), logical)
+
+    def _remember(self):
+        """The columns for the session: their order as shown, the hidden
+        and the empty ones."""
+        header = self.tree.header()
+        built = self._header or []
+        shown = sorted(
+            built, key=lambda c: header.visualIndex(len(FIXED) + built.index(c))
+        )
+        kept = {
+            "columns": shown,
+            "hidden": sorted(self.hidden),
+            "empty": sorted(self.extra),
+        }
+        if kept != self._kept:
+            self._kept = session_extra.entries["table"] = kept
 
     def _rebuild(self, rows):
         """Recreate the items; keep collapsed groups."""
@@ -228,6 +330,8 @@ class PropertyTable(QtWidgets.QDockWidget):
         tree.setColumnCount(len(FIXED) + len(self.columns))
         tree.setHeaderLabels([*FIXED, *self.columns])
         self._header = list(self.columns)
+        for column, name in enumerate(self.columns, len(FIXED)):
+            tree.setColumnHidden(column, name in self.hidden)
         self.items = {}
         for name, kind, _, _, _ in rows:
             item = _Row()
@@ -237,7 +341,9 @@ class PropertyTable(QtWidgets.QDockWidget):
                 (item.flags() | Qt.ItemFlag.ItemIsEditable)
                 & ~Qt.ItemFlag.ItemIsUserCheckable
             )
-            item.setTextAlignment(ROW, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            item.setTextAlignment(
+                ROW, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+            )
             self.items[name] = item
         root = tree.invisibleRootItem()
         for name, _, _, parent, _ in rows:
@@ -303,7 +409,8 @@ class PropertyTable(QtWidgets.QDockWidget):
 
     def _selected_cells(self):
         return [
-            (self.tree.itemFromIndex(i), i.column()) for i in self.tree.selectedIndexes()
+            (self.tree.itemFromIndex(i), i.column())
+            for i in self.tree.selectedIndexes()
         ]
 
     def _write(self, cells, text):
@@ -369,6 +476,9 @@ class PropertyTable(QtWidgets.QDockWidget):
         self.columns[self.columns.index(old)] = new  # it keeps its place
         self.extra.discard(old)
         self.extra.add(new)
+        if old in self.hidden:
+            self.hidden.remove(old)
+            self.hidden.add(new)
         self.refresh(force=True)
         return True
 
@@ -378,7 +488,46 @@ class PropertyTable(QtWidgets.QDockWidget):
             if column in props:
                 self.cmd.set_property(column, None, name)
         self.extra.discard(column)
+        self.hidden.discard(column)
         self.refresh(force=True)
+
+    def set_hidden(self, column, hidden):
+        """Hide or show a property column; the session keeps it."""
+        (self.hidden.add if hidden else self.hidden.discard)(column)
+        if column in self.columns:
+            self.tree.setColumnHidden(len(FIXED) + self.columns.index(column), hidden)
+        self._remember()
+
+    def add_computed(self, columns=COMPUTED):
+        """Columns the core counts, written as ordinary properties (so they
+        are saved and exported). Counted now; "Refresh counted" counts the
+        ones that are columns again."""
+        for name, kind, _, _, _ in self.rows or ():
+            if kind == MOLECULE:
+                for column, value in computed(self.cmd, name, columns).items():
+                    self.cmd.set_property(column, value, name)
+        self.refresh(force=True)
+
+    def _fill_columns_menu(self):
+        menu = self.columns_button.menu()
+        menu.clear()
+        add = menu.addMenu("Add counted")
+        for name in COMPUTED:
+            add.addAction(name, lambda name=name: self.add_computed((name,)))
+        add.addSeparator()
+        add.addAction("all of them", lambda: self.add_computed())
+        menu.addAction(
+            "Refresh counted",
+            lambda: self.add_computed([c for c in COMPUTED if c in self.columns]),
+        )
+        menu.addSeparator()
+        for name in self.columns:
+            action = menu.addAction(name)
+            action.setCheckable(True)
+            action.setChecked(name not in self.hidden)
+            action.toggled.connect(
+                lambda shown, name=name: self.set_hidden(name, not shown)
+            )
 
     def _ask_column(self, old=None):
         """The dialog behind "+ Column" and "Rename column"."""
@@ -432,7 +581,8 @@ class PropertyTable(QtWidgets.QDockWidget):
         if skipped:
             more = ", ..." if len(skipped) > 5 else ""
             lines.append(
-                "%d rows named no object: %s%s" % (len(skipped), ", ".join(skipped[:5]), more)
+                "%d rows named no object: %s%s"
+                % (len(skipped), ", ".join(skipped[:5]), more)
             )
         if added:
             lines.append("New columns: %s" % ", ".join(added))
@@ -443,7 +593,11 @@ class PropertyTable(QtWidgets.QDockWidget):
         tree = self.tree
         header = tree.header()
         columns = sorted(
-            (c for c in range(NAME, tree.columnCount()) if not header.isSectionHidden(c)),
+            (
+                c
+                for c in range(NAME, tree.columnCount())
+                if not header.isSectionHidden(c)
+            ),
             key=header.visualIndex,
         )
         with open(filename, "w", newline="", encoding="utf-8") as handle:
@@ -454,7 +608,9 @@ class PropertyTable(QtWidgets.QDockWidget):
                     out.writerow([item.text(c) for c in columns])
 
     def export_dialog(self):
-        filename = getSaveFileNameWithExt(self, "Export table", "", filter="CSV (*.csv)")
+        filename = getSaveFileNameWithExt(
+            self, "Export table", "", filter="CSV (*.csv)"
+        )
         if filename:
             self.export(filename)
 
@@ -507,16 +663,46 @@ class PropertyTable(QtWidgets.QDockWidget):
         name = item.data(NAME, UserRole)[0]
         if only:
             self.cmd.disable("all")
-            self.cmd.enable(name)
+            while item is not None:  # and the groups it is in
+                self.cmd.enable(item.data(NAME, UserRole)[0])
+                item = item.parent()
         elif item.checkState(IN) == Checked:
             self.cmd.disable(name)
         else:
             self.cmd.enable(name)
         self.refresh()
 
+    def _followed(self, item, _=None):
+        """Follow: only the object of the current row is shown."""
+        if item is not None and self.follow.isChecked() and not self._picking:
+            if item.data(NAME, UserRole)[1] != "object:group":
+                self._toggle(item, only=True)
+
+    def _follow_pick(self):
+        """The row of the object an atom was picked in (pk1, else the
+        active "sele") becomes the current one; once per pick."""
+        cmd = self.cmd
+        picked = cmd.get_object_list("?pk1")
+        if not picked and "sele" in cmd.get_names("public_selections", enabled_only=1):
+            picked = cmd.get_object_list("?sele")
+        picked = tuple(picked or ())
+        if picked == self._picked:
+            return
+        self._picked = picked
+        item = self.items.get(picked[0]) if len(picked) == 1 else None
+        editing = QtWidgets.QAbstractItemView.State.EditingState
+        if item is not None and self.tree.state() != editing:
+            self._picking = True  # a pick is not a step of Follow
+            self.tree.setCurrentItem(item, NAME)
+            self.tree.scrollToItem(item)
+            self._picking = False
+
     def _clicked(self, item, column):
         if column == IN:
-            ctrl = QtWidgets.QApplication.keyboardModifiers() & Qt.KeyboardModifier.ControlModifier
+            ctrl = (
+                QtWidgets.QApplication.keyboardModifiers()
+                & Qt.KeyboardModifier.ControlModifier
+            )
             self._toggle(item, bool(ctrl))
 
     def _double_clicked(self, item, column):

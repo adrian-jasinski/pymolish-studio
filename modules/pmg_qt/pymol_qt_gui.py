@@ -539,6 +539,8 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         settings = QtCore.QSettings('pymolish', 'pymolish-studio')
         settings.setValue('mainwindow/geometry', self.saveGeometry())
         settings.setValue('mainwindow/state', self.saveState(LAYOUT_VERSION))
+        if self.property_table._want:  # the size the user gave the table
+            settings.setValue('table/size', self.property_table._want)
 
     def restore_layout(self):
         settings = QtCore.QSettings('pymolish', 'pymolish-studio')
@@ -548,6 +550,9 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
             self.restoreGeometry(geometry)
         if state:
             self.restoreState(state, LAYOUT_VERSION)  # refuses older layouts
+        size = settings.value('table/size')
+        if isinstance(size, QtCore.QSize):
+            self.property_table._want = size
         # the saved position may be on a monitor that is gone
         app = QtWidgets.QApplication
         if not any(s.availableGeometry().intersects(self.frameGeometry()) for s in app.screens()):

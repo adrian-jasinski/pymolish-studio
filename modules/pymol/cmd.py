@@ -56,6 +56,11 @@ def _deferred_init_pymol_internals(_pymol):
     if wizarding.session_save_wizard not in _pymol._session_save_tasks:
         _pymol._session_save_tasks.append(wizarding.session_save_wizard)
 
+    from . import session_extra
+    if session_extra.session_restore not in _pymol._session_restore_tasks:
+        _pymol._session_restore_tasks.append(session_extra.session_restore)
+        _pymol._session_save_tasks.append(session_extra.session_save)
+
     # take care of some deferred initialization
 
     _pymol._view_dict_sc = Shortcut()
