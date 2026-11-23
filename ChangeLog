@@ -4,6 +4,29 @@ CHANGE LOG
 
 2026-11-23 pymolish-studio
 
+	* 4.56.0
+
+	* The ligand in 2D, the rest of its contacts (24c)
+	  - The pocket's outline: a line between the ligand and the residues in
+	    the colors of the nearest residue, open where no residue is near.
+	  - A grey halo on the ligand atoms the protein leaves open to the
+	    solvent (a share of their surface over 0.3, Shrake and Rupley with a
+	    water of 1.4 A, 64 points an atom; nothing written into the b-factors).
+	  - Metal contacts: a ligand atom within 3.0 A of a metal, a grey line;
+	    metals are no longer taken as hydrogen bond partners.
+	  - "Show in 3D" in the panel: the contacts as dashes in the viewport,
+	    one distance object per kind in its color, in the group ligand_2d;
+	    they go when the panel is closed and come back when it is opened
+	    with the box on. Objects put into that group by hand stay.
+	  - A residue's tooltip: its kind, each contact with its distance, and
+	    the nearest atoms. Tab walks the residues around the ring with a
+	    ring on the current one and its tooltip; Enter selects it (Ctrl
+	    adds); past the last one Tab goes on to the next control.
+	  - ligand2d.analyze gives each residue "pairs" (contact, ligand
+	    selection, residue selection, distance) and "nearest".
+
+2026-11-23 pymolish-studio
+
 	* 4.55.0
 
 	- C in the panel: the row "ball and stick only" is gone; ball and stick

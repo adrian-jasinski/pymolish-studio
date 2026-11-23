@@ -28,7 +28,7 @@ def _apart(places, size=ligand2d.SIZE):
 
 def test_legend_fits():
     # 30a: the legend wraps into rows; no entry starts beyond the picture
-    for width, most in ((344, 5), (429, 4), (1200, 2)):
+    for width, most in ((344, 6), (429, 5), (1200, 2)):
         entries, rows = ligand2d._legend(width)
         assert [name for name, _, _ in entries] == [*ligand2d.COLORS, *ligand2d.LINES]
         assert rows <= most and rows == entries[-1][2] + 1
@@ -95,10 +95,15 @@ def test_picture(tmp_path):
     assert all(0 < x < size[0] and 0 < y < size[1] for x, y in places)  # inside
     root = ElementTree.fromstring(svg)
     assert root.tag.endswith("svg")
-    # a filled circle and its outline per residue and per kind of the legend
+    # 24c: three grey rings under each atom open to the solvent, first;
+    # then a filled circle and its outline per residue and per kind of the
+    # legend
+    exposed = [a.GetIdx() for a in mol.GetAtoms() if a.HasProp("exposed")]
     kinds = len(ligand2d.COLORS)
     ellipses = [e for e in root.iter() if e.tag.endswith("ellipse")]
-    assert len(ellipses) == 2 * (len(residues) + kinds)
+    assert len(ellipses) == 3 * len(exposed) + 2 * (len(residues) + kinds)
+    halos, ellipses = ellipses[: 3 * len(exposed)], ellipses[3 * len(exposed) :]
+    assert all("url(" not in e.get("style") for e in halos)
     assert all(e.get("rx") == e.get("ry") for e in ellipses)
     assert float(ellipses[0].get("rx")) == ligand2d.SIZE / 2
     # 30a: each fill is the gradient of its kind
@@ -155,3 +160,70 @@ def test_ring_inside_the_picture():
                 for x, y in places
             )
             assert height > width  # the legend below the square
+
+
+@needs_rdkit
+def test_24c_contacts_distances_metal_exposure():
+    cmd.load(testing.datafile("1oky.pdb.gz"), "m")
+    # a zinc 2.1 A from the ligand's N of the amine (Glu166's partner)
+    x, y, z = cmd.get_coords("resn STU and name N4")[0]
+    cmd.pseudoatom(
+        "m", pos=[x + 2.1, y, z], elem="Zn", name="ZN", resn="ZN", resi="900", chain="Z"
+    )
+    mol, residues = ligand2d.analyze("resn STU")
+    by_name = {"%s%s" % r["label"]: r for r in residues}
+    zinc = by_name["ZN900"]
+    assert [p[0] for p in zinc["pairs"]] == ["metal"]  # and no hydrogen bond
+    assert zinc["pairs"][0][3] == pytest.approx(2.1, abs=0.01)
+    assert zinc["kind"] == "other"
+    # every contact has its two partners and its distance
+    ser = by_name["SER160"]
+    ((name, own, partner, distance),) = ser["pairs"]
+    assert name == "hydrogen bond" and 2.5 < distance <= ligand2d.HBOND
+    assert cmd.count_atoms(own) == 1 and cmd.count_atoms(partner) == 1
+    assert cmd.get_distance(own, partner) == pytest.approx(distance, abs=0.01)
+    assert ser["nearest"] <= distance
+    assert all(r["nearest"] <= ligand2d.CUTOFF for r in residues if r["atoms"])
+    # some atoms are open to the solvent, most of a ligand in its pocket not
+    exposed = [a.GetIdx() for a in mol.GetAtoms() if a.HasProp("exposed")]
+    assert 0 < len(exposed) < mol.GetNumAtoms() / 3
+    # without the protein, many more are open: all that the ligand itself
+    # leaves open
+    xyz = cmd.get_coords("resn STU and not hydro")
+    radii = []
+    cmd.iterate("resn STU and not hydro", "radii.append(vdw)", space={"radii": radii})
+    alone = ligand2d._exposed(xyz, radii, [])
+    assert set(exposed) < alone and len(alone) > 2 * len(exposed)
+
+
+def test_24c_contour():
+    points = [(100 + 30 * i, 200) for i in range(5)]  # a chain of atoms
+    # residues all round but on the left: the outline is open there
+    places, radius = ligand2d.layout(points, [[4]] * 4 + [[2]] * 2)
+    line = ligand2d.contour(points, places, ["polar"] * 6, radius)
+    assert len(line) == 120
+    cx, cy = 160, 200
+    for (x, y), kind in line:
+        # between the ligand and the circles
+        assert math.dist((cx, cy), (x, y)) < radius - ligand2d.SIZE / 2
+    assert {kind for _, kind in line} == {"polar", None}
+    assert ligand2d.contour(points, [], [], 0) == []
+
+
+@needs_rdkit
+def test_24c_dashes_in_3d():
+    cmd.load(testing.datafile("1oky.pdb.gz"), "m")
+    _, residues = ligand2d.analyze("resn STU")
+    cmd.pseudoatom("mine")  # the user's, put into the group
+    made = ligand2d.show_contacts(residues)
+    assert set(made) == {
+        "ligand_2d_hydrogen_bond",
+        "ligand_2d_salt_bridge",
+        "ligand_2d_cation_ring",
+    }
+    assert cmd.get("dash_color", "ligand_2d_salt_bridge") == "0xe63333"
+    hbonds = sum(1 for r in residues for p in r["pairs"] if p[0] == "hydrogen bond")
+    assert cmd.get_session("ligand_2d_hydrogen_bond") and hbonds >= 4
+    cmd.group("ligand_2d", "mine")
+    ligand2d.hide_contacts(made)
+    assert set(cmd.get_names("all")) == {"m", "mine"}  # only what it made went

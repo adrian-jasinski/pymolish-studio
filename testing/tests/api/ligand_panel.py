@@ -158,3 +158,59 @@ def test_panel_follows_ligand_next():
     panel.poll()
     assert panel.choice.currentData() == visited
     panel.close()
+
+
+def test_24c_show_in_3d_tooltips_and_tab():
+    from pymol.Qt import QtWidgets
+
+    cmd.load(testing.datafile("1oky.pdb.gz"), "m")
+    panel = _panel()
+    ours = {
+        "ligand_2d",
+        "ligand_2d_hydrogen_bond",
+        "ligand_2d_salt_bridge",
+        "ligand_2d_cation_ring",
+    }
+    # Show in 3D: the contacts as dashes, in a group of their own
+    assert not ours & set(cmd.get_names("all"))
+    panel.in_3d.setChecked(True)
+    assert ours <= set(cmd.get_names("all"))
+    # another ligand: its own dashes (glycerol has no contacts drawn)
+    panel.choice.setCurrentIndex(1)
+    panel.refresh(keep=True)
+    group = {"ligand_2d"} if panel._dashes else set()
+    assert set(cmd.get_names("all")) - {"m"} == set(panel._dashes) | group
+    panel.choice.setCurrentIndex(0)
+    panel.refresh(keep=True)
+    assert ours <= set(cmd.get_names("all"))
+    # closed: they go; opened again with the box on: they come back
+    panel.close()
+    assert cmd.get_names("all") == ["m"]
+    panel.show()
+    panel.refresh()
+    assert ours <= set(cmd.get_names("all"))
+    panel.in_3d.setChecked(False)
+    assert cmd.get_names("all") == ["m"]
+
+    # the tooltip of a residue: kind, contacts with distances, nearest atoms
+    text = panel._tip(_point(panel, "SER160"))
+    assert text.startswith("SER 160, polar\nhydrogen bond ")
+    assert text.endswith(" Å") and "nearest atoms" in text
+    assert panel._tip(_no_point()) == ""
+
+    # Tab walks the residues around the ring, Enter selects; past the last
+    # one the focus goes on
+    seen = []
+    while panel._step(True):
+        seen.append(panel.current)
+        assert QtWidgets.QToolTip.text().startswith(
+            "%s %s" % panel.residues[seen[-1]]["label"]
+        )
+    assert sorted(seen) == list(range(len(panel.residues))) and panel.current is None
+    panel._step(True)
+    panel._step(True)
+    second = panel.residues[panel.current]
+    panel._entered(False)
+    assert cmd.count_atoms("sele") == cmd.count_atoms(second["sele"])
+    assert panel._step(False) and panel._step(False) is False  # back past the first
+    panel.close()

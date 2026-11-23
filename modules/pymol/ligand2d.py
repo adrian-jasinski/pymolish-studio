@@ -24,6 +24,9 @@ HBOND = 3.5
 SALT = 5.5
 STACK = 5.5  # ring center to ring center
 CATION = 6.0  # charged atom to ring center
+METAL = 3.0  # ligand atom to metal
+PROBE = 1.4  # water, for the atoms open to the solvent
+EXPOSED = 0.3  # share of an atom's open surface the protein leaves open
 
 KINDS = {  # residue name -> kind; anything else is "other"
     **dict.fromkeys("ALA VAL LEU ILE MET PHE TRP TYR PRO CYS".split(), "hydrophobic"),
@@ -45,6 +48,7 @@ LINES = {  # contact -> (color, dashed)
     "salt bridge": ((0.90, 0.20, 0.20), False),
     "ring stacking": ((0.10, 0.60, 0.20), False),
     "cation-ring": ((0.85, 0.45, 0.10), False),
+    "metal": ((0.50, 0.50, 0.50), False),
 }
 POSITIVE = {"LYS": ("NZ",), "ARG": ("NE", "NH1", "NH2"), "HIS": ("ND1", "NE2")}
 NEGATIVE = {"ASP": ("OD1", "OD2"), "GLU": ("OE1", "OE2")}
@@ -70,6 +74,7 @@ SIZE = 52  # a residue's circle, across, in pixels
 FONT = 14  # the names in the circles
 LEGEND = (16, 28, 20, 32)  # the legend: font, height of a row, circle, line
 SCALE = 20  # pixels per unit of rdkit's 2D coordinates: a bond is 1.5 long
+GROUP = "ligand_2d"  # the dashes of "Show in 3D"
 
 
 def ligands(selection="enabled", *, _self=cmd):
@@ -98,11 +103,54 @@ def _center(points):
     return [sum(p[i] for p in points) / len(points) for i in range(len(points[0]))]
 
 
+def _exposed(xyz, radii, protein, points=64):
+    """The ligand atoms the protein leaves open to the solvent: of the
+    points on an atom's surface that the ligand itself leaves open, more
+    than EXPOSED are not inside a protein atom either (Shrake and Rupley,
+    with a water of PROBE)."""
+    import numpy
+
+    k = numpy.arange(points) + 0.5
+    phi, theta = numpy.arccos(1 - 2 * k / points), numpy.pi * (1 + 5**0.5) * k
+    sphere = numpy.stack(
+        [
+            numpy.cos(theta) * numpy.sin(phi),
+            numpy.sin(theta) * numpy.sin(phi),
+            numpy.cos(phi),
+        ],
+        1,
+    )
+    own = numpy.asarray(xyz, float)
+    reach = numpy.asarray(radii, float) + PROBE
+    other = numpy.asarray([a.coord for a in protein], float).reshape(-1, 3)
+    other_reach = numpy.asarray([a.vdw for a in protein], float) + PROBE
+    found = set()
+    for i in range(len(own)):
+        surface = own[i] + sphere * reach[i]
+        inside = numpy.linalg.norm(surface[:, None] - own[None], axis=2) < reach[None]
+        inside[:, i] = False
+        alone = ~inside.any(1)
+        if len(other):
+            covered = (
+                numpy.linalg.norm(surface[:, None] - other[None], axis=2)
+                < other_reach[None]
+            )
+            free = alone & ~covered.any(1)
+        else:
+            free = alone
+        if alone.sum() >= 4 and free.sum() > EXPOSED * alone.sum():
+            found.add(i)
+    return found
+
+
 def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
     """The ligand as an rdkit molecule with 2D coordinates, and the residues
     in contact with it: a list of dicts with "label", "kind", "sele",
-    "atoms" (indices of the ligand atoms it is near) and "contacts", pairs
-    of a contact name and the ligand atoms it goes to."""
+    "atoms" (indices of the ligand atoms it is near), "contacts", pairs
+    of a contact name and the ligand atoms it goes to, "pairs", the same
+    as (name, ligand selection, residue selection, distance), and
+    "nearest", the shortest distance between the two. Ligand atoms open
+    to the solvent carry the rdkit property "exposed"."""
     Chem, AllChem = smiles.rdkit()
     heavy = "(%s) and not hydro" % ligand
     atoms = _self.get_model(heavy).atom
@@ -137,7 +185,8 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
     # everything of the protein that can matter, by residue
     reach = max(cutoff, CATION) + 3.0
     around = (
-        "byres ((%s) around %f) and not hydro and not (%s) and (polymer or inorganic)"
+        "byres ((%s) around %f) and not hydro and not (%s)"
+        " and (polymer or inorganic or metals)"
         % (
             ligand,
             reach,
@@ -145,19 +194,51 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
         )
     )
     residues = {}
-    for atom in _self.get_model(around).atom:
+    protein = _self.get_model(around).atom
+    for atom in protein:
         key = (atom.segi, atom.chain, atom.resn, atom.resi)
         residues.setdefault(key, []).append(atom)
+    metals = {a.index for a in _self.get_model("(%s) and metals" % around).atom}
     model = atoms[0].model if hasattr(atoms[0], "model") else ""
     objects = _self.get_object_list(ligand)
+    obj = objects[0] if objects else model
+
+    def own(group):  # ligand atoms as a selection
+        return "%s and index %s" % (obj, "+".join(str(atoms[i].index) for i in group))
+
+    for i in _exposed(xyz, [a.vdw for a in atoms], protein):
+        mol.GetAtomWithIdx(i).SetBoolProp("exposed", True)
     result = []
     for key, members in residues.items():
         segi, chain, resn, resi = key
-        near, contacts = set(), []
+        sele = "/%s/%s/%s/%s`%s/" % (obj, segi, chain, resn, resi)
+        near, contacts, pairs = set(), [], []
+        nearest = min(math.dist(a, m.coord) for a in xyz for m in members)
         for i, a in enumerate(xyz):
             if any(math.dist(a, m.coord) <= cutoff for m in members):
                 near.add(i)
         named = {m.name: m.coord for m in members}
+
+        def add(name, group, partner, point):
+            """A contact of `group` (ligand atoms) to `partner` (atom names of
+            the residue); the distance is between their centers."""
+            contacts.append((name, tuple(group)))
+            mid = _center([xyz[i] for i in group])
+            pairs.append(
+                (
+                    name,
+                    own(group),
+                    "(%s) and name %s" % (sele, "+".join(partner)),
+                    math.dist(mid, point),
+                )
+            )
+
+        def charged(names, i):  # the residue's charged atom nearest to i
+            name = min(
+                (n for n in names if n in named),
+                key=lambda n: math.dist(named[n], xyz[i]),
+            )
+            return (name,), named[name]
 
         def close(names, targets, limit):
             return sorted(
@@ -169,18 +250,18 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
             )
 
         if resn in NEGATIVE and (hit := close(NEGATIVE[resn], plus, SALT)):
-            contacts.append(("salt bridge", tuple(hit[:1])))
+            add("salt bridge", hit[:1], *charged(NEGATIVE[resn], hit[0]))
         if resn in POSITIVE and (hit := close(POSITIVE[resn], minus, SALT)):
-            contacts.append(("salt bridge", tuple(hit[:1])))
+            add("salt bridge", hit[:1], *charged(POSITIVE[resn], hit[0]))
         for names in RINGS.get(resn, ()):
             if all(n in named for n in names):
                 center = _center([named[n] for n in names])
                 for ring in rings:
                     if math.dist(center, _center([xyz[i] for i in ring])) <= STACK:
-                        contacts.append(("ring stacking", tuple(ring)))
+                        add("ring stacking", ring, names, center)
                 for i in plus:
                     if math.dist(center, xyz[i]) <= CATION:
-                        contacts.append(("cation-ring", (i,)))
+                        add("cation-ring", (i,), names, center)
         for name in {"LYS": ("NZ",), "ARG": ("CZ",)}.get(resn, ()):
             for ring in rings:
                 if (
@@ -188,15 +269,13 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
                     and math.dist(named[name], _center([xyz[i] for i in ring]))
                     <= CATION
                 ):
-                    contacts.append(("cation-ring", tuple(ring)))
+                    add("cation-ring", ring, (name,), named[name])
+        for m in members:
+            if m.index in metals:
+                i = min(range(len(xyz)), key=lambda i: math.dist(xyz[i], m.coord))
+                if math.dist(xyz[i], m.coord) <= METAL:
+                    add("metal", (i,), (m.name,), m.coord)
         if near or contacts:
-            sele = "/%s/%s/%s/%s`%s/" % (
-                objects[0] if objects else model,
-                segi,
-                chain,
-                resn,
-                resi,
-            )
             result.append(
                 {
                     "label": (resn, resi),
@@ -204,6 +283,8 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
                     "sele": sele,
                     "atoms": near or {i for _, group in contacts for i in group},
                     "contacts": contacts,
+                    "pairs": pairs,
+                    "nearest": nearest,
                     "members": {m.index: (m.name, m.coord) for m in members},
                 }
             )
@@ -212,7 +293,7 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
     owner = {i: r for r in result for i in r["members"]}
     pairs = _self.find_pairs(
         "(%s) and (donor or acceptor)" % heavy,
-        "(%s) and (donor or acceptor)" % around,
+        "(%s) and (donor or acceptor) and not metals" % around,
         mode=1,
         cutoff=HBOND,
         angle=55,
@@ -222,11 +303,21 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
         residue = owner.get(b)
         if residue is not None and a in index and (id(residue), index[a]) not in seen:
             seen.add((id(residue), index[a]))
+            name, coord = residue["members"][b]
             residue["contacts"].append(("hydrogen bond", (index[a],)))
+            residue["pairs"].append(
+                (
+                    "hydrogen bond",
+                    own((index[a],)),
+                    "(%s) and name %s" % (residue["sele"], name),
+                    math.dist(xyz[index[a]], coord),
+                )
+            )
     for residue in result:
         del residue["members"]
         # one line per kind of contact and ligand atom group
         residue["contacts"] = sorted(set(residue["contacts"]))
+        residue["pairs"] = sorted(set(residue["pairs"]), key=lambda p: (p[0], p[3]))
     return mol, result
 
 
@@ -276,6 +367,52 @@ def layout(points, anchors, size=SIZE, gap=6):
     return places, radius
 
 
+def _turn(angle):
+    """An angle brought to -pi..pi."""
+    return (angle + math.pi) % (2 * math.pi) - math.pi
+
+
+def contour(points, places, kinds, radius, steps=120):
+    """The pocket's outline: for each of `steps` directions around the
+    ligand's center a point halfway between the ligand and the residues'
+    circles, and the kind of the residue nearest that direction, or None
+    where no residue is near (the pocket is open there)."""
+    if not places:
+        return []
+    cx, cy = _center(points)
+    angles = [math.atan2(y - cy, x - cx) for x, y in points]
+    reach = []
+    for k in range(steps):
+        toward = 2 * math.pi * k / steps
+        reach.append(
+            max(
+                (
+                    math.dist((cx, cy), p)
+                    for p, a in zip(points, angles)
+                    if abs(_turn(a - toward)) < 0.5
+                ),
+                default=0.0,
+            )
+        )
+    for _ in range(4):  # smooth, around the circle
+        reach = [
+            (reach[k - 1] + reach[k] + reach[(k + 1) % steps]) / 3 for k in range(steps)
+        ]
+    sides = [math.atan2(y - cy, x - cx) for x, y in places]
+    line = []
+    for k in range(steps):
+        toward = 2 * math.pi * k / steps
+        r = (reach[k] + 16 + radius - SIZE / 2) / 2
+        off, near = min((abs(_turn(a - toward)), kind) for a, kind in zip(sides, kinds))
+        line.append(
+            (
+                (cx + r * math.cos(toward), cy + r * math.sin(toward)),
+                near if off * radius < SIZE * 1.2 else None,
+            )
+        )
+    return line
+
+
 def _mix(color, other, share):
     return tuple(a + (b - a) * share for a, b in zip(color, other))
 
@@ -309,11 +446,21 @@ def _legend(width):
     return entries, row + 1
 
 
-def draw(mol, residues, svg=True, selected=(), background=(1, 1, 1), ink=(0, 0, 0)):
+def draw(
+    mol,
+    residues,
+    svg=True,
+    selected=(),
+    background=(1, 1, 1),
+    ink=(0, 0, 0),
+    current=None,
+):
     """The picture as SVG text or PNG bytes, its size, and for each residue
     its center in pixels (for clicks). `selected` are indices of residues to
-    ring in blue. `ink` is the color of the text beside the shapes: a light
-    one means a dark window, and the residues are drawn for that."""
+    ring in blue, `current` the one the keyboard is on. `ink` is the color
+    of the text beside the shapes: a light one means a dark window, and the
+    residues are drawn for that. Under the ligand: a grey halo on its atoms
+    open to the solvent and the pocket's outline in the residues' colors."""
     import re
 
     from rdkit.Chem.Draw import rdMolDraw2D
@@ -336,7 +483,7 @@ def draw(mol, residues, svg=True, selected=(), background=(1, 1, 1), ink=(0, 0, 
     legend = rows * high + 12
     size = (side, side + legend)
 
-    def start(dx, dy):
+    def start(dx, dy, under=None):
         drawer = (rdMolDraw2D.MolDraw2DSVG if svg else rdMolDraw2D.MolDraw2DCairo)(
             *size
         )
@@ -351,6 +498,8 @@ def draw(mol, residues, svg=True, selected=(), background=(1, 1, 1), ink=(0, 0, 
         drawer.SetColour(background)
         drawer.DrawRect(Point2D(0, 0), Point2D(*size), True)
         drawer.SetOffset(round(dx), round(dy))
+        if under:
+            under(drawer)
         drawer.DrawMolecule(mol)
         atoms = range(mol.GetNumAtoms())
         return drawer, [(p.x, p.y) for p in (drawer.GetDrawCoords(i) for i in atoms)]
@@ -359,9 +508,33 @@ def draw(mol, residues, svg=True, selected=(), background=(1, 1, 1), ink=(0, 0, 
     # residues goes around the mean of the atoms. Drawn once to see where
     # that lands, then again with it in the middle of the square above the
     # legend: the ring was cut at one side otherwise (2RH1, carazolol).
-    cx, cy = _center(start(0, 0)[1])
-    drawer, points = start(side / 2 - cx, side / 2 - cy)
-    places, _ = layout(points, [sorted(r["atoms"]) for r in residues])
+    first = start(0, 0)[1]
+    cx, cy = _center(first)
+    dx, dy = round(side / 2 - cx), round(side / 2 - cy)
+    moved = [(x + dx, y + dy) for x, y in first]
+    places, radius = layout(moved, [sorted(r["atoms"]) for r in residues])
+    exposed = [
+        i for i in range(mol.GetNumAtoms()) if mol.GetAtomWithIdx(i).HasProp("exposed")
+    ]
+    halo = (0.55, 0.55, 0.55) if dark else (0.70, 0.70, 0.70)
+
+    def under(drawer):
+        drawer.SetFillPolys(True)
+        drawer.SetLineWidth(1)
+        for i in exposed:  # three rings, fading out: a soft grey halo
+            x, y = moved[i]
+            for r, share in ((15, 0.3), (12, 0.6), (9, 0.9)):
+                drawer.SetColour(_mix(background, halo, share))
+                drawer.DrawEllipse(Point2D(x - r, y - r), Point2D(x + r, y + r), True)
+        drawer.SetLineWidth(5)
+        outline = contour(moved, places, [r["kind"] for r in residues], radius)
+        for (a, kind), (b, after) in zip(outline, outline[1:] + outline[:1]):
+            if kind and after:
+                color = COLORS[kind]
+                drawer.SetColour(color if dark else _mix(color, (0, 0, 0), 0.15))
+                drawer.DrawLine(Point2D(*a), Point2D(*b), True)
+
+    drawer, points = start(dx, dy, under)
 
     def line(a, b, color, dashed, width=2):
         # the contact colors are picked for white: lighter on a dark window
@@ -402,6 +575,12 @@ def draw(mol, residues, svg=True, selected=(), background=(1, 1, 1), ink=(0, 0, 
             line(place, _center([points[i] for i in group]), color, dashed)
     drawer.SetFontSize(FONT)
     for number, (residue, (x, y)) in enumerate(zip(residues, places)):
+        if number == current:  # the keyboard's: a ring around the circle
+            drawer.SetFillPolys(False)
+            drawer.SetLineWidth(2)
+            drawer.SetColour(ink)
+            r = SIZE / 2 + 6
+            drawer.DrawEllipse(Point2D(x - r, y - r), Point2D(x + r, y + r), True)
         drawer.SetColour(circle(x, y, SIZE / 2, residue["kind"], number in selected))
         drawer.DrawString(
             residue["label"][0], Point2D(x, y - 8), 0, True
@@ -427,12 +606,20 @@ def draw(mol, residues, svg=True, selected=(), background=(1, 1, 1), ink=(0, 0, 
         text = re.sub(r"<path d=''[^>]*/>\n?", "", text)
         # rdkit has no gradients: the filled circles come in the order they
         # were drawn, and each gets the gradient of its kind
-        kinds = iter([r["kind"] for r in residues] + list(COLORS))
-        text = re.sub(
-            r"(<ellipse[^>]*?fill:)#\w{6}",
-            lambda found: "%surl(#%s)" % (found.group(1), next(kinds)),
-            text,
+        # (the halos first: they keep their grey)
+        kinds = iter(
+            [None] * 3 * len(exposed) + [r["kind"] for r in residues] + list(COLORS)
         )
+
+        def gradient(found):
+            kind = next(kinds)
+            return (
+                found.group(0)
+                if kind is None
+                else "%surl(#%s)" % (found.group(1), kind)
+            )
+
+        text = re.sub(r"(<ellipse[^>]*?fill:)#\w{6}", gradient, text)
         stops = "<stop offset='%d' stop-color='#%02X%02X%02X'/>"
         gradients = "".join(
             "<linearGradient id='%s' x1='0' y1='0' x2='0' y2='1'>%s%s</linearGradient>"
@@ -447,6 +634,35 @@ def draw(mol, residues, svg=True, selected=(), background=(1, 1, 1), ink=(0, 0, 
         )
         text = text.replace("<!-- END OF HEADER -->", "<defs>%s</defs>" % gradients, 1)
     return text, size, places
+
+
+def show_contacts(residues, *, _self=cmd):
+    """The contacts of `residues` (from analyze) as dashes in 3D, one
+    distance object per kind of contact, in the colors of the picture, in
+    the group GROUP. Returns the names made, for hide_contacts."""
+    made = {}  # object name -> contact name
+    for residue in residues:
+        for name, own, partner, _ in residue["pairs"]:
+            target = "%s_%s" % (GROUP, name.replace(" ", "_").replace("-", "_"))
+            if target not in made:
+                _self.delete(target)
+                made[target] = name
+            _self.distance(target, own, partner, mode=4, label=0, quiet=1)
+    for target, name in made.items():
+        rgb = tuple(round(c * 255) for c in LINES[name][0])
+        _self.set("dash_color", "0x%02x%02x%02x" % rgb, target)
+    if made:
+        _self.group(GROUP, " ".join(made))
+    return list(made)
+
+
+def hide_contacts(names, *, _self=cmd):
+    """Delete the dashes show_contacts made, and their group; anything
+    else in the group stays, out of it."""
+    for name in names:
+        _self.delete(name)
+    if names and GROUP in _self.get_names("all"):
+        _self.group(GROUP, action="excise")
 
 
 def ligand_2d(ligand="", cutoff=CUTOFF, filename="", quiet=1, *, _self=cmd):
