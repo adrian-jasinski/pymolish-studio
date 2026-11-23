@@ -65,7 +65,9 @@ def test_clicks_and_selection(tmp_path):
     panel = _panel()
     labels = [panel.choice.itemText(i) for i in range(panel.choice.count())]
     assert labels[0] == "STU A1368" and len(labels) == 4
-    assert not panel.picture.pixmap().isNull() and len(panel.places) == len(panel.residues)
+    assert not panel.picture.pixmap().isNull() and len(panel.places) == len(
+        panel.residues
+    )
 
     # a click on a residue selects it in 3D and shows it as sticks
     panel._clicked(_point(panel, "SER160"), False)
@@ -99,6 +101,28 @@ def test_clicks_and_selection(tmp_path):
     assert panel._scale < 1
     panel._clicked(_point(panel, "SER160"), False)
     assert cmd.count_atoms("sele") == cmd.count_atoms("m and resi 160")
+
+    # 24d: shrunk and grown again and again, the whole picture is inside
+    # the label, uses the room there is, and clicks still land
+    for width, height in ((300, 300), (1400, 1500), (260, 900), (900, 320), (700, 700)):
+        panel.resize(width, height)
+        QtWidgets.QApplication.processEvents()
+        pixmap, label = panel.picture.pixmap(), panel.picture
+        drawn = pixmap.deviceIndependentSize()
+        assert (
+            drawn.width() <= label.width() + 1 and drawn.height() <= label.height() + 1
+        )
+        assert label.width() - drawn.width() < 2 or label.height() - drawn.height() < 2
+        panel._clicked(_point(panel, "ALA162"), False)
+        assert cmd.count_atoms("sele") == cmd.count_atoms("m and resi 162")
+    panel.resize(1400, 1500)
+    QtWidgets.QApplication.processEvents()
+    assert panel._scale > 1.25  # no ceiling: a large panel gets a large picture
+    panel.hide()
+    panel.resize(200, 200)  # hidden: nothing to divide by, nothing drawn wrong
+    panel.show()
+    panel.resize(700, 700)
+    QtWidgets.QApplication.processEvents()
 
     # another ligand from the list
     panel.choice.setCurrentIndex(1)

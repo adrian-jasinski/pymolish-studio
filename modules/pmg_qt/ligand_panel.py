@@ -124,12 +124,12 @@ class LigandPanel(QtWidgets.QDockWidget):
         self._render()
 
     def _render(self):
-        """The picture at the size the panel has room for (up to 125 %)."""
+        """The whole picture, as large as the panel has room for."""
         if self._svg is None:
             return
         width, height = self._size
         self._scale = scale = min(
-            self.picture.width() / width, self.picture.height() / height, 1.25
+            self.picture.width() / width, self.picture.height() / height
         )
         data = QtCore.QBuffer()
         data.setData(self._svg.encode())

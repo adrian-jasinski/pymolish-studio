@@ -79,7 +79,9 @@ def test_ligands_and_contacts():
     assert "cation-ring" in contacts["LYS111"]
     assert by_name["GLU166"]["kind"] == "negative"
     assert by_name["LEU88"]["kind"] == "hydrophobic" and not contacts["LEU88"]
-    assert cmd.count_atoms(by_name["SER160"]["sele"]) == cmd.count_atoms("m and resi 160")
+    assert cmd.count_atoms(by_name["SER160"]["sele"]) == cmd.count_atoms(
+        "m and resi 160"
+    )
     # a wider cutoff draws more residues
     assert len(cmd.ligand_2d("resn STU", cutoff=6)) > len(residues)
 
@@ -106,7 +108,9 @@ def test_picture(tmp_path):
     # rdkit writes a space as a path without data; Qt warns about those
     assert "d=''" not in svg
     # on a dark window: other tones, deep fills under white text
-    dark = ligand2d.draw(mol, residues, background=(0.2, 0.2, 0.2), ink=(0.9, 0.9, 0.9))[0]
+    dark = ligand2d.draw(
+        mol, residues, background=(0.2, 0.2, 0.2), ink=(0.9, 0.9, 0.9)
+    )[0]
     stops = lambda text: text[text.index("<defs>") : text.index("</defs>")]
     assert stops(dark) != stops(svg)
     for color in ligand2d.COLORS.values():
@@ -122,3 +126,32 @@ def test_picture(tmp_path):
         path = tmp_path / name
         cmd.ligand_2d("resn STU", filename=str(path))
         assert path.stat().st_size > 2000
+
+
+def test_ring_inside_the_picture():
+    """24d: a ligand whose atoms lie to one side of its box (carazolol of
+    2RH1): every circle is whole, above the legend."""
+    from rdkit import Chem
+    from rdkit.Chem import AllChem
+
+    mol = Chem.MolFromSmiles("CC(C)NCC(O)COc1cccc2[nH]c3ccccc3c12")
+    AllChem.Compute2DCoords(mol)
+    count = mol.GetNumAtoms()
+    for number in (3, 17, 40):
+        residues = [
+            {
+                "label": ("ALA", str(i)),
+                "kind": "polar",
+                "atoms": {i * 7 % count},
+                "contacts": [],
+            }
+            for i in range(number)
+        ]
+        for svg in (True, False):
+            _, (width, height), places = ligand2d.draw(mol, residues, svg=svg)
+            half = ligand2d.SIZE / 2
+            assert all(
+                half <= x <= width - half and half <= y <= width - half
+                for x, y in places
+            )
+            assert height > width  # the legend below the square

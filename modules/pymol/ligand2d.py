@@ -52,7 +52,10 @@ _SIX = ("CG", "CD1", "CD2", "CE1", "CE2", "CZ")
 RINGS = {
     "PHE": (_SIX,),
     "TYR": (_SIX,),
-    "TRP": (("CD2", "CE2", "CE3", "CZ2", "CZ3", "CH2"), ("CG", "CD1", "NE1", "CE2", "CD2")),
+    "TRP": (
+        ("CD2", "CE2", "CE3", "CZ2", "CZ3", "CH2"),
+        ("CG", "CD1", "NE1", "CE2", "CD2"),
+    ),
     "HIS": (("CG", "ND1", "CD2", "CE1", "NE2"),),
 }
 # charged groups of a ligand as SMARTS: amines that are no amide and not on
@@ -84,7 +87,9 @@ def ligands(selection="enabled", *, _self=cmd):
     for key, count in found.items():
         if count >= 6:
             sele = "/%s/%s/%s/%s`%s/" % key
-            near = _self.count_atoms("polymer and not hydro within %f of (%s)" % (CUTOFF, sele))
+            near = _self.count_atoms(
+                "polymer and not hydro within %f of (%s)" % (CUTOFF, sele)
+            )
             rows.append((-near, -count, "%s %s%s" % (key[3], key[2], key[4]), sele))
     return [(label, sele) for _, _, label, sele in sorted(rows)]
 
@@ -131,8 +136,13 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
 
     # everything of the protein that can matter, by residue
     reach = max(cutoff, CATION) + 3.0
-    around = "byres ((%s) around %f) and not hydro and not (%s) and (polymer or inorganic)" % (
-        ligand, reach, ligand,
+    around = (
+        "byres ((%s) around %f) and not hydro and not (%s) and (polymer or inorganic)"
+        % (
+            ligand,
+            reach,
+            ligand,
+        )
     )
     residues = {}
     for atom in _self.get_model(around).atom:
@@ -153,7 +163,9 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
             return sorted(
                 i
                 for i in targets
-                if any(n in named and math.dist(xyz[i], named[n]) <= limit for n in names)
+                if any(
+                    n in named and math.dist(xyz[i], named[n]) <= limit for n in names
+                )
             )
 
         if resn in NEGATIVE and (hit := close(NEGATIVE[resn], plus, SALT)):
@@ -171,25 +183,39 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
                         contacts.append(("cation-ring", (i,)))
         for name in {"LYS": ("NZ",), "ARG": ("CZ",)}.get(resn, ()):
             for ring in rings:
-                if name in named and math.dist(named[name], _center([xyz[i] for i in ring])) <= CATION:
+                if (
+                    name in named
+                    and math.dist(named[name], _center([xyz[i] for i in ring]))
+                    <= CATION
+                ):
                     contacts.append(("cation-ring", tuple(ring)))
         if near or contacts:
-            sele = "/%s/%s/%s/%s`%s/" % (objects[0] if objects else model, segi, chain, resn, resi)
-            result.append({
-                "label": (resn, resi),
-                "kind": KINDS.get(resn, "other"),
-                "sele": sele,
-                "atoms": near or {i for _, group in contacts for i in group},
-                "contacts": contacts,
-                "members": {m.index: (m.name, m.coord) for m in members},
-            })
+            sele = "/%s/%s/%s/%s`%s/" % (
+                objects[0] if objects else model,
+                segi,
+                chain,
+                resn,
+                resi,
+            )
+            result.append(
+                {
+                    "label": (resn, resi),
+                    "kind": KINDS.get(resn, "other"),
+                    "sele": sele,
+                    "atoms": near or {i for _, group in contacts for i in group},
+                    "contacts": contacts,
+                    "members": {m.index: (m.name, m.coord) for m in members},
+                }
+            )
     # hydrogen bonds from the core: distance and angle
     index = {a.index: i for i, a in enumerate(atoms)}
     owner = {i: r for r in result for i in r["members"]}
     pairs = _self.find_pairs(
         "(%s) and (donor or acceptor)" % heavy,
         "(%s) and (donor or acceptor)" % around,
-        mode=1, cutoff=HBOND, angle=55,
+        mode=1,
+        cutoff=HBOND,
+        angle=55,
     )
     seen = set()
     for (_, a), (_, b) in pairs:
@@ -230,7 +256,10 @@ def layout(points, anchors, size=SIZE, gap=6):
     gaps = [(spread[(k + 1) % count] - spread[k]) % (2 * math.pi) for k in range(count)]
     start = (gaps.index(max(gaps)) + 1) % count if count > 1 else 0
     order = order[start:] + order[:start]
-    line = [(spread[(start + k) % count] - spread[start]) % (2 * math.pi) for k in range(count)]
+    line = [
+        (spread[(start + k) % count] - spread[start]) % (2 * math.pi)
+        for k in range(count)
+    ]
     pushed = line[:]
     for k in range(1, count):
         pushed[k] = max(pushed[k], pushed[k - 1] + need)
@@ -240,7 +269,10 @@ def layout(points, anchors, size=SIZE, gap=6):
     spread = [spread[start] + p - turn for p in pushed]
     places = [None] * len(anchors)
     for rank, i in enumerate(order):
-        places[i] = (cx + radius * math.cos(spread[rank]), cy + radius * math.sin(spread[rank]))
+        places[i] = (
+            cx + radius * math.cos(spread[rank]),
+            cy + radius * math.sin(spread[rank]),
+        )
     return places, radius
 
 
@@ -289,7 +321,10 @@ def draw(mol, residues, svg=True, selected=(), background=(1, 1, 1), ink=(0, 0, 
 
     dark = sum(ink) > 1.5
     conformer = mol.GetConformer()
-    flat = [(conformer.GetAtomPosition(i).x, conformer.GetAtomPosition(i).y) for i in range(mol.GetNumAtoms())]
+    flat = [
+        (conformer.GetAtomPosition(i).x, conformer.GetAtomPosition(i).y)
+        for i in range(mol.GetNumAtoms())
+    ]
     center = _center(flat)
     reach = max(math.dist(center, p) for p in flat) * SCALE
     ring = max(reach + SIZE * 0.9, len(residues) * (SIZE + 6) / (2 * math.pi))
@@ -300,20 +335,32 @@ def draw(mol, residues, svg=True, selected=(), background=(1, 1, 1), ink=(0, 0, 
     font, high, dot, dash = LEGEND
     legend = rows * high + 12
     size = (side, side + legend)
-    drawer = (rdMolDraw2D.MolDraw2DSVG if svg else rdMolDraw2D.MolDraw2DCairo)(*size)
-    options = drawer.drawOptions()
-    options.fixedBondLength = SCALE  # per unit, despite its name
-    if dark:
-        rdMolDraw2D.SetDarkMode(options)
-    # the background by hand: rdkit's own moves with the offset below and
-    # would leave the strip of the legend bare
-    options.clearBackground = False
-    drawer.SetFillPolys(True)
-    drawer.SetColour(background)
-    drawer.DrawRect(Point2D(0, 0), Point2D(*size), True)
-    drawer.SetOffset(0, -legend // 2)  # the ligand above the legend
-    drawer.DrawMolecule(mol)
-    points = [(p.x, p.y) for p in (drawer.GetDrawCoords(i) for i in range(mol.GetNumAtoms()))]
+
+    def start(dx, dy):
+        drawer = (rdMolDraw2D.MolDraw2DSVG if svg else rdMolDraw2D.MolDraw2DCairo)(
+            *size
+        )
+        options = drawer.drawOptions()
+        options.fixedBondLength = SCALE  # per unit, despite its name
+        if dark:
+            rdMolDraw2D.SetDarkMode(options)
+        # the background by hand: rdkit's own moves with the offset below
+        # and would leave the strip of the legend bare
+        options.clearBackground = False
+        drawer.SetFillPolys(True)
+        drawer.SetColour(background)
+        drawer.DrawRect(Point2D(0, 0), Point2D(*size), True)
+        drawer.SetOffset(round(dx), round(dy))
+        drawer.DrawMolecule(mol)
+        atoms = range(mol.GetNumAtoms())
+        return drawer, [(p.x, p.y) for p in (drawer.GetDrawCoords(i) for i in atoms)]
+
+    # rdkit centers the box around the ligand and its labels; the ring of
+    # residues goes around the mean of the atoms. Drawn once to see where
+    # that lands, then again with it in the middle of the square above the
+    # legend: the ring was cut at one side otherwise (2RH1, carazolol).
+    cx, cy = _center(start(0, 0)[1])
+    drawer, points = start(side / 2 - cx, side / 2 - cy)
     places, _ = layout(points, [sorted(r["atoms"]) for r in residues])
 
     def line(a, b, color, dashed, width=2):
@@ -356,7 +403,9 @@ def draw(mol, residues, svg=True, selected=(), background=(1, 1, 1), ink=(0, 0, 
     drawer.SetFontSize(FONT)
     for number, (residue, (x, y)) in enumerate(zip(residues, places)):
         drawer.SetColour(circle(x, y, SIZE / 2, residue["kind"], number in selected))
-        drawer.DrawString(residue["label"][0], Point2D(x, y - 8), 0, True)  # 0: centered
+        drawer.DrawString(
+            residue["label"][0], Point2D(x, y - 8), 0, True
+        )  # 0: centered
         drawer.DrawString(residue["label"][1], Point2D(x, y + 9), 0, True)
     # legend: the kinds, then the contacts
     drawer.SetFontSize(font)
@@ -449,5 +498,8 @@ def ligand_2d(ligand="", cutoff=CUTOFF, filename="", quiet=1, *, _self=cmd):
     if not int(quiet):
         for residue in residues:
             names = sorted({name for name, _ in residue["contacts"]}) or ["near"]
-            print(" %s %s (%s): %s" % (*residue["label"], residue["kind"], ", ".join(names)))
+            print(
+                " %s %s (%s): %s"
+                % (*residue["label"], residue["kind"], ", ".join(names))
+            )
     return residues

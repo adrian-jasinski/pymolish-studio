@@ -4,6 +4,24 @@ CHANGE LOG
 
 2026-11-23 pymolish-studio
 
+	* 4.43.2
+
+	* Fix: the 2D picture of a ligand was cut at one side
+	  - The ring of residues goes around the mean of the ligand's
+	    atoms, rdkit centers the box around the ligand: with atoms
+	    to one side of the box (carazolol in 2RH1) circles ran over
+	    the edge of the picture, in the panel and in a saved file.
+	    The mean of the atoms is now the middle of the picture.
+	  - The panel draws the picture as large as it has room for;
+	    the ceiling of 125 % is gone.
+	  - Tried in the real window on 2RH1, docked from 259 to 600 px
+	    wide and floating from 300 x 300 to 800 x 1000: every circle
+	    whole, the picture inside the panel.
+	  - Step 24d. Not tried: dragging the edge of the floating panel
+	    with the mouse, and scales other than 150 %.
+
+2026-11-23 pymolish-studio
+
 	* 4.43.1
 
 	* Fix: the window stayed dead after a change of the UI scale
