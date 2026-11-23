@@ -1,9 +1,20 @@
 # 11 — Color palettes
 
 **2026-11-23, draft 5: 11c below adds explicit CPK coloring; planned at
-4.43.0, not built.** Question 56 was answered the same day: standard CPK
+4.43.0 and built the same day in 4.50.0: see the note below.** Question 56 was answered that day: standard CPK
 atom colors within selected residues. Object/chain palettes already
 shipped are unchanged by this plan.
+
+**11c done 2026-11-23 in 4.50.0.** `color_cpk selection [, ball_and_stick]`
+in `modules/pymol/palettes.py`, with the rows by element > CPK and by rep >
+ball and stick > "CPK (balls only)". 28 elements have a color, any other is
+FF1493; the colors are given as RGB values, so no named color is defined
+and no palette changes. Looked at on a black and on a white background.
+Not as planned: the table is the "CPK Colours" table of the RasMol manual
+as known. The Jmol page named below gave no table to a text fetch, the
+RasMol manual and Wikipedia's table could not be read either; only FF1493
+for other elements was confirmed (question 64). Left out: representations
+other than ball_and_stick as a target.
 
 ## 11c — CPK for selected residues, with an explicit color target
 

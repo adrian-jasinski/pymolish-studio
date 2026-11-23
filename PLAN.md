@@ -41,7 +41,14 @@ Extended 2026-11-23 at 4.43.0 from eleven new drafts: repairs 24d and
 performance result is claimed.** Recommendations awaiting a choice are
 listed under “Waiting for the user”.
 
-**Shipped state, checked 2026-11-23: still 4.43.0.** Built since 4.19.43,
+Built the same day, 4.43.1 to 4.51.0: the first ten rows of the open-work
+table of that morning (27d, 24d, 35a, 28b with 22d and 22e, 22f, 35b, 34a
+and 34b, 34c, 11c, 36a). Steps 22, 28, 34, 35 and 36 are finished and step
+11 is closed again; of step 27 the check on Windows and macOS (27c) is left.
+Questions 57 to 59 were built with their recommended answers; five new
+questions, 61 to 65, came out of the work.
+
+**Shipped state, checked 2026-11-23: 4.51.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
@@ -55,10 +62,17 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.36.0 to 4.40.0 | Step 30: the 2D picture with circles, tones and a larger legend; the table's alignment and icon; the live UI scale with sharp icons; the preset menu with three submenus, and no preset colors a cartoon or a surface; a clean row for crystallization additives; Undo and Redo for a row of the preset menu. |
 | 4.41.0 | Palette `halo` (11b): five colors of a brand book and seven added ones. |
 | 4.42.0 to 4.43.0 | Step 32: an icon on each of the four buttons under the object list; a Movie button in the action toolbar that opens and closes the Timeline panel. |
+| 4.43.1 to 4.43.2 | Two repairs: the UI scale waits for the next start on WSLg, where the rebuilt window came back late or not at all; the 2D picture of a ligand is no longer cut at one side. |
+| 4.44.0 | One click recalls a scene. |
+| 4.45.0 to 4.46.0 | The property table: columns kept in the session (the new session key `pymolish`), counted columns, Follow, the row of a picked atom, stars. |
+| 4.47.0 | Scenes keep the style of presets and colorings. |
+| 4.48.0 to 4.49.0 | The representation `ball_and_stick`; ligands drawn with it by the presets and when a structure is loaded. |
+| 4.50.0 to 4.51.0 | `color_cpk`; `ligand_next`, the next ligand with its polar contacts. |
 
 Of the ten features requested on 2026-11-20, nine have a working version.
 The tenth, the surface looks, waits for the grid surface of 1b. Steps 20, 26,
-29 and 32 are finished.
+29 and 32 are finished. Of the eleven drafts of 2026-11-23, nine are built;
+the sequence window (33) and the chat (31) are not started.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -79,55 +93,46 @@ Questions gate the dependent slice, not unrelated repairs.
 
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
-| 1 | **27d, then 27c** — [Scale freeze](docs/plans/27-ui-scale.md) | Reproduce the confirmed toolbar UI-scale freeze at 150 % → 120 %; inspect live scaling and its resize callbacks. Repair the demonstrated cause, or use the accepted next-start fallback before an unsafe live path. Verify Windows/macOS as well as the reported platform. | A subprocess timeout/heartbeat regression and real GUI repaint/input checks; unsupported live scaling is reported distinctly. |
-| 2 | **24d** — [Resizable ligand 2D](docs/plans/24-ligand-2d.md) | Fix dock/floating-window resizing and fit the complete SVG/legend to the available area; keep picking aligned after scale changes. | Shrink/grow repeatedly, docked/floating, crowded ligand, fractional DPI; no crop, freeze or stale click coordinates. |
-| 3 | **35a** — [One-click scenes](docs/plans/35-scene-appearance.md) | Click or Enter recalls once; rename, drag, right click and list refresh do not trigger recall. | Interaction tests and a real mouse check. |
-| 4 | **28b + 22d, 22e** — [Session key](docs/plans/28-session-format.md) and [remaining table work](docs/plans/22-property-table.md) | Build the shared `pymolish` key with its first consumer: column order/hidden/empty columns. Computed columns, Columns menu, follow mode, remembered window size and picked-atom row selection remain. | Unknown session entries survive; table layout reloads; computed values and selection checked. No unused persistence framework built ahead. |
-| 5 | **22f** — [Stars](docs/plans/22-property-table.md) | Three outline/filled stars for a 0–3 integer object property, mouse and keyboard editing, sorting and numeric import/export. Independent of 28b. | All ratings/clicks, invalid values, sorted row identity and session/CSV round trips. |
-| 6 | **35b** — [Scene appearance](docs/plans/35-scene-appearance.md) | Store cartoon type, relevant visual settings at their actual scopes, representation color overrides and referenced custom colors; recall through panel, command and movies. | Store A, apply preset/color B, recall A and B; settings and images match, including reload, without restoring/deleting molecular data. |
-| 7 | **34a, 34b** — [Independent ball-and-stick](docs/plans/34-ball-and-stick.md) | A new representation with its own visibility, colors, ball scale (default 0.31), bond radius and single/double/triple/aromatic display; S/H/C, commands, ray, picking, sessions and scene integration. | Changing it preserves line/stick/sphere settings and colors; renderer, old/new session and scene checks pass. |
-| 8 | **34c** — [Ligand preset defaults](docs/plans/34-ball-and-stick.md) | Use the new model for visible ligands in all applicable molecular presets, including pretty/publication/glass; preserve protein colors and existing hidden sphere/stick overrides. | Preset matrix on protein/ligand/water/ion; A/B scene recall and Undo. Depends on 34a/b and 35b. |
-| 9 | **11c** — [CPK colors](docs/plans/11-color-palettes.md) | Standard CPK atom colors within selected residues, confirmed by the user; include a ball-and-stick-only target. | Documented scheme, menu/command equivalence, target isolation and scene round trip. |
-| 10 | **36a** — [Next ligand with contacts](docs/plans/36-ligand-navigation.md) | Next/Previous ligand, protein polar contacts and site zoom; shared discovery, owned temporary contacts and an assignable shortcut. | Wrap/reverse, absent/deleted ligands, host selection, cleanup and unchanged protein colors. |
-| 11 | **33a–33c** — [Sequence alignment window](docs/plans/33-sequence-window.md) | Separate resizable window with loaded chains and FASTA import/alignment in its first release, linked 2D/3D selection and secondary structure, genuine MSA with the chosen backend, then pairwise/multiple-structure fitting and persistence. | Residue/gap mapping, unchanged coordinates for sequence-only work, fit statistics/Undo, MSA and session/export checks. |
-| 12 | **31a, 31c, then 31b** — [Chat and agent tools](docs/plans/31-ai-agents.md) | Built-in chat is required; live discovery of this fork's public commands/settings/presets, actual results/errors, cancellation and reviewed execution. External connector reuses it. Questions 41–48 resolve route/UI/dependencies; optional subscription login 31d is only an investigation. | Catalog coverage and provider stand-ins; live fork-specific workflows with each chosen provider. No promise of login entitlement. Can start independently of steps 33–36. |
-| 13 | **24c** — [Remaining 2D contacts](docs/plans/24-ligand-2d.md) | Pocket contour, solvent halos, metal contacts, viewport dashes, distance tooltips and Tab through residues. | Reference picture, keyboard check, owned dashes removed on close. |
-| 14 | **15e** — [Five effects](docs/plans/15-presets.md) | Color steps, fog toward white, cylindrical helices, measured ambient occlusion in soft look, balls in glass. Color themes already shipped in 4.35.0. | Preset checks and images; scenes preserve the added visual settings. |
-| 15 | **1b** — [Grid surface experiment](docs/plans/01-performance-gpu.md) | Signed distance grid/marching cubes as a second surface type and a smoothness value. Compare 1aon and 4v6x at two values; user judges the experiment. | Actual times and pictures against today's surface. |
-| 16 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan using the grid-surface result from order 15; no new surface-look setting before that. | New detailed section grounded in the experiment. |
-| 17 | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | Persist the shot list under step 28's key; remove 58 Program rows; dragging on the strip. Core keyframe strip stays. Exercise step 35's style recall in playback. | Shot-list session compatibility, menu and playback tests. |
-| 18 | **21f** — [Rendering details](docs/plans/21-commercial-features.md) | Cap sphere mode at 9 with its obsolete test/images removed; store background image in its setting; FXAA. | Checks per slice and viewport images. |
-| 19 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. Follows FXAA's pass. | Frame times and pictures on black/white. |
-| 20 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. | Real-window responsiveness, suite and sanitizer checks. |
-| 21 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards. | Existing undo/jira cases pass before their marks are removed. |
+| 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Question 61. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
+| 2 | **33a–33c** — [Sequence alignment window](docs/plans/33-sequence-window.md) | Separate resizable window with loaded chains and FASTA import/alignment in its first release, linked 2D/3D selection and secondary structure, genuine MSA with the chosen backend, then pairwise/multiple-structure fitting and persistence. | Residue/gap mapping, unchanged coordinates for sequence-only work, fit statistics/Undo, MSA and session/export checks. |
+| 3 | **31a, 31c, then 31b** — [Chat and agent tools](docs/plans/31-ai-agents.md) | Built-in chat is required; live discovery of this fork's public commands/settings/presets, actual results/errors, cancellation and reviewed execution. External connector reuses it. Questions 41–48 resolve route/UI/dependencies; optional subscription login 31d is only an investigation. | Catalog coverage and provider stand-ins; live fork-specific workflows with each chosen provider. No promise of login entitlement. Can start independently of step 33. |
+| 4 | **24c** — [Remaining 2D contacts](docs/plans/24-ligand-2d.md) | Pocket contour, solvent halos, metal contacts, viewport dashes, distance tooltips and Tab through residues. | Reference picture, keyboard check, owned dashes removed on close. |
+| 5 | **15e** — [Five effects](docs/plans/15-presets.md) | Color steps, fog toward white, cylindrical helices, measured ambient occlusion in soft look, balls in glass. Color themes already shipped in 4.35.0. | Preset checks and images; scenes preserve the added visual settings (add them to the list in `MovieScene.cpp`; the inventory test fails until then). |
+| 6 | **1b** — [Grid surface experiment](docs/plans/01-performance-gpu.md) | Signed distance grid/marching cubes as a second surface type and a smoothness value. Compare 1aon and 4v6x at two values; user judges the experiment. | Actual times and pictures against today's surface. |
+| 7 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan using the grid-surface result from order 6; no new surface-look setting before that. | New detailed section grounded in the experiment. |
+| 8 | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | Persist the shot list under the session key `pymolish` (shipped with 28b in 4.45.0: `pymol.session_extra`); remove 58 Program rows; dragging on the strip. Core keyframe strip stays. Playback already recalls the style of scenes (35b, tested in 4.47.0). | Shot-list session compatibility, menu and playback tests. |
+| 9 | **21f** — [Rendering details](docs/plans/21-commercial-features.md) | Cap sphere mode at 9 with its obsolete test/images removed; store background image in its setting; FXAA. | Checks per slice and viewport images. |
+| 10 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. Follows FXAA's pass. | Frame times and pictures on black/white. |
+| 11 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. | Real-window responsiveness, suite and sanitizer checks. |
+| 12 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards. | Existing undo/jira cases pass before their marks are removed. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 | any time | **23b** — [Rows moved by dragging](docs/plans/23-rename-in-panel.md) | Reorder and regroup in the Objects panel with the mouse. Carried over from step 3. | The drop goes through a function a test calls. |
 | any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
 
 The earlier surface dependencies are preserved: grid experiment before surface
-looks; FXAA before outline. New scene storage precedes the ligand preset
-switch; the new representation and color isolation precede ligand navigation.
-The alignment-engine and AI dependencies are explicit decisions, not already
-approved additions. 5c stays shelved; builds stay on GitHub Actions.
+looks; FXAA before outline. The alignment-engine and AI dependencies are
+explicit decisions, not already approved additions. 5c stays shelved; builds
+stay on GitHub Actions.
 
 The toolbar baseline remains the measurement from 4.43.0 at 150 %: 1236 px
-of content, a 1244 px window. No new button width was measured in this run;
-steps 31 and 33 must check space before adding or repurposing controls.
+of content, a 1244 px window. The versions up to 4.51.0 added no button to
+the bar and did not measure it again; steps 31 and 33 must check space
+before adding or repurposing controls.
 
 ## Coverage of the 2026-11-23 drafts and superseded decisions
 
 | Draft | Plan | Earlier decision reconciled |
 | --- | --- | --- |
-| 1 — ligand image/panel does not fit | 24d | The existing resize path needs a regression fix despite 24b/30a's earlier successful pictures. |
+| 1 — ligand image/panel does not fit | 24d, built in 4.43.2 | The existing resize path needs a regression fix despite 24b/30a's earlier successful pictures. |
 | 2 — sequence window, alignments, secondary structure | 33a–33c | Replaces “sequence viewer stays as it is” in steps 3/22; retains the current strip during delivery. Loaded chains plus FASTA in the first release confirmed in answer 54. Additional options: search, linked selection, consensus, identity, export and fit statistics. |
-| 3 — independent ball-and-stick | 34a/b | The existing preset is not a separate representation; shared sphere/stick settings no longer satisfy this request. |
-| 4 — default ligand representation in presets | 34c / 15 | Supersedes the old 0.18/0.13 ligand recipe and exclusion of pretty/publication/glass. |
-| 5 — CPK by residues | 11c | Answer 56 confirms standard CPK atom colors within selected residues. |
-| 6 — scenes preserve preset style and colors | 35b | Extends existing scene color/visibility storage to the visual state it currently lacks; does not turn recall into full-session rollback. |
-| 7 — one-click scene switching | 35a / 3 | Replaces Enter/double-click-only recall; keyboard and rename/reorder remain. |
-| 8 — freeze on 150 → 120 | 27d, then 27c | Answer 53 confirms toolbar UI scale at 150 % → 120 %. Reliability must be established before claiming live scale support; the accepted next-start fallback remains. |
-| 9 — three stars in the property table | 22f | Promotes the explicitly deferred `stars` idea into requested work. |
-| 10 — next ligand with protein contacts and zoom | 36a | Adds a workflow beyond Ctrl+L's existing zoom-only helper; shortcut choice is open. |
+| 3 — independent ball-and-stick | 34a/b, built in 4.48.0 | The existing preset is not a separate representation; shared sphere/stick settings no longer satisfy this request. |
+| 4 — default ligand representation in presets | 34c / 15, built in 4.49.0 | Supersedes the old 0.18/0.13 ligand recipe and exclusion of pretty/publication/glass. |
+| 5 — CPK by residues | 11c, built in 4.50.0 | Answer 56 confirms standard CPK atom colors within selected residues. |
+| 6 — scenes preserve preset style and colors | 35b, built in 4.47.0 | Extends existing scene color/visibility storage to the visual state it currently lacks; does not turn recall into full-session rollback. |
+| 7 — one-click scene switching | 35a / 3, built in 4.44.0 | Replaces Enter/double-click-only recall; keyboard and rename/reorder remain. |
+| 8 — freeze on 150 → 120 | 27d, built in 4.43.1; 27c open | Answer 53 confirms toolbar UI scale at 150 % → 120 %. Reliability must be established before claiming live scale support; the accepted next-start fallback remains. |
+| 9 — three stars in the property table | 22f, built in 4.46.0 | Promotes the explicitly deferred `stars` idea into requested work. |
+| 10 — next ligand with protein contacts and zoom | 36a, built in 4.51.0 | Adds a workflow beyond Ctrl+L's existing zoom-only helper; shortcut choice is open. |
 | 11 — chat control, aware of the fork | 31 | Already planned, unbuilt; now in-app chat plus a live capability catalog is required, not just an external connector. |
 
 ## Validation of the original draft
@@ -165,19 +170,41 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-Open choices are listed below, with recommendations. The new drafts request
-all eleven outcomes; these questions refine behavior, not whether to plan
-them. No unanswered recommendation is recorded as the user's decision.
+Open choices are listed below, with recommendations. No unanswered
+recommendation is recorded as the user's decision.
 Questions 53, 54 and 56 were answered on 2026-11-23 and no longer wait:
 
 | No. | Confirmed decision | Plan |
 | --- | --- | --- |
-| 53 | The freeze occurs when changing toolbar UI scale from 150 % to 120 %. | [27d](docs/plans/27-ui-scale.md) |
-| 54 | The first sequence-window release includes loaded structure chains and FASTA import/alignment, with helix/sheet/coil for loaded structures. | [33](docs/plans/33-sequence-window.md) |
-| 56 | Standard CPK atom colors within selected residues. | [11c](docs/plans/11-color-palettes.md) |
+| 53 | The freeze occurs when changing toolbar UI scale from 150 % to 120 %. | [27d](docs/plans/27-ui-scale.md), built in 4.43.1 |
+| 54 | The first sequence-window release includes loaded structure chains and FASTA import/alignment, with helix/sheet/coil for loaded structures. | [33](docs/plans/33-sequence-window.md), open |
+| 56 | Standard CPK atom colors within selected residues. | [11c](docs/plans/11-color-palettes.md), built in 4.50.0 |
 
 The alignment backend (55) remains undecided; answer 54 does not approve a
 new dependency. These decisions are also recorded in `PLAN-DONE.md`.
+
+Five questions came out of the building of 4.43.1 to 4.51.0. Each has a
+built answer, so nothing waits for them; say so if another one is wanted.
+The first two touch what a session file contains, which `AGENTS.md` asks
+to be agreed: they were built because the plans of steps 34 and 35 named
+this layout, and they are one line each to take back.
+
+| No. | Question | Built |
+| --- | --- | --- |
+| 61 | On WSLg a change of the UI scale left a dead window for 0.1 to 4.6 s, sometimes longer. Wait for the next start there, or keep the change in the running window and accept the gap? | The next start, with a message that says why (4.43.1). Other displays still change at once. |
+| 62 | What may a session file hold that PyMOL does not know? | Three things, each read by this program and passed over by PyMOL 3.2.0a (tried): the key `pymolish` (table columns, the ligand walk), a seventh item in the record of a scene (its style), and the key `pymolish_unique_settings` (settings of atoms that PyMOL does not have; in its own list PyMOL ends when it saves them). A session without these features has none of the three. |
+| 63 | Should a loaded structure open with its ligands as `ball_and_stick`, as the presets now draw them, or as sticks as before? | `ball_and_stick` (4.49.0): the same picture from a load and from a preset. One line in `Selector.cpp` to take back. |
+| 64 | The colors of `color_cpk` are the CPK table of the RasMol manual as known; the manual could not be read in that run. Compare, or name another CPK table? | The table as written, 28 elements; only the color for other elements, FF1493, was confirmed against a source (4.50.0). |
+| 65 | Since one click recalls a scene, a scene is picked for Update, Rename and Delete with a right click or the arrow keys. Enough, or a menu on the row? | Right click and arrow keys (4.44.0). |
+
+Built with the recommended answer, without an answer from the user; say so
+if the other one is wanted:
+
+| No. | Question | Built |
+| --- | --- | --- |
+| 57 | What does clicking star N do? | An empty star rates up to it, a filled one down to the one before (4.46.0). The other reading: any click adds or removes one. |
+| 58 | Replace Ctrl+L or keep its zoom-only action? | Kept; `ligand_next` has Ctrl+Shift+M and Ctrl+Shift+H, changeable in the shortcut editor, and three rows in Display > Zoom (4.51.0). |
+| 59 | Ball-and-stick bond colors? | Each half of a bond in the color of its atom's ball (4.48.0). The other: uniform dark bonds with a color of their own. |
 
 Questions 49 to 52 (step 32) were answered on 2026-11-20 and built the
 same day in 4.42.0 and 4.43.0; the answers are under "Decided by the
@@ -227,9 +254,6 @@ Remaining choices from the new drafts:
 | No. | Question | Recommendation / alternatives |
 | --- | --- | --- |
 | 55 | Which true MSA engine? | Optional local MAFFT executable (dependency approval/packaging needed), or a larger native progressive aligner. Reference-based fits alone do not complete MSA. [33](docs/plans/33-sequence-window.md). |
-| 57 | What does clicking star N do? | Empty sets rating N, filled sets N−1; alternative any empty/filled click adds/removes one. Both keep three outlines and a value 0–3. [22f](docs/plans/22-property-table.md). |
-| 58 | Replace Ctrl+L or keep its zoom-only action? | Keep it; make Next ligand with contacts assignable and menu-accessible. Alternative: Ctrl+L becomes the richer workflow. [36](docs/plans/36-ligand-navigation.md). |
-| 59 | Ball-and-stick bond colors? | Half-bonds follow endpoint ball colors; alternative uniform dark bonds with an independent override. [34](docs/plans/34-ball-and-stick.md). |
 | 60 | How does SEQ open the new window? | Keep the strip toggle, add alignment window in its context menu and Display > Panels; alternative SEQ opens the new window and Display keeps the strip toggle. [33](docs/plans/33-sequence-window.md). |
 
 One answer was cut off: question 27 reads "paint roller icon. rest". The
@@ -240,19 +264,32 @@ shortcuts for the UI scale (Ctrl+=, Ctrl+-, Ctrl+0) and the option
 `--ui-scale`; the five themes as palettes and backgrounds of their own; from step 30,
 the tones of the 2D picture in a PNG written by `ligand_2d` (rdkit draws
 it), and glycerol and other additives sorted out of the 2D panel's list of
-ligands.
+ligands. From 4.43.1 to 4.51.0: sequence length as a counted column of the
+table, and a header "Stars" in place of the property's name "stars";
+transparency and quality settings of its own for `ball_and_stick`, and a
+bond color of its own; `ball_and_stick` for ligands in the presets "simple"
+and "default"; settings of single states and the secondary structure in a
+scene; Undo of a step of `ligand_next`.
 
 The user's to do, not decisions:
 
 - Push the remaining `feature12` commits and check/open its pull request.
   Local git inspection on 2026-11-23 finds an `origin/feature12` tracking
-  branch, so the previous “local only” statement is obsolete. Remote/PR
-  status was not refreshed in this planning run; no push or merge is done.
+  branch. The ten versions 4.43.1 to 4.51.0 are local commits; no push or
+  merge was done, and remote/PR status was not looked at.
 - Review the available CI runs, then the run after the remaining commits
   are pushed: the Windows icon, release notes, `chem`/`fix` extras on three
-  systems and live UI scaling. Current CI status was not checked here;
-  the old scale test prints fallback status, and 27d/27c must distinguish
-  that from working live scaling.
+  systems. For 27c read the line that
+  `test_scale_change_keeps_the_window_alive` prints in the Windows and
+  macOS jobs: "live ... shown after" with a time, or "unsupported on ...".
+  None of 4.43.1 to 4.51.0 has run in CI: the suite and the sanitizer
+  build were run on Linux only.
+- Compare `palettes.CPK` (`modules/pymol/palettes.py`) with the "CPK
+  Colours" table of the RasMol manual (question 64).
+- Look at one thing that went wrong in the run of 2026-11-23: a helper of
+  the freeze test sent Ctrl+A, "120", Enter once, at about 10:06, to
+  whatever window had the focus on the Windows desktop. The working tree
+  was unchanged; an editor or a terminal that had the focus may show it.
 - Remove the pymolish plugin from `~/.pymol/startup` (still there on
   2026-11-20): it wins over the native commands.
 - `plan_images/` (the pictures of the request of 2026-11-20) is ignored by

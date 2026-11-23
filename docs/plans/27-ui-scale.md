@@ -10,6 +10,23 @@ scale work.** Question 53 answered 2026-11-23: the toolbar UI-scale change
 from 150 % to 120 % causes the freeze. Planned at 4.43.0; source inspected,
 no freeze reproduced or root cause established in this run.
 
+**27d done 2026-11-23 in 4.43.1.** Reproduced on WSLg (X11, Qt 6.12, two
+screens, input sent through the X server). The event loop never blocks.
+The window manager maps the native window that was destroyed and made again
+late: 0.1 to 4.6 s over 30 changes between 150 % and 120 %, most of them
+1.5 s, and in other runs not within 3.5 s, while Qt reports the window
+visible. Destroying and making the native window again is what it does
+late, with or without a new scale (0.2 to 1.8 s in six tries); plain hide
+and show is immediate; a pause of 200 or 800 ms before showing changes
+nothing; a second show or a raw map request does not help. So
+`theme.live_scale_blocker` names WSLg, the scale is saved for the next
+start there, and the message says why (question 61). Also fixed: Enter in
+the field applied the change twice, 30 ms apart. New test: a child process
+with a heartbeat changes the scale four times and reports "live ... shown
+after" or "unsupported". Left out: the cause inside WSLg's window manager;
+Windows, macOS and Linux outside WSL (27c), where the live change is still
+tried.
+
 As built, and where it differs from the plan below:
 
 - `theme.set_scale_live` (35 lines) finds the Qt library through

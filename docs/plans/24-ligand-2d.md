@@ -5,9 +5,22 @@
 (24b) shipped in 4.33.0; contour and halos (24c) remain open.
 
 **2026-11-23, draft 1: 24d below repairs panel resizing and picture fitting
-before 24c. Planned at 4.43.0, not built or reproduced in a GUI in this run.**
+before 24c. Planned at 4.43.0 and built the same day in 4.43.2: see the note below.**
 The earlier statement that the picture scales describes the intended path,
 not proof that all dock/window sizes work. Step 30's picture styling stays.
+
+**24d done 2026-11-23 in 4.43.2.** Measured first in the real window on
+2RH1: the picture always fitted its label, at every size of the panel. The
+picture itself was cut: `layout` puts the ring of residues around the mean
+of the ligand's atoms, rdkit centers the box around the ligand, and for
+carazolol the two are far enough apart that three circles ran over the
+right edge. `draw` now draws the molecule once to see where the mean lands
+and again with it in the middle of the square above the legend; the saved
+SVG and PNG are fixed with it. The panel's ceiling of 125 % is gone. Tried
+on 2RH1 docked from 259 to 600 px wide and floating from 300 x 300 to
+800 x 1000: every circle whole. Left out: dragging the floating panel's
+edge with the mouse, scales other than 150 %. The picture above is from
+before the fix.
 
 ![2RH1, carazolol](../img/ligand-2d.png)
 

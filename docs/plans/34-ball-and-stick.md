@@ -1,8 +1,29 @@
 # 34 — An independent ball-and-stick representation
 
 [Roadmap](../../PLAN.md) · Request 2026-11-23, drafts 3 and 4 · **Planned
-at 4.43.0; not built.** No renderer benchmark or reference image made in this
-run. Values below are requested defaults or proposals, not measurements.
+at 4.43.0 and built the same day, 4.48.0 and 4.49.0: see the note below.**
+The plan itself made no benchmark; its values are requested defaults or
+proposals, and what was measured is in the note.
+
+**34a and 34b done 2026-11-23 in 4.48.0, 34c in 4.49.0; the step is
+finished.** As built: representation 21 (`cRepBallAndStick`), made by the
+stick code with its own visibility bit; settings 798 to 800,
+`ball_and_stick_scale` (0.31), `ball_and_stick_bond_radius` (0.12) and
+`ball_and_stick_color`, all at atom level, so `set name, value, selection`
+does what the examples below say; "atomic" as color is by element. Bonds
+always show their order; each half has the color of its atom's ball
+(question 59); an atom without bonds is a ball. Measured in the window on
+1AON with all 59,192 atoms: 23.6 ms a frame, against 24.2 ms for sticks
+plus spheres of the same sizes and 23.0 ms for sticks alone. A real click
+on a ball picks its atom. Sanitizer runs clean. Different from the
+contract below: the quality settings of sticks are shared and it is never
+transparent (a `ponytail:` note in `RepCylBond.cpp`); no bond color of its
+own; memory and ray time were not measured. Found with PyMOL 3.2.0a: it
+loads, ray traces, recalls scenes and saves such a session, but ended when
+it saved one with a setting it does not know on an atom, so those are
+written under `pymolish_unique_settings` (question 62); it does not draw
+the representation. 34c: twenty presets and the view at load (question
+63); "simple" and "default" still draw ligands as lines.
 
 **Ball-and-stick gets its own visibility, sizes, colors and bond orders.
 Showing, hiding or styling it must not change lines, sticks or spheres.**

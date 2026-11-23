@@ -9,6 +9,18 @@ representation (34) needs its own compatibility tests: the old experiment
 with extra dictionary keys below does not validate new representation bits
 or scene payloads. No output format is changed by this planning run.
 
+**28b done 2026-11-23 in 4.45.0; the step is finished.**
+`modules/pymol/session_extra.py`, 28 lines: `entries`, a dictionary the
+features read and write, saved as `session["pymolish"]` with a version and
+restored on load; reinitialize empties it; an entry of a newer version is
+kept and written back with its version number. A session of a program that
+used none of the features has no such key. Users so far: `table` (4.45.0)
+and `ligand_next` (4.51.0). PyMOL 3.2.0a loads a `.pse` with the key
+(tried). Two more things a session may now hold, outside this key: a
+seventh item in a scene's record (35b) and the key
+`pymolish_unique_settings` (step 34); see question 62. Left out:
+`compare.py` was not extended; the check with PyMOL 3 was done by hand.
+
 [Roadmap](../../PLAN.md) · Request 2026-11-20 ("think if we need a new
 session format ... e.g. psex") · **28a done 2026-11-20 in 4.26.0.** 28b (the
 one session key for new data) is built with its first user, the table

@@ -5,6 +5,22 @@
 stuck to the Objects panel; Excel read with the standard library.
 Replaces the metadata table of [step 3](03-modern-ui.md); step 3 is closed.
 
+**22d and 22e done 2026-11-23 in 4.45.0, 22f in 4.46.0; the step is
+finished.** 22d: the order of the columns, the hidden and the empty ones go
+into the session under the key of 28b and come back also in a table that
+is open; a Columns button hides and shows columns and adds counted ones
+(atoms, residues, chains, states, weight, charge; not sequence length);
+Follow shows only the object of the current row; the size of the window is
+kept with the main window's layout. 22e: the row of the object an atom was
+picked or clicked in becomes the current one. Measured at 150 %: the row
+of buttons needs 440 px; a real click in the viewport selected the row.
+22f: a column "stars" that is always there, after the name; the click rule
+recommended in question 57; the header is the property's name, lowercase.
+Checked: the picture in the real window, dark theme; the clicks through
+Qt's own mouse path in the test. Left out: the light theme, scales other
+than 150 %, a refresh time for the large table (its test still passes its
+limit of 100 ms).
+
 **22a done 2026-11-20 in 4.27.0.** Differences from the plan below:
 
 - The widget is a `QTreeWidget` with rows that compare by value, not a

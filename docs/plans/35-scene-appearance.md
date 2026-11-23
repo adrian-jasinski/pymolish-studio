@@ -1,8 +1,26 @@
 # 35 — Scenes recall appearance, and open with one click
 
 [Roadmap](../../PLAN.md) · Request 2026-11-23, drafts 6 and 7 · **Planned
-at 4.43.0; not built.** Source inspected; the reported preset/recall failure
-has not been reproduced in a running window in this planning run.
+at 4.43.0 and built the same day, 4.44.0 and 4.47.0: see the note below.**
+The plan was written from the source, without a running window.
+
+**35a done 2026-11-23 in 4.44.0, 35b in 4.47.0; the step is finished.**
+35a: a left click or Enter recalls once; a right click and the arrow keys
+pick a row without recalling it (question 65). Tried with clicks sent
+through the X server, dark theme. 35b as built: `MovieScene` got a style
+(cartoon type per atom, the settings of atoms and bonds whichever they are,
+89 listed settings at the object and the global level, the RGB of the named
+colors referred to), written as a seventh item of the scene's session
+record (question 62); a six-item record loads as before and changes no
+style. `scene` got the keyword `settings`. Measured: ray-traced geometry
+and the viewport picture of A identical after B and back; 4V6X (239,306
+atoms) store 40 ms against 14 without style, recall 28 ms against 13;
+1.7 MB more in the session when every atom carries two settings and a
+cartoon type; a movie that visits two scenes brings each style; PyMOL
+3.2.0a loads and recalls such a session without the style; the sanitizer
+run is clean. Left out: settings of single states, secondary structure,
+Undo, the test with a redefined color that the scene does not use (only
+colors a scene refers to are kept, as planned).
 
 **Store scene A, apply a different preset or coloring, then recall A: its
 cartoon, ligand style and colors must return. One click on a scene recalls it.**

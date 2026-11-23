@@ -1,8 +1,21 @@
 # 36 — Next ligand with protein polar contacts
 
 [Roadmap](../../PLAN.md) · Request 2026-11-23, draft 10 · **Planned at
-4.43.0; not built.** No timing or GUI measurement in this run. Question 58
+4.43.0 and built the same day in 4.51.0: see the note below.** Question 58
 chooses the shortcut; the command and menu are required either way.
+
+**36a done 2026-11-23 in 4.51.0; the step is finished.**
+`modules/pymol/ligand_nav.py`, 158 lines: `ligand_next [selection
+[, step]]`, step 0 clears. Measured: 9 ms a step on 2RH1 (10 ligands),
+100 ms on 1AON (59,192 atoms, 7 ligands): no cache was added. Tried in the
+real window: the three rows of Display > Zoom, Ctrl+Shift+M and
+Ctrl+Shift+H, the picture, the 2D panel following, Clear. Different from
+the table below: there was no ligand or find menu, so the rows are in
+Display > Zoom; the position of the walk is kept with the session (the key
+of 28b), which also makes it the session's own; the site is every residue
+within 4 A; the contacts object is `ligand_contacts`, or
+`ligand_contacts_01` when the user has one of that name. Left out: Undo of
+a step, the light theme, step 31's catalog (not built).
 
 **Move to the next ligand, show it with its protein polar contacts and zoom
 to its binding site. Previous moves back through the same list.**

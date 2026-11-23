@@ -12,13 +12,27 @@ step 31 was rewritten for in-app chat and live discovery of fork commands.
 Earlier choices superseded by the new request are identified there; the
 historical release record is preserved.
 
-Decided by the user on 2026-11-23; these are plan decisions, not shipped work:
+**Built 2026-11-23, 4.43.1 to 4.51.0:** the ten milestones 27d, 24d, 35a,
+28b with 22d and 22e, 22f, 35b, 34a with 34b, 34c, 11c and 36a; their rows
+are the first ten of "Finished milestones of open steps". Steps 22, 28, 34,
+35 and 36 moved to "Finished steps", and step 11 is closed again.
 
-| Question | Decision | Open implementation |
+Decided by the user on 2026-11-23:
+
+| Question | Decision | State |
 | --- | --- | --- |
-| 53 | The reported freeze is the toolbar UI-scale change from 150 % to 120 %. | 27d, order 1; cause still to reproduce. |
-| 54 | The first sequence-window release includes loaded structure chains plus FASTA import/alignment, with secondary structure from loaded coordinates. | 33a, order 11; alignment backend (55) still undecided. |
-| 56 | Standard CPK atom colors within selected residues. | 11c, order 9. |
+| 53 | The reported freeze is the toolbar UI-scale change from 150 % to 120 %. | 27d, built in 4.43.1: reproduced on WSLg, where the scale now waits for the next start. 27c open, order 1. |
+| 54 | The first sequence-window release includes loaded structure chains plus FASTA import/alignment, with secondary structure from loaded coordinates. | 33a, open, order 2; alignment backend (55) still undecided. |
+| 56 | Standard CPK atom colors within selected residues. | 11c, built in 4.50.0 (`color_cpk`). |
+
+Not decided by the user, built with the recommended answer on 2026-11-23;
+each is still a question in `PLAN.md`:
+
+| Question | Built | Version |
+| --- | --- | --- |
+| 57 | A click on an empty star rates up to it, on a filled one down to the one before. | 4.46.0 |
+| 58 | Ctrl+L stays zoom only; the new action has Ctrl+Shift+M and Ctrl+Shift+H, which can be changed in the shortcut editor. | 4.51.0 |
+| 59 | Each half of a bond has the color of its atom's ball. | 4.48.0 |
 
 ## Finished steps
 
@@ -26,6 +40,12 @@ Decided by the user on 2026-11-23; these are plan decisions, not shipped work:
 | --- | --- | --- |
 | 0 | [UI engine research](docs/plans/00-ui-engine.md) | PySide6 + Qt Widgets; preserve the renderer while simplifying bindings. |
 | 3 | [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Named docks with a saved layout, the Objects panel in Qt, the action toolbar on top and the command area at the bottom, the dark theme, the UI scale, scenes as a dock, Qt menus. Closed on 2026-11-20 without its metadata table: the property table of [step 22](docs/plans/22-property-table.md) replaces it. Its open rows went to 22e (a picked atom selects its row), 23b (rows moved by dragging) and question 31 (scene buttons and sequence text drawn by the core); the spacing of dialogs is fixed when a dialog is touched. |
+| 36 | [Next ligand with polar contacts](docs/plans/36-ligand-navigation.md) | Requested, planned and built on 2026-11-23, 4.51.0, one slice: `ligand_next` walks the ligands of the 2D panel, shows each as `ball_and_stick` with the site as sticks and the polar contacts as dashes, zooms, and takes back at the next step only what it turned on. Ctrl+Shift+M and Ctrl+Shift+H; Ctrl+L stays zoom only (question 58). |
+| 35 | [Scenes recall appearance, one click](docs/plans/35-scene-appearance.md) | Requested, planned and built on 2026-11-23, 4.44.0 and 4.47.0, two slices. A click or Enter recalls a scene. A scene keeps the cartoon type, the settings of atoms, bonds and objects, the light and background settings and the definitions of the colors it uses, and takes away overrides that were not there. Its session record has a seventh item (question 62). |
+| 34 | [An independent ball-and-stick representation](docs/plans/34-ball-and-stick.md) | Requested, planned and built on 2026-11-23, 4.48.0 and 4.49.0, three slices. Representation 21 with its own visibility bit and three settings, built by the stick code; bonds show their order; the presets and the view at load draw ligands with it and write no sphere or stick setting. Settings of atoms that PyMOL does not know go under their own session key, because PyMOL 3.2 ends when it saves them. |
+| 28 | [Session format](docs/plans/28-session-format.md) | `.psex` in 4.26.0 (28a); the one session key `pymolish` for what the fork adds in 4.45.0 (28b), with the table columns as its first user and the walk of `ligand_next` as its second. The shot list of step 19 goes under it when that slice is built. |
+| 22 | [Property table](docs/plans/22-property-table.md) | 4.27.0 to 4.29.0 (the window, editing, import and export), 4.45.0 (columns in the session, counted columns, Follow, the row of a picked atom, the size between starts) and 4.46.0 (stars). Not built: sequence length as a counted column, coloring rows by a column, a 2D structure column. |
+| 11 | [Color palettes](docs/plans/11-color-palettes.md) | Five palettes and the toolbar button in 4.10.0, `halo` in 4.41.0, `color_cpk` in 4.50.0 (11c). The CPK table was written from what is known of the RasMol manual and not compared with it in that run (question 64). |
 | 32 | [Icons under the object list, a Movie button](docs/plans/32-footer-icons-movie-button.md) | Requested, planned and built on 2026-11-20, 4.42.0 and 4.43.0, two slices. The four buttons under the object list have an icon: the mouse mode with its name, SEQ with its letters, Wizard and the command line as the icon alone. A Movie button after Scenes in the action toolbar opens and closes the Timeline panel. |
 | 30 | [Eight repairs after a first look at 4.35.0](docs/plans/30-polish.md) | Requested, planned and built on 2026-11-20, 4.36.0 to 4.40.0, six slices: the 2D picture, the property table, the live UI scale, the preset menu and what a preset may color, a clean row for crystallization additives, Undo and Redo for a row of the preset menu. Questions 36 to 40 have built answers. |
 | 29 | [Version numbers](docs/plans/29-versioning.md) | The first number stays 4. The second goes up when something a user can see ships, the third for every other change to the program; plans, docs, CI and tests take no number. In `AGENTS.md` §5 since 2026-11-20; 4.20.0 is the first version under it. |
@@ -98,18 +118,18 @@ where the decision shipped, "open" with its order where it has not.
 
 | # | Decision | Where it goes |
 | --- | --- | --- |
-| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 20. |
+| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 11. |
 | 3 | The icon and the logo were generated with ChatGPT; the user owns them. They get "a license that is good for trade marks". | Done in 4.19.43: `data/pymol/icons/LICENSE`, a notice outside the two code licenses (unchanged copies travel with the program and may refer to it; a changed version needs its own). `docs/licenses.md`, plan 9. |
 | 4 | The release builds stay on GitHub Actions for now. | 5c is shelved; nothing was built for it. Plan 5. |
-| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 19. |
+| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 10. |
 | 6 | The ChimeraX object colors become a palette. | 15c. Done in 4.22.0. |
-| 7 | All five effects of 15e. | Open, order 14. |
-| 13 | "Decide by yourself." Decided as recommended: the shot list goes into the session file; the 58 Program rows of the Movie menu go; the keyframe strip of the core stays for now. | Step 19. Open, order 17. |
+| 7 | All five effects of 15e. | Open, order 5. |
+| 13 | "Decide by yourself." Decided as recommended: the shot list goes into the session file; the 58 Program rows of the Movie menu go; the keyframe strip of the core stays for now. | Step 19. Open, order 8. |
 | 15 | As recommended: blue hover in every menu; Orient acts only on what is visible. | Step 20. Done in 4.23.0. |
-| 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Open, order 18. |
+| 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Open, order 9. |
 | 18 | As recommended: idle OpenMP threads sleep at once. | 1b. Done in 4.23.1. |
-| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 21. |
-| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Open, order 15; moved up by the answer to question 25. |
+| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 12. |
+| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Open, order 6; moved up by the answer to question 25. |
 
 14 was answered by "release 17" (4.19.42).
 
@@ -124,7 +144,7 @@ applicable, the 2026-11-23 follow-up.
 | 22 | As recommended: the rename wizard stays as the fallback without a window. | [Plan 23](docs/plans/23-rename-in-panel.md). Done in 4.24.0. |
 | 23 | The 2D ligand drawing is our own code, rdkit allowed; interactive: selecting a residue in 2D selects it in 3D. | [Plan 24](docs/plans/24-ligand-2d.md); the selection goes both ways. Done in 4.32.0 (command) and 4.33.0 (panel). |
 | 24 | Shadows ray traced only at first. | [Plan 25](docs/plans/25-studio-effects.md), 25a. Done in 4.34.0. |
-| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up (order 15 now); the surface looks and the blob are planned again with its result; no surface look and no new setting before that. Open. |
+| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up (order 6 now); the surface looks and the blob are planned again with its result; no surface look and no new setting before that. Open. |
 | 26 | As recommended: one row, icons. The same day: Builder and Scenes show only the icon, the name on mouse-over; "Draw/Ray" becomes "Draw". | Builder, Scenes and Draw done in 4.20.0; the rest in 4.30.0. |
 | 27 | The paint roller. (The answer ends "rest", cut off.) | Done in 4.20.0 with "Bg". |
 | 28 | As recommended: live scale through Qt's private function, the "next start" message as fallback. | [Plan 27](docs/plans/27-ui-scale.md). Done in 4.31.0 on Linux; 27d investigates the new freeze report before platform verification in 27c, open at order 1. |
@@ -171,16 +191,27 @@ ones, the new ones win.
 
 ## Finished milestones of open steps
 
-Steps 1, 8, 15, 19, 21, 22, 23, 24, 25, 27 and 28 stay in the roadmap.
-These parts of them have shipped. The rows of steps 3, 11, 17, 18, 20, 26, 30
-and 32, which are finished, are kept here as the record of their milestones. The
-rows are not in order of time: the newest rows, 4.42.0 and 4.43.0, are 32a
-and 32b at the top; under them 4.41.0, 11b;
+Steps 1, 8, 15, 19, 21, 23, 24, 25 and 27 stay in the roadmap.
+These parts of them have shipped. The rows of steps 3, 11, 17, 18, 20, 22, 26,
+28, 30, 32, 34, 35 and 36, which are finished, are kept here as the record of
+their milestones. The rows are not in order of time: the newest, the ten rows
+of 2026-11-23 (4.43.1 to 4.51.0), are at the top, the last built first; under
+them 4.42.0 and 4.43.0, 32b and 32a; under them 4.41.0, 11b;
 under it the block 4.36.0 to 4.40.0, the six rows of step 30; the block before it, 4.20.0 to 4.35.0, is
 the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
+| 36 | 36a — the next ligand with its contacts | Done 2026-11-23 (4.51.0): [docs/plans/36-ligand-navigation.md](docs/plans/36-ligand-navigation.md). `ligand_next [selection [, step]]`; step 0 clears. Measured: 9 ms a step on 2RH1 (10 ligands), 100 ms on 1AON (59,192 atoms, 7 ligands), so no cache. Tried in the real window: the three rows of Display > Zoom, both keys, the 2D panel following, Clear. Different from the plan: the rows are in Display > Zoom (there is no ligand or find menu); the walk's position is kept with the session, under the key of 28b; the site is every residue within 4 A, not only those with a contact; contacts are made for the state that is shown. Not done: Undo of a visit, a look in the light theme. |
+| 11 | 11c — CPK colors | Done 2026-11-23 (4.50.0): `color_cpk selection [, ball_and_stick]`, rows in by element and in by rep > ball and stick. 28 elements, deep pink for the rest; colors as RGB values, no named color defined. Looked at on black and white. Different from the plan: the table could not be compared with the RasMol manual, whose pages and two other sources were unreachable in that run; only the fallback FF1493 was confirmed (question 64). The command takes "" or `ball_and_stick` as representation, no other. |
+| 34 | 34c — ligands in the presets | Done 2026-11-23 (4.49.0). Twenty presets tested on 1OKY with a ligand, water, a modified residue and an added zinc ion: the ligand is `ball_and_stick`, the ion, the water and the protein keep their representations and colors, the user's sphere and stick settings survive. Beyond the plan: the view a loaded structure opens with draws ligands the same way (question 63); "atomic" reaches atoms for `ball_and_stick_color`; `visible` and the side chain helper know the representation. "simple" and "default" still draw ligands as lines. |
+| 34 | 34a, 34b — the representation | Done 2026-11-23 (4.48.0): [docs/plans/34-ball-and-stick.md](docs/plans/34-ball-and-stick.md). Representation 21, settings 798 to 800, all at atom level; menu rows in show, hide, as and the color menu. Measured in the window on 1AON with all 59,192 atoms: 23.6 ms a frame, 24.2 ms as sticks plus spheres of the same sizes, 23.0 ms as sticks alone; memory not measured. Sanitizer run clean. Different from the plan: built by the stick code with a second visibility bit, so the quality settings of sticks are shared and it is never transparent; the bond radius is a setting of atoms, a bond as thin as its thinner end; no bond color of its own (question 59). Found: PyMOL 3.2.0a loads, ray traces and recalls scenes of such a session but ends when it saves one that has a setting it does not know on an atom, so those go under the session key `pymolish_unique_settings`; PyMOL drops them and does not draw the representation. |
+| 35 | 35b — scenes keep the style | Done 2026-11-23 (4.47.0): [docs/plans/35-scene-appearance.md](docs/plans/35-scene-appearance.md). Measured: ray-traced geometry and the viewport picture of A are the same after B and back; 4V6X (239,306 atoms) store 40 ms against 14 without style, recall 28 ms against 13; 1.7 MB more in the session when every atom has two settings and a cartoon type, nothing measurable without. Sanitizer run clean. PyMOL 3.2.0a loads and recalls such a session, without the style. Different from the plan: the style is a seventh item of the scene's own record, no side entry (question 62); global and object settings are a fixed list of 89 in `MovieScene.cpp`, checked by a test against what `preset.py` and `stage.py` write, atom and bond settings are kept whichever they are; global light settings follow `settings`, not `rep`. Not kept: settings of single states, secondary structure. Not checked: Undo. |
+| 22 | 22f — stars | Done 2026-11-23 (4.46.0). A column "stars" after the name; a delegate draws three stars and takes the clicks; the value is the object property. Different from the plan: the header reads "stars", the name of the property, so that an exported table comes back; a rating is typed like any cell (digit, then Enter) instead of a key acting at once; an exported table always has the column. Checked: the picture in the real window, dark theme; the clicks through Qt's own mouse path in the test, because a click sent through the X server does not reach a floating window under WSLg. Not checked: light theme, a fractional scale other than 150 %. |
+| 22, 28 | 28b, 22d, 22e — the session key, columns, Follow, pick | Done 2026-11-23 (4.45.0). `pymol.session_extra`: `session["pymolish"]` with a version and one entry per feature; an entry of a newer version survives load and save; PyMOL 3.2.0a loads a `.pse` with the key. The table: column order, hidden and empty columns in the session; a Columns button; counted columns atoms, residues, chains, states, weight, charge; Follow; the row of a picked atom; the size between starts. Measured at 150 %: the row of buttons needs 440 px. Different from the plan: sequence length is not a counted column; the size is saved with the main window's layout. |
+| 35 | 35a — one click recalls | Done 2026-11-23 (4.44.0). A left click or Enter recalls once; the list no longer listens to `itemActivated`. A right click and the arrow keys pick a row without recalling it, which is how a scene is picked for Update, Rename and Delete (question 65). Tried with clicks sent through the X server, dark theme only. |
+| 24 | 24d — the picture fits | Done 2026-11-23 (4.43.2). The cause was in the drawing, not in the panel: the ring of residues goes around the mean of the ligand's atoms, rdkit centers the box around the ligand, so circles ran over the edge for carazolol in 2RH1. The molecule is drawn once to see where the mean lands and again with it in the middle. The 125 % ceiling of the panel is gone. Tried on 2RH1 docked from 259 to 600 px and floating from 300 x 300 to 800 x 1000. Not tried: dragging the edge of the floating panel with the mouse, scales other than 150 %. |
+| 27 | 27d — the freeze after a change of scale | Done 2026-11-23 (4.43.1): [docs/plans/27-ui-scale.md](docs/plans/27-ui-scale.md). Reproduced on WSLg (X11, Qt 6.12, two screens): the event loop never blocks; the window manager maps the native window that was destroyed and made again 0.1 to 4.6 s late (30 changes, most of them 1.5 s), in other runs not within 3.5 s, and Qt reports it visible meanwhile. Plain hide and show is immediate; a pause before showing changes nothing; a second show does not help. So on WSLg the scale is saved for the next start and the message says why (question 61). Also fixed: Enter in the field applied the change twice. A subprocess test with a heartbeat reports per display whether the change ran live. Open: 27c. |
 | 32 | 32b — a Movie button in the action toolbar | Done 2026-11-20 (4.43.0): [docs/plans/32-footer-icons-movie-button.md](docs/plans/32-footer-icons-movie-button.md). After Scenes; a click opens the Timeline panel, a second click closes it; Space on the focused button does the same. Measured at 150 %: the bar needs 1236 px (1195 before), the window opens 1244 px wide, no button is in the overflow menu. Differs from the plan: the icon is `video` and the click also closes (answers 51 and 52); the "movie" rows of the menus got the same icon and `clapperboard.svg` is deleted. |
 | 32 | 32a — icons in the row under the object list | Done 2026-11-20 (4.42.0): the same plan. `mouse` with the name of the mode, `letter-text` with "SEQ", `wand-sparkles` and `square-terminal` alone; SEQ stands before Wizard. The icons of SEQ and of the command line are blue while on. Measured at 150 %: the row needs 254 px of its 292, the buttons are 23 px high (21 before); looked at in the dark and the light theme and after a live change to 200 %. Differs from the plan: the order, and "SEQ" keeps its letters (answer 50). On the way: the tooltip of SEQ is set on its action, the button takes it from there at every click. |
 | 11 | 11b — palette `halo` | Done 2026-11-20 (4.41.0): [docs/plans/11-color-palettes.md](docs/plans/11-color-palettes.md). Twelve colors: turquoise, blue, cyan, indigo and deep purple of the user's brand book as published, and between them pink, yellow, lime, red, green, magenta and orange in the same tone. Listed for any background: on black the deep purple has a contrast of 1.8 and the indigo 2.7; neighbors are at least 0.56 apart. Differs from the plan: the three questions got no choice, so the recommended options were built; the menu was looked at at 100 % only. |
