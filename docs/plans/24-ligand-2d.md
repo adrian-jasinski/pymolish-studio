@@ -4,6 +4,22 @@
 4.32.0:** the command `ligand_2d` with finder, layout and picture. The panel
 (24b) shipped in 4.33.0; contour and halos (24c) remain open.
 
+**24c done 2026-11-23 in 4.56.0; the step is finished.** As built: the
+pocket's outline (120 directions around the ligand's center, halfway
+between the ligand and the circles, one color per piece from the nearest
+residue, open where none is within 1.2 circles), grey halos (three rings)
+on ligand atoms whose open surface the protein leaves more than 0.3 of
+(Shrake and Rupley in numpy, 64 points, water 1.4 A), metal contacts
+within 3.0 A (metals are no hydrogen bond partners any more), the panel's
+"Show in 3D" (distance objects per kind in the group `ligand_2d`, mode 4,
+in the picture's colors, deleted when the panel closes; objects put in the
+group by hand stay), tooltips with each contact's distance and the
+nearest atoms, Tab around the ring with a focus ring, Enter selects.
+Measured on 1OKY: analysis 0.27 to 0.53 s, the picture 11 to 31 ms;
+staurosporine has 3 of 35 atoms open. Tried in the real window (Tab,
+Enter, close and reopen, Display > Panels, the dark theme). Left out: a
+blended outline, a smaller circle for a metal, the light theme by eye.
+
 **2026-11-23, draft 1: 24d below repairs panel resizing and picture fitting
 before 24c. Planned at 4.43.0 and built the same day in 4.43.2: see the note below.**
 The earlier statement that the picture scales describes the intended path,

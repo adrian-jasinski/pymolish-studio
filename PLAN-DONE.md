@@ -40,6 +40,7 @@ each is still a question in `PLAN.md`:
 | --- | --- | --- |
 | 0 | [UI engine research](docs/plans/00-ui-engine.md) | PySide6 + Qt Widgets; preserve the renderer while simplifying bindings. |
 | 3 | [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Named docks with a saved layout, the Objects panel in Qt, the action toolbar on top and the command area at the bottom, the dark theme, the UI scale, scenes as a dock, Qt menus. Closed on 2026-11-20 without its metadata table: the property table of [step 22](docs/plans/22-property-table.md) replaces it. Its open rows went to 22e (a picked atom selects its row), 23b (rows moved by dragging) and question 31 (scene buttons and sequence text drawn by the core); the spacing of dialogs is fixed when a dialog is touched. |
+| 24 | [Ligand in 2D with its contacts](docs/plans/24-ligand-2d.md) | Requested 2026-11-20; 4.32.0 and 4.33.0 (the command `ligand_2d` and the panel), 4.43.2 (the picture fits, 24d) and 4.56.0 (24c: the pocket's outline, solvent halos, metal contacts, Show in 3D, distances in tooltips, Tab through the residues). Water bridges, halogen bonds and dragging residues were left out on purpose. |
 | 36 | [Next ligand with polar contacts](docs/plans/36-ligand-navigation.md) | Requested, planned and built on 2026-11-23, 4.51.0, one slice: `ligand_next` walks the ligands of the 2D panel, shows each as `ball_and_stick` with the site as sticks and the polar contacts as dashes, zooms, and takes back at the next step only what it turned on. Ctrl+Shift+M and Ctrl+Shift+H; Ctrl+L stays zoom only (question 58). |
 | 35 | [Scenes recall appearance, one click](docs/plans/35-scene-appearance.md) | Requested, planned and built on 2026-11-23, 4.44.0 and 4.47.0, two slices. A click or Enter recalls a scene. A scene keeps the cartoon type, the settings of atoms, bonds and objects, the light and background settings and the definitions of the colors it uses, and takes away overrides that were not there. Its session record has a seventh item (question 62). |
 | 34 | [An independent ball-and-stick representation](docs/plans/34-ball-and-stick.md) | Requested, planned and built on 2026-11-23, 4.48.0 and 4.49.0, three slices. Representation 21 with its own visibility bit and three settings, built by the stick code; bonds show their order; the presets and the view at load draw ligands with it and write no sphere or stick setting. Settings of atoms that PyMOL does not know go under their own session key, because PyMOL 3.2 ends when it saves them. |
@@ -170,7 +171,7 @@ same day:
 | 52 | The button opens and closes the panel. | 4.43.0. |
 
 Also on 2026-11-20: `plan_images/` is not committed and is ignored by git;
-it is deleted when the last plans made from it (22d, 24c, 25b) are built. Its `:Zone.Identifier`
+it is deleted when the last plans made from it (22d, 24c, 25b) are built; 22d and 24c are. Its `:Zone.Identifier`
 files are deleted. The line `set internal_gui_width, 400` is out of the
 user's `~/.pymolrc`.
 
@@ -191,9 +192,9 @@ ones, the new ones win.
 
 ## Finished milestones of open steps
 
-Steps 1, 8, 15, 19, 21, 23, 24, 25 and 27 stay in the roadmap.
+Steps 1, 8, 15, 19, 21, 23, 25 and 27 stay in the roadmap.
 These parts of them have shipped. The rows of steps 3, 11, 17, 18, 20, 22, 26,
-28, 30, 32, 34, 35 and 36, which are finished, are kept here as the record of
+24, 28, 30, 32, 34, 35 and 36, which are finished, are kept here as the record of
 their milestones. The rows are not in order of time: the newest, the ten rows
 of 2026-11-23 (4.43.1 to 4.51.0), are at the top, the last built first; under
 them 4.42.0 and 4.43.0, 32b and 32a; under them 4.41.0, 11b;
@@ -202,6 +203,7 @@ the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
+| 24 | 24c — the rest of the contacts | Done 2026-11-23 (4.56.0): [docs/plans/24-ligand-2d.md](docs/plans/24-ligand-2d.md). The pocket's outline in the residues' colors, open where no residue is near; grey halos on ligand atoms the protein leaves open (own Shrake-Rupley check, 64 points, numpy; 3 of 35 atoms of staurosporine in 1OKY); metal contacts within 3.0 A; Show in 3D, one distance object per kind in the group `ligand_2d`, gone when the panel closes (also from Display > Panels), back on reopening; tooltips with each contact's distance; Tab and Enter. Measured on 1OKY: analysis 0.27 to 0.53 s, the picture 11 to 31 ms. Tried in the real window: three real Tab keys reach Lys111 with its tooltip, Enter selects its 9 atoms; dashes in the viewport; the picture in the dark theme. Different from the plan: the outline has one color per piece, not blended; a metal is drawn as the usual circle, not a small one; the dashes go from center to center (distance mode 4), and a residue drawn only as cartoon has them end in the air. Not done: a look in the light theme, tabbing the panel behind another dock (tried, but the dock stayed visible, so it proves nothing). |
 | 34 | 34b follow-up — the panel menus | Done 2026-11-23 (4.52.0, 4.53.0), at the user's request: S > ball and stick shows it on a click, its hover menu has ball size (0.20 to 0.50) and bond thickness (0.08 to 0.18) only; H hides only it; C > ball and stick only colors only it. `ball_and_stick_scale` defaults to 0.25 (was 0.31), as asked. Tried in the real window at 4.52.0; the trimmed menu of 4.53.0 by the menu test and the suite only. |
 | 36 | 36a — the next ligand with its contacts | Done 2026-11-23 (4.51.0): [docs/plans/36-ligand-navigation.md](docs/plans/36-ligand-navigation.md). `ligand_next [selection [, step]]`; step 0 clears. Measured: 9 ms a step on 2RH1 (10 ligands), 100 ms on 1AON (59,192 atoms, 7 ligands), so no cache. Tried in the real window: the three rows of Display > Zoom, both keys, the 2D panel following, Clear. Different from the plan: the rows are in Display > Zoom (there is no ligand or find menu); the walk's position is kept with the session, under the key of 28b; the site is every residue within 4 A, not only those with a contact; contacts are made for the state that is shown. Not done: Undo of a visit, a look in the light theme. |
 | 11 | 11c — CPK colors | Done 2026-11-23 (4.50.0): `color_cpk selection [, ball_and_stick]`, rows in by element and in by rep > ball and stick. 28 elements, deep pink for the rest; colors as RGB values, no named color defined. Looked at on black and white. Different from the plan: the table could not be compared with the RasMol manual, whose pages and two other sources were unreachable in that run; only the fallback FF1493 was confirmed (question 64). The command takes "" or `ball_and_stick` as representation, no other. |

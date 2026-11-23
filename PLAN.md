@@ -48,7 +48,7 @@ and 34b, 34c, 11c, 36a). Steps 22, 28, 34, 35 and 36 are finished and step
 Questions 57 to 59 were built with their recommended answers; five new
 questions, 61 to 65, came out of the work.
 
-**Shipped state, checked 2026-11-23: 4.55.0.** Built since 4.19.43,
+**Shipped state, checked 2026-11-23: 4.56.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
@@ -69,6 +69,7 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.48.0 to 4.49.0 | The representation `ball_and_stick`; ligands drawn with it by the presets and when a structure is loaded. |
 | 4.50.0 to 4.51.0 | `color_cpk`; `ligand_next`, the next ligand with its polar contacts. |
 | 4.52.0 to 4.55.0 | Ball and stick in the S and H menus of the panel and under C > by rep; S > ball and stick holds only ball size and bond thickness; balls 0.25 of the atom radius by default (was 0.31); wire, sticks and nb_spheres taken out of S and H (the commands stay). |
+| 4.56.0 | The ligand in 2D (24c): the pocket's outline, halos on atoms open to the solvent, metal contacts, Show in 3D, distances in tooltips, Tab through the residues. |
 
 Of the ten features requested on 2026-11-20, nine have a working version.
 The tenth, the surface looks, waits for the grid surface of 1b. Steps 20, 26,
@@ -97,15 +98,14 @@ Questions gate the dependent slice, not unrelated repairs.
 | 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Question 61. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
 | 2 | **33a–33c** — [Sequence alignment window](docs/plans/33-sequence-window.md) | Separate resizable window with loaded chains and FASTA import/alignment in its first release, linked 2D/3D selection and secondary structure, genuine MSA with the chosen backend, then pairwise/multiple-structure fitting and persistence. | Residue/gap mapping, unchanged coordinates for sequence-only work, fit statistics/Undo, MSA and session/export checks. |
 | 3 | **31a, 31c, then 31b** — [Chat and agent tools](docs/plans/31-ai-agents.md) | Built-in chat is required; live discovery of this fork's public commands/settings/presets, actual results/errors, cancellation and reviewed execution. External connector reuses it. Questions 41–48 resolve route/UI/dependencies; optional subscription login 31d is only an investigation. | Catalog coverage and provider stand-ins; live fork-specific workflows with each chosen provider. No promise of login entitlement. Can start independently of step 33. |
-| 4 | **24c** — [Remaining 2D contacts](docs/plans/24-ligand-2d.md) | Pocket contour, solvent halos, metal contacts, viewport dashes, distance tooltips and Tab through residues. | Reference picture, keyboard check, owned dashes removed on close. |
-| 5 | **15e** — [Five effects](docs/plans/15-presets.md) | Color steps, fog toward white, cylindrical helices, measured ambient occlusion in soft look, balls in glass. Color themes already shipped in 4.35.0. | Preset checks and images; scenes preserve the added visual settings (add them to the list in `MovieScene.cpp`; the inventory test fails until then). |
-| 6 | **1b** — [Grid surface experiment](docs/plans/01-performance-gpu.md) | Signed distance grid/marching cubes as a second surface type and a smoothness value. Compare 1aon and 4v6x at two values; user judges the experiment. | Actual times and pictures against today's surface. |
-| 7 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan using the grid-surface result from order 6; no new surface-look setting before that. | New detailed section grounded in the experiment. |
-| 8 | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | Persist the shot list under the session key `pymolish` (shipped with 28b in 4.45.0: `pymol.session_extra`); remove 58 Program rows; dragging on the strip. Core keyframe strip stays. Playback already recalls the style of scenes (35b, tested in 4.47.0). | Shot-list session compatibility, menu and playback tests. |
-| 9 | **21f** — [Rendering details](docs/plans/21-commercial-features.md) | Cap sphere mode at 9 with its obsolete test/images removed; store background image in its setting; FXAA. | Checks per slice and viewport images. |
-| 10 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. Follows FXAA's pass. | Frame times and pictures on black/white. |
-| 11 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. | Real-window responsiveness, suite and sanitizer checks. |
-| 12 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards. | Existing undo/jira cases pass before their marks are removed. |
+| 4 | **15e** — [Five effects](docs/plans/15-presets.md) | Color steps, fog toward white, cylindrical helices, measured ambient occlusion in soft look, balls in glass. Color themes already shipped in 4.35.0. | Preset checks and images; scenes preserve the added visual settings (add them to the list in `MovieScene.cpp`; the inventory test fails until then). |
+| 5 | **1b** — [Grid surface experiment](docs/plans/01-performance-gpu.md) | Signed distance grid/marching cubes as a second surface type and a smoothness value. Compare 1aon and 4v6x at two values; user judges the experiment. | Actual times and pictures against today's surface. |
+| 6 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan using the grid-surface result from order 5; no new surface-look setting before that. | New detailed section grounded in the experiment. |
+| 7 | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | Persist the shot list under the session key `pymolish` (shipped with 28b in 4.45.0: `pymol.session_extra`); remove 58 Program rows; dragging on the strip. Core keyframe strip stays. Playback already recalls the style of scenes (35b, tested in 4.47.0). | Shot-list session compatibility, menu and playback tests. |
+| 8 | **21f** — [Rendering details](docs/plans/21-commercial-features.md) | Cap sphere mode at 9 with its obsolete test/images removed; store background image in its setting; FXAA. | Checks per slice and viewport images. |
+| 9 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. Follows FXAA's pass. | Frame times and pictures on black/white. |
+| 10 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. | Real-window responsiveness, suite and sanitizer checks. |
+| 11 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards. | Existing undo/jira cases pass before their marks are removed. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 | any time | **23b** — [Rows moved by dragging](docs/plans/23-rename-in-panel.md) | Reorder and regroup in the Objects panel with the mouse. Carried over from step 3. | The drop goes through a function a test calls. |
 | any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
@@ -294,8 +294,8 @@ The user's to do, not decisions:
 - Remove the pymolish plugin from `~/.pymol/startup` (still there on
   2026-11-20): it wins over the native commands.
 - `plan_images/` (the pictures of the request of 2026-11-20) is ignored by
-  git. It is deleted when the last plans made from it are built: 22d, 24c
-  and 25b. The plans name its files by path.
+  git. It is deleted when the last plan made from it is built: 25b
+  (22d and 24c are built). The plans name its files by path.
 
 Not the user's, and not a roadmap step: the screenshot in the README
 (`docs/img/window.png`) shows the window of 4.19; it is retaken when the
