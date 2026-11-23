@@ -91,7 +91,9 @@ def define(name, colors, background="any", _self=cmd):
 
     name = str(name).strip()
     if not re.fullmatch(r"[a-z][a-z0-9_]*", name) or name == "default":
-        raise pymol.CmdException("palette name '%s': lowercase letters, digits, _" % name)
+        raise pymol.CmdException(
+            "palette name '%s': lowercase letters, digits, _" % name
+        )
     if name in BUILTIN:
         raise pymol.CmdException("'%s' is a built-in palette" % name)
     colors = [str(c).lstrip("#").lower() for c in colors]
@@ -111,6 +113,7 @@ def undefine(name, _self=cmd):
     if active == name:
         palette("default", _self=_self)
     del PALETTES[name]
+
 
 active = "default"  # process-wide, like the table in Color.cpp
 
@@ -200,3 +203,89 @@ def palette(name="", recolor=0, quiet=1, *, _self=cmd):
                 color = str(_self.get_color_index("auto"))
                 _self.set_object_color(name, color)
                 _self.color(color, "?%s & elem C" % name)
+
+
+# CPK colors by element: the table "CPK Colours" of the RasMol manual, the
+# scheme behind the usual CPK pictures (carbon light grey, oxygen red,
+# nitrogen light blue, sulfur yellow). An element that is not in it gets
+# deep pink, as there. One table, used by color_cpk only: no named color is
+# defined or changed.
+CPK_OTHER = "ff1493"
+CPK = {
+    "c8c8c8": "C",
+    "f00000": "O",
+    "ffffff": "H",
+    "8f8fff": "N",
+    "ffc832": "S",
+    "00ff00": "Cl B",
+    "ffa500": "P Fe Ba",
+    "0000ff": "Na",
+    "228b22": "Mg",
+    "a52a2a": "Zn Cu Ni Br",
+    "808090": "Ca Mn Al Ti Cr Ag",
+    "daa520": "F Si Au",
+    "a020f0": "I",
+    "b22222": "Li",
+    "ffc0cb": "He",
+}
+CPK = {symbol: color for color, symbols in CPK.items() for symbol in symbols.split()}
+
+
+def color_cpk(selection="all", representation="", quiet=1, *, _self=cmd):
+    """
+    DESCRIPTION
+
+        "color_cpk" colors atoms by element in the CPK colors of RasMol:
+        carbon light grey, oxygen red, hydrogen white, nitrogen light
+        blue, sulfur yellow, phosphorus orange, and so on; an element
+        without a color of its own is deep pink. All atoms of the residues
+        in the selection are colored. This is a coloring by element, not
+        by kind of residue.
+
+    USAGE
+
+        color_cpk [ selection [, representation ]]
+
+    ARGUMENTS
+
+        selection = str: atoms; their whole residues are colored {default: all}
+
+        representation = str: empty for the colors of the atoms, which every
+        representation without a color of its own follows; ball_and_stick
+        for the balls and sticks of that representation only: the atoms,
+        spheres, sticks and the cartoon keep their colors {default: ""}
+
+    EXAMPLE
+
+        color_cpk organic
+        color_cpk resn STU, ball_and_stick
+        unset ball_and_stick_color, resn STU    # the atoms' colors again
+
+    SEE ALSO
+
+        color, set, util.cbag
+    """
+    representation = str(representation or "")
+    if representation not in ("", "ball_and_stick"):
+        raise pymol.CmdException(
+            "representation is empty or ball_and_stick, not '%s'" % representation
+        )
+    atoms = _self.get_unused_name("_cpk")
+    _self.select(atoms, "byres (%s)" % selection, 0)
+    try:
+        elements = set()
+        _self.iterate(atoms, "elements.add(elem)", space={"elements": elements})
+        for element in sorted(elements):
+            color = "0x" + CPK.get(element.capitalize(), CPK_OTHER)
+            target = "?%s & elem %s" % (atoms, element or "''")
+            if representation:
+                _self.set("ball_and_stick_color", color, target, quiet=1)
+            else:
+                _self.color(color, target, quiet=1)
+        count = _self.count_atoms("?" + atoms)
+    finally:
+        _self.delete(atoms)
+    if not int(quiet):
+        what = "the balls and sticks of" if representation else ""
+        print(" color_cpk: CPK colors on %s %d atoms." % (what, count))
+    return count

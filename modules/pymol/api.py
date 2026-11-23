@@ -481,7 +481,7 @@ from .properties import \
 # Modules which contain programs used explicity as "module.xxx"
 
 from . import palettes
-from .palettes import palette
+from .palettes import palette, color_cpk
 from .tables import load_table, save_table
 from .ligand2d import ligand_2d
 from .stage import stage

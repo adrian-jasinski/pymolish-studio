@@ -430,6 +430,8 @@ def by_elem(self_cmd, sele):
     return [
         [ 2, 'Atoms'     ,''                               ],
         [1,' \\777H\\229N\\922O\\950S...','util.cnc("'+sele+'",_self=cmd)'],
+        # the colors of the atoms, by element; whole residues
+        [1,'CPK \\888C\\777H\\559N\\900O\\983S...','cmd.color_cpk("'+sele+'")'],
 
 [1,'\\292C\\777H\\229N\\922O\\950S...','util.cba(33,"'+sele+'",_self=cmd)'],# tv_green
 [1,'\\099C\\777H\\229N\\922O\\950S...','util.cba(5,"'+sele+'",_self=cmd)'],# cyan
@@ -469,7 +471,8 @@ def by_rep_sub(self_cmd, rep, setting, sele):
     r += [[ 0 , '', '' ]]
     if setting == 'ball_and_stick_color':
         # the balls only: the atoms keep their colors for everything else
-        r += [[ 1, 'by element', expr.format('atomic') ]]
+        r += [[ 1, 'by element', expr.format('atomic') ],
+              [ 1, 'CPK (balls only)', 'cmd.color_cpk(%s, "ball_and_stick")' % repr(sele) ]]
     r += [
         [ 1 , 'unset', 'cmd.unset("%s", %s, quiet=0)' % (setting, repr(sele)) ],
     ]

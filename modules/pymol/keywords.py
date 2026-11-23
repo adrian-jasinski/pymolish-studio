@@ -250,6 +250,7 @@ def get_command_keywords(self_cmd=cmd):
         'palette'       : [ self_cmd.palette           , 0 , 0 , ''  , parsing.STRICT ],
         'load_table'    : [ self_cmd.load_table        , 0 , 0 , ''  , parsing.STRICT ],
         'ligand_2d'     : [ self_cmd.ligand_2d         , 0 , 0 , ''  , parsing.STRICT ],
+        'color_cpk'     : [ self_cmd.color_cpk         , 0 , 0 , ''  , parsing.STRICT ],
         'stage'         : [ self_cmd.stage             , 0 , 0 , ''  , parsing.STRICT ],
         'save_table'    : [ self_cmd.save_table        , 0 , 0 , ''  , parsing.STRICT ],
         'rms'           : [ self_cmd.rms               , 0 , 0 , ''  , parsing.STRICT ],

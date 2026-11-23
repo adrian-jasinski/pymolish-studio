@@ -4,6 +4,34 @@ CHANGE LOG
 
 2026-11-23 pymolish-studio
 
+	* 4.50.0
+
+	* New command color_cpk: CPK colors by element
+	  - `color_cpk selection` colors the atoms of the selected
+	    residues by element in the CPK colors of RasMol: carbon light
+	    grey, oxygen red, hydrogen white, nitrogen light blue, sulfur
+	    yellow, phosphorus orange; 28 elements have a color, any other
+	    is deep pink. One atom of a residue colors the residue. It is
+	    a coloring by element, not by kind of residue.
+	  - `color_cpk selection, ball_and_stick` colors only the balls
+	    and sticks of that representation (ball_and_stick_color on the
+	    atoms): the atoms, spheres, sticks and the cartoon keep their
+	    colors. `unset ball_and_stick_color, selection` takes it back.
+	  - In the color menus: by element > CPK, and by rep > ball and
+	    stick > "CPK (balls only)", each the same call as the command.
+	  - The colors are given as RGB values: no named color is defined
+	    or changed, no palette is touched. Scenes and sessions keep
+	    them.
+	  - The table is the "CPK Colours" table of the RasMol manual,
+	    written from what is known of it: the manual and the two other
+	    sources tried could not be read in this run. Checked against
+	    a source: only the color of an element without one, FF1493
+	    (the Jmol color page). Compare `palettes.CPK` with the manual
+	    before the colors are published.
+	  - Looked at on a black and on a white background. Step 11c.
+
+2026-11-23 pymolish-studio
+
 	* 4.49.0
 
 	* Ligands are ball_and_stick: in the presets and when a
