@@ -192,7 +192,9 @@ class ActionToolbar(QtWidgets.QToolBar):
         dots.setMenu(QtWidgets.QMenu(dots))
         dots.setPopupMode(Popup.InstantPopup)
         dots.menu().aboutToShow.connect(self._fill_kinds)
-        chip("All", "Select everything" + hint, lambda: self.quick_select("all", "atoms"))
+        chip(
+            "All", "Select everything" + hint, lambda: self.quick_select("all", "atoms")
+        )
         none = chip("None", "Select nothing", self.select_nothing)
         none.setToolButtonStyle(Style.ToolButtonIconOnly)
         self._icons[none] = "select nothing"
@@ -281,9 +283,7 @@ class ActionToolbar(QtWidgets.QToolBar):
         if pymol.invocation.options.pymolrc is not None and saved in palettes.PALETTES:
             cmd.palette(saved)
 
-        self.background = self._menu_button(
-            "Bg", "Background color", icon="background"
-        )
+        self.background = self._menu_button("Bg", "Background color", icon="background")
         menu = self.background.menu()
         _caption(menu, "Background:")
         self._backgrounds = []  # (action, top, bottom)
@@ -333,7 +333,9 @@ class ActionToolbar(QtWidgets.QToolBar):
             else:
                 # a panel button shows only its icon; the name is the tooltip
                 action = self.panel_actions[label] = self._action(label, target)
-                self.widgetForAction(action).setToolButtonStyle(Style.ToolButtonIconOnly)
+                self.widgetForAction(action).setToolButtonStyle(
+                    Style.ToolButtonIconOnly
+                )
 
         # any whole percent from 50 to 300: typed, or one of the rows
         self._scale = theme.ui_scale()
@@ -419,13 +421,18 @@ class ActionToolbar(QtWidgets.QToolBar):
         QtCore.QTimer.singleShot(50, lambda: self._apply_scale(scale))
 
     def _apply_scale(self, scale, ask=True):
+        if abs(scale - self._scale) < 0.005:
+            return  # Enter in the field asks twice: itself, and as the menu closes
         old, self._scale = self._scale, scale
         theme.set_ui_scale(scale)
         self.scale.setText("%d%%" % round(scale * 100))
         app = QtWidgets.QApplication.instance()
         if not theme.set_scale_live(app, self.window(), old, scale):
+            why = theme.live_scale_blocker(app)
             QtWidgets.QMessageBox.information(
-                self, "UI Scale", "The new scale applies the next time pymolish starts."
+                self,
+                "UI Scale",
+                (why + " The new scale applies the next time pymolish starts.").strip(),
             )
         elif ask and not 0.75 <= scale <= 2:
             self._confirm_scale(old)
@@ -633,7 +640,8 @@ class ActionToolbar(QtWidgets.QToolBar):
                     )
                 if len(chains) > MAX_CHAINS:
                     note = menu.addAction(
-                        "%d more: A > select in the Objects panel" % (len(chains) - MAX_CHAINS)
+                        "%d more: A > select in the Objects panel"
+                        % (len(chains) - MAX_CHAINS)
                     )
                     note.setEnabled(False)
                 if chains:

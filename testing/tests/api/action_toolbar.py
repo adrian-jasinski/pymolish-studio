@@ -43,7 +43,12 @@ def test_toolbar():
     # Open is the first button: a click opens a file, the menu has the rest
     assert bar.widgetForAction(bar.actions()[0]) is bar.open
     rows = bar.open.menu().actions()
-    assert [a.text() for a in rows] == ["Open file...", "Open Recent...", "", "Get PDB entry..."]
+    assert [a.text() for a in rows] == [
+        "Open file...",
+        "Open Recent...",
+        "",
+        "Get PDB entry...",
+    ]
     assert rows[1].menu() and rows[2].isSeparator()
     bar.open.click()
     rows[3].trigger()
@@ -86,7 +91,10 @@ def test_toolbar():
     cmd.disable("far")
     bar.zoom.click()
     assert cmd.get_view()[11] == pytest.approx(near, abs=5e-2)
-    assert [a.text() for a in bar.zoom.menu().actions()][:2] == ["Visible", "Everything"]
+    assert [a.text() for a in bar.zoom.menu().actions()][:2] == [
+        "Visible",
+        "Everything",
+    ]
     # Orient too: the hidden object does not pull the view toward it
     texts["Orient"].trigger()
     assert cmd.get_view()[11] == pytest.approx(near, abs=2.0)
@@ -132,21 +140,27 @@ def test_icons():
     ]
     assert len(buttons) == 21
     # every button has an icon, but the letter chips of quick select
-    assert [b.text() for b in buttons if b.icon().isNull()] == ["P", "L", "S", "\u22ef", "All"]
+    assert [b.text() for b in buttons if b.icon().isNull()] == [
+        "P",
+        "L",
+        "S",
+        "\u22ef",
+        "All",
+    ]
     IconOnly = QtCore.Qt.ToolButtonStyle.ToolButtonIconOnly
     assert sorted(b.toolTip() for b in buttons if b.toolButtonStyle() == IconOnly) == [
-            "Builder",
-            "More view actions",
-            "Movie",
-            "Orient",
-            "Palette: colors of objects and chains",
-            "Redo",
-            "Rock",
-            "Scenes",
-            "Select nothing",
-            "Undo",
-            "Zoom on what is visible",
-        ]
+        "Builder",
+        "More view actions",
+        "Movie",
+        "Orient",
+        "Palette: colors of objects and chains",
+        "Redo",
+        "Rock",
+        "Scenes",
+        "Select nothing",
+        "Undo",
+        "Zoom on what is visible",
+    ]
     # the rest keep a text; the background's is short, its tooltip says it
     texts = [b.text() for b in buttons if b.toolButtonStyle() != IconOnly]
     assert "Bg" in texts and "Draw" in texts and "Background" not in texts
@@ -181,7 +195,11 @@ def test_background(request):
         menu = bar.background.menu()
         rows = {a.text(): a for a in menu.actions() if a.text()}
         names = [row[0] for row in action_toolbar.BACKGROUNDS if row]
-        assert list(rows) == [*names, "Ray trace with this background", "Remember after restart"]
+        assert list(rows) == [
+            *names,
+            "Ray trace with this background",
+            "Remember after restart",
+        ]
 
         def color(key):
             return cmd.get_color_tuple(cmd.get(key))
@@ -249,7 +267,8 @@ def test_user_palette(request):
     stored = {}
     request.addfinalizer(cmd.reinitialize)
     request.addfinalizer(
-        lambda: [palettes.PALETTES.pop(n, None) for n in ("mine", "other")])
+        lambda: [palettes.PALETTES.pop(n, None) for n in ("mine", "other")]
+    )
     request.addfinalizer(lambda: cmd.palette("default"))
     with (
         mock.patch.object(theme, "user_palettes", lambda: dict(stored)),
@@ -362,9 +381,7 @@ def test_palette():
         cmd.palette("default")
         with (
             mock.patch.object(theme, "object_palette", return_value="deep"),
-            mock.patch.object(
-                action_toolbar.pymol.invocation.options, "pymolrc", []
-            ),
+            mock.patch.object(action_toolbar.pymol.invocation.options, "pymolrc", []),
         ):
             action_toolbar.ActionToolbar(cmd, defaultdict(list))
         assert palettes.active == "deep"
@@ -381,7 +398,11 @@ def test_scale():
         bar = action_toolbar.ActionToolbar(cmd, defaultdict(list))
     assert bar.scale.text() == "180%"
     # a field for any whole percent from 50 to 300, then the common steps
-    assert (bar.scale_box.minimum(), bar.scale_box.maximum(), bar.scale_box.value()) == (50, 300, 180)
+    assert (
+        bar.scale_box.minimum(),
+        bar.scale_box.maximum(),
+        bar.scale_box.value(),
+    ) == (50, 300, 180)
     rows = [a.text() for a in bar.scale.menu().actions() if a.text()]
     assert rows == ["75%", "100%", "125%", "150%", "175%", "200%", "250%", "300%"]
 
@@ -390,15 +411,21 @@ def test_scale():
         with (
             mock.patch.object(theme, "set_ui_scale") as save,
             mock.patch.object(theme, "set_scale_live", return_value=live) as change,
-            mock.patch.object(action_toolbar.QtWidgets.QMessageBox, "information") as told,
+            mock.patch.object(
+                action_toolbar.QtWidgets.QMessageBox, "information"
+            ) as told,
             mock.patch.object(bar, "_confirm_scale") as confirm,
-            mock.patch.object(action_toolbar.QtCore.QTimer, "singleShot", lambda _, f: f()),
+            mock.patch.object(
+                action_toolbar.QtCore.QTimer, "singleShot", lambda _, f: f()
+            ),
         ):
             run()
         return save.call_args_list, change.call_args_list, told.called, confirm.called
 
     # a row: saved and changed live, no message
-    save, change, told, confirm = pick(bar.scale.menu().actions()[3].trigger, True)  # 100%
+    save, change, told, confirm = pick(
+        bar.scale.menu().actions()[3].trigger, True
+    )  # 100%
     assert save[0].args == (1.0,) and change[0].args[2:] == (1.8, 1.0)
     assert not told and not confirm and bar.scale.text() == "100%"
     # a typed value
@@ -407,6 +434,31 @@ def test_scale():
     assert save[0].args == (1.37,) and bar.scale.text() == "137%"
     # the same value again: nothing happens
     assert pick(bar.scale_box.editingFinished.emit, True)[0] == []
+    # 27d: Enter in the field asks twice before the first change ran; the
+    # window is rebuilt once
+    bar.scale_box.setValue(120)
+    calls = []
+    with mock.patch.object(
+        action_toolbar.QtCore.QTimer, "singleShot", lambda _, f: calls.append(f)
+    ):
+        bar.scale_box.editingFinished.emit()
+        bar.scale_box.editingFinished.emit()
+    assert len(calls) == 2
+    save, change, told, confirm = pick(lambda: [f() for f in calls], True)
+    assert len(save) == len(change) == 1 and change[0].args[2:] == (1.37, 1.2)
+    # where the display cannot do it, the message says why
+    with (
+        mock.patch.object(theme, "set_ui_scale"),
+        mock.patch.object(theme, "set_scale_live", return_value=False),
+        mock.patch.object(theme, "live_scale_blocker", return_value="No."),
+        mock.patch.object(action_toolbar.QtWidgets.QMessageBox, "information") as told,
+        mock.patch.object(action_toolbar.QtCore.QTimer, "singleShot", lambda _, f: f()),
+    ):
+        bar._set_scale(1.37)
+    assert (
+        told.call_args.args[2]
+        == "No. The new scale applies the next time pymolish starts."
+    )
     # where the live change cannot work: saved, and the old message
     save, change, told, confirm = pick(lambda: bar._set_scale(1.5), False)
     assert save[0].args == (1.5,) and told and not confirm
@@ -438,7 +490,11 @@ def test_quick_select():
     cmd.load(testing.datafile("1oky.pdb.gz"), "m")
     cmd.fragment("ala", "hidden")
     cmd.disable("hidden")
-    for letter, expression in (("P", "polymer.protein"), ("L", "organic"), ("S", "solvent")):
+    for letter, expression in (
+        ("P", "polymer.protein"),
+        ("L", "organic"),
+        ("S", "solvent"),
+    ):
         bar.chips[letter].click()
         # only in the objects that are switched on
         assert cmd.count_atoms("sele") == cmd.count_atoms("m and " + expression) > 0
@@ -458,7 +514,9 @@ def test_quick_select():
     more = bar.chips["\u22ef"].menu()
     more.aboutToShow.emit()
     rows = {a.text(): a for a in more.actions()}
-    assert [t for t in rows if t.startswith("Chain ")] == ["Chain %s" % c for c in cmd.get_chains("m")]
+    assert [t for t in rows if t.startswith("Chain ")] == [
+        "Chain %s" % c for c in cmd.get_chains("m")
+    ]
     rows["Chain A"].trigger()
     assert cmd.count_atoms("sele") == cmd.count_atoms("m and chain A")
     bar.chips["L"].click()
@@ -478,7 +536,10 @@ def test_ligand_button():
     bar = ActionToolbar(cmd, defaultdict(list), panels=[("2D", lambda: None)])
     action = bar.panel_actions["2D"]
     bar.set_ligand(False)
-    assert not action.isEnabled() and action.toolTip() == "No ligand in the visible objects"
+    assert (
+        not action.isEnabled()
+        and action.toolTip() == "No ligand in the visible objects"
+    )
     bar.set_ligand(True)
     assert action.isEnabled() and "2D" in action.toolTip()
     ActionToolbar(cmd, defaultdict(list)).set_ligand(True)  # a bar without the button

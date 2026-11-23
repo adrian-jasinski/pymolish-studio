@@ -2,6 +2,25 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-23 pymolish-studio
+
+	* 4.43.1
+
+	* Fix: the window stayed dead after a change of the UI scale
+	  - Found on WSLg, 150 % to 120 %: the program kept running, but
+	    the window manager showed the rebuilt window 0.1 to 4.6 s
+	    late (30 changes measured), in other runs not after 3.5 s.
+	    Rebuilding the native window is what it does late, with or
+	    without a new scale; a pause before showing changes nothing.
+	  - On WSLg the scale is now saved and applies at the next
+	    start, and the message says why. Other displays change it
+	    in the running window as before.
+	  - Enter in the scale field asked for the change twice, so the
+	    window was rebuilt twice within 30 ms. Once now.
+	  - Step 27d. Windows and macOS (27c) are still unchecked: the
+	    new test says on each display whether the change ran live
+	    or waits for the next start.
+
 2026-11-20 pymolish-studio
 
 	* 4.43.0
