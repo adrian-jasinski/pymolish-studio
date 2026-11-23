@@ -4,6 +4,15 @@ CHANGE LOG
 
 2026-11-23 pymolish-studio
 
+	* 4.54.0
+
+	- S and H in the panel: the rows "wire", "sticks" and "nb_spheres" are
+	  gone. The commands `show wire`, `show sticks` and `show nb_spheres`
+	  still work; "licorice" (sticks with balls on lone atoms) stays in
+	  the menus.
+
+2026-11-23 pymolish-studio
+
 	* 4.53.0
 
 	- ball_and_stick_scale defaults to 0.25 (was 0.31): balls are 0.25 of the

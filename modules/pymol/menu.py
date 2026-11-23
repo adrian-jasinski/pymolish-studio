@@ -162,13 +162,10 @@ def obj_motion(self_cmd, obj, frame="0"):
 
 def rep_action(self_cmd, sele, action) :
     return [
-        [ 1, 'wire'       , 'cmd.'+action+'("wire"      ,"'+sele+'")' ],
         [ 1, '  lines'    , 'cmd.'+action+'("lines"     ,"'+sele+'")' ],
         [ 1, '  nonbonded', 'cmd.'+action+'("nonbonded" ,"'+sele+'")' ],
         [ 0, ''           , ''                               ],
         [ 1, 'licorice'   , 'cmd.'+action+'("licorice"  ,"'+sele+'")' ],
-        [ 1, '  sticks'   , 'cmd.'+action+'("sticks"    ,"'+sele+'")' ],
-        [ 1, '  nb_spheres','cmd.'+action+'("nb_spheres","'+sele+'")' ],
         [ 1, 'ball and stick', 'cmd.'+action+'("ball_and_stick","'+sele+'")' ],
         [ 0, ''           , ''                               ],
         [ 1, 'ribbon'     , 'cmd.'+action+'("ribbon"    ,"'+sele+'")' ],

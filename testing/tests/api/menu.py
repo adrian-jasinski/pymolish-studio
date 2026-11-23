@@ -362,7 +362,7 @@ def testShowHide():
     rows = {row[1].strip(): row for row in show if row[0] == 1}
     assert 'as' not in rows and 'valence' not in rows
     assert list(rows)[-2:] == ['hydrogens', 'more']
-    assert len(rows) == 16 and len(hide) == 18  # with ball and stick
+    assert len(rows) == 13 and len(hide) == 15  # no wire, sticks, nb_spheres
     cmd.do(rows['ball and stick'][3], echo=0)
     assert cmd.count_atoms('rep ball_and_stick') == cmd.count_atoms('m1')
     cmd.do(hide['ball and stick'], echo=0)
@@ -377,7 +377,8 @@ def testShowHide():
 
     # only the cartoon row has a submenu
     assert [name for name, row in rows.items() if len(row) > 3] == ['ball and stick', 'cartoon']
-    cmd.do(rows['sticks'][2], echo=0)
+    assert not {'wire', 'sticks', 'nb_spheres'} & (set(rows) | set(hide))
+    cmd.do(rows['licorice'][2], echo=0)
     assert cmd.count_atoms('rep sticks') and cmd.count_atoms('rep lines')
     cmd.hide('lines')
 
