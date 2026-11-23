@@ -88,10 +88,10 @@ def test_visibility_is_its_own():
 def test_sizes_are_its_own():
     cmd.fragment("ala", "m")
     cmd.show_as("ball_and_stick")
-    assert cmd.get_setting_float("ball_and_stick_scale") == pytest.approx(0.31)
+    assert cmd.get_setting_float("ball_and_stick_scale") == pytest.approx(0.25)
     assert cmd.get_setting_float("ball_and_stick_bond_radius") == pytest.approx(0.12)
-    # a ball is 0.31 of the atom's radius, as a sphere at sphere_scale 0.31
-    expected = sorted(round(0.31 * r, 3) for r in _radii())
+    # a ball is 0.25 of the atom's radius, as a sphere at sphere_scale 0.25
+    expected = sorted(round(0.25 * r, 3) for r in _radii())
     assert sorted(r for r, _ in _balls()) == expected
     assert max(_bonds()) == pytest.approx(0.12)
     before = _scene()
@@ -239,7 +239,7 @@ def test_atoms_without_bonds_and_states():
     cmd.show("ball_and_stick")
     cmd.frame(1)
     first = _balls()
-    radius = round(0.31 * _radii("ion")[0], 3)
+    radius = round(0.25 * _radii("ion")[0], 3)
     assert radius in [r for r, _ in first]  # the ion is a ball
     assert len(first) == cmd.count_atoms("m") + 1
     x1 = sorted(float(c.split(",")[0]) for c, _, _ in SPHERE.findall(_scene()))

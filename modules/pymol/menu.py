@@ -257,31 +257,21 @@ def hide_hydro(self_cmd, sele):
               ] )
 
 def ball_and_stick(self_cmd, sele):
-    # sizes and colors of the representation of its own: no sphere, stick
-    # or atom setting is touched
+    # sizes of the representation of its own: no sphere or stick setting
+    # is touched; a click on the row shows it, C colors it
     def setting(name, value):
         return 'cmd.set("%s", %s, %s, quiet=0)' % (name, value, repr(sele))
-    show = 'cmd.show("ball_and_stick","%s")' % sele
     return [
         [ 2, 'Ball and stick:', '' ],
-        [ 1, 'show', show ],
-        [ 1, 'as only', 'cmd.show_as("ball_and_stick","%s")' % sele ],
-        [ 0, '', '' ],
         [ 1, 'ball size', [[ 2, 'Ball size:', '' ]] + [
             [ 1, label, setting('ball_and_stick_scale', value) ]
-            for label, value in (('small 0.20', 0.2), ('0.25', 0.25),
-                                 ('standard 0.31', 0.31), ('0.40', 0.4),
+            for label, value in (('small 0.20', 0.2), ('standard 0.25', 0.25),
+                                 ('0.31', 0.31), ('0.40', 0.4),
                                  ('large 0.50', 0.5))] ],
         [ 1, 'bond thickness', [[ 2, 'Bonds:', '' ]] + [
             [ 1, label, setting('ball_and_stick_bond_radius', value) ]
             for label, value in (('thin 0.08', 0.08), ('standard 0.12', 0.12),
                                  ('thick 0.18', 0.18))] ],
-        [ 1, 'color', by_rep_sub(self_cmd, 'ball and stick', 'ball_and_stick_color', sele) ],
-        [ 0, '', '' ],
-        [ 1, 'standard look', ';'.join(
-            'cmd.unset("%s", %s, quiet=0)' % (name, repr(sele))
-            for name in ('ball_and_stick_scale', 'ball_and_stick_bond_radius',
-                         'ball_and_stick_color')) ],
     ]
 
 def mol_hide(self_cmd, sele):

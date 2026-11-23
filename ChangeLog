@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-23 pymolish-studio
 
+	* 4.53.0
+
+	- ball_and_stick_scale defaults to 0.25 (was 0.31): balls are 0.25 of the
+	  atom's radius. Sessions that never set it draw smaller balls.
+	- S > ball and stick in the panel: the hover menu keeps only "ball size"
+	  (standard now 0.25) and "bond thickness"; "show", "as only", "color" and
+	  "standard look" are gone. A click on the row still shows it; C > ball
+	  and stick only still colors it.
+
+2026-11-23 pymolish-studio
+
 	* 4.52.0
 
 	* Ball and stick in the menus of the Objects panel

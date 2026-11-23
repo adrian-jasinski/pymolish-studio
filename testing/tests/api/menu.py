@@ -506,8 +506,8 @@ def testVolColor():
 
 
 def testBallAndStickMenus():
-    # S: a click on the row shows it, its hover menu sets sizes and colors
-    # of ball_and_stick only; H hides only it; C has a row for it
+    # S: a click on the row shows it, its hover menu has only its sizes;
+    # H hides only it; C colors only it
     cmd.fragment('ala', 'm1')
     cmd.show_as('lines')
     cmd.show('spheres', 'name N')
@@ -515,18 +515,18 @@ def testBallAndStickMenus():
     row = [r for r in menu.mol_show(cmd, 'm1') if r[0] == 1 and r[1] == 'ball and stick'][0]
     cmd.do(row[3], echo=0)  # the click
     assert cmd.count_atoms('rep ball_and_stick') == 10
+    assert cmd.get_setting_float('ball_and_stick_scale', 'm1') == pytest.approx(0.25)
     sub = _to_dict(row[2])
+    assert list(sub) == ['ball size', 'bond thickness']
     cmd.do(_to_dict(sub['ball size'])['large 0.50'], echo=0)
     cmd.do(_to_dict(sub['bond thickness'])['thick 0.18'], echo=0)
-    cmd.do(_to_dict(sub['color'])['by element'], echo=0)
+    cmd.do(_to_dict(_to_dict(menu.mol_color(cmd, 'm1'))['ball and stick only'])['by element'], echo=0)
     assert cmd.get_setting_float('ball_and_stick_scale', 'm1') == 0.5
     assert cmd.get_setting_float('ball_and_stick_bond_radius', 'm1') == pytest.approx(0.18)
     assert cmd.get('ball_and_stick_color', 'm1') == 'atomic'  # on the object
     # nothing of lines and spheres changed
     assert cmd.count_atoms('rep lines') == 10 and cmd.count_atoms('rep spheres') == 1
     assert cmd.get_setting_float('sphere_scale') == pytest.approx(0.7)
-    cmd.do(sub['standard look'], echo=0)
-    assert cmd.get_setting_float('ball_and_stick_scale', 'm1') == pytest.approx(0.31)
     # hiding lines leaves it, hiding it leaves lines
     cmd.hide('lines')
     assert cmd.count_atoms('rep ball_and_stick') == 10
