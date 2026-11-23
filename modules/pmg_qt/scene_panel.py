@@ -1,7 +1,8 @@
 """
 Scenes panel: one row per scene with its thumbnail, in a dock on the left.
-Enter or a double click recalls a scene, F2 renames it, dragging a row or
-Ctrl+Up / Ctrl+Down moves it.
+A click or Enter recalls a scene, F2 renames it, dragging a row or
+Ctrl+Up / Ctrl+Down moves it. A right click and the arrow keys pick a row
+without recalling it, for Update, Rename and Delete.
 """
 
 from pymol.Qt import QtCore, QtGui, QtWidgets
@@ -20,9 +21,16 @@ class ScenePanel(QtWidgets.QDockWidget):
         self.list = view = QtWidgets.QListWidget()
         view.setIconSize(QtCore.QSize(110, 62))  # half a stored thumbnail
         view.setDragDropMode(QtWidgets.QAbstractItemView.DragDropMode.InternalMove)
-        # a double click recalls, so it must not also start a rename
+        view.setToolTip("Click or Enter recalls a scene; a right click only picks it")
+        # a click recalls, so it must not also start a rename
         view.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.EditKeyPressed)
-        view.itemActivated.connect(lambda item: cmd.scene(item.text(), "recall"))
+        # Not itemActivated: a double click, and on some desktops a single
+        # one, activates too, and the scene would be recalled twice.
+        view.itemClicked.connect(self._recall)  # left button, not after a drag
+        for key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            enter = QtGui.QShortcut(key, view)
+            enter.setContext(Qt.ShortcutContext.WidgetShortcut)  # not in a rename
+            enter.activated.connect(lambda: self._recall(view.currentItem()))
         view.itemChanged.connect(self._renamed)
         view.model().rowsMoved.connect(self._moved)
         for key, step in ((Qt.Key.Key_Up, -1), (Qt.Key.Key_Down, 1)):
@@ -33,7 +41,7 @@ class ScenePanel(QtWidgets.QDockWidget):
         buttons = QtWidgets.QHBoxLayout()
         for label, tip, action in (
             ("Add", "Store the current view as a new scene", self._add),
-            ("Update", "Store the current view in the selected scene", "update"),
+            ("Update", "Store the current view in the picked scene", "update"),
             ("Rename", "Rename the selected scene (F2)", self._rename),
             ("Delete", "Delete the selected scene", "clear"),
         ):
@@ -84,6 +92,10 @@ class ScenePanel(QtWidgets.QDockWidget):
             if name == state[2]:
                 self.list.setCurrentItem(item)
         self.list.blockSignals(False)
+
+    def _recall(self, item):
+        if item:
+            self.cmd.scene(item.text(), "recall")
 
     def _add(self):
         self.cmd.scene("new", "store")

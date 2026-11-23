@@ -4,6 +4,22 @@ CHANGE LOG
 
 2026-11-23 pymolish-studio
 
+	* 4.44.0
+
+	* Scenes panel: one click recalls a scene
+	  - A click on a row or its thumbnail recalls the scene, once; so
+	    does Enter. Before, it took Enter or a double click. A double
+	    click recalls once and does not start a rename.
+	  - A right click and the arrow keys pick a row without recalling
+	    it: that is how a scene is picked for Update, Rename (F2) and
+	    Delete while the view stays as it is.
+	  - Dragging a row, Ctrl+Up / Ctrl+Down and the refresh of the
+	    list recall nothing.
+	  - Tried in the real window with clicks sent through the X
+	    server, dark theme. Step 35a.
+
+2026-11-23 pymolish-studio
+
 	* 4.43.2
 
 	* Fix: the 2D picture of a ligand was cut at one side
