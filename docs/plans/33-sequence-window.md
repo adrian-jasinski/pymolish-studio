@@ -2,7 +2,9 @@
 
 [Roadmap](../../PLAN.md) · Request 2026-11-23, draft 2 · **Planned at
 4.43.0; not built.** Code inspected; no alignment benchmark or GUI trial in
-this planning run. Questions 54, 55 and 60 are open.
+this planning run. **Question 54 answered 2026-11-23: loaded chains plus
+FASTA import/alignment in the first release**, with helix/sheet/coil for
+loaded structures. Questions 55 (backend) and 60 (entry point) remain open.
 
 **A resizable sequence window for comparing chains, aligning sequences and
 superposing structures, with secondary structure above the aligned letters.**
@@ -36,22 +38,22 @@ checked. It can close and reopen without losing the alignment.
 | Part | Planned behavior |
 | --- | --- |
 | Rows | One chosen chain and state per row, identified by object, segment, chain and state. Preserve residue numbers, insertion codes and nonstandard residues; gaps have no atom target. |
-| Input | Loaded structure chains; FASTA and aligned FASTA in 33c if question 54's recommendation is accepted. A FASTA-only row can be aligned but cannot be moved in 3D. |
+| Input | Loaded structure chains, FASTA and aligned FASTA in the first release (33a), as confirmed in answer 54. A FASTA-only row can be aligned but cannot be moved in 3D. |
 | Selection | Click/drag residues to select them in 3D; Ctrl adds. Picking in 3D highlights matching cells. Use stable residue identities, rebuilding mappings after object edits; never reuse stale atom indices. |
 | Sequence alignment | Separate action from structure fitting. Align selected rows without changing coordinates. Show gaps, numbering, reference row, identity and a simple consensus/conservation row. State how gaps and unknown letters enter the identity denominator. |
 | Structure alignment | Choose reference, mobile rows, state and `align`, `super` or `cealign`; run pairwise or “Align all to reference”. Display RMSD, aligned atom/residue count and failures per mobile. Apply transforms to whole mobile objects; reject conflicting transforms for chains of the same object. |
 | Secondary structure | Helix, sheet and coil track with a legend, lined up with residues through gaps. Unknown/unassigned is distinct from coil. Optional `dss` reassignment changes the structure explicitly and is undoable. |
-| Useful first options | Search sequence/residue number, zoom selected residues, show only selected rows, change reference, copy selected sequence, export aligned FASTA and alignment statistics. |
+| Useful options | Search sequence/residue number, zoom selected residues, show only selected rows, change reference, copy selected sequence, export aligned FASTA and alignment statistics; delivery follows the slices below. |
 | Keyboard | Arrows and Shift extend selection, Enter selects in 3D, search has a labelled field, all actions have keyboard access. Secondary structure has text/tooltips as well as shapes/colors. |
 | Work | Alignment computation runs off the GUI thread or in the existing native path with responsiveness verified. Apply object changes through the existing command dispatch; Stop prevents unapplied results from changing the session. One fit batch is one undo action where snapshots support it. |
 | Persistence | Loaded structures remain normal objects. Keep alignment rows, gaps, reference and residue mapping under the step 28 key when they cannot be reconstructed from an alignment object. Validate mappings on restore; missing objects stay visibly unmapped. |
 
-## Decisions before implementation
+## Decisions
 
 | Question | Options and recommendation |
 | --- | --- |
-| 54 — inputs | **Loaded chains plus FASTA (recommended)** covers sequences without structures; loaded chains first is a smaller first release, with FASTA still a planned slice. |
-| 55 — true multiple sequence alignment | **An optional local MAFFT executable (recommended)** supplies an established MSA method without writing a new scientific algorithm. It needs approval as a new native dependency, a license/packaging check on all supported systems and an installation story. Alternative: build a native progressive aligner around `Match.cpp`, with algorithm validation and performance measurements; larger maintenance cost. A reference-anchored alignment can ship earlier but does not complete this requirement. |
+| 54 — inputs | **Answered 2026-11-23: loaded chains plus FASTA import/alignment in the first release.** Do not release a loaded-chains-only version first. This selects input scope, not an alignment dependency. |
+| 55 — true multiple sequence alignment | **An optional local MAFFT executable (recommended)** supplies an established MSA method without writing a new scientific algorithm. It needs approval as a new native dependency, a license/packaging check on all supported systems and an installation story. Alternative: build a native progressive aligner around `Match.cpp`, with algorithm validation and performance measurements; larger maintenance cost. A reference-anchored alignment can serve as a prototype but does not complete this requirement. |
 | 60 — opening the window | **Keep SEQ as the existing strip toggle and add the window to its context menu plus Display > Panels (recommended)**; alternatively make SEQ open the new window and move the strip toggle to Display. Step 32's icon/label stays in either case. |
 
 MAFFT accepts amino-acid or nucleotide sequences in FASTA and provides
@@ -66,9 +68,13 @@ upload of sequences. Do not introduce Biopython just for parsing FASTA.
 
 | Slice | Scope | Acceptance |
 | --- | --- | --- |
-| 33a | Window, loaded chains, residue mapping, linked selection, secondary-structure track, search and copy. | Gaps, insertion codes, alternate locations, repeated chain IDs in different objects, unknown residues, empty/deleted rows and multiple states; keyboard and real-window resize/scale checks. |
-| 33b | Sequence correspondence for structures; pairwise and multi-object fitting to a reference, result table and Undo. | Sequence-only operation leaves coordinates byte-for-byte unchanged; known transformed fixtures superpose; reference stays fixed; partial failure is reported and cancelled work cannot apply later. |
-| 33c | FASTA input, genuine MSA using the chosen backend, aligned export, conservation and session persistence. | Three or more sequences with internal insertions, a row without coordinates and an ambiguous residue; aligned round trip preserves every input sequence after gaps are removed; backend failure/cancel and mapping after reload. Compare a documented fixture against the chosen backend. |
+| 33a | First release: window, loaded chains plus FASTA/aligned FASTA input, pairwise sequence alignment and genuine MSA using the chosen backend, aligned export, residue mapping, linked selection, secondary-structure track, search and copy. | Gaps, insertion codes, alternate locations, repeated chain IDs, unknown residues, empty/deleted rows and multiple states; three or more sequences including a FASTA-only row; aligned export preserves every input sequence after gaps are removed; sequence alignment leaves coordinates unchanged; backend failure/cancel; keyboard and real-window resize/scale checks. Compare a documented alignment fixture against the chosen backend. |
+| 33b | Pairwise and multi-object structure fitting to a reference, result table and Undo. | Known transformed fixtures superpose; reference stays fixed; FASTA-only rows cannot be fitted in 3D; partial failure is reported and cancelled work cannot apply later. |
+| 33c | Consensus/conservation, identity statistics and session persistence. | Documented gap/unknown-letter counting; alignment and residue mapping survive reload, including FASTA-only rows and missing structure objects. |
+
+Answer 54 moves FASTA and its sequence-alignment backend from the former
+33c into 33a. Question 55 must therefore be settled before the first
+release; no new dependency is approved by the input choice alone.
 
 Files: new `modules/pmg_qt/sequence_panel.py` and form; the window's panel
 registration in `pymol_qt_gui.py`; `fitting.py`, `seqalign.py`, `querying.py`,

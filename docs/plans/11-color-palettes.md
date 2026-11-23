@@ -1,8 +1,9 @@
 # 11 — Color palettes
 
 **2026-11-23, draft 5: 11c below adds explicit CPK coloring; planned at
-4.43.0, not built.** The requested “by residues” wording is question 56;
-object/chain palettes already shipped are unchanged by this plan.
+4.43.0, not built.** Question 56 was answered the same day: standard CPK
+atom colors within selected residues. Object/chain palettes already
+shipped are unchanged by this plan.
 
 ## 11c — CPK for selected residues, with an explicit color target
 
@@ -11,10 +12,8 @@ different scheme. This distinction is documented in the primary
 [Jmol color reference](https://jmol.sourceforge.net/jscolors/), checked
 2026-11-23. Do not invent a “CPK residue” palette.
 
-Question 56: **CPK element colors within the selected residues
-(recommended)**, or one color per amino-acid type (labelled “By residue
-type”, with a published amino-acid scheme chosen before implementation).
-The recommendation is provisional, not an answered preference.
+Question 56, **answered 2026-11-23: standard CPK atom colors within selected
+residues.** The alternative of one color per amino-acid type is not selected.
 
 For CPK, add an explicit C > By element > CPK entry to the shared menus;
 a residue-level selection colors all atoms of those selected residues.
@@ -35,10 +34,9 @@ element definitions globally merely to color a selection.
 Tests in `testing/tests/api/` cover common elements, a metal/halogen and an
 unknown element; whole-residue selection, CPK vs atom-color inheritance,
 ball-and-stick-only coloring with simultaneously visible spheres, custom
-colors, scene recall (35b), PSE/PSEX and menu/command equivalence. If question
-56 chooses residue types instead, test the residue mapping and unknown/
-modified residues explicitly. Look at light and dark backgrounds, without
-silently changing published colors to suit the theme.
+colors, scene recall (35b), PSE/PSEX and menu/command equivalence. Include
+modified residues: their atoms still use element colors. Look at light and
+dark backgrounds, without silently changing published colors to suit the theme.
 
 Files: color helper/data, `menu.py`, command registration/help/completion
 if a public command is added, tests, `docs/commands.md` and `ChangeLog`.

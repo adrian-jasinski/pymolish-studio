@@ -6,9 +6,9 @@ fallback). 27c, Windows and macOS, is open.
 
 **2026-11-23, draft 8: a change from 150 to 120 reportedly freezes the
 window. 27d below is the first repair in the roadmap, before further live
-scale work.** Interpreted provisionally as 150 % → 120 % in the toolbar;
-question 53 distinguishes it from resizing the window. Planned at 4.43.0;
-source inspected, no freeze reproduced or root cause established in this run.
+scale work.** Question 53 answered 2026-11-23: the toolbar UI-scale change
+from 150 % to 120 % causes the freeze. Planned at 4.43.0; source inspected,
+no freeze reproduced or root cause established in this run.
 
 As built, and where it differs from the plan below:
 
@@ -58,7 +58,8 @@ not diagnosed causes.
 
 - Capture a stack trace and event-loop heartbeat in a disposable process
   while applying 150 → 120 → 150 repeatedly. Repeat with the 2D panel, table,
-  Scenes and a floating dialog open, then with ordinary window resizing.
+  Scenes and a floating dialog open; check ordinary window resizing as a
+  regression of the shared callbacks, not as the reported trigger.
   Record OS/display backend, Qt version and monitor scale. No user session
   is thrown away to reproduce it.
 - Fix the demonstrated cause once in the shared path; avoid nested changes

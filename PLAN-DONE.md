@@ -12,6 +12,14 @@ step 31 was rewritten for in-app chat and live discovery of fork commands.
 Earlier choices superseded by the new request are identified there; the
 historical release record is preserved.
 
+Decided by the user on 2026-11-23; these are plan decisions, not shipped work:
+
+| Question | Decision | Open implementation |
+| --- | --- | --- |
+| 53 | The reported freeze is the toolbar UI-scale change from 150 % to 120 %. | 27d, order 1; cause still to reproduce. |
+| 54 | The first sequence-window release includes loaded structure chains plus FASTA import/alignment, with secondary structure from loaded coordinates. | 33a, order 11; alignment backend (55) still undecided. |
+| 56 | Standard CPK atom colors within selected residues. | 11c, order 9. |
+
 ## Finished steps
 
 | Step | Detailed plan | Recommendation |

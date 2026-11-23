@@ -79,7 +79,7 @@ Questions gate the dependent slice, not unrelated repairs.
 
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
-| 1 | **27d, then 27c** — [Scale freeze](docs/plans/27-ui-scale.md) | Reproduce the reported 150 → 120 freeze; inspect live scaling and ordinary resize paths. Repair the demonstrated cause, or use the accepted next-start fallback before an unsafe live path. Verify Windows/macOS as well as the reported platform. | A subprocess timeout/heartbeat regression and real GUI repaint/input checks; unsupported live scaling is reported distinctly. |
+| 1 | **27d, then 27c** — [Scale freeze](docs/plans/27-ui-scale.md) | Reproduce the confirmed toolbar UI-scale freeze at 150 % → 120 %; inspect live scaling and its resize callbacks. Repair the demonstrated cause, or use the accepted next-start fallback before an unsafe live path. Verify Windows/macOS as well as the reported platform. | A subprocess timeout/heartbeat regression and real GUI repaint/input checks; unsupported live scaling is reported distinctly. |
 | 2 | **24d** — [Resizable ligand 2D](docs/plans/24-ligand-2d.md) | Fix dock/floating-window resizing and fit the complete SVG/legend to the available area; keep picking aligned after scale changes. | Shrink/grow repeatedly, docked/floating, crowded ligand, fractional DPI; no crop, freeze or stale click coordinates. |
 | 3 | **35a** — [One-click scenes](docs/plans/35-scene-appearance.md) | Click or Enter recalls once; rename, drag, right click and list refresh do not trigger recall. | Interaction tests and a real mouse check. |
 | 4 | **28b + 22d, 22e** — [Session key](docs/plans/28-session-format.md) and [remaining table work](docs/plans/22-property-table.md) | Build the shared `pymolish` key with its first consumer: column order/hidden/empty columns. Computed columns, Columns menu, follow mode, remembered window size and picked-atom row selection remain. | Unknown session entries survive; table layout reloads; computed values and selection checked. No unused persistence framework built ahead. |
@@ -87,9 +87,9 @@ Questions gate the dependent slice, not unrelated repairs.
 | 6 | **35b** — [Scene appearance](docs/plans/35-scene-appearance.md) | Store cartoon type, relevant visual settings at their actual scopes, representation color overrides and referenced custom colors; recall through panel, command and movies. | Store A, apply preset/color B, recall A and B; settings and images match, including reload, without restoring/deleting molecular data. |
 | 7 | **34a, 34b** — [Independent ball-and-stick](docs/plans/34-ball-and-stick.md) | A new representation with its own visibility, colors, ball scale (default 0.31), bond radius and single/double/triple/aromatic display; S/H/C, commands, ray, picking, sessions and scene integration. | Changing it preserves line/stick/sphere settings and colors; renderer, old/new session and scene checks pass. |
 | 8 | **34c** — [Ligand preset defaults](docs/plans/34-ball-and-stick.md) | Use the new model for visible ligands in all applicable molecular presets, including pretty/publication/glass; preserve protein colors and existing hidden sphere/stick overrides. | Preset matrix on protein/ligand/water/ion; A/B scene recall and Undo. Depends on 34a/b and 35b. |
-| 9 | **11c** — [CPK / residue-color choice](docs/plans/11-color-palettes.md) | Resolve “CPK by residues”; recommended CPK element colors within selected residues, including a ball-and-stick-only target. | Documented scheme, menu/command equivalence, target isolation and scene round trip. |
+| 9 | **11c** — [CPK colors](docs/plans/11-color-palettes.md) | Standard CPK atom colors within selected residues, confirmed by the user; include a ball-and-stick-only target. | Documented scheme, menu/command equivalence, target isolation and scene round trip. |
 | 10 | **36a** — [Next ligand with contacts](docs/plans/36-ligand-navigation.md) | Next/Previous ligand, protein polar contacts and site zoom; shared discovery, owned temporary contacts and an assignable shortcut. | Wrap/reverse, absent/deleted ligands, host selection, cleanup and unchanged protein colors. |
-| 11 | **33a–33c** — [Sequence alignment window](docs/plans/33-sequence-window.md) | Separate resizable window, linked 2D/3D selection and secondary structure, sequence alignment, pairwise/multiple-structure fitting, FASTA and genuine MSA with the chosen backend. | Residue/gap mapping, unchanged coordinates for sequence-only work, fit statistics/Undo, MSA and session/export checks. |
+| 11 | **33a–33c** — [Sequence alignment window](docs/plans/33-sequence-window.md) | Separate resizable window with loaded chains and FASTA import/alignment in its first release, linked 2D/3D selection and secondary structure, genuine MSA with the chosen backend, then pairwise/multiple-structure fitting and persistence. | Residue/gap mapping, unchanged coordinates for sequence-only work, fit statistics/Undo, MSA and session/export checks. |
 | 12 | **31a, 31c, then 31b** — [Chat and agent tools](docs/plans/31-ai-agents.md) | Built-in chat is required; live discovery of this fork's public commands/settings/presets, actual results/errors, cancellation and reviewed execution. External connector reuses it. Questions 41–48 resolve route/UI/dependencies; optional subscription login 31d is only an investigation. | Catalog coverage and provider stand-ins; live fork-specific workflows with each chosen provider. No promise of login entitlement. Can start independently of steps 33–36. |
 | 13 | **24c** — [Remaining 2D contacts](docs/plans/24-ligand-2d.md) | Pocket contour, solvent halos, metal contacts, viewport dashes, distance tooltips and Tab through residues. | Reference picture, keyboard check, owned dashes removed on close. |
 | 14 | **15e** — [Five effects](docs/plans/15-presets.md) | Color steps, fog toward white, cylindrical helices, measured ambient occlusion in soft look, balls in glass. Color themes already shipped in 4.35.0. | Preset checks and images; scenes preserve the added visual settings. |
@@ -119,13 +119,13 @@ steps 31 and 33 must check space before adding or repurposing controls.
 | Draft | Plan | Earlier decision reconciled |
 | --- | --- | --- |
 | 1 — ligand image/panel does not fit | 24d | The existing resize path needs a regression fix despite 24b/30a's earlier successful pictures. |
-| 2 — sequence window, alignments, secondary structure | 33a–33c | Replaces “sequence viewer stays as it is” in steps 3/22; retains the current strip during delivery. Additional first options: search, linked selection, consensus, identity, export and fit statistics. |
+| 2 — sequence window, alignments, secondary structure | 33a–33c | Replaces “sequence viewer stays as it is” in steps 3/22; retains the current strip during delivery. Loaded chains plus FASTA in the first release confirmed in answer 54. Additional options: search, linked selection, consensus, identity, export and fit statistics. |
 | 3 — independent ball-and-stick | 34a/b | The existing preset is not a separate representation; shared sphere/stick settings no longer satisfy this request. |
 | 4 — default ligand representation in presets | 34c / 15 | Supersedes the old 0.18/0.13 ligand recipe and exclusion of pretty/publication/glass. |
-| 5 — CPK by residues | 11c | Distinguishes element CPK from amino-acid-type colors; question 56 stays open. |
+| 5 — CPK by residues | 11c | Answer 56 confirms standard CPK atom colors within selected residues. |
 | 6 — scenes preserve preset style and colors | 35b | Extends existing scene color/visibility storage to the visual state it currently lacks; does not turn recall into full-session rollback. |
 | 7 — one-click scene switching | 35a / 3 | Replaces Enter/double-click-only recall; keyboard and rename/reorder remain. |
-| 8 — freeze on 150 → 120 | 27d, then 27c | Reliability must be established before claiming live scale support; the accepted next-start fallback remains. |
+| 8 — freeze on 150 → 120 | 27d, then 27c | Answer 53 confirms toolbar UI scale at 150 % → 120 %. Reliability must be established before claiming live scale support; the accepted next-start fallback remains. |
 | 9 — three stars in the property table | 22f | Promotes the explicitly deferred `stars` idea into requested work. |
 | 10 — next ligand with protein contacts and zoom | 36a | Adds a workflow beyond Ctrl+L's existing zoom-only helper; shortcut choice is open. |
 | 11 — chat control, aware of the fork | 31 | Already planned, unbuilt; now in-app chat plus a live capability catalog is required, not just an external connector. |
@@ -168,8 +168,16 @@ recommended direction, not a claim that an implementation has passed tests.
 Open choices are listed below, with recommendations. The new drafts request
 all eleven outcomes; these questions refine behavior, not whether to plan
 them. No unanswered recommendation is recorded as the user's decision.
-Questions 53, 54 and 56 clarify the resize control, sequence inputs and CPK;
-their interpretations remain provisional.
+Questions 53, 54 and 56 were answered on 2026-11-23 and no longer wait:
+
+| No. | Confirmed decision | Plan |
+| --- | --- | --- |
+| 53 | The freeze occurs when changing toolbar UI scale from 150 % to 120 %. | [27d](docs/plans/27-ui-scale.md) |
+| 54 | The first sequence-window release includes loaded structure chains and FASTA import/alignment, with helix/sheet/coil for loaded structures. | [33](docs/plans/33-sequence-window.md) |
+| 56 | Standard CPK atom colors within selected residues. | [11c](docs/plans/11-color-palettes.md) |
+
+The alignment backend (55) remains undecided; answer 54 does not approve a
+new dependency. These decisions are also recorded in `PLAN-DONE.md`.
 
 Questions 49 to 52 (step 32) were answered on 2026-11-20 and built the
 same day in 4.42.0 and 4.43.0; the answers are under "Decided by the
@@ -214,14 +222,11 @@ The previous questions retain their IDs, with updated choices:
 | 47 | Which external clients get setup helpers? | Installed Codex and Claude Code after actual compatibility checks; other clients separately. |
 | 48 | Session/environment keys only or persistent credentials? | Session/environment first; persistent storage needs an OS-appropriate security design. |
 
-Choices from the new drafts:
+Remaining choices from the new drafts:
 
 | No. | Question | Recommendation / alternatives |
 | --- | --- | --- |
-| 53 | Does 150 → 120 mean the toolbar UI-scale percentage or ordinary window resizing? | Provisionally UI scale; reproduce both paths until clarified. [27d](docs/plans/27-ui-scale.md). |
-| 54 | Loaded structure chains only, or FASTA sequences too? | Loaded chains plus FASTA; loaded-only can be the first slice. Secondary structure means helix/sheet/coil from loaded coordinates, not predicted structure. [33](docs/plans/33-sequence-window.md). |
 | 55 | Which true MSA engine? | Optional local MAFFT executable (dependency approval/packaging needed), or a larger native progressive aligner. Reference-based fits alone do not complete MSA. [33](docs/plans/33-sequence-window.md). |
-| 56 | CPK element colors within residues, or one color per amino-acid type? | CPK by element within selected residues; otherwise name the action “By residue type”. [11c](docs/plans/11-color-palettes.md). |
 | 57 | What does clicking star N do? | Empty sets rating N, filled sets N−1; alternative any empty/filled click adds/removes one. Both keep three outlines and a value 0–3. [22f](docs/plans/22-property-table.md). |
 | 58 | Replace Ctrl+L or keep its zoom-only action? | Keep it; make Next ligand with contacts assignable and menu-accessible. Alternative: Ctrl+L becomes the richer workflow. [36](docs/plans/36-ligand-navigation.md). |
 | 59 | Ball-and-stick bond colors? | Half-bonds follow endpoint ball colors; alternative uniform dark bonds with an independent override. [34](docs/plans/34-ball-and-stick.md). |
