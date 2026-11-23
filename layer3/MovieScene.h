@@ -12,7 +12,9 @@
 #include "Result.h"
 #include "SceneView.h"
 #include "Image.h"
+#include "Setting.h"
 
+#include <map>
 #include <vector>
 #include <string>
 
@@ -30,7 +32,8 @@ enum {
   STORE_COLOR  = (1 << 2),
   STORE_REP    = (1 << 3),
   STORE_FRAME  = (1 << 4),
-  STORE_THUMBNAIL = (1 << 5)
+  STORE_THUMBNAIL = (1 << 5),
+  STORE_STYLE = (1 << 6) ///< MovieSceneStyle: what presets and colorings change
 };
 
 struct MovieSceneFuncArgs
@@ -44,6 +47,7 @@ struct MovieSceneFuncArgs
   bool store_rep = true;
   bool store_frame = true;
   bool store_thumbnail = true;
+  bool store_style = true;
   float animate = -1.0f;
   std::string new_key;
   bool hand = true;
@@ -68,6 +72,35 @@ class MovieSceneObject {
 public:
   int color;
   int visRep;
+};
+
+/**
+ * One stored setting of the global or an object level. Which member holds
+ * the value follows from the type of the setting.
+ */
+struct MovieSceneSetting {
+  int index = 0;
+  int int_ = 0;          ///< boolean, int, color
+  float float3_[3] = {}; ///< float (the first), float3
+  std::string string_;
+};
+
+/**
+ * The appearance a preset or a coloring changes beyond visibility and atom
+ * colors. An override is stored with its value; one that is not stored did
+ * not exist, and recalling the scene removes it.
+ */
+struct MovieSceneStyle {
+  /// atom unique id -> cartoon type ("cartoon" command), where not automatic
+  std::map<int, int> cartoon;
+  /// atom or bond unique id -> its settings
+  std::map<int, std::vector<SettingUniqueEntry>> unique;
+  /// object name -> its settings among the tracked ones
+  std::map<std::string, std::vector<MovieSceneSetting>> object;
+  /// the tracked global settings
+  std::vector<MovieSceneSetting> global;
+  /// name -> RGB of the named colors the scene refers to
+  std::map<std::string, std::vector<float>> colors;
 };
 
 /**
@@ -105,6 +138,9 @@ public:
 
   /// objects properties (enabled, color, reps, etc.)
   std::map<std::string, MovieSceneObject> objectdata;
+
+  /// with STORE_STYLE in the storemask
+  MovieSceneStyle style;
 };
 
 /**
@@ -136,7 +172,8 @@ pymol::Result<> MovieSceneStore(PyMOLGlobals * G, const char * name,
     bool store_thumbnail,
     const char * sele,
     std::size_t stack,
-    bool quiet);
+    bool quiet,
+    bool store_style = true);
 
 pymol::Result<> MovieSceneRename(PyMOLGlobals * G, const char * name, const char * new_name = nullptr);
 
@@ -147,11 +184,13 @@ pymol::Result<> MovieSceneRecall(PyMOLGlobals * G, const char * name, float anim
     bool recall_rep = true,
     bool recall_frame = true,
     const char * sele = "all",
-    size_t stack = cMovieSceneStackDefault);
+    size_t stack = cMovieSceneStackDefault,
+    bool recall_style = true);
 
 pymol::Result<> MovieSceneRecallImpl(PyMOLGlobals* G, const MovieScene& scene,
     float animate, bool recall_view, bool recall_color, bool recall_active,
-    bool recall_rep, bool recall_frame, const char* sele);
+    bool recall_rep, bool recall_frame, const char* sele,
+    bool recall_style = true);
 
 pymol::Result<> MovieSceneRecallAllInstant(PyMOLGlobals * G, pymol::zstring_view name,
     std::size_t stack = cMovieSceneStackDefault);

@@ -1101,9 +1101,10 @@ static PyObject *CmdScene(PyObject * self, PyObject * args)
   const char *key, *action, *message = nullptr, *new_key = nullptr;
   const char * sele = "all";
 
-  API_SETUP_ARGS(G, self, args, "Oss|zbbbbbfzbbs", &self, &key, &action,
+  API_SETUP_ARGS(G, self, args, "Oss|zbbbbbfzbbsb", &self, &key, &action,
       &message, &margs.store_view, &margs.store_color, &margs.store_active, &margs.store_rep,
-      &margs.store_frame, &margs.animate, &new_key, &margs.hand, &margs.quiet, &sele);
+      &margs.store_frame, &margs.animate, &new_key, &margs.hand, &margs.quiet, &sele,
+      &margs.store_style);
   API_ASSERT(APIEnterBlockedNotModal(G));
 
   margs.key = key;

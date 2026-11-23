@@ -4,6 +4,43 @@ CHANGE LOG
 
 2026-11-23 pymolish-studio
 
+	* 4.47.0
+
+	* Scenes keep the style of presets and colorings
+	  - `scene` now also stores and recalls: the cartoon type of the
+	    atoms (`cartoon`), the settings of atoms, bonds and objects
+	    (sphere scale, stick radius, valence, the colors of
+	    representations, transparency, ...), the light, outline,
+	    background and fog settings of looks, themes and `stage`, and
+	    the definitions of the named colors the scene uses.
+	  - A setting an atom, bond or object did not have when the scene
+	    was stored is taken away again on recall: store A, apply
+	    another preset and colors, store B, and A, B, A come back as
+	    they were. Coordinates, objects loaded or deleted since and
+	    object properties are not touched.
+	  - Public behavior of `cmd.scene`: `color=0` also leaves color
+	    settings and color definitions alone, `rep=0` the cartoon type
+	    and the settings of atoms, bonds and objects. New keyword
+	    `settings=0` stores or recalls without the style, as before.
+	    A recalled color definition is global.
+	  - The panel, the command, the function keys and movie playback
+	    all recall through the same code. The settings kept at the
+	    global and the object level are a fixed list; a test fails
+	    when a preset writes one that is not on it.
+	  - Session files: a scene with a style has a seventh item in
+	    its record; scenes of older files load as before and change
+	    no style. PyMOL 3.2.0a loads and recalls such a session
+	    (tried), without the style.
+	  - Measured: the ray-traced geometry and the viewport picture
+	    of A are the same after B and back. 4V6X (239,306 atoms):
+	    store 40 ms (14 without style), recall 28 ms (13); with two
+	    settings and a cartoon type on every atom a scene adds 1.7 MB
+	    to the session, without them nothing measurable.
+	  - Step 35b. Not kept: settings of single states, secondary
+	    structure, labels' text.
+
+2026-11-23 pymolish-studio
+
 	* 4.46.0
 
 	* Property table: stars

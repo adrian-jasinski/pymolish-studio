@@ -1033,7 +1033,8 @@ SEE ALSO
 
     def scene(key='auto', action='recall', message=None, view=1,
               color=1, active=1, rep=1, frame=1, animate=-1,
-              new_key=None, hand=1, quiet=1, sele="all", *, _self=cmd):
+              new_key=None, hand=1, quiet=1, sele="all", *, settings=1,
+              _self=cmd):
         '''
 DESCRIPTION
 
@@ -1041,6 +1042,15 @@ DESCRIPTION
     view, all object activity information, all atom-wise visibilities,
     all atom-wise colors, all representations, the global frame index,
     and may contain a text message to display on playback.
+
+    A scene also keeps the style a preset or a coloring gives: the
+    cartoon type of the atoms, the settings of atoms, bonds and objects
+    (sphere scale, stick radius, colors of representations, ...), the
+    light, outline and background settings, and the definitions of the
+    named colors it uses. A setting that an atom, bond or object did
+    not have when the scene was stored is taken away again when the
+    scene is recalled. Coordinates, objects loaded or deleted since,
+    and object properties are not touched.
 
 USAGE
 
@@ -1059,7 +1069,17 @@ ARGUMENTS
     message = string: a text message to display with the scene.
 
     new_key = string: the new name for the scene
-    
+
+    color = 0: on recall, colors stay as they are, also the color
+    settings and the definitions of colors
+
+    rep = 0: on recall, representations stay as they are, also the
+    cartoon type and the settings of atoms, bonds and objects
+
+    settings = 0 (keyword only): store or recall without the style, as
+    before 4.47. A recalled color definition is global: it also changes
+    atoms outside the scene that have that color.
+
 EXAMPLES
 
     scene *
@@ -1120,7 +1140,7 @@ SEE ALSO
                                     int(color),
                                     int(active), int(rep), int(frame),
                                     float(animate), new_key, int(hand),
-                                    int(quiet), sele)
+                                    int(quiet), sele, int(settings))
 
         r = _self._call_with_opengl_context(func)
 

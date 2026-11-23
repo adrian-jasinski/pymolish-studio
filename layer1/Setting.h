@@ -214,6 +214,8 @@ PyObject *SettingGetPyObject(PyMOLGlobals * G, const CSetting * set1, const CSet
 PyObject *SettingGetTuple(PyMOLGlobals * G, const CSetting * set1, const CSetting * set2, int index);       /* (type,(value,)) */
 PyObject *SettingGetSettingIndices();
 PyObject *SettingUniqueGetIndicesAsPyList(PyMOLGlobals * G, int unique_id);
+/// The settings of one atom or bond, by setting id (`next` is not meaningful)
+std::vector<SettingUniqueEntry> SettingUniqueGetEntries(PyMOLGlobals* G, int unique_id);
 
 std::vector<int> SettingGetUpdateList(PyMOLGlobals * G, const char * name="", int state=0);
 

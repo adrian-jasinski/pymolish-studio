@@ -3182,6 +3182,23 @@ PyObject * SettingGetSettingIndices() {
 /**
  * Return a list of all setting indices for the given unique id
  */
+std::vector<SettingUniqueEntry> SettingUniqueGetEntries(PyMOLGlobals* G, int unique_id)
+{
+  auto I = G->SettingUnique;
+  std::vector<SettingUniqueEntry> entries;
+  auto it = I->id2offset.find(unique_id);
+  if (it != I->id2offset.end()) {
+    for (int offset = it->second; offset; offset = I->entry[offset].next) {
+      entries.push_back(I->entry[offset]);
+    }
+  }
+  std::sort(entries.begin(), entries.end(),
+      [](const SettingUniqueEntry& a, const SettingUniqueEntry& b) {
+        return a.setting_id < b.setting_id;
+      });
+  return entries;
+}
+
 PyObject * SettingUniqueGetIndicesAsPyList(PyMOLGlobals * G, int unique_id)
 {
   CSettingUnique *I = G->SettingUnique;
