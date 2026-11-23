@@ -437,6 +437,10 @@ class PyMOLDesktopGUI(object):
                 ] + [
                     ('command', 'All', 'zoom animate=-1'),
                     ('command', 'Complete', 'zoom animate=-1, complete=1'),
+                    ('separator',),
+                    ('command', 'Next Ligand with Contacts [Ctrl-Shift-M]', 'ligand_next quiet=0'),
+                    ('command', 'Previous Ligand with Contacts [Ctrl-Shift-H]', 'ligand_next enabled, -1, quiet=0'),
+                    ('command', 'Clear Ligand Contacts', 'ligand_next step=0'),
                 ]),
                 ('menu', 'Clip', [
                     ('command', 'Nothing', 'clip atoms, 5, all'),

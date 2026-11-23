@@ -88,6 +88,7 @@ them, a pip install needs `pip install 'pymolish[fix]'`.
 | `ligand_2d [ligand [, cutoff [, filename]]]` | Draws a ligand flat with the residues around it and its contacts (hydrogen bonds, salt bridges, ring stacking), as SVG or PNG; without a file name it lists the contacts. Needs rdkit. | `ligand_2d resn CAU, filename=lig.svg` |
 | `stage [mode [, selection]]` | A floor under what is shown; ray traced, the molecule casts its shadow on it. `stage mirror` adds a mirror image, `stage off` removes it. | `stage` |
 | `color_cpk [selection [, representation]]` | Colors the atoms of the selected residues by element in the CPK colors of RasMol (carbon light grey, oxygen red, nitrogen light blue, ...). With `ball_and_stick` as representation only the balls and sticks of that representation are colored; the atoms keep their colors. | `color_cpk organic` |
+| `ligand_next [selection [, step]]` | Goes to the next ligand (`step` -1: the previous one): shows it as ball_and_stick, the residues within 4 A as sticks and the polar contacts to its protein as dashes, and zooms on the site. The next call takes back what this one turned on. `step=0` clears. Ctrl-Shift-M and Ctrl-Shift-H. | `ligand_next` |
 | `save_table filename [, selection]` | Writes the properties of the objects as CSV. | `save_table scores.csv` |
 
 ## PyMOL commands that needed the commercial build

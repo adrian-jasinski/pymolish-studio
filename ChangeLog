@@ -4,6 +4,43 @@ CHANGE LOG
 
 2026-11-23 pymolish-studio
 
+	* 4.51.0
+
+	* New command ligand_next: the next ligand with its polar
+	  contacts
+	  - `ligand_next` goes to the next ligand: it is shown as
+	    ball_and_stick, the residues of its protein within 4 A as
+	    sticks, the polar contacts between the two as dashes in the
+	    object "ligand_contacts", and the view zooms on the site.
+	    `ligand_next enabled, -1` goes back; after the last ligand
+	    comes the first. `ligand_next step=0` clears.
+	  - The ligands and their order are those of the 2D panel: the
+	    one in its pocket first. A selection named explicitly may
+	    hold a peptide or a cofactor, and a protein in another
+	    object as the partner of the contacts.
+	  - The next call takes back what the one before turned on (its
+	    dashes, the sticks, the balls) and nothing else: what was
+	    shown before stays, the protein keeps its colors and its
+	    cartoon, other objects stay enabled. An object of the user's
+	    named "ligand_contacts" is left alone; the walk then uses
+	    "ligand_contacts_01".
+	  - The contacts are found by geometry (`distance`, mode 2), in
+	    the state that is shown, inside the ligand's own object. The
+	    message says so, or "no polar contacts".
+	  - Keys: Ctrl-Shift-M next, Ctrl-Shift-H previous (both were
+	    free and can be changed in the shortcut editor). Ctrl-L
+	    stays "zoom to the next ligand" (question 58, the
+	    recommended answer). Menu: Display > Zoom > Next Ligand with
+	    Contacts, Previous, Clear Ligand Contacts.
+	  - An open 2D panel shows the ligand the walk went to. Where
+	    the walk stands is kept with the session.
+	  - Measured: 9 ms a step on 2RH1 (10 ligands), 100 ms on 1AON
+	    (59,192 atoms, 7 ligands). Tried in the real window: the
+	    menu rows, both keys, the picture, the 2D panel, Clear.
+	    Step 36a.
+
+2026-11-23 pymolish-studio
+
 	* 4.50.0
 
 	* New command color_cpk: CPK colors by element

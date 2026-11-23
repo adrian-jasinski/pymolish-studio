@@ -133,3 +133,28 @@ def test_clicks_and_selection(tmp_path):
     path = tmp_path / "picture.svg"
     panel.save(str(path))
     assert path.read_text().lstrip().startswith("<?xml")
+
+
+def test_panel_follows_ligand_next():
+    """36a: an open panel shows the ligand that ligand_next went to."""
+    from pymol import ligand_nav
+
+    cmd.load(testing.datafile("1oky.pdb.gz"), "m")
+    panel = _panel()
+    first = panel.choice.currentData()
+    visited = cmd.ligand_next()
+    assert visited == first  # both begin with the ligand in its pocket
+    visited = cmd.ligand_next()
+    assert visited != first
+    panel.poll()
+    assert panel.choice.currentData() == visited == ligand_nav.current()
+    assert panel.residues is not None and not panel.picture.pixmap().isNull()
+    # a choice made in the panel stays until the walk goes on
+    panel.choice.setCurrentIndex(0)
+    panel.refresh(keep=True)
+    panel.poll()
+    assert panel.choice.currentData() == first
+    visited = cmd.ligand_next()
+    panel.poll()
+    assert panel.choice.currentData() == visited
+    panel.close()

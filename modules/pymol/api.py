@@ -484,6 +484,7 @@ from . import palettes
 from .palettes import palette, color_cpk
 from .tables import load_table, save_table
 from .ligand2d import ligand_2d
+from .ligand_nav import ligand_next
 from .stage import stage
 
 from . import batch

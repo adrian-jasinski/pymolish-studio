@@ -7,7 +7,7 @@ picture can be saved as SVG or PNG.
 
 import math
 
-from pymol import CmdException, ligand2d
+from pymol import CmdException, ligand2d, ligand_nav
 from pymol.Qt import QtCore, QtGui, QtWidgets
 from pymol.Qt.utils import getSaveFileNameWithExt
 
@@ -41,6 +41,7 @@ class LigandPanel(QtWidgets.QDockWidget):
         self.places = []  # the residues' centers in the picture
         self.selected = set()  # indices of the residues that are in "sele"
         self._svg, self._size, self._scale = None, (1, 1), 1.0
+        self._followed = None  # the ligand of ligand_next the panel last went to
 
         self.choice = QtWidgets.QComboBox()
         self.choice.setToolTip("The ligand that is drawn")
@@ -152,7 +153,17 @@ class LigandPanel(QtWidgets.QDockWidget):
         }
 
     def poll(self):
-        """From the window's timer: follow the selection made in 3D."""
+        """From the window's timer: follow the selection made in 3D, and
+        the ligand that ligand_next went to."""
+        visited = ligand_nav.current()
+        if self.isVisible() and visited and visited != self._followed:
+            self._followed = visited
+            if self.choice.findData(visited) < 0:
+                self.refresh()  # the list is from before
+            index = self.choice.findData(visited)
+            if index >= 0 and visited != self.choice.currentData():
+                self.choice.setCurrentIndex(index)
+                self.refresh(keep=True)
         if self.isVisible() and self.mol is not None:
             selected = self._in_selection()
             if selected != self.selected:
