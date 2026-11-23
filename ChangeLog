@@ -4,6 +4,23 @@ CHANGE LOG
 
 2026-11-23 pymolish-studio
 
+	* 4.52.0
+
+	* Ball and stick in the menus of the Objects panel
+	  - S > ball and stick: a click shows it; its hover menu has
+	    show, as only, ball size (0.20 to 0.50, standard 0.31), bond
+	    thickness (0.08, 0.12, 0.18), color (all colors, by element,
+	    CPK, unset) and "standard look", which takes those settings
+	    away again. All of them set only the ball_and_stick settings:
+	    lines, sticks and spheres and their sizes and colors stay.
+	  - C > ball and stick only: the color of the balls and bonds,
+	    not of the atoms.
+	  - H > ball and stick hides only it.
+	  - docs/commands.md lists the representation and its three
+	    settings for the command line.
+
+2026-11-23 pymolish-studio
+
 	* 4.51.0
 
 	* New command ligand_next: the next ligand with its polar

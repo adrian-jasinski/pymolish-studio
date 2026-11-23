@@ -1,6 +1,6 @@
 import pytest
 import pymol
-from pymol import menu, cmd, testing
+from pymol import menu, cmd, stored, testing
 
 
 def _make_objects(n=2):
@@ -363,7 +363,7 @@ def testShowHide():
     assert 'as' not in rows and 'valence' not in rows
     assert list(rows)[-2:] == ['hydrogens', 'more']
     assert len(rows) == 16 and len(hide) == 18  # with ball and stick
-    cmd.do(rows['ball and stick'][2], echo=0)
+    cmd.do(rows['ball and stick'][3], echo=0)
     assert cmd.count_atoms('rep ball_and_stick') == cmd.count_atoms('m1')
     cmd.do(hide['ball and stick'], echo=0)
     assert cmd.count_atoms('rep ball_and_stick') == 0
@@ -376,7 +376,7 @@ def testShowHide():
                     compile(command, 'menu', 'exec')
 
     # only the cartoon row has a submenu
-    assert [name for name, row in rows.items() if len(row) > 3] == ['cartoon']
+    assert [name for name, row in rows.items() if len(row) > 3] == ['ball and stick', 'cartoon']
     cmd.do(rows['sticks'][2], echo=0)
     assert cmd.count_atoms('rep sticks') and cmd.count_atoms('rep lines')
     cmd.hide('lines')
@@ -503,3 +503,35 @@ def testVolColor():
     _eval_first(m)
     m = menu.volume_show(cmd, sele)
     _eval_first(m)
+
+
+def testBallAndStickMenus():
+    # S: a click on the row shows it, its hover menu sets sizes and colors
+    # of ball_and_stick only; H hides only it; C has a row for it
+    cmd.fragment('ala', 'm1')
+    cmd.show_as('lines')
+    cmd.show('spheres', 'name N')
+    cmd.set('sphere_scale', 0.7)
+    row = [r for r in menu.mol_show(cmd, 'm1') if r[0] == 1 and r[1] == 'ball and stick'][0]
+    cmd.do(row[3], echo=0)  # the click
+    assert cmd.count_atoms('rep ball_and_stick') == 10
+    sub = _to_dict(row[2])
+    cmd.do(_to_dict(sub['ball size'])['large 0.50'], echo=0)
+    cmd.do(_to_dict(sub['bond thickness'])['thick 0.18'], echo=0)
+    cmd.do(_to_dict(sub['color'])['by element'], echo=0)
+    assert cmd.get_setting_float('ball_and_stick_scale', 'm1') == 0.5
+    assert cmd.get_setting_float('ball_and_stick_bond_radius', 'm1') == pytest.approx(0.18)
+    assert cmd.get('ball_and_stick_color', 'm1') == 'atomic'  # on the object
+    # nothing of lines and spheres changed
+    assert cmd.count_atoms('rep lines') == 10 and cmd.count_atoms('rep spheres') == 1
+    assert cmd.get_setting_float('sphere_scale') == pytest.approx(0.7)
+    cmd.do(sub['standard look'], echo=0)
+    assert cmd.get_setting_float('ball_and_stick_scale', 'm1') == pytest.approx(0.31)
+    # hiding lines leaves it, hiding it leaves lines
+    cmd.hide('lines')
+    assert cmd.count_atoms('rep ball_and_stick') == 10
+    cmd.show('lines')
+    cmd.do(_to_dict(menu.mol_hide(cmd, 'm1'))['ball and stick'], echo=0)
+    assert cmd.count_atoms('rep ball_and_stick') == 0 and cmd.count_atoms('rep lines') == 10
+    colors = _to_dict(menu.mol_color(cmd, 'm1'))
+    assert 'ball and stick only' in colors
