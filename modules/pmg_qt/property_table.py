@@ -10,12 +10,14 @@ becomes the current one. A window of its own that lies over the viewport, its
 right edge against the Objects panel, until it is dragged elsewhere. The
 table keeps no data: it shows and changes what the core holds. The order of
 the columns, the hidden and the empty ones go into the session
-(pymol.session_extra).
+(pymol.session_extra). The column "stars" is always there, after the name:
+a rating from 0 to 3 drawn as three stars and set by a click.
 """
 
 import csv
+import math
 
-from pymol import CmdException, session_extra
+from pymol import CmdException, session_extra, tables
 from pymol.Qt import QtCore, QtGui, QtWidgets
 from pymol.Qt.utils import getSaveFileNameWithExt
 
@@ -104,6 +106,87 @@ class _Row(QtWidgets.QTreeWidgetItem):
         )
 
 
+STARS = tables.STARS
+STAR, STAR_GAP, STAR_LEFT = 16, 3, 6  # a star across, between two, before the first
+
+
+def star_at(rect, x):
+    """Which of the three stars of a cell is at x: 1 to 3, else 0."""
+    side = min(STAR, rect.height() - 4)
+    number, rest = divmod(x - rect.left() - STAR_LEFT, side + STAR_GAP)
+    return int(number) + 1 if 0 <= number < 3 and rest <= side else 0
+
+
+class _Cells(QtWidgets.QStyledItemDelegate):
+    """Every cell but Row and In. In the column "stars" of a molecule:
+    three stars, as many filled as the rating. A click on an empty star
+    rates up to it, on a filled one down to the one before it. A value that
+    is no rating is shown as its text and kept until it is edited."""
+
+    def __init__(self, table):
+        super().__init__(table.tree)
+        self.table = table
+
+    def rating(self, index):
+        """The rating of a stars cell of a molecule (none is 0), else None."""
+        table = self.table
+        if STARS not in table.columns or index.column() != table.column_of(STARS):
+            return None
+        if table.tree.itemFromIndex(index).data(NAME, UserRole)[1] != MOLECULE:
+            return None
+        return tables.stars(index.data() or "0")
+
+    def paint(self, painter, option, index):
+        rating = self.rating(index)
+        if rating is None:
+            return super().paint(painter, option, index)
+        cell = QtWidgets.QStyleOptionViewItem(option)
+        self.initStyleOption(cell, index)
+        cell.text = ""  # the row's background and selection, without the number
+        Style = QtWidgets.QStyle
+        cell.widget.style().drawControl(
+            Style.ControlElement.CE_ItemViewItem, cell, painter, cell.widget
+        )
+        palette = cell.palette
+        selected = bool(cell.state & Style.StateFlag.State_Selected)
+        ink = (palette.highlightedText() if selected else palette.text()).color()
+        full = ink if selected else palette.link().color()  # the accent, as the icons
+        rect = option.rect
+        side = min(STAR, rect.height() - 4)
+        painter.save()
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+        for number in range(3):
+            middle = QtCore.QPointF(
+                rect.left() + STAR_LEFT + number * (side + STAR_GAP) + side / 2,
+                rect.center().y() + 0.5,
+            )
+            points = [
+                middle
+                + QtCore.QPointF(math.sin(k * math.pi / 5), -math.cos(k * math.pi / 5))
+                * (side / 2 if k % 2 == 0 else side / 5)
+                for k in range(10)
+            ]
+            filled = number < rating  # filled or outline: not told by color alone
+            painter.setPen(QtGui.QPen(full if filled else ink, 1.2))
+            painter.setBrush(full if filled else Qt.BrushStyle.NoBrush)
+            painter.drawPolygon(QtGui.QPolygonF(points))
+        painter.restore()
+
+    def editorEvent(self, event, model, option, index):
+        rating = self.rating(index)
+        Type = QtCore.QEvent.Type
+        if rating is not None and event.type() in (
+            Type.MouseButtonRelease,
+            Type.MouseButtonDblClick,
+        ):
+            star = star_at(option.rect, event.position().x())
+            if star and event.button() == Qt.MouseButton.LeftButton:
+                if event.type() == Type.MouseButtonRelease:
+                    self.table.rate(self.table.tree.itemFromIndex(index), star, rating)
+                return True  # and no editor opens on a double click
+        return super().editorEvent(event, model, option, index)
+
+
 class _NoEditor(QtWidgets.QStyledItemDelegate):
     """Row and In are not edited."""
 
@@ -150,6 +233,7 @@ class PropertyTable(QtWidgets.QDockWidget):
             Trigger.DoubleClicked | Trigger.EditKeyPressed | Trigger.AnyKeyPressed
         )
         tree.setTabKeyNavigation(True)  # Tab and Shift+Tab walk the cells
+        tree.setItemDelegate(_Cells(self))
         self._no_editor = _NoEditor(tree)
         for column in (ROW, IN):
             tree.setItemDelegateForColumn(column, self._no_editor)
@@ -261,8 +345,12 @@ class PropertyTable(QtWidgets.QDockWidget):
         if rows == self.rows and not force:
             return
         columns = [
-            c for c in self.columns if c in self.extra or any(c in r[4] for r in rows)
+            c
+            for c in self.columns
+            if c == STARS or c in self.extra or any(c in r[4] for r in rows)
         ]
+        if STARS not in columns:
+            columns.insert(0, STARS)  # always there; after the name at first
         for row in rows:
             columns += [p for p in row[4] if p not in columns]
         shape = [(r[0], r[1], r[3]) for r in rows]
@@ -364,6 +452,13 @@ class PropertyTable(QtWidgets.QDockWidget):
             item.setCheckState(IN, Checked if enabled else Unchecked)
         for column, value in enumerate(item.values[1:], len(FIXED)):
             item.setText(column, cell_text(value))
+        if kind == MOLECULE:
+            rating = tables.stars(cell_text(props.get(STARS)) or "0")
+            item.setData(
+                self.column_of(STARS),
+                Qt.ItemDataRole.AccessibleTextRole,
+                "Stars: %d of 3" % rating if rating is not None else None,
+            )
 
     def _apply_filter(self):
         text = self.filter.text().lower()
@@ -407,6 +502,25 @@ class PropertyTable(QtWidgets.QDockWidget):
 
     # ---- editing ----
 
+    def column_of(self, name):
+        """The tree column of a property column."""
+        return len(FIXED) + self.columns.index(name)
+
+    def _set(self, column, text, name):
+        """One cell to the core, which picks the type: a whole number, a
+        number, else text; None or "" deletes the property. A rating that
+        is not 0 to 3 is refused."""
+        text = text.strip() if text else ""
+        if column == STARS and text and tables.stars(text) is None:
+            print(" Table: stars is a rating from 0 to 3, not '%s'." % text)
+        else:
+            self.cmd.set_property(column, text or None, name)
+
+    def rate(self, item, star, rating):
+        """A click on star 1 to 3 of a row that has `rating`."""
+        new = star if star > rating else star - 1
+        self._write([(item, self.column_of(STARS))], str(new))
+
     def _selected_cells(self):
         return [
             (self.tree.itemFromIndex(i), i.column())
@@ -415,16 +529,11 @@ class PropertyTable(QtWidgets.QDockWidget):
 
     def _write(self, cells, text):
         """Set the property cells among `cells` (item, column) to `text`;
-        None or "" deletes the property. The core picks the type: a whole
-        number, a number, else text."""
+        None or "" deletes the property."""
         for item, column in cells:
             name, kind = item.data(NAME, UserRole)
             if column >= len(FIXED) and kind == MOLECULE:
-                self.cmd.set_property(
-                    self.columns[column - len(FIXED)],
-                    text.strip() if text and text.strip() else None,
-                    name,
-                )
+                self._set(self.columns[column - len(FIXED)], text, name)
         self.refresh(force=True)
 
     def _edited(self, item, column):
@@ -649,11 +758,7 @@ class PropertyTable(QtWidgets.QDockWidget):
             name, kind = item.data(NAME, UserRole)
             for column, value in zip(order, line.split("\t")):
                 if column >= len(FIXED) and kind == MOLECULE:
-                    self.cmd.set_property(
-                        self.columns[column - len(FIXED)],
-                        value.strip() or None,
-                        name,
-                    )
+                    self._set(self.columns[column - len(FIXED)], value, name)
         self.refresh(force=True)
 
     # ---- clicks ----

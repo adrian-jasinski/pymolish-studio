@@ -4,6 +4,35 @@ CHANGE LOG
 
 2026-11-23 pymolish-studio
 
+	* 4.46.0
+
+	* Property table: stars
+	  - A column "stars" stands after the name: three stars per
+	    molecule, as many filled as its rating from 0 to 3. Empty
+	    and filled differ by outline and fill, not only by color.
+	  - A click on an empty star rates up to it, a click on a filled
+	    one down to the one before it: on three stars, a click on
+	    the third leaves two, a click on the first leaves none.
+	  - The rating is the whole-number property "stars" of the
+	    object: `set_property stars, 2, name` does the same. It is
+	    typed in the cell like any value (0 to 3, Delete removes
+	    it), sorted as a number, copied and exported as 0 to 3 and
+	    saved with the session. No object gets the property just by
+	    being shown.
+	  - Typed, pasted and imported values that are no rating from 0
+	    to 3 are refused, and `load_table` says how many. A value
+	    set from elsewhere that is no rating is shown as its text
+	    and kept.
+	  - Groups and maps have no stars. The header reads "stars", the
+	    name of the property, so that an exported table comes back.
+	  - An exported table has the column "stars" now, empty where
+	    nothing is rated.
+	  - Step 22f, with the click rule recommended in question 57.
+	    Tried in the real window at 150 %, dark theme: the picture;
+	    the clicks through Qt's own mouse path in the test.
+
+2026-11-23 pymolish-studio
+
 	* 4.45.0
 
 	* Property table: columns kept in the session, counted columns,

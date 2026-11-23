@@ -35,7 +35,11 @@ def read_xlsx(filename):
             for item in root.iter(_NS + "si"):
                 strings.append("".join(t.text or "" for t in item.iter(_NS + "t")))
         sheets = sorted(
-            (n for n in book.namelist() if re.fullmatch(r"xl/worksheets/sheet\d+\.xml", n)),
+            (
+                n
+                for n in book.namelist()
+                if re.fullmatch(r"xl/worksheets/sheet\d+\.xml", n)
+            ),
             key=lambda n: int(re.search(r"\d+", n.rsplit("/", 1)[1]).group()),
         )
         if not sheets:
@@ -85,6 +89,15 @@ def read_table(filename):
     return list(csv.reader(io.StringIO(text), dialect))
 
 
+STARS = "stars"  # the property the table draws as three stars
+
+
+def stars(text):
+    """The rating a text stands for, 0 to 3; None for anything else."""
+    text = str(text).strip()
+    return int(text) if text in ("0", "1", "2", "3") else None
+
+
 def load_table(filename, object_column="", quiet=1, *, _self=cmd):
     """
     DESCRIPTION
@@ -93,7 +106,8 @@ def load_table(filename, object_column="", quiet=1, *, _self=cmd):
         row per object, one column per property. A row goes to the object
         whose name is in the name column; rows that name no object are
         skipped. A header that is no property yet becomes a new one. An
-        empty cell leaves the property as it is.
+        empty cell leaves the property as it is. In a column "stars" only
+        the ratings 0, 1, 2 and 3 are taken; other values are left out.
 
     USAGE
 
@@ -117,20 +131,24 @@ def load_table(filename, object_column="", quiet=1, *, _self=cmd):
         save_table, set_property
     """
     quiet = int(quiet)
-    rows = [r for r in read_table(_self.exp_path(filename)) if any(c.strip() for c in r)]
+    rows = [
+        r for r in read_table(_self.exp_path(filename)) if any(c.strip() for c in r)
+    ]
     if not rows:
         raise pymol.CmdException("'%s' has no rows" % filename)
     header = [h.strip() for h in rows[0]]
     lower = [h.lower() for h in header]
     if object_column:
         if object_column.lower() not in lower:
-            raise pymol.CmdException("no column '%s' in '%s'" % (object_column, filename))
+            raise pymol.CmdException(
+                "no column '%s' in '%s'" % (object_column, filename)
+            )
         key = lower.index(object_column.lower())
     else:
         key = next((lower.index(h) for h in NAME_HEADERS if h in lower), 0)
     names = set(_self.get_names("objects"))
     known = {p for n in names for p in _self.get_property_list(n) or ()}
-    matched, skipped = 0, []
+    matched, skipped, unrated = 0, [], 0
     for row in rows[1:]:
         name = row[key].strip() if key < len(row) else ""
         if name not in names:
@@ -138,17 +156,36 @@ def load_table(filename, object_column="", quiet=1, *, _self=cmd):
             continue
         matched += 1
         for column, value in enumerate(row):
-            if column != key and column < len(header) and header[column] and value.strip():
+            if (
+                column != key
+                and column < len(header)
+                and header[column]
+                and value.strip()
+            ):
+                if header[column] == STARS and stars(value) is None:
+                    unrated += 1
+                    continue
                 _self.set_property(header[column], value.strip(), name)
+    if unrated:  # also when quiet: values were left out
+        print(
+            " load_table: %d values of 'stars' are no rating from 0 to 3; left out"
+            % unrated
+        )
     added = [h for i, h in enumerate(header) if h and i != key and h not in known]
     if not quiet:
-        print(" load_table: %d rows matched an object, %d skipped%s; %d new columns%s" % (
-            matched,
-            len(skipped),
-            " (%s%s)" % (", ".join(skipped[:5]), ", ..." if len(skipped) > 5 else "") if skipped else "",
-            len(added),
-            " (%s)" % ", ".join(added) if added else "",
-        ))
+        print(
+            " load_table: %d rows matched an object, %d skipped%s; %d new columns%s"
+            % (
+                matched,
+                len(skipped),
+                " (%s%s)"
+                % (", ".join(skipped[:5]), ", ..." if len(skipped) > 5 else "")
+                if skipped
+                else "",
+                len(added),
+                " (%s)" % ", ".join(added) if added else "",
+            )
+        )
     return matched, skipped, added
 
 
@@ -168,7 +205,10 @@ def save_table(filename, selection="all", quiet=1, *, _self=cmd):
         load_table
     """
     names = [n for n in _self.get_object_list(selection)]
-    props = {n: {p: _self.get_property(p, n) for p in _self.get_property_list(n) or ()} for n in names}
+    props = {
+        n: {p: _self.get_property(p, n) for p in _self.get_property_list(n) or ()}
+        for n in names
+    }
     columns = []
     for name in names:
         columns += [p for p in props[name] if p not in columns]
@@ -176,6 +216,17 @@ def save_table(filename, selection="all", quiet=1, *, _self=cmd):
         out = csv.writer(handle)
         out.writerow(["name", *columns])
         for name in names:
-            out.writerow([name, *("" if props[name].get(c) is None else props[name][c] for c in columns)])
+            out.writerow(
+                [
+                    name,
+                    *(
+                        "" if props[name].get(c) is None else props[name][c]
+                        for c in columns
+                    ),
+                ]
+            )
     if not int(quiet):
-        print(" save_table: %d rows, %d columns to '%s'" % (len(names), len(columns) + 1, filename))
+        print(
+            " save_table: %d rows, %d columns to '%s'"
+            % (len(names), len(columns) + 1, filename)
+        )
