@@ -1,6 +1,6 @@
 # 22 — Property table
 
-[Roadmap](../../PLAN.md) · Request 2026-11-20 · Planned, not built. Questions
+[Roadmap](../../PLAN.md) · Request 2026-11-20 · 22a–22c shipped below. Questions
 20 and 21 answered the same day: a window of its own over the viewport,
 stuck to the Objects panel; Excel read with the standard library.
 Replaces the metadata table of [step 3](03-modern-ui.md); step 3 is closed.
@@ -44,6 +44,9 @@ become booleans; the core decides that.
 Open: 22d (column order and hidden columns in the session with 28b,
 computed columns, follow mode), 22e (a picked atom selects its row), the
 Columns menu to hide columns, the size of the window between sessions.
+**2026-11-23, draft 9: 22f adds the requested Stars column now; its old
+“Later” status is superseded.** Planned at 4.43.0; no new UI measurement or
+implementation in this run. Question 57 defines click behavior precisely.
 
 **A table with one row per object: row number, a dot that shows or hides the
 object, the name, then one column per property. Cells are edited in place,
@@ -177,7 +180,7 @@ In the order I would build them; each is small and separate.
 | Color rows by a column | A gradient in the cell background for a numeric column, from the palette in use. | Later |
 | Select by value | Right click on a cell: "enable only rows with this value", "disable rows above/below". | Later |
 | Step through rows | Up and Down with "follow" checked shows only the current row's object: the way docking poses are looked at one by one. | Yes: it is the main use of the In column |
-| Stars | A 0 to 3 rating column, as in the picture. It is an integer property named `stars` drawn as stars. | Later |
+| Stars | A 0 to 3 rating column, an integer property named `stars`, drawn as three outlined/filled stars; see 22f. | Requested 2026-11-23; open, 22f |
 | 2D structure column | The ligand drawn in the row, from [step 24](24-ligand-2d.md)'s rdkit drawing. | Later, after 24 |
 | Plot two columns | A scatter plot. Needs a plotting library or own painting. | Skipped |
 
@@ -190,6 +193,7 @@ In the order I would build them; each is small and separate.
 | 22c | `load_table`, `save_table`, CSV; the Excel option that was chosen. | `tables.py` (new), `api.py`, `keywords.py`, `_gui.py` | Round trip CSV; match, skip and overwrite rules; a hand-made `.xlsx` in `testing/data` |
 | 22d | Column list in the session; computed columns; follow mode. | `property_table.py`, the session task of step 28 | A session keeps order and hidden columns; counts against `count_atoms` |
 | 22e | A picked atom selects its row (carried over from step 3). | `property_table.py`, `object_panel.py` | Simulated pick in the real window |
+| 22f | Stars: three clickable outlines, 0–3 integer rating, persistence and numeric table operations. | `property_table.py`, `tables.py` only if shared validation is needed | Every rating/click, keyboard, sort/filter/paste/import/export and session round trip |
 
 Real window at 150 % for each slice: 1,000 objects with 20 properties must
 scroll and sort without a pause (measure the poll; the limit is 20 ms).
@@ -202,7 +206,49 @@ Step 3 closes with this plan. Its open rows go here:
 | --- | --- |
 | A picked atom selects its row | 22e |
 | Rows moved by dragging | [Step 23](23-rename-in-panel.md), 23b |
-| Sequence viewer text and scene buttons still drawn by the core | Answered 2026-11-20: the scene buttons of the core are deleted ([17f](17-legacy-ui.md)); the sequence viewer stays as it is. |
+| Sequence viewer text and scene buttons still drawn by the core | Scene buttons deleted ([17f](17-legacy-ui.md)). The 2026-11-20 decision to keep sequence work at the strip is superseded by [step 33](33-sequence-window.md), requested 2026-11-23; the strip remains usable during that work. |
+
+## 22f — Stars
+
+Put **Stars** after Name by default. Always draw three star outlines for a
+molecular object: 0 = ☆☆☆, 1 = ★☆☆, 2 = ★★☆, 3 = ★★★. Fill uses the
+theme accent with adequate contrast on selected and ordinary rows; outline
+versus fill conveys the value without relying on color. Do not label it
+“Starts”. Groups/maps remain unrated because their properties are not
+supported by the current core.
+
+Store the integer in the existing object property `stars`; missing means
+zero on screen, without writing to every object just to display it. There
+must not be a duplicate generic `stars` column. Use a small
+`QStyledItemDelegate` on the existing `QTreeWidget` for paint and hit testing,
+not three button widgets per row. Keep row identity stable under sorting.
+
+Question 57, two possible readings of the request:
+
+- **Rating by position (recommended):** clicking empty star N sets N;
+  clicking filled star N sets N−1. Example: ★★★, click the third → ★★☆;
+  click the first → ☆☆☆. Filled stars remain contiguous from the left.
+- **One step per click:** any empty star adds one, any filled star removes
+  one, regardless of its position. This follows “add/remove a star” literally
+  but differs from a usual rating control.
+
+Keyboard: 0–3 assigns the value; Delete clears to the missing/zero state;
+the focused cell exposes “Stars: N of 3” to accessibility. Mouse editing
+uses the same validation/set-property path as keyboard/paste. Sort/filter
+uses the integer, clipboard/CSV uses 0–3, not star glyphs. Reject invalid
+new values (negative, fractional, above 3 or nonnumeric). A pre-existing
+invalid property is shown as invalid and preserved until the user edits it,
+not silently clamped or overwritten. Session persistence already comes
+from object properties; 22f does not need a second data store or wait for
+28b, though column layout later uses 22d.
+
+Tests extend `testing/tests/api/property_table.py` and `tables.py`: every
+rating, selected click rule, keyboard, rename/reorder under sort, missing
+and malformed imported values, multiple-row paste, CSV and PSE/PSEX reload.
+Check both themes and fractional scale with a real mouse; record refresh
+time on the existing large-table fixture. Update help and `ChangeLog` with
+an `X` version. Skip hover animation, half-stars and a separate rating API:
+`cmd.set_property('stars', 2, 'object')` already expresses the operation.
 | Spacing of the remaining dialogs | Dropped as a roadmap row: fixed when a dialog is touched or reported. |
 
 ## Skipped

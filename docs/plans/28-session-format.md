@@ -1,5 +1,14 @@
 # 28 — Session format: is a new one needed?
 
+**2026-11-23 extension, planned at 4.43.0:** alignment-window data from
+[step 33](33-sequence-window.md) joins table columns and the shot list under
+the `pymolish` key when needed. Stars (22f) use existing object properties.
+Scene appearance (35b) should extend the native scene record so movie recall
+works; use a side entry only if compatibility requires it. A new core
+representation (34) needs its own compatibility tests: the old experiment
+with extra dictionary keys below does not validate new representation bits
+or scene payloads. No output format is changed by this planning run.
+
 [Roadmap](../../PLAN.md) · Request 2026-11-20 ("think if we need a new
 session format ... e.g. psex") · **28a done 2026-11-20 in 4.26.0.** 28b (the
 one session key for new data) is built with its first user, the table

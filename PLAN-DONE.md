@@ -2,7 +2,15 @@
 
 Steps of the [roadmap](PLAN.md) whose last milestone has shipped. Open work
 stays in `PLAN.md`; the detailed plans stay in `docs/plans/`. Step numbers and
-order numbers are the ones the roadmap used.
+order numbers in the finished-work table are historical. “Open, order N”
+references below follow the current roadmap (updated 2026-11-23).
+
+**Planning update 2026-11-23 at 4.43.0:** no milestone shipped. Step 11 is
+reopened for CPK (11c); its existing palette releases remain recorded below.
+New steps 33–36 and follow-ups 22f/24d/27d are open in `PLAN.md`. The unbuilt
+step 31 was rewritten for in-app chat and live discovery of fork commands.
+Earlier choices superseded by the new request are identified there; the
+historical release record is preserved.
 
 ## Finished steps
 
@@ -11,7 +19,7 @@ order numbers are the ones the roadmap used.
 | 0 | [UI engine research](docs/plans/00-ui-engine.md) | PySide6 + Qt Widgets; preserve the renderer while simplifying bindings. |
 | 3 | [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Named docks with a saved layout, the Objects panel in Qt, the action toolbar on top and the command area at the bottom, the dark theme, the UI scale, scenes as a dock, Qt menus. Closed on 2026-11-20 without its metadata table: the property table of [step 22](docs/plans/22-property-table.md) replaces it. Its open rows went to 22e (a picked atom selects its row), 23b (rows moved by dragging) and question 31 (scene buttons and sequence text drawn by the core); the spacing of dialogs is fixed when a dialog is touched. |
 | 32 | [Icons under the object list, a Movie button](docs/plans/32-footer-icons-movie-button.md) | Requested, planned and built on 2026-11-20, 4.42.0 and 4.43.0, two slices. The four buttons under the object list have an icon: the mouse mode with its name, SEQ with its letters, Wizard and the command line as the icon alone. A Movie button after Scenes in the action toolbar opens and closes the Timeline panel. |
-| 30 | [Eight repairs after a first look at 4.35.0](docs/plans/30-polish.md) | Requested, planned and built on 2026-11-20, 4.36.0 to 4.40.0, six slices: the 2D picture, the property table, the live UI scale, the preset menu and what a preset may color, a clean row for crystallization additives, Undo and Redo for a row of the preset menu. Questions 36 to 40 are open, each with a built answer. |
+| 30 | [Eight repairs after a first look at 4.35.0](docs/plans/30-polish.md) | Requested, planned and built on 2026-11-20, 4.36.0 to 4.40.0, six slices: the 2D picture, the property table, the live UI scale, the preset menu and what a preset may color, a clean row for crystallization additives, Undo and Redo for a row of the preset menu. Questions 36 to 40 have built answers. |
 | 29 | [Version numbers](docs/plans/29-versioning.md) | The first number stays 4. The second goes up when something a user can see ships, the third for every other change to the program; plans, docs, CI and tests take no number. In `AGENTS.md` §5 since 2026-11-20; 4.20.0 is the first version under it. |
 | 26 | [Action toolbar: Bg, Open, quick select, layout](docs/plans/26-toolbar-buttons.md) | "Bg" with a paint roller; an Open button with the rows of File that bring something in; chips P, L, S, a menu with chains and more, All and "nothing", with Shift to add and Ctrl to take away; one row, 1154 px at 150 %, with a text only on Residues, Presets, Bg, Draw and the scale. 4.20.0, 4.21.0, 4.30.0. |
 | 2 | [Code and dependencies](docs/plans/02-cleanup-dependencies.md) | One feature removal per PR; trace dependencies before deleting. |
@@ -21,7 +29,6 @@ order numbers are the ones the roadmap used.
 | 7 | [Toolbar icons and UI scale](docs/plans/07-toolbar-icons-scale.md) | Line icons on every action toolbar button, Undo and Redo icon-only, 150 % default scale, scale button in the toolbar; replaces Display > UI Scale. |
 | 9 | [Own icon and logo](docs/plans/09-icons-logo.md) | Allowed and asked for by the license. One master PNG; window title and About box stop saying PyMOL. New art (blue, green and violet ribbon) in 4.19.27. |
 | 10 | [README and license files](docs/plans/10-readme-license.md) | New README naming the fork; PyMOL notice kept word for word, new code MIT, third parties listed; two allowed slogans with the trademark footnote. |
-| 11 | [Color palettes](docs/plans/11-color-palettes.md) | Five palettes replace the object color order; toolbar button; remembered in `QSettings`. |
 | 12 | [pymolish plugin commands, native](docs/plans/12-native-commands.md) | Command bodies ported, not the framework: 58 plugin commands became 18 (19 since 4.12.9, `fetch_uniprot_ligands`), in five files; two dialogs, five menu entries, no new top menu. rdkit is the optional extra `chem`. |
 | 13 | [Clean, fix and optimize structures](docs/plans/13-structure-cleanup.md) | Four layers, each shipped alone: remove water, ions and ligands; `clean` for ligands (rdkit); `fix_structure` (PDBFixer); `minimize` (OpenMM). PDBFixer and OpenMM are the optional extra `fix`. |
 | 20 | [Look of the action toolbar, own palettes](docs/plans/20-toolbar-look.md) | Names on Palette and Background, icon-only view actions, larger and heavier icons, blue for what is chosen, a camera for Scenes, ray tracing with or without the background, palettes of the user. The two follow-ups shipped in 4.23.0: blue hover in every menu of the program, Orient on what is visible. "Background" became "Bg" in 4.20.0 (step 26). |
@@ -78,28 +85,29 @@ Decided by the user on 2026-11-16 and applied:
 | Merges to `master` are done by the user. | Listed in the roadmap under "Waiting for the user". |
 
 Decided by the user on 2026-11-20, first round. The last column was brought
-up to date on 2026-11-20 at 4.35.0: a version where the decision shipped,
-"open" with its order in the roadmap where it has not.
+up to date through 4.43.0, with open orders revised 2026-11-23: a version
+where the decision shipped, "open" with its order where it has not.
 
 | # | Decision | Where it goes |
 | --- | --- | --- |
-| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 11. |
+| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 20. |
 | 3 | The icon and the logo were generated with ChatGPT; the user owns them. They get "a license that is good for trade marks". | Done in 4.19.43: `data/pymol/icons/LICENSE`, a notice outside the two code licenses (unchanged copies travel with the program and may refer to it; a changed version needs its own). `docs/licenses.md`, plan 9. |
 | 4 | The release builds stay on GitHub Actions for now. | 5c is shelved; nothing was built for it. Plan 5. |
-| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 10. |
+| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 19. |
 | 6 | The ChimeraX object colors become a palette. | 15c. Done in 4.22.0. |
-| 7 | All five effects of 15e. | Open, order 5. |
-| 13 | "Decide by yourself." Decided as recommended: the shot list goes into the session file; the 58 Program rows of the Movie menu go; the keyframe strip of the core stays for now. | Step 19. Open, order 8. |
+| 7 | All five effects of 15e. | Open, order 14. |
+| 13 | "Decide by yourself." Decided as recommended: the shot list goes into the session file; the 58 Program rows of the Movie menu go; the keyframe strip of the core stays for now. | Step 19. Open, order 17. |
 | 15 | As recommended: blue hover in every menu; Orient acts only on what is visible. | Step 20. Done in 4.23.0. |
-| 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Open, order 9. |
+| 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Open, order 18. |
 | 18 | As recommended: idle OpenMP threads sleep at once. | 1b. Done in 4.23.1. |
-| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 12. |
-| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Open, order 6; moved up by the answer to question 25. |
+| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 21. |
+| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Open, order 15; moved up by the answer to question 25. |
 
 14 was answered by "release 17" (4.19.42).
 
 Decided by the user on 2026-11-20, second round (questions 20 to 32 of the
-ten-feature request). The last column says where each one stands at 4.35.0.
+ten-feature request). The last column gives the shipped result and, where
+applicable, the 2026-11-23 follow-up.
 
 | # | Decision | Where it goes |
 | --- | --- | --- |
@@ -108,13 +116,13 @@ ten-feature request). The last column says where each one stands at 4.35.0.
 | 22 | As recommended: the rename wizard stays as the fallback without a window. | [Plan 23](docs/plans/23-rename-in-panel.md). Done in 4.24.0. |
 | 23 | The 2D ligand drawing is our own code, rdkit allowed; interactive: selecting a residue in 2D selects it in 3D. | [Plan 24](docs/plans/24-ligand-2d.md); the selection goes both ways. Done in 4.32.0 (command) and 4.33.0 (panel). |
 | 24 | Shadows ray traced only at first. | [Plan 25](docs/plans/25-studio-effects.md), 25a. Done in 4.34.0. |
-| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up (order 6 now); the surface looks and the blob are planned again with its result; no surface look and no new setting before that. Open. |
+| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up (order 15 now); the surface looks and the blob are planned again with its result; no surface look and no new setting before that. Open. |
 | 26 | As recommended: one row, icons. The same day: Builder and Scenes show only the icon, the name on mouse-over; "Draw/Ray" becomes "Draw". | Builder, Scenes and Draw done in 4.20.0; the rest in 4.30.0. |
 | 27 | The paint roller. (The answer ends "rest", cut off.) | Done in 4.20.0 with "Bg". |
-| 28 | As recommended: live scale through Qt's private function, the "next start" message as fallback. | [Plan 27](docs/plans/27-ui-scale.md). Done in 4.31.0 on Linux; Windows and macOS are 27c, open. |
+| 28 | As recommended: live scale through Qt's private function, the "next start" message as fallback. | [Plan 27](docs/plans/27-ui-scale.md). Done in 4.31.0 on Linux; 27d investigates the new freeze report before platform verification in 27c, open at order 1. |
 | 29 | As recommended: `.psex` is what Save Session writes; a `.pse` carries the new data too. | [Plan 28](docs/plans/28-session-format.md). The file type done in 4.26.0; the key for new data (28b) comes with its first user. The background picture of 21f stays in its setting. |
 | 30 | As recommended: the version rule by what changed for the user. | Done: `AGENTS.md` §5, step 29. |
-| 31 | As recommended: the scene buttons the core draws are deleted; the sequence viewer stays. | 17f in [plan 17](docs/plans/17-legacy-ui.md). Done in 4.25.0. |
+| 31 | As recommended: the scene buttons the core draws are deleted; the sequence viewer stays. | Scene-button removal done in 4.25.0. The sequence decision is superseded by the separate alignment window of step 33 (2026-11-23), open at order 11; the strip stays during delivery. |
 | 32 | As recommended: color themes set protein color and background, as a group of their own. | Plan 25, 25b-2. Done in 4.35.0, ahead of 15e. |
 
 Questions 33 to 35 (11b, the palette from the user's brand colors: its name,

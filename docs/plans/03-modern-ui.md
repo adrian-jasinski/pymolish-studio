@@ -1,5 +1,12 @@
 # 3 — Modern workspace and metadata panel
 
+**2026-11-23 follow-up, planned at 4.43.0:** this step remains closed.
+[Step 33](33-sequence-window.md) supersedes leaving sequence work at the
+viewport strip, adding a separate alignment window while retaining the
+strip during delivery. [Step 35](35-scene-appearance.md) supersedes the
+double-click scene interaction below with single-click recall and adds
+appearance persistence. Historical shipped notes below are unchanged.
+
 [Roadmap](../../PLAN.md) · Slices 1 to 4 shipped, 5 partly; slice 6 (menus) was done as [step 14](14-menus.md) in 4.13.0
 
 **Closed on 2026-11-20.** The metadata table of this plan (slices 2 and 3, "Table behavior and performance", "Additional ideas") is replaced by the property table of [step 22](22-property-table.md), which is editable and reads the object properties of the core. The open rows below went to 22e, [23b](23-rename-in-panel.md) and question 31 of the roadmap. "Live rescale without restart: skipped" is replaced by [step 27](27-ui-scale.md). The text below is kept as the record of what was built.

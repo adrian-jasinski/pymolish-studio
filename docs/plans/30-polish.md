@@ -24,7 +24,7 @@ reproduced first; what was found is in the table.**
 | Presets menu | 33 rows in one list: 16 presets, two switches, 5 themes, 3 floor rows, 10 lights. |
 | Presets and colors | Four rows give the surface a color of their own: glass and illustration (white), protein-protein interaction (orange, white where chains touch), antibody and antigen (sand, the epitope orange). "default" colors the carbons, and with them the cartoon. Glass colors every non-carbon atom by element under its surface; ligand sites does so for the pocket. |
 | Clean | Rows for waters, ions, both, ligands. Nothing for what is in the crystal only because of how it was grown. |
-| Undo after a preset | Does nothing. Tried on 3IIS: "pretty" changed lines, sticks, cartoon and spheres from 286, 359, 1249, 16 atoms to 0, 364, 1624, 0; `undo` returned nothing and changed nothing. Undo restores coordinates only; undo of everything else is 21g, order 12 of the roadmap. |
+| Undo after a preset | Does nothing. Tried on 3IIS: "pretty" changed lines, sticks, cartoon and spheres from 286, 359, 1249, 16 atoms to 0, 364, 1624, 0; `undo` returned nothing and changed nothing. Undo restores coordinates only; undo of everything else is 21g, now order 21 of the roadmap (2026-11-23). |
 
 ## Slices
 

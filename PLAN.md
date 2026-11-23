@@ -35,8 +35,14 @@ A sixth, at 4.41.0: step 32, icons in the row under the object list and a
 Movie button in the action toolbar. Planned, answered and built the same
 day in 4.42.0 and 4.43.0, and finished.
 
-**State 2026-11-20 at 4.43.0.** Built since 4.19.43, each with its test and
-a look in the real window, all listed in [PLAN-DONE.md](PLAN-DONE.md):
+Extended 2026-11-23 at 4.43.0 from eleven new drafts: repairs 24d and
+27d; Stars 22f; CPK 11c; new steps 33–36; a rewrite of the unbuilt AI plan
+31. **This is planning only: no feature shipped, no new version, no GUI or
+performance result is claimed.** Recommendations awaiting a choice are
+listed under “Waiting for the user”.
+
+**Shipped state, checked 2026-11-23: still 4.43.0.** Built since 4.19.43,
+with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
 | --- | --- |
@@ -50,8 +56,8 @@ a look in the real window, all listed in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.41.0 | Palette `halo` (11b): five colors of a brand book and seven added ones. |
 | 4.42.0 to 4.43.0 | Step 32: an icon on each of the four buttons under the object list; a Movie button in the action toolbar that opens and closes the Timeline panel. |
 
-Of the ten requested features, nine have a working version. The tenth, the
-surface looks, waits for the grid surface of 1b, as decided. Steps 20, 26,
+Of the ten features requested on 2026-11-20, nine have a working version.
+The tenth, the surface looks, waits for the grid surface of 1b. Steps 20, 26,
 29 and 32 are finished.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
@@ -65,43 +71,64 @@ milestone ships; its detailed plan stays in `docs/plans/`.
 
 ## Open work, in execution order
 
-One table: what is open, in the order to do it. The step numbers are the
-user's original numbers; the letters are milestones of the detailed plans.
+The order below prioritizes reported breakage, then the requested workflows,
+then the earlier rendering work. Step numbers identify detailed plans; slice
+letters remain stable. No release dates are promised. Each slice is a separate
+implementation task/PR, with an `X` feature or `Y` fix version under `AGENTS.md`.
+Questions gate the dependent slice, not unrelated repairs.
 
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
-| 1 | **28b** — [One session key for new data](docs/plans/28-session-format.md) | 28a, the packed `.psex` file, shipped in 4.26.0. Left: one key `pymolish` in the session for everything new (table columns, shot list), with unknown entries kept. Built with its first user (22d or step 19), not ahead. | An entry of a "newer" version survives load and save; PyMOL 3 loads the `.pse` written with the key. |
-| 2 | **22d, 22e** — [Property table, the rest](docs/plans/22-property-table.md) | 22a to 22c shipped in 4.27.0 to 4.29.0: the window, editing, columns, copy and paste, import from CSV and Excel, export. Left: 22d, column order and hidden columns kept in the session (with 28b), computed columns (atoms, residues, chains, states, weight, charge), a Columns menu, "follow" (the current row is the only object shown), the window's size between sessions; 22e, a picked atom selects its row. | Each slice has its test. |
-| 3 | **27c** — [UI scale, Windows and macOS](docs/plans/27-ui-scale.md) | 27a and 27b shipped in 4.31.0: any percent from 50 to 300, live on Linux. Left: see in the first CI run whether the live change works on Windows and macOS (the test prints it); where it does not, restart in place or the "next start" message stays. | The CI log of both systems. |
-| 4 | **24c** — [Ligand in 2D, the rest](docs/plans/24-ligand-2d.md) | 24a and 24b shipped in 4.32.0 and 4.33.0: the command `ligand_2d` and the panel with clicks both ways. Left: the contour around the pocket, grey halos on ligand atoms open to the solvent, metal contacts, the contacts as dashes in the viewport, the distance in a tooltip, Tab through the residues. | A picture next to the reference; the dashes go when the panel closes. |
-| 5 | **15e** — [Five effects](docs/plans/15-presets.md) | As decided: color steps in the viewport; fog toward a white background; helices as cylinders; ambient occlusion in the soft look (timed on a large surface first); "balls in glass". The color themes that were to come with them shipped in 4.35.0. | Each has a check in the preset tests and a picture. |
-| 6 | **1b** — [Grid surface, an experiment](docs/plans/01-performance-gpu.md) | A second `surface_type`: signed distance grid and marching cubes, with a smoothness value. Times and pictures of 1aon and 4v6x against today's surface, at two smoothness values; then the user decides whether it stays. Moved up: the surface looks wait for it. | The table and the pictures. |
-| 7 | **25b** — [Surface looks and the blob](docs/plans/25-studio-effects.md) | Not planned in detail yet (answer to question 25): written again with the result of order 6. Until then no surface look and no new setting is added. The trial pictures (glossy, candy glass, clay, night) are in the plan. | A new plan section after order 6. |
-| 8 | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | The shot list goes into the session file. The 58 Program rows of the Movie menu go. Dragging on the strip. The keyframe strip of the core (19g) stays for now. The list goes under the key of step 28. | A session with a shot list loads here with the list and loads in 4.19.x without it; the menu test. |
-| 9 | **21f** — [Three rendering details](docs/plans/21-commercial-features.md) | `sphere_mode` is capped at 9, its test and two reference images go. The background image is stored inside the session file. Smooth edges in the viewport with an FXAA shader. The picture is stored in the setting, as decided. | Each old test passes or is deleted with its item. |
-| 10 | **15b** — [Outline in the viewport](docs/plans/15-presets.md) | An edge pass over the drawn picture for the looks figure, soft, flat, comic and sketch. The line is black on a light background and light on a dark one. It is the same kind of pass as FXAA, so it comes right after it. | Frame time before and after; pictures on black and on white. |
-| 11 | **1b** — [Surface on a worker thread](docs/plans/01-performance-gpu.md) | A large surface is built off the GUI thread: the window stays usable, the status line says it is being built, the surface appears when ready. Headless runs still wait. | 1aon and 4v6x in the real window; the suite and the sanitizer job. |
-| 12 | **21g** — [Undo of more than the last move](docs/plans/21-commercial-features.md) | A first piece shipped in 4.40.0 (30f): a row of the preset menu is undone and redone through a snapshot of the whole session, five steps. Left, all of the plan: snapshots for commands that add, remove or edit; the existing coordinate ring for moves. Three slices: the stack with create, delete, remove and the builder's edits; Undo and Redo in the toolbar say what they will undo; the rest of the test list. After it the error "only in Incentive PyMOL", the test mark `incentive` and the option `-n` go. | The 26 undo tests and the three jira tests pass, then the `incentive` mark comes off. |
+| 1 | **27d, then 27c** — [Scale freeze](docs/plans/27-ui-scale.md) | Reproduce the reported 150 → 120 freeze; inspect live scaling and ordinary resize paths. Repair the demonstrated cause, or use the accepted next-start fallback before an unsafe live path. Verify Windows/macOS as well as the reported platform. | A subprocess timeout/heartbeat regression and real GUI repaint/input checks; unsupported live scaling is reported distinctly. |
+| 2 | **24d** — [Resizable ligand 2D](docs/plans/24-ligand-2d.md) | Fix dock/floating-window resizing and fit the complete SVG/legend to the available area; keep picking aligned after scale changes. | Shrink/grow repeatedly, docked/floating, crowded ligand, fractional DPI; no crop, freeze or stale click coordinates. |
+| 3 | **35a** — [One-click scenes](docs/plans/35-scene-appearance.md) | Click or Enter recalls once; rename, drag, right click and list refresh do not trigger recall. | Interaction tests and a real mouse check. |
+| 4 | **28b + 22d, 22e** — [Session key](docs/plans/28-session-format.md) and [remaining table work](docs/plans/22-property-table.md) | Build the shared `pymolish` key with its first consumer: column order/hidden/empty columns. Computed columns, Columns menu, follow mode, remembered window size and picked-atom row selection remain. | Unknown session entries survive; table layout reloads; computed values and selection checked. No unused persistence framework built ahead. |
+| 5 | **22f** — [Stars](docs/plans/22-property-table.md) | Three outline/filled stars for a 0–3 integer object property, mouse and keyboard editing, sorting and numeric import/export. Independent of 28b. | All ratings/clicks, invalid values, sorted row identity and session/CSV round trips. |
+| 6 | **35b** — [Scene appearance](docs/plans/35-scene-appearance.md) | Store cartoon type, relevant visual settings at their actual scopes, representation color overrides and referenced custom colors; recall through panel, command and movies. | Store A, apply preset/color B, recall A and B; settings and images match, including reload, without restoring/deleting molecular data. |
+| 7 | **34a, 34b** — [Independent ball-and-stick](docs/plans/34-ball-and-stick.md) | A new representation with its own visibility, colors, ball scale (default 0.31), bond radius and single/double/triple/aromatic display; S/H/C, commands, ray, picking, sessions and scene integration. | Changing it preserves line/stick/sphere settings and colors; renderer, old/new session and scene checks pass. |
+| 8 | **34c** — [Ligand preset defaults](docs/plans/34-ball-and-stick.md) | Use the new model for visible ligands in all applicable molecular presets, including pretty/publication/glass; preserve protein colors and existing hidden sphere/stick overrides. | Preset matrix on protein/ligand/water/ion; A/B scene recall and Undo. Depends on 34a/b and 35b. |
+| 9 | **11c** — [CPK / residue-color choice](docs/plans/11-color-palettes.md) | Resolve “CPK by residues”; recommended CPK element colors within selected residues, including a ball-and-stick-only target. | Documented scheme, menu/command equivalence, target isolation and scene round trip. |
+| 10 | **36a** — [Next ligand with contacts](docs/plans/36-ligand-navigation.md) | Next/Previous ligand, protein polar contacts and site zoom; shared discovery, owned temporary contacts and an assignable shortcut. | Wrap/reverse, absent/deleted ligands, host selection, cleanup and unchanged protein colors. |
+| 11 | **33a–33c** — [Sequence alignment window](docs/plans/33-sequence-window.md) | Separate resizable window, linked 2D/3D selection and secondary structure, sequence alignment, pairwise/multiple-structure fitting, FASTA and genuine MSA with the chosen backend. | Residue/gap mapping, unchanged coordinates for sequence-only work, fit statistics/Undo, MSA and session/export checks. |
+| 12 | **31a, 31c, then 31b** — [Chat and agent tools](docs/plans/31-ai-agents.md) | Built-in chat is required; live discovery of this fork's public commands/settings/presets, actual results/errors, cancellation and reviewed execution. External connector reuses it. Questions 41–48 resolve route/UI/dependencies; optional subscription login 31d is only an investigation. | Catalog coverage and provider stand-ins; live fork-specific workflows with each chosen provider. No promise of login entitlement. Can start independently of steps 33–36. |
+| 13 | **24c** — [Remaining 2D contacts](docs/plans/24-ligand-2d.md) | Pocket contour, solvent halos, metal contacts, viewport dashes, distance tooltips and Tab through residues. | Reference picture, keyboard check, owned dashes removed on close. |
+| 14 | **15e** — [Five effects](docs/plans/15-presets.md) | Color steps, fog toward white, cylindrical helices, measured ambient occlusion in soft look, balls in glass. Color themes already shipped in 4.35.0. | Preset checks and images; scenes preserve the added visual settings. |
+| 15 | **1b** — [Grid surface experiment](docs/plans/01-performance-gpu.md) | Signed distance grid/marching cubes as a second surface type and a smoothness value. Compare 1aon and 4v6x at two values; user judges the experiment. | Actual times and pictures against today's surface. |
+| 16 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan using the grid-surface result from order 15; no new surface-look setting before that. | New detailed section grounded in the experiment. |
+| 17 | **19** — [Movie timeline](docs/plans/19-movie-timeline.md) | Persist the shot list under step 28's key; remove 58 Program rows; dragging on the strip. Core keyframe strip stays. Exercise step 35's style recall in playback. | Shot-list session compatibility, menu and playback tests. |
+| 18 | **21f** — [Rendering details](docs/plans/21-commercial-features.md) | Cap sphere mode at 9 with its obsolete test/images removed; store background image in its setting; FXAA. | Checks per slice and viewport images. |
+| 19 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. Follows FXAA's pass. | Frame times and pictures on black/white. |
+| 20 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. | Real-window responsiveness, suite and sanitizer checks. |
+| 21 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards. | Existing undo/jira cases pass before their marks are removed. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 | any time | **23b** — [Rows moved by dragging](docs/plans/23-rename-in-panel.md) | Reorder and regroup in the Objects panel with the mouse. Carried over from step 3. | The drop goes through a function a test calls. |
 | any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
-| after the answers | **31** — [AI agents: Claude and ChatGPT drive the program](docs/plans/31-ai-agents.md) | Request of 2026-11-20, planned the same day, nothing built. Four slices. 31a: the tools (run commands, the scene, a picture of the viewport, a table of atoms, help), a connector that listens on this machine only, behind a token, off until it is turned on, and an icon in the action toolbar. 31b: "Connect Claude Code" and "Connect ChatGPT and Codex" in one click. 31c: a built-in assistant in the command area, with an API key. 31d: Sign in with ChatGPT. There is no login for a Claude subscription inside the program: Anthropic does not allow it, so that route is the connector. Waits for questions 41 to 48; 31a needs 41, 43, 45 and 46. | Each slice has its test and a look in the real window. In 31a Claude Code and Codex each make one figure of 1OKY through the connector. |
 
-The session key and the rest of the table come first, then the scale and
-the 2D ligand. For surfaces the grid surface of 1b comes first (order 6);
-the surface looks are planned with its result. The old order is kept
-behind: timeline, rendering details, outline, the surface on a worker
-thread, and undo, the largest, last. Orders 9 and 10 share their shader
-pass. 5c (release builds without GitHub Actions) is shelved: the builds stay
-on GitHub for now. GPU compute is not on the critical path.
+The earlier surface dependencies are preserved: grid experiment before surface
+looks; FXAA before outline. New scene storage precedes the ligand preset
+switch; the new representation and color isolation precede ligand navigation.
+The alignment-engine and AI dependencies are explicit decisions, not already
+approved additions. 5c stays shelved; builds stay on GitHub Actions.
 
-Step 31, the AI agents, has no number in the order yet: it is built when
-its questions are answered, its first slice before the rest.
+The toolbar baseline remains the measurement from 4.43.0 at 150 %: 1236 px
+of content, a 1244 px window. No new button width was measured in this run;
+steps 31 and 33 must check space before adding or repurposing controls.
 
-The icon of 31a has no room in the bar as it is. Measured at 4.43.0 and
-150 %: the bar needs 1236 px and the window opens 1244 px wide; a 1920 px
-screen has 1280. The Movie button took 41 px, so one more icon needs about
-1285 px (estimate). 31a decides what gives way.
+## Coverage of the 2026-11-23 drafts and superseded decisions
+
+| Draft | Plan | Earlier decision reconciled |
+| --- | --- | --- |
+| 1 — ligand image/panel does not fit | 24d | The existing resize path needs a regression fix despite 24b/30a's earlier successful pictures. |
+| 2 — sequence window, alignments, secondary structure | 33a–33c | Replaces “sequence viewer stays as it is” in steps 3/22; retains the current strip during delivery. Additional first options: search, linked selection, consensus, identity, export and fit statistics. |
+| 3 — independent ball-and-stick | 34a/b | The existing preset is not a separate representation; shared sphere/stick settings no longer satisfy this request. |
+| 4 — default ligand representation in presets | 34c / 15 | Supersedes the old 0.18/0.13 ligand recipe and exclusion of pretty/publication/glass. |
+| 5 — CPK by residues | 11c | Distinguishes element CPK from amino-acid-type colors; question 56 stays open. |
+| 6 — scenes preserve preset style and colors | 35b | Extends existing scene color/visibility storage to the visual state it currently lacks; does not turn recall into full-session rollback. |
+| 7 — one-click scene switching | 35a / 3 | Replaces Enter/double-click-only recall; keyboard and rename/reorder remain. |
+| 8 — freeze on 150 → 120 | 27d, then 27c | Reliability must be established before claiming live scale support; the accepted next-start fallback remains. |
+| 9 — three stars in the property table | 22f | Promotes the explicitly deferred `stars` idea into requested work. |
+| 10 — next ligand with protein contacts and zoom | 36a | Adds a workflow beyond Ctrl+L's existing zoom-only helper; shortcut choice is open. |
+| 11 — chat control, aware of the fork | 31 | Already planned, unbuilt; now in-app chat plus a live capability catalog is required, not just an external connector. |
 
 ## Validation of the original draft
 
@@ -138,7 +165,11 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-Eight questions are open, all for step 31, further down.
+Open choices are listed below, with recommendations. The new drafts request
+all eleven outcomes; these questions refine behavior, not whether to plan
+them. No unanswered recommendation is recorded as the user's decision.
+Questions 53, 54 and 56 clarify the resize control, sequence inputs and CPK;
+their interpretations remain provisional.
 
 Questions 49 to 52 (step 32) were answered on 2026-11-20 and built the
 same day in 4.42.0 and 4.43.0; the answers are under "Decided by the
@@ -169,43 +200,54 @@ a built answer, so nothing waits for them; say so if another one is wanted.
 | 39 | "Clean the preset menu": should presets leave it? Candidates: classified, ball and stick, b factor putty, five of the seven ligand sites rows. | none taken out |
 | 40 | Undo of a preset takes back everything done after it (Redo brings it back) until 21g builds one stack. Good enough until then? | yes |
 
-Eight questions are for step 31, the AI agents
-([plan](docs/plans/31-ai-agents.md), with the reasons). Nothing of it is
-built. The last column is the recommended answer.
+Step 31 is replanned in [the AI detail](docs/plans/31-ai-agents.md).
+The previous questions retain their IDs, with updated choices:
 
-| No. | Question | Recommended |
+| No. | Question | Recommendation |
 | --- | --- | --- |
-| 41 | Which routes: the connector only (the agent runs in the user's Claude or ChatGPT program); the connector, then an assistant built into the window; also an assistant through `claude -p` and `codex exec`? | The connector, then the built-in assistant. The third is a grey area of Anthropic's rules. |
-| 42 | A new dependency: the official `anthropic` and `openai` packages as an optional extra `ai` for the built-in assistant, or the standard library only? | The official packages, once their size in a bundle is measured. |
-| 43 | What an agent may run by default: commands only, with a switch for Python and files; or everything? | Commands only. |
-| 44 | Where the built-in assistant lives: in the command area (a command `ask`, answers in the log), or in a panel of its own? | The command area. |
-| 45 | The icon (`bot`, `sparkle`, `message-circle`) and the name ("Assistant", "AI", "Agent"). | `bot`, "AI assistant" on mouse-over, the commands `agent` and `ask`. |
-| 46 | "Native build option": always built in and off until used, or also a build flag that leaves it out? | Always built in. |
-| 47 | "Connect" rows for Claude Code and for Codex with the ChatGPT desktop app; also for the chat tab of Claude Desktop, which needs a helper program? | The first two; the chat tab as a slice 31e if wanted. |
-| 48 | A key or a token is kept in a file only the user can read, or in the keychain of the system (`keyring`, a new dependency)? | The file. |
+| 41 | Chat first or connector first? | Shared tools 31a, required chat 31c, then connector 31b. The new request settles that chat is required. |
+| 42 | Optional official API SDKs or standard-library HTTP? | SDKs if measured bundle cost is acceptable; explicit dependency approval is still required. |
+| 43 | Reviewed operations or unrestricted Python/files by default? | Reviewed operations; concrete confirmation for destructive/file/network actions, separate trusted Python mode. |
+| 44 | Chat tab in command area or a separate dock? | Chat tab, distinct from command input, with history and Stop. |
+| 45 | Assistant icon/name? | `bot`, “AI assistant”; alternative `message-circle`, “Chat”. Measure toolbar space first. |
+| 46 | Present but off until used, or a build option to remove it? | Present but inactive. |
+| 47 | Which external clients get setup helpers? | Installed Codex and Claude Code after actual compatibility checks; other clients separately. |
+| 48 | Session/environment keys only or persistent credentials? | Session/environment first; persistent storage needs an OS-appropriate security design. |
+
+Choices from the new drafts:
+
+| No. | Question | Recommendation / alternatives |
+| --- | --- | --- |
+| 53 | Does 150 → 120 mean the toolbar UI-scale percentage or ordinary window resizing? | Provisionally UI scale; reproduce both paths until clarified. [27d](docs/plans/27-ui-scale.md). |
+| 54 | Loaded structure chains only, or FASTA sequences too? | Loaded chains plus FASTA; loaded-only can be the first slice. Secondary structure means helix/sheet/coil from loaded coordinates, not predicted structure. [33](docs/plans/33-sequence-window.md). |
+| 55 | Which true MSA engine? | Optional local MAFFT executable (dependency approval/packaging needed), or a larger native progressive aligner. Reference-based fits alone do not complete MSA. [33](docs/plans/33-sequence-window.md). |
+| 56 | CPK element colors within residues, or one color per amino-acid type? | CPK by element within selected residues; otherwise name the action “By residue type”. [11c](docs/plans/11-color-palettes.md). |
+| 57 | What does clicking star N do? | Empty sets rating N, filled sets N−1; alternative any empty/filled click adds/removes one. Both keep three outlines and a value 0–3. [22f](docs/plans/22-property-table.md). |
+| 58 | Replace Ctrl+L or keep its zoom-only action? | Keep it; make Next ligand with contacts assignable and menu-accessible. Alternative: Ctrl+L becomes the richer workflow. [36](docs/plans/36-ligand-navigation.md). |
+| 59 | Ball-and-stick bond colors? | Half-bonds follow endpoint ball colors; alternative uniform dark bonds with an independent override. [34](docs/plans/34-ball-and-stick.md). |
+| 60 | How does SEQ open the new window? | Keep the strip toggle, add alignment window in its context menu and Display > Panels; alternative SEQ opens the new window and Display keeps the strip toggle. [33](docs/plans/33-sequence-window.md). |
 
 One answer was cut off: question 27 reads "paint roller icon. rest". The
 paint roller is built; say if the rest of the sentence asked for more.
 
 Small things that were left out on the way and are built only if asked for:
 shortcuts for the UI scale (Ctrl+=, Ctrl+-, Ctrl+0) and the option
-`--ui-scale`; the five themes as palettes and backgrounds of their own; the
-table window's size between sessions (it is part of 22d); from step 30,
+`--ui-scale`; the five themes as palettes and backgrounds of their own; from step 30,
 the tones of the 2D picture in a PNG written by `ligand_2d` (rdkit draws
 it), and glycerol and other additives sorted out of the 2D panel's list of
 ligands.
 
 The user's to do, not decisions:
 
-- Push `feature12` and open a pull request. The branch is local only: 40
-  commits after `master` on GitHub, 4.20.0 to 4.43.0 (counted 2026-11-20).
-  Pull request 10 was merged on 2026-11-20; `master` on GitHub is at
-  4.19.43.
-- The checks marked "first CI run" can be looked at once the branch is
-  pushed: the icon of the Windows program, the release notes, the `chem` and
-  `fix` extras on three systems, and new with 4.31.0: whether the live UI
-  scale works on Windows and macOS (the test `test_scale_range_and_live`
-  prints it; step 27c).
+- Push the remaining `feature12` commits and check/open its pull request.
+  Local git inspection on 2026-11-23 finds an `origin/feature12` tracking
+  branch, so the previous “local only” statement is obsolete. Remote/PR
+  status was not refreshed in this planning run; no push or merge is done.
+- Review the available CI runs, then the run after the remaining commits
+  are pushed: the Windows icon, release notes, `chem`/`fix` extras on three
+  systems and live UI scaling. Current CI status was not checked here;
+  the old scale test prints fallback status, and 27d/27c must distinguish
+  that from working live scaling.
 - Remove the pymolish plugin from `~/.pymol/startup` (still there on
   2026-11-20): it wins over the native commands.
 - `plan_images/` (the pictures of the request of 2026-11-20) is ignored by

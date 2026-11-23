@@ -1,5 +1,14 @@
 # 14 — Action and right-click menus
 
+**2026-11-23 follow-up, planned at 4.43.0:** [step 34](34-ball-and-stick.md)
+adds Ball-and-stick to the shared Show/Hide menus and a representation-only
+color submenu; [11c](11-color-palettes.md) adds CPK; [step 36](36-ligand-navigation.md)
+adds Next/Previous ligand with contacts. [Step 33](33-sequence-window.md)
+adds the separate alignment window to Display > Panels. Keep toolbar,
+object/selection and viewport routes on the same menu definitions and
+keyboard access. These are additions to the simplification below, not
+reasons to restore deleted menus. Nothing in this follow-up is built.
+
 [Roadmap](../../PLAN.md) · Request 2026-11-14 · **Done 2026-11-16 in 4.13.0**:
 14a in 4.10.1, 14b on 2026-11-14, 14c in 4.13.0. What 14c did, and where it
 left the draft, is under "14c result". **14d (select and split rows, presets

@@ -2,7 +2,12 @@
 
 [Roadmap](../../PLAN.md) · Request 2026-11-20 · **24a done 2026-11-20 in
 4.32.0:** the command `ligand_2d` with finder, layout and picture. The panel
-(24b) and the contour and halos (24c) are open.
+(24b) shipped in 4.33.0; contour and halos (24c) remain open.
+
+**2026-11-23, draft 1: 24d below repairs panel resizing and picture fitting
+before 24c. Planned at 4.43.0, not built or reproduced in a GUI in this run.**
+The earlier statement that the picture scales describes the intended path,
+not proof that all dock/window sizes work. Step 30's picture styling stays.
 
 ![2RH1, carazolol](../img/ligand-2d.png)
 
@@ -174,6 +179,41 @@ always on white unless "transparent" is chosen.
 | 24a | `ligand_2d`: finder and layout, SVG and PNG from the command line (no panel). Hydrogen bonds, salt bridges, stacking, near residues. | `testing/tests/api/ligand2d.py` (needs rdkit): on 2RH1 the contact list has Ser203, Asn312, Tyr316 as hydrogen bonds and Asp113 as a salt bridge; no two residue shapes overlap; the SVG parses. Pictures of 2RH1, 1OKY, 3IIS in the plan. |
 | 24b | The panel and the toolbar button: clicks, hover, ligand list, export, theme. | Simulated click selects the residue; the button is disabled without a ligand; real window at 150 %, dark and light. |
 | 24c | Pocket contour, solvent halos, metal contacts, "Show in 3D". | Picture next to the reference; the dashes go when the panel closes. |
+| 24d (before 24c) | Resizable dock/floating window; fit the complete picture and legend to its content area. | Repeated shrink/grow and scale changes, correct hit testing, no cropping or layout growth loop. |
+
+## 24d — resize and fit the picture (request 2026-11-23)
+
+`modules/pmg_qt/ligand_panel.py` already has a `QDockWidget`, a resizable
+`_Picture` label with `Ignored` size policy and a 240 × 240 minimum, and
+`_render` scales the SVG using the label dimensions with a 1.25 ceiling.
+These are code facts, not measurements of the reported failure. Inspect the
+header's minimum size, dock constraints and SVG bounds as well as the label.
+
+1. Reproduce with the user's crowded ligand/pocket and a small fixture,
+   docked and floating. Record widget/content/SVG bounds and device-pixel
+   ratio while shrinking and growing; check the legend is inside SVG bounds.
+2. Fix the constraint or transform at its source. Fit the entire drawing
+   into the available content rectangle, preserving aspect ratio and
+   centering. The minimum size must come from usable controls, not a stale
+   pixmap. Handle zero-size/hidden widgets without division by zero or an
+   allocation loop. Resize rerenders the cached SVG; it must not rerun
+   contact analysis on every mouse movement.
+3. Draw sharp at the current pixel ratio. Painting and residue/atom hit
+   testing must share the actual scaled size and offset, including rounding.
+   The growth cap may remain only if the image still uses the space as
+   intended; remove it if it prevents fitting the requested panel behavior.
+4. Keep mouse resize handles and dock splitters usable and all header
+   controls reachable. Use the existing dock geometry persistence. Fit is
+   automatic; explicit zoom/pan is an optional later choice if fitting a very
+   crowded pocket makes its labels unreadable.
+
+Checks in `testing/tests/api/ligand_panel.py`: shrink/grow several times,
+non-square and crowded SVGs, whole legend visible, hit coordinates after
+resize, hidden/empty panel, dark/light and fractional scaling. Real window:
+drag both dock splitter and floating edges at 100/120/150/200 %, with the
+main window also resized. Those are proposed test inputs, not completed
+measurements. SVG/PNG export stays at its requested output size. A fix
+gets a `Y` version; no new dependency or separate image viewer.
 
 ## Skipped
 

@@ -1,5 +1,11 @@
 # 32 — Icons in the row under the object list, and a Movie button
 
+**2026-11-23 follow-up:** step 32 stays finished. The separate sequence
+window of [step 33](33-sequence-window.md) has an open choice (question 60)
+about the SEQ entry point; no change to its shipped icon/label is assumed.
+Step 31's assistant entry must use this file's measured toolbar baseline
+and remeasure with the new window, not its older pre-Movie estimate.
+
 [Roadmap](../../PLAN.md) · Request 2026-11-20 · **Planned 2026-11-20 at
 4.41.0. Done the same day: 32a in 4.42.0, 32b in 4.43.0.**
 

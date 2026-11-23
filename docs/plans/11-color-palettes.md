@@ -1,5 +1,50 @@
 # 11 — Color palettes
 
+**2026-11-23, draft 5: 11c below adds explicit CPK coloring; planned at
+4.43.0, not built.** The requested “by residues” wording is question 56;
+object/chain palettes already shipped are unchanged by this plan.
+
+## 11c — CPK for selected residues, with an explicit color target
+
+CPK assigns colors by **element**; coloring each amino-acid type is a
+different scheme. This distinction is documented in the primary
+[Jmol color reference](https://jmol.sourceforge.net/jscolors/), checked
+2026-11-23. Do not invent a “CPK residue” palette.
+
+Question 56: **CPK element colors within the selected residues
+(recommended)**, or one color per amino-acid type (labelled “By residue
+type”, with a published amino-acid scheme chosen before implementation).
+The recommendation is provisional, not an answered preference.
+
+For CPK, add an explicit C > By element > CPK entry to the shared menus;
+a residue-level selection colors all atoms of those selected residues.
+Offer it also under C > Ball-and-stick so only that representation's
+overrides change (step 34). An ordinary CPK action changes atom colors
+normally; its label/help must distinguish it from the representation-only
+action. The latter cannot change `sphere_color`, atom colors or cartoon
+colors. A proposed command `color_cpk selection, representation=...` uses
+the same function; confirm the final signature against `color`, `color_deep`
+and existing `util.cba*` helpers before adding an unnecessary wrapper.
+
+Audit `modules/pymol/menu.py:by_elem`, `util.cba*` and the element colors in
+`layer1/Color.cpp`. Reuse their mapping if it matches the chosen documented
+CPK variant; otherwise use one named data table, with a neutral fallback
+for unknown elements. Do not change the active object palette or all
+element definitions globally merely to color a selection.
+
+Tests in `testing/tests/api/` cover common elements, a metal/halogen and an
+unknown element; whole-residue selection, CPK vs atom-color inheritance,
+ball-and-stick-only coloring with simultaneously visible spheres, custom
+colors, scene recall (35b), PSE/PSEX and menu/command equivalence. If question
+56 chooses residue types instead, test the residue mapping and unknown/
+modified residues explicitly. Look at light and dark backgrounds, without
+silently changing published colors to suit the theme.
+
+Files: color helper/data, `menu.py`, command registration/help/completion
+if a public command is added, tests, `docs/commands.md` and `ChangeLog`.
+An `X` version. No new dependency or palette editor. The rest of this file
+records the earlier object/chain palette work.
+
 [Roadmap](../../PLAN.md) · Request 2026-11-14 · Done in 4.10.0, see
 [Status](#status).
 One more palette, 11b, was planned and built on 2026-11-20 (`halo`, 4.41.0): see

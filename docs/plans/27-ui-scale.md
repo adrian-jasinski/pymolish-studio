@@ -4,6 +4,12 @@
 2026-11-20 in 4.31.0** (the field, the range, the live change on Linux, the
 fallback). 27c, Windows and macOS, is open.
 
+**2026-11-23, draft 8: a change from 150 to 120 reportedly freezes the
+window. 27d below is the first repair in the roadmap, before further live
+scale work.** Interpreted provisionally as 150 % → 120 % in the toolbar;
+question 53 distinguishes it from resizing the window. Planned at 4.43.0;
+source inspected, no freeze reproduced or root cause established in this run.
+
 As built, and where it differs from the plan below:
 
 - `theme.set_scale_live` (35 lines) finds the Qt library through
@@ -40,7 +46,45 @@ the five fixed steps up to 200 % of [step 7](07-toolbar-icons-scale.md), and
 | The button | A menu of the five steps in the toolbar; a pick shows "applies the next time pymolish starts". |
 | The viewport | Follows the window's pixel ratio; `display_scale_factor` (whole numbers) is rounded from it for the text the core still draws. |
 
+## 27d — investigate and fix the freeze
+
+Start with every caller of `theme.set_scale_live`, especially
+`action_toolbar._set_scale`, `_apply_scale`, `_confirm_scale`, the GL
+widget's resize/pixel-ratio handling and floating-panel placement callbacks.
+The current code hides visible widgets, destroys native windows and calls
+the private `QHighDpiScaling::setGlobalFactor` through `ctypes`. Reentrancy,
+layout callbacks and lost native/GL handles are hypotheses to inspect,
+not diagnosed causes.
+
+- Capture a stack trace and event-loop heartbeat in a disposable process
+  while applying 150 → 120 → 150 repeatedly. Repeat with the 2D panel, table,
+  Scenes and a floating dialog open, then with ordinary window resizing.
+  Record OS/display backend, Qt version and monitor scale. No user session
+  is thrown away to reproduce it.
+- Fix the demonstrated cause once in the shared path; avoid nested changes
+  while a scale change is in progress. Verify the GL context, viewport
+  repaint, input, dock visibility and icon sharpness after each change.
+- If the private path cannot be made reliable on a configuration, use the
+  already accepted “applies at next start” fallback **before** entering the
+  unsafe path. Never automatically restart and lose undo/plugin/Python
+  state. A GUI timer cannot recover an event loop already blocked.
+- A saved scale must stay valid and startup must remain usable after an
+  interrupted attempt. Preserve the exported `QT_SCALE_FACTOR` rule and
+  the existing Keep/Revert behavior where a live change succeeds.
+- Extend `testing/tests/api/theme.py` with a subprocess GUI regression and
+  external timeout/heartbeat, not only an assertion that the scale value
+  changed. Log an unsupported live path separately; a test that accepts a
+  fallback is not evidence that live scaling works.
+
+27c then checks the repair/fallback on Windows and macOS; also record Linux
+X11/Wayland coverage where available. Real GUI drag/repaint checks remain
+necessary. A bug repair gets a `Y` version; a deliberate change to the scale
+interaction needs its own documented `X` slice. No new dependency, forced
+restart or speculative replacement of the complete scale system.
+
 ## The trial (2026-11-20, Linux, X11 under WSLg, PySide6 6.12)
+
+These historical successful trials do not cover the new freeze report.
 
 Qt has the function that changes the factor, `QHighDpiScaling::setGlobalFactor`.
 It is exported by the Qt library but not offered by PySide6, and Qt says it
@@ -65,6 +109,9 @@ Not tried: Windows, macOS, Wayland, a floating dock, an open dialog, a
 second screen with another scale.
 
 ## Options (question 28, answered 2026-11-20: A, with D as its fallback)
+
+That decision still requests live scaling where reliable. 27d supersedes any
+assumption that an available private Qt symbol alone proves it safe.
 
 | | Option | Note |
 | --- | --- | --- |

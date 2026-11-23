@@ -1,8 +1,17 @@
 # 15 — Presets and looks
 
+**Plan revision 2026-11-23, drafts 3, 4 and 6, at 4.43.0 (not built):**
+[34c](34-ball-and-stick.md) replaces the shared sticks/spheres ligand
+recipe with independent ball-and-stick, ball scale 0.31, for ligands in all
+applicable molecular presets. [35b](35-scene-appearance.md) makes stored
+scenes restore the style and color overrides these presets change. The
+earlier numerical recipes below describe shipped behavior, not future
+defaults. The rule that presets preserve polymer cartoon/surface colors
+still applies. Scene storage precedes the preset switch.
+
 [Roadmap](../../PLAN.md) · Request 2026-11-16 · **15a done 2026-11-16 in
-4.14.0, 15d in 4.14.3, 15f in 4.14.4.** 15b, 15c and 15e were approved on
-2026-11-20 and are to build. **15g and 15h done 2026-11-18 in 4.14.5, 15i (visible objects, two
+4.14.0, 15d in 4.14.3, 15f in 4.14.4.** 15b and 15e were approved on
+2026-11-20 and remain open; 15c shipped in 4.22.0. **15g and 15h done 2026-11-18 in 4.14.5, 15i (visible objects, two
 presets for complexes) in 4.19.1, 15j (the light after "illustration") in
 4.19.2, 15k (publication green) in 4.19.3, 15l (cartoon spring, colors kept,
 two-color interaction surface) in 4.19.29** (the last sections before "Skipped"). They change three decisions below: the looks are part of the
@@ -502,12 +511,12 @@ white patch, then `preset.spring("binder")`.
 - `look` as a typed command. `preset.look("flat")` works on the command line.
 - A mark on the look that is active.
 - The Lighting plugin reading `LOOKS`, and its sliders following a look.
-- A new color for the sticks of "ball and stick". They are white, so on a
-  white background they show only where a look draws shading or an outline.
+- The old preset's white-stick limitation is superseded by step 34's
+  independent colors and bond-color choice (question 59).
 - The rest of the gist: Bondi radii, slate nitrogens, `valence_size`, its
   dash style, the orbital and density commands.
-- A ball-and-stick ligand in "pretty", "publication" and "glass". They keep
-  sticks.
+- The former exclusion of ball-and-stick ligands in "pretty", "publication"
+  and "glass" is superseded: they are included in 34c.
 - A mark on the active cartoon transparency.
 - A cross-hatched mesh on sheets. The wire draws them as a zigzag.
 - A color picker for the shades, and "shades (elem C)" rows.
