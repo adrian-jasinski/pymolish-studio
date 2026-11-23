@@ -90,13 +90,15 @@ def test_undo_redo():
 def test_undo_takes_back_what_came_after():
     # the limit that is written down: a snapshot is the whole session
     cmd.fragment("ala", "m")
+    cmd.show_as("lines")
     cmd.do(_row("ball and stick"), echo=0)
     cmd.fragment("gly", "later")
     cmd.undo()
-    assert cmd.get_names() == ["m"] and cmd.count_atoms("rep spheres") == 0
+    assert cmd.get_names() == ["m"] and cmd.count_atoms("rep ball_and_stick") == 0
     cmd.redo()  # and redo brings all of it back
     assert (
-        cmd.get_names() == ["m", "later"] and cmd.count_atoms("m & rep spheres") == 10
+        cmd.get_names() == ["m", "later"]
+        and cmd.count_atoms("m & rep ball_and_stick") == 10
     )
 
 
@@ -132,7 +134,7 @@ def test_limits(capsys):
         assert len(snapshots._undo) == 2
         cmd.fragment("trp", "big")
         cmd.do(_row("ball and stick"), echo=0)
-        assert len(snapshots._undo) == 2 and cmd.count_atoms("big & rep spheres")
+        assert len(snapshots._undo) == 2 and cmd.count_atoms("big & rep ball_and_stick")
         assert "cannot be undone" in capsys.readouterr().out
     finally:
         snapshots.ATOMS = old

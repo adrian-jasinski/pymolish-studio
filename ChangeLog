@@ -4,6 +4,43 @@ CHANGE LOG
 
 2026-11-23 pymolish-studio
 
+	* 4.49.0
+
+	* Ligands are ball_and_stick: in the presets and when a
+	  structure is loaded
+	  - Every preset that draws ligands uses the representation
+	    ball_and_stick for them: technical, pretty, publication (with
+	    and without solvent, and green), glass, wire, spring,
+	    illustration, ligands, the ligand sites presets, classified,
+	    interaction and antibody. Until now: sticks, or sticks plus
+	    small spheres with settings of their own. Ions, water and the
+	    protein keep their representations; "simple" and "default"
+	    draw ligands as lines, as before.
+	  - The view a loaded structure opens with (auto_show_classified)
+	    draws ligands and small molecules as ball_and_stick, where it
+	    drew sticks. Changed default.
+	  - No preset writes sphere_scale, stick_radius or stick_color any
+	    more, and the presets no longer reset them: such settings of
+	    the user's survive a preset, also on what is hidden. A ligand
+	    is no longer colored grey by "ligands" and "ligand sites";
+	    the atoms keep their colors.
+	  - `preset.ball_and_stick(selection, mode)`: mode 1 shows
+	    ball_and_stick in the colors of the atoms (was: white sticks
+	    of 0.14 plus spheres at scale 0.25); mode 2 colors balls and
+	    bonds by element through ball_and_stick_color (was: stick_ball,
+	    set for everything). Other modes show nothing, as before.
+	  - `set ball_and_stick_color, atomic, selection` means "by
+	    element" on atoms too; for other color settings "atomic" on
+	    atoms stays the atom's own color.
+	  - The selection `visible` and the cartoon's side chain helper
+	    know the representation.
+	  - A scene stored before a preset brings the old ligand style
+	    back (tried: sticks and spheres, preset, recall).
+	  - Tested on 1OKY with a ligand, water, a modified residue and an
+	    added zinc ion, 20 presets. Step 34c.
+
+2026-11-23 pymolish-studio
+
 	* 4.48.0
 
 	* New representation: ball_and_stick

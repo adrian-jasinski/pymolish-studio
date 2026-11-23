@@ -2769,7 +2769,7 @@ void ObjectMoleculeRenderSele(ObjectMolecule* I, int curState, int sele,
 		  if(visRep & (cRepCylBit | cRepSphereBit | cRepSurfaceBit |
 			       cRepLabelBit | cRepNonbondedSphereBit | cRepCartoonBit |
 			       cRepRibbonBit | cRepLineBit | cRepMeshBit |
-			       cRepDotBit | cRepNonbondedBit)){
+			       cRepDotBit | cRepNonbondedBit | cRepBallAndStickBit)){
 		    flag = true;
 		  }
 		}

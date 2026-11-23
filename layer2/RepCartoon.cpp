@@ -392,7 +392,8 @@ bool ring_connector_visible(PyMOLGlobals * G,
   if (!(ai1->visRep & ai2->visRep & cRepCartoonBit))
     return false;
 
-  if (!(ai1->visRep & (cRepLineBit | cRepCylBit | cRepSphereBit)))
+  if (!(ai1->visRep &
+          (cRepLineBit | cRepCylBit | cRepSphereBit | cRepBallAndStickBit)))
     return true;
 
   return !(
@@ -3123,7 +3124,8 @@ void RepCartoonGeneratePASS1(PyMOLGlobals *G, RepCartoon *I, ObjectMolecule *obj
       (*ndata->fp) = ai->flags;    /* store atom flags */
 
       // side_chain_helper
-      if ((ai->visRep & (cRepLineBit | cRepCylBit | cRepSphereBit)) &&
+      if ((ai->visRep & (cRepLineBit | cRepCylBit | cRepSphereBit |
+                            cRepBallAndStickBit)) &&
           AtomSettingGetWD(G, ai, cSetting_cartoon_side_chain_helper,
             cartoon_side_chain_helper)) {
           (*ndata->fp) |= cAtomFlag_no_smooth;

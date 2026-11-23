@@ -11843,7 +11843,9 @@ pymol::Result<> ExecutiveSetSetting(PyMOLGlobals* G, int index, PyObject* tuple,
                 if ((color_index < 0) && (color_index > cColorExtCutoff)) {
                   switch (color_index) {
                   case cColorAtomic:
-                    color_index = -1;
+                    // for a ball it means "by element", not the atom's color
+                    if (index != cSetting_ball_and_stick_color)
+                      color_index = -1;
                     break;
                   case cColorFront:
                   case cColorBack:

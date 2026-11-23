@@ -351,8 +351,8 @@ typedef struct AtomInfoType {
    */
   bool isVisible() const {
     if(visRep & (
-          // point reps
-          cRepSphereBit | cRepEllipsoidBit | cRepLabelBit |
+          // point reps (ball-and-stick has a ball on every atom)
+          cRepSphereBit | cRepEllipsoidBit | cRepLabelBit | cRepBallAndStickBit |
           // surface reps
           cRepSurfaceBit | cRepDotBit | cRepMeshBit |
           // polymer reps (actually only shown for guide atoms or if

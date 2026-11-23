@@ -186,6 +186,13 @@ def test_colors_are_its_own():
     assert len(by_element) == 3 and grey not in by_element  # C, N, O
     assert atom_colors() == colors
 
+    # ... also set on atoms: there it means the element too, where for
+    # other color settings "atomic" is the atom's own color
+    cmd.unset("ball_and_stick_color")
+    cmd.set("ball_and_stick_color", "atomic", "not name CA")
+    assert {c for _, c in _balls()} == by_element | {grey}
+    cmd.unset("ball_and_stick_color", "not name CA")
+
     # unset: the color of the atom again, and a new atom color shows
     cmd.unset("ball_and_stick_color")
     assert {c for _, c in _balls()} == {grey}
@@ -248,7 +255,8 @@ def test_atoms_without_bonds_and_states():
 @pytest.mark.parametrize("ext", ["pse", "psex"])
 def test_session(tmp_path, ext):
     cmd.fragment("ala", "m")
-    cmd.show_as("ball_and_stick", "not hydro")
+    cmd.hide("everything")
+    cmd.show("ball_and_stick", "not hydro")
     cmd.show("spheres", "name N")
     cmd.set("ball_and_stick_scale", 0.4, "name CA")
     cmd.set("ball_and_stick_color", "atomic", "m")
@@ -275,10 +283,9 @@ def test_session(tmp_path, ext):
         and cmd.count_atoms("rep spheres") == 1
     )
     assert _scene() == before
-    # a session from before has none of it and loads as it was
+    # the key is there only when there is such a setting
     cmd.reinitialize()
     cmd.load(testing.datafile("1oky-frag.pdb"))
-    assert cmd.count_atoms("rep ball_and_stick") == 0
     assert "pymolish_unique_settings" not in cmd.get_session()  # only when there is one
 
 

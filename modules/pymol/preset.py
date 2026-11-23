@@ -73,9 +73,8 @@ def _prepare(selection,polar_contacts=None,_self=cmd):
     cmd.unset("surface_color", s) # per atom: interaction
     cmd.unset("surface_quality", selection)
     cmd.unset("surface_type",selection)
-    cmd.unset("sphere_scale",s)
-    cmd.unset_bond("stick_radius",s,s)
-    cmd.unset_bond("stick_color",s,s)
+    # Not sphere_scale, stick_radius or stick_color: since 4.49 no preset
+    # sets them (ligands are "ball_and_stick"), so they are the user's.
     cmd.unset("cartoon_highlight_color",selection)
     cmd.unset("cartoon_fancy_helices",selection)
     cmd.unset("cartoon_smooth_loops",selection)
@@ -107,17 +106,16 @@ def simple(selection="(all)",_self=cmd):
     cmd.delete(s)
 
 def _ball_and_stick_ligand(lig, _self=cmd):
-    # thin dark sticks and small balls, after BallnStick of bobbypaton's
-    # pymol_style.py gist
-    _self.show("sticks", lig)
-    _self.show("spheres", lig)
-    _self.set_bond("stick_radius", 0.07, lig, lig)
-    _self.set_bond("stick_color", "grey30", lig, lig)
-    _self.set("sphere_scale", 0.18, lig)
-    _self.set("sphere_scale", 0.13, lig + " & elem H")
-    # not a modified residue of the protein: its carbons color the cartoon
-    # and a surface
-    _self.color("grey85", lig + " & elem C & !polymer")
+    # How every preset draws a ligand: the representation of its own, at
+    # its own sizes and in the colors of the atoms. No sphere, stick or
+    # color setting is written (until 4.48: sticks plus small spheres).
+    _self.show("ball_and_stick", lig)
+
+
+def _show_hetero(s, _self=cmd):
+    # ligands as balls and sticks; ions and the like as they were
+    _ball_and_stick_ligand('organic & ?' + s, _self)
+    _self.show('licorice', 'inorganic & ?' + s)
 
 def simple_no_solv(selection="(all)",_self=cmd):
     cmd=_self
@@ -168,23 +166,28 @@ def ligands(selection="(all)",_self=cmd):
     cmd.delete(s)
 
 def ball_and_stick(selection="(all)",mode=1,_self=cmd):
+    '''
+    Everything in `selection` as "ball_and_stick", the representation.
+
+    mode = 1: balls and bonds in the colors of the atoms (until 4.48:
+    sticks of 0.14 in white plus spheres at scale 0.25)
+
+    mode = 2: balls and bonds colored by element, whatever color the
+    atoms have: ball_and_stick_color is set to "atomic" on the atoms
+    (until 4.48: stick_ball with white sticks, set for everything)
+
+    Sizes are those of ball_and_stick_scale and ball_and_stick_bond_radius.
+    No sphere or stick setting is written.
+    '''
     cmd=_self
     s, selection = _prepare(selection, _self=cmd)[:2]
-    if mode == 1:
+    mode = int(mode)
+    if mode in (1, 2):
         cmd.hide("everything",s)
-        cmd.set_bond("stick_color","white",s,s)
-        cmd.set_bond("stick_radius","0.14",s,s)
-        cmd.set("sphere_scale","0.25",s)
-        cmd.show("sticks",s)
-        cmd.show("spheres",s)
-    elif mode == 2:
-        cmd.hide("everything",s)
-        cmd.set_bond("stick_color","white",s,s)
-        cmd.set_bond("stick_radius","-0.14",s,s)
-        cmd.set("stick_ball","1")
-        cmd.set("stick_ball_ratio",-1.0)
-        cmd.set("stick_ball_color","atomic")
-        cmd.show("sticks",s)
+        cmd.unset("ball_and_stick_color",s)
+        if mode == 2:
+            cmd.set("ball_and_stick_color","atomic",s)
+        cmd.show("ball_and_stick",s)
     cmd.delete(s)
 
 def b_factor_putty(selection="(name CA+P)",_self=cmd):
@@ -323,7 +326,7 @@ def technical(selection="(all)",_self=cmd):
     util.cbac("(("+s+") and "+by_element+")",_self=cmd)
     cmd.show("nonbonded",s)
     cmd.show("lines","((("+s+") and not "+lig_sele+") extend 1)")
-    cmd.show("sticks","("+lig_sele+" and ("+s+"))")
+    _ball_and_stick_ligand("("+lig_sele+" and ("+s+"))", _self=cmd)
     cmd.show("cartoon",s)
     cmd.dist(polar_contacts,s,s,mode=2,label=0,reset=1) # hbonds
     if polar_contacts in cmd.get_names():
@@ -344,9 +347,8 @@ def pretty(selection="(all)", *, solv=False, _self=cmd):
     cmd.cartoon("auto",s)
     cmd.show("cartoon",s)
     if solv:
-        cmd.show("licorice", f"({lig_sele}|{wat_sele}) and ?{s}")
-    else:
-        cmd.show("sticks", f"({lig_sele}) and ?{s}")
+        cmd.show("licorice", f"({wat_sele}) and ?{s}")
+    _ball_and_stick_ligand(f"({lig_sele}) and ?{s}", _self=cmd)
     # the protein keeps its colors: only ligands, not a modified residue
     util.cbc("("+lig_sele+" and ("+s+") and not polymer)",_self=cmd)
     util.cbac("("+lig_sele+" and ("+s+") and not elem C)",_self=cmd)
@@ -458,7 +460,7 @@ def interaction(selection='*', _self=cmd):
     s = _prepare(selection, _self=_self)[0]
 
     _self.show('surface', 'polymer & ?' + s)
-    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _show_hetero(s, _self)
     _self.color('atomic', '(organic | inorganic) & ?%s & !(elem C)' % (s))
     _surface_like_carbons('?' + s, _self)
     for unit, _ in _units(s, _self):
@@ -521,7 +523,7 @@ def antibody(selection='*', _self=cmd):
                 % (paratope, s))
 
     _self.show('cartoon', ab)
-    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _show_hetero(s, _self)
     _self.set('cartoon_side_chain_helper', 1, selection)
     _self.show('sticks', 'byres ' + paratope)
     _contacts(dname, [(paratope, epitope)], _self)
@@ -567,7 +569,7 @@ def classified(selection='*', _self=cmd):
     s = _prepare(selection, _self=_self)[0]
 
     _self.show_as('cartoon', 'polymer & %' + s)
-    _self.show_as('sticks', 'organic & %' + s)
+    _self.show_as('ball_and_stick', 'organic & %' + s)
     _self.show_as('spheres', 'inorganic & %' + s)
 
     _self.delete(s)
@@ -585,7 +587,7 @@ def glass(selection='*', _self=cmd):
     _self.color('atomic', '(organic | inorganic) & ?%s & !(elem C)' % (s))
 
     _self.show('cartoon', 'polymer & ?' + s)
-    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _show_hetero(s, _self)
     _self.show('surface', 'polymer & ?' + s)
     _surface_like_carbons('?' + s, _self)
     _self.set('transparency', 0.6, s)
@@ -603,7 +605,7 @@ def wire(selection='*', _self=cmd):
     _self.color('atomic', '?%s & %s' % (s, by_element))
 
     cartoon_style('wire', 'polymer & ?' + s, _self=_self)
-    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _show_hetero(s, _self)
 
     _self.delete(s)
 
@@ -616,7 +618,7 @@ def spring(selection='*', _self=cmd):
     s = _prepare(selection, _self=_self)[0]
 
     cartoon_style('spring', 'polymer & ?' + s, _self=_self)
-    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _show_hetero(s, _self)
 
     _self.delete(s)
 
@@ -629,7 +631,7 @@ def illustration(selection='*', _self=cmd):
     s, selection = _prepare(selection, _self=_self)[:2]
 
     _self.show('cartoon', 'polymer & ?' + s)
-    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _show_hetero(s, _self)
     _self.show('surface', 'polymer & ?' + s)
     _surface_like_carbons('?' + s, _self)
     _self.set('transparency', 0.85, s)

@@ -1061,7 +1061,8 @@ int SelectorClassifyAtoms(PyMOLGlobals * G, int sele, int preserve,
   int auto_show_classified = SettingGetGlobal_i(G, cSetting_auto_show_classified);
   int auto_show_mask = (auto_show_classified != 2) ? 0 : cRepBitmask;
 
-  int visRep_organic = cRepCylBit | cRepNonbondedSphereBit;
+  // ligands as balls and sticks, the way the presets draw them
+  int visRep_organic = cRepBallAndStickBit;
   int visRep_inorganic = cRepSphereBit;
   int visRep_polymer = cRepCartoonBit;
 

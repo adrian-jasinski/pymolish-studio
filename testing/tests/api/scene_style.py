@@ -65,7 +65,7 @@ def test_every_preset_setting_is_kept():
     comes back with the scene, at the global and at the object level."""
     cmd.fragment("ala", "m")
     names = _written_by_presets()
-    assert len(names) > 40 and "ambient" in names and "stick_ball_ratio" in names
+    assert len(names) > 40 and "ambient" in names and "ball_and_stick_color" in names
     before = {name: cmd.get_setting_tuple(name) for name in names}
     cmd.scene("a", "store")
     for name in names:
