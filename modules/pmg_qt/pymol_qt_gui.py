@@ -188,10 +188,19 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.abortbutton.setStyleSheet("background: #FF0000; color: #FFFFFF")
         lineeditlayout.addWidget(self.abortbutton)
 
+        log = QtWidgets.QWidget()
+        loglayout = QtWidgets.QVBoxLayout(log)
+        loglayout.setContentsMargins(0, 0, 0, 0)
+        loglayout.addWidget(self.browser)
+        loglayout.addLayout(lineeditlayout)
+        # the Chat tab is added once cmd exists
+        self.command_tabs = QtWidgets.QTabWidget()
+        self.command_tabs.setDocumentMode(True)
+        self.command_tabs.addTab(log, "Command")
+
         extguilayout = QtWidgets.QVBoxLayout()
         extguilayout.setContentsMargins(2, 2, 2, 2)
-        extguilayout.addWidget(self.browser)
-        extguilayout.addLayout(lineeditlayout)
+        extguilayout.addWidget(self.command_tabs)
 
         class ExtGuiFrame(QtWidgets.QFrame):
             def mouseDoubleClickEvent(_, event):
@@ -259,6 +268,10 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         from .sequence_panel import SequencePanel
         self.sequence_panel = SequencePanel(cmd, self)
+
+        from .chat_panel import ChatPanel
+        self.chat_panel = ChatPanel(cmd, self)
+        self.command_tabs.addTab(self.chat_panel, "Chat")
 
         '''
         # command completion
@@ -478,6 +491,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         panels.addAction(self.ligand_panel.toggleViewAction())
         panels.addAction('Sequence alignment…', self.sequence_panel.open)
         panels.addAction('Builder', self.open_builder_panel)
+        panels.addAction('AI chat', self.open_chat)
         panels.addSeparator()
         panels.addAction('Reset Layout', self.reset_layout)
         self._default_state = self.saveState(LAYOUT_VERSION)
@@ -728,6 +742,13 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         form.button_apply.clicked.connect(run)
 
         form._dialog.show()
+
+    def open_chat(self, prompt=""):
+        self.ext_window.show()
+        self.command_tabs.setCurrentWidget(self.chat_panel)
+        if prompt:
+            self.chat_panel.prompt.setText(prompt)
+        self.chat_panel.prompt.setFocus()
 
     def open_builder_panel(self):
         from pmg_qt.builder import BuilderPanelDocked

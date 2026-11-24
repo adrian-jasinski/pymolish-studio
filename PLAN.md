@@ -48,7 +48,7 @@ and 34b, 34c, 11c, 36a). Steps 22, 28, 34, 35 and 36 are finished and step
 Questions 57 to 59 were built with their recommended answers; five new
 questions, 61 to 65, came out of the work.
 
-**Shipped state, checked 2026-11-24: 4.57.0.** Built since 4.19.43,
+**Shipped state, checked 2026-11-24: 4.58.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
@@ -71,11 +71,12 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.52.0 to 4.55.0 | Ball and stick in the S and H menus of the panel and under C > by rep; S > ball and stick holds only ball size and bond thickness; balls 0.25 of the atom radius by default (was 0.31); wire, sticks and nb_spheres taken out of S and H (the commands stay). |
 | 4.56.0 | The ligand in 2D (24c): the pocket's outline, halos on atoms open to the solvent, metal contacts, Show in 3D, distances in tooltips, Tab through the residues. |
 | 4.57.0 | Sequence window (33a–c): loaded chains and FASTA, local MAFFT, secondary structure, linked selection, fitting with Undo, statistics/export and session persistence. |
+| 4.58.0 | AI chat (31a, 31c): a Chat tab beside the command line, `ask`, live discovery of commands/settings/presets, reviewed execution with confirmation, Stop and Undo; optional `ai` extra. Stand-in tests only, no live provider yet. |
 
 Of the ten features requested on 2026-11-20, nine have a working version.
 The tenth, the surface looks, waits for the grid surface of 1b. Steps 20, 26,
-29 and 32 are finished. Of the eleven drafts of 2026-11-23, ten are built;
-the chat (31) is being implemented.
+29 and 32 are finished. Of the eleven drafts of 2026-11-23, all eleven have a working version;
+the chat (31a, 31c) shipped in 4.58.0, its external connector 31b is open.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -97,7 +98,7 @@ Questions gate the dependent slice, not unrelated repairs.
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
 | 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Question 61. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
-| 2 | **31a, 31c, then 31b** — [Chat and agent tools](docs/plans/31-ai-agents.md) | Built-in chat is required; live discovery of this fork's public commands/settings/presets, actual results/errors, cancellation and reviewed execution. External connector reuses it. Questions 41–48 resolve route/UI/dependencies; optional subscription login 31d is only an investigation. | Catalog coverage and provider stand-ins; live fork-specific workflows with each chosen provider. No promise of login entitlement. Can start independently of step 33. |
+| 2 | **31 trial, then 31b** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0 (stand-in tests only). Left: the consented live trial with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded); then the external connector 31b (questions 45, 47). Subscription login 31d is only an investigation. | Live trial recorded for Anthropic and OpenAI; connector tests against the installed clients. No promise of login entitlement. |
 | 3 | **15e** — [Five effects](docs/plans/15-presets.md) | Color steps, fog toward white, cylindrical helices, measured ambient occlusion in soft look, balls in glass. Color themes already shipped in 4.35.0. | Preset checks and images; scenes preserve the added visual settings (add them to the list in `MovieScene.cpp`; the inventory test fails until then). |
 | 4 | **1b** — [Grid surface experiment](docs/plans/01-performance-gpu.md) | Signed distance grid/marching cubes as a second surface type and a smoothness value. Compare 1aon and 4v6x at two values; user judges the experiment. | Actual times and pictures against today's surface. |
 | 5 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan using the grid-surface result from order 4; no new surface-look setting before that. | New detailed section grounded in the experiment. |
@@ -183,7 +184,7 @@ Questions 53, 54 and 56 were answered on 2026-11-23; 55 and 42 on
 | 56 | Standard CPK atom colors within selected residues. | [11c](docs/plans/11-color-palettes.md), built in 4.50.0 |
 
 | 55 | Optional local MAFFT executable. | [33](docs/plans/33-sequence-window.md), built in 4.57.0 |
-| 42 | Optional official OpenAI and Anthropic SDKs. | [31](docs/plans/31-ai-agents.md), implementation in progress |
+| 42 | Optional official OpenAI and Anthropic SDKs. | [31](docs/plans/31-ai-agents.md), built in 4.58.0 as the extra `ai` |
 
 These decisions are also recorded in `PLAN-DONE.md`.
 
@@ -240,7 +241,9 @@ a built answer, so nothing waits for them; say so if another one is wanted.
 | 40 | Undo of a preset takes back everything done after it (Redo brings it back) until 21g builds one stack. Good enough until then? | yes |
 
 Step 31 is replanned in [the AI detail](docs/plans/31-ai-agents.md).
-The previous questions retain their IDs, with updated choices:
+Questions 41, 43, 44, 46 and 48 were built in 4.58.0 with the
+recommendation below; say so if another one is wanted. 45 and 47 still
+wait: no toolbar button was added, and the connector is not built.
 
 | No. | Question | Recommendation |
 | --- | --- | --- |
@@ -276,7 +279,8 @@ scene; Undo of a step of `ligand_next`.
 The user's to do, not decisions:
 
 - Push the remaining `feature12` commits and check/open its pull request.
-  The sequence feature is commit `f25db6d3` on `feature12`. No push or
+  The sequence feature is commit `f25db6d3` on `feature12`, the chat 4.58.0
+  follows it. No push or
   merge was performed in this run; PR status was not inspected.
 - Review the available CI runs, then the run after the remaining commits
   are pushed: the Windows icon, release notes, `chem`/`fix` extras on three
@@ -289,6 +293,9 @@ The user's to do, not decisions:
   Windows/macOS behavior. Native MAFFT launch also needs those systems.
   The sequence feature has 21 passing focused tests and a Linux/WSLg
   window check; no native Windows/macOS result is claimed.
+- Try the Chat tab with your own Anthropic and OpenAI keys and a model
+  ID each (`pip install 'pymolish[ai]'`); no live request was sent in
+  the 4.58.0 run.
 - Compare `palettes.CPK` (`modules/pymol/palettes.py`) with the "CPK
   Colours" table of the RasMol manual (question 64).
 - Look at one thing that went wrong in the run of 2026-11-23: a helper of

@@ -3135,6 +3135,27 @@ bool CPyMOLInitSetting(OVLexicon * Lex, std::unordered_map<int, int>& Setting) {
  * Export the settings names to Python a as (name: index) dictionary.
  * Replacement for pymol.settings.SettingIndex
  */
+PyObject* SettingGetDefault(int index)
+{
+  const auto& rec = SettingInfo[index];
+  switch (rec.type) {
+  case cSetting_boolean:
+    return PyBool_FromLong(rec.value.i[0]);
+  case cSetting_int:
+    return PyLong_FromLong(rec.value.i[0]);
+  case cSetting_float:
+    return PyFloat_FromDouble(pymol::pretty_f2d(rec.value.f[0]));
+  case cSetting_float3:
+    return Py_BuildValue("(ddd)", pymol::pretty_f2d(rec.value.f[0]),
+        pymol::pretty_f2d(rec.value.f[1]), pymol::pretty_f2d(rec.value.f[2]));
+  case cSetting_string:
+  case cSetting_color:
+    return PyUnicode_FromString(rec.value.s ? rec.value.s : "");
+  default:
+    Py_RETURN_NONE;
+  }
+}
+
 PyObject * SettingGetSettingIndices() {
   PyObject * val;
   PyObject * dict = PyDict_New();

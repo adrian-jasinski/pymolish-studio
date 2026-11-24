@@ -521,3 +521,6 @@ from .grouping import \
 from . import util
 from . import movie
 from . import gui
+
+# last: agent.py captures the API functions above at import time
+from .assistant import ask

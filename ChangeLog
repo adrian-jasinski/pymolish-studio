@@ -4,6 +4,25 @@ CHANGE LOG
 
 2026-11-24 pymolish-studio
 
+	* 4.58.0
+
+	* AI chat (31a, 31c): a Chat tab next to the command line, also under
+	  Display > Panels > AI chat. Anthropic or OpenAI with your own API key
+	  (this run only, or ANTHROPIC_API_KEY / OPENAI_API_KEY); nothing is sent
+	  until you press Send. The model discovers the installed commands,
+	  settings and presets live, inspects the session and runs reviewed API
+	  calls; delete, load, save, fetch and other file/network actions ask
+	  first. Viewport images and Python are off unless ticked; Python is
+	  not sandboxed. Stop cancels the request; Undo restores the session
+	  from before the turn's first change. Every call is shown in the chat
+	  and the log.
+	* New public command: ask [prompt]. Opens the Chat tab with a draft.
+	* Optional SDKs: pip install 'pymolish[ai]' (openai, anthropic); not in
+	  the release bundles. Without them the rest of pymolish is unchanged.
+	* Not yet tried against a live provider; tested with stand-ins only.
+
+2026-11-24 pymolish-studio
+
 	* 4.57.0
 
 	* Sequence alignment window (33a-c), opened from Display > Panels or

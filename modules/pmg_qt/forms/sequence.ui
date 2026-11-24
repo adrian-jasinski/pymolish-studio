@@ -2,6 +2,7 @@
 <ui version="4.0">
  <class>Sequence</class>
  <widget class="QWidget" name="Sequence">
+  <property name="windowTitle"><string>Sequence alignment</string></property>
   <layout class="QVBoxLayout" name="layout">
    <item><layout class="QHBoxLayout" name="inputs">
     <item><widget class="QPushButton" name="addChains"><property name="text"><string>&amp;Add chains…</string></property></widget></item>

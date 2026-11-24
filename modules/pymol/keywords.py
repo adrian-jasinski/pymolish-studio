@@ -253,6 +253,7 @@ def get_command_keywords(self_cmd=cmd):
         'color_cpk'     : [ self_cmd.color_cpk         , 0 , 0 , ''  , parsing.STRICT ],
         'ligand_next'   : [ self_cmd.ligand_next       , 0 , 0 , ''  , parsing.STRICT ],
         'sequence_align': [ self_cmd.sequence_align    , 0 , 0 , ''  , parsing.STRICT ],
+        'ask'           : [ self_cmd.ask               , 0 , 0 , ''  , parsing.LITERAL ],
         'stage'         : [ self_cmd.stage             , 0 , 0 , ''  , parsing.STRICT ],
         'save_table'    : [ self_cmd.save_table        , 0 , 0 , ''  , parsing.STRICT ],
         'rms'           : [ self_cmd.rms               , 0 , 0 , ''  , parsing.STRICT ],

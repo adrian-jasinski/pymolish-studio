@@ -4404,6 +4404,14 @@ static PyObject *CmdGetSettingOfType(PyObject * self, PyObject * args)
   return result;
 }
 
+static PyObject* CmdGetSettingDefault(PyObject*, PyObject* args)
+{
+  unsigned index;
+  API_ASSERT(PyArg_ParseTuple(args, "I", &index));
+  API_ASSERT(index < cSetting_INIT);
+  return SettingGetDefault(index);
+}
+
 static PyObject *CmdSetFrame(PyObject * self, PyObject * args)
 {
   PyMOLGlobals *G = nullptr;
@@ -6411,6 +6419,7 @@ static PyMethodDef Cmd_methods[] = {
   {"get_setting_of_type", CmdGetSettingOfType, METH_VARARGS},
   {"get_setting_type", CmdGetSettingType, METH_VARARGS},
   {"get_setting_level", CmdGetSettingLevel, METH_VARARGS},
+  {"get_setting_default", CmdGetSettingDefault, METH_VARARGS},
   {"get_setting_updates", CmdGetSettingUpdates, METH_VARARGS},
   {"get_setting_indices", CmdGetSettingIndices, METH_VARARGS},
   {"get_object_list", CmdGetObjectList, METH_VARARGS},

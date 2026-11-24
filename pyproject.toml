@@ -40,6 +40,11 @@ fix = [
   "pdbfixer>=1.12",
   "openmm>=8.2",
 ]
+# the Chat tab ("ask"); not in the release bundles
+ai = [
+  "openai>=3.58",
+  "anthropic>=2.13",
+]
 dev = [
   "biopython==1.88",
   "msgpack==1.2.4",

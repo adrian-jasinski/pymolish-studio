@@ -1,5 +1,10 @@
 # 31 — Chat that controls this version of pymolish
 
+**Built 2026-11-24 in 4.58.0: 31a and 31c.** Measured: 21 stand-in tests
+pass (no network); one real-window check with a stand-in provider. Left
+out: the live provider trial, `data/pymol/agent.md` (instructions live in
+`assistant.INSTRUCTIONS`), a toolbar button (question 45), 31b and 31d.
+
 **Decision 2026-11-24:** question 42 answered: optional official OpenAI and
 Anthropic SDKs. Installed for implementation: OpenAI 3.58.0 and Anthropic
 2.13.0; their installed files plus dependencies measure about 27 MB (not a
