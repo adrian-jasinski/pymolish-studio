@@ -394,6 +394,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
                     if self.timeline_panel.isVisible()
                     else self.timeline_panel_dialog()),
                 ('2D', self.ligand_panel.open),
+                ('Sequence alignment', self.sequence_panel.open),
                 ('Table', lambda: self.property_table.setVisible(
                     not self.property_table.isVisible())),
                 # the render dialog is built when the menu is first shown, so

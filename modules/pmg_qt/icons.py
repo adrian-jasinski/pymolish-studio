@@ -84,6 +84,7 @@ LABELS = {
     "scenes": "camera",
     "table": "sheet",
     "2d": "hexagon",
+    "sequence alignment": "text-align-start",
     "draw": "aperture",
     "ui scale": "scaling",
     "more actions": "ellipsis",

@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-24 pymolish-studio
 
+	* 4.59.0
+
+	* Action toolbar: a Sequence alignment button after 2D opens the
+	  alignment window. Background and Draw show only their icon; a little
+	  more room between buttons. Zoom opens its menu like Presets, Palette
+	  and Background ("Visible" is its first row). Rock is a menu: Rock,
+	  Spin about X, Y or Z, Random (another axis and direction every 3 s)
+	  and Stop; the spins use sweep_mode and sweep_angle 0.
+
+2026-11-24 pymolish-studio
+
 	* 4.58.1
 
 	* Ligand 2D: a ligand in an object of its own (extracted, or a docked

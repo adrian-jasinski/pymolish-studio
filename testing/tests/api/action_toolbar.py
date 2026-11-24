@@ -70,12 +70,31 @@ def test_toolbar():
     for callback in callbacks[cmd.setting._get_index("rock")]:
         callback(1)
     assert bar.rock.isChecked()
+    # its menu: rock, a spin about each axis, random axes, stop
+    rocks = {a.text(): a for a in bar.rock.menu().actions()}
+    angle = cmd.get_setting_float("sweep_angle")
+    rocks["Spin about X"].trigger()
+    assert cmd.get_setting_int("rock") and cmd.get_setting_int("sweep_mode") == 1
+    assert cmd.get_setting_float("sweep_angle") == 0
+    rocks["Rock"].trigger()
+    assert cmd.get_setting_int("sweep_mode") == 0
+    assert cmd.get_setting_float("sweep_angle") == angle  # back to the rock
+    rocks["Random"].trigger()
+    assert bar._random.isActive() and cmd.get_setting_float("sweep_angle") == 0
+    mode = cmd.get_setting_int("sweep_mode")
+    bar._random_turn()
+    assert cmd.get_setting_int("sweep_mode") != mode
+    rocks["Stop"].trigger()
+    for callback in callbacks[cmd.setting._get_index("rock")]:
+        callback(0)
+    assert not cmd.get_setting_int("rock") and not bar._random.isActive()
+    cmd.set("sweep_speed", 0.75)
 
     cmd.fragment("ala")
     view = cmd.get_view()
     cmd.turn("x", 90)
     cmd.move("z", -30)
-    bar.zoom.click()
+    bar.zoom.menu().actions()[0].trigger()
     texts["Orient"].trigger()
     assert cmd.get_view() != view
 
@@ -89,7 +108,7 @@ def test_toolbar():
     cmd.zoom("all")
     assert cmd.get_view()[11] < near * 3  # further away
     cmd.disable("far")
-    bar.zoom.click()
+    bar.zoom.menu().actions()[0].trigger()
     assert cmd.get_view()[11] == pytest.approx(near, abs=5e-2)
     assert [a.text() for a in bar.zoom.menu().actions()][:2] == [
         "Visible",
@@ -149,22 +168,28 @@ def test_icons():
     ]
     IconOnly = QtCore.Qt.ToolButtonStyle.ToolButtonIconOnly
     assert sorted(b.toolTip() for b in buttons if b.toolButtonStyle() == IconOnly) == [
+        "Background color",
         "Builder",
+        "Draw",
         "More view actions",
         "Movie",
         "Orient",
         "Palette: colors of objects and chains",
         "Redo",
-        "Rock",
+        "Rock or spin the view",
         "Scenes",
         "Select nothing",
         "Undo",
-        "Zoom on what is visible",
+        "Zoom",
     ]
-    # the rest keep a text; the background's is short, its tooltip says it
+    # the rest keep a text
     texts = [b.text() for b in buttons if b.toolButtonStyle() != IconOnly]
-    assert "Bg" in texts and "Draw" in texts and "Background" not in texts
+    assert "Presets" in texts and "Draw" not in texts
     assert bar.background.toolTip() == "Background color"
+    # every menu opens from the whole button, with the same triangle
+    Popup = QtWidgets.QToolButton.ToolButtonPopupMode
+    assert bar.zoom.popupMode() == Popup.InstantPopup
+    assert bar.rock.popupMode() == Popup.InstantPopup
     # bolder and larger than the menu icons, and blue while hovered or
     # checked; the text of the selection mode is styled by its name
     assert bar.iconSize().width() == 20

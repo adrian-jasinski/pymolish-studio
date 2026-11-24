@@ -5,6 +5,8 @@ the panels, the render popup and the UI scale. Every button has a line icon; und
 show only that. Replaces the grid of quick buttons that sat next to the log.
 """
 
+import random
+
 import pymol
 from pymol import menu as menus
 from pymol import palettes, util
@@ -68,6 +70,15 @@ MORE_KINDS = (
     ("Invert", "not sele"),
 )
 MAX_CHAINS = 20
+# Rock menu: (name, sweep_mode, spin); spin turns all the way round. sweep_mode
+# picks the axis: 0 y, 1 x, 2 z (Scene.cpp SceneUpdateCameraRock).
+ROCKS = (
+    ("Rock", 0, False),
+    ("Spin about X", 1, True),
+    ("Spin about Y", 0, True),
+    ("Spin about Z", 2, True),
+)
+RANDOM_MS = 3000  # "Random" turns about another axis this often
 ICON = 20
 STROKE = 2
 ACCENT = "#1e4fb8"  # the A button of the Objects panel; also in pymol.sty
@@ -207,9 +218,7 @@ class ActionToolbar(QtWidgets.QToolBar):
             button.setToolButtonStyle(Style.ToolButtonIconOnly)
         self.addSeparator()
 
-        self.zoom = self._menu_button(
-            "Zoom", "Zoom on what is visible", self._zoom_visible
-        )
+        self.zoom = self._menu_button("Zoom", "Zoom")
         self.zoom.menu().addAction("Visible", self._zoom_visible)
         for label, command in (
             ("Everything", "zoom animate=1"),
@@ -219,15 +228,24 @@ class ActionToolbar(QtWidgets.QToolBar):
         ):
             self.zoom.menu().addAction(label, lambda c=command: cmd.do(c, echo=0))
         orient = self._action("Orient", self._orient_visible)
-        self.rock = self._action("Rock", cmd.rock)
-        self.rock.setCheckable(True)
+        self.rock = self._menu_button("Rock", "Rock or spin the view")
+        self.rock.setCheckable(True)  # blue while it turns
+        self._rock_angle = None  # sweep_angle of the rock, kept while spinning
+        self._random = QtCore.QTimer(self, interval=RANDOM_MS)
+        self._random.timeout.connect(self._random_turn)
+        menu = self.rock.menu()
+        for name, mode, spin in ROCKS:
+            menu.addAction(name, lambda m=mode, s=spin: self._set_rock(m, s))
+        menu.addAction("Random", self._start_random)
+        menu.addSeparator()
+        menu.addAction("Stop", lambda: cmd.rock(0))
         # The view actions show only their icon: the name is the tooltip and
         # the accessible name.
+        self.widgetForAction(orient).setToolButtonStyle(Style.ToolButtonIconOnly)
         self.zoom.setToolButtonStyle(Style.ToolButtonIconOnly)
-        for action in (orient, self.rock):
-            self.widgetForAction(action).setToolButtonStyle(Style.ToolButtonIconOnly)
+        self.rock.setToolButtonStyle(Style.ToolButtonIconOnly)
         self.rock.setChecked(bool(cmd.get_setting_int("rock")))
-        setting_callbacks[index("rock")].append(lambda v: self.rock.setChecked(bool(v)))
+        setting_callbacks[index("rock")].append(self._show_rock)
 
         self.presets = self._menu_button(
             "Presets", "A preset for everything, a look for the scene"
@@ -237,7 +255,7 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.colors = self._menu_button(
             "Palette", "Palette: colors of objects and chains", icon="color"
         )
-        # one row for all buttons: only Residues, Presets, Draw and the
+        # one row for all buttons: only Residues, Presets and the
         # scale keep a text (docs/plans/26-toolbar-buttons.md, 26d)
         self.colors.setToolButtonStyle(Style.ToolButtonIconOnly)
         # The palettes the user defined here earlier. Like the saved choice
@@ -283,7 +301,8 @@ class ActionToolbar(QtWidgets.QToolBar):
         if pymol.invocation.options.pymolrc is not None and saved in palettes.PALETTES:
             cmd.palette(saved)
 
-        self.background = self._menu_button("Bg", "Background color", icon="background")
+        self.background = self._menu_button("Background", "Background color")
+        self.background.setToolButtonStyle(Style.ToolButtonIconOnly)
         menu = self.background.menu()
         _caption(menu, "Background:")
         self._backgrounds = []  # (action, top, bottom)
@@ -328,10 +347,12 @@ class ActionToolbar(QtWidgets.QToolBar):
 
         self.panel_actions = {}
         for label, target in panels:
+            # a panel button shows only its icon; the name is the tooltip
             if isinstance(target, QtWidgets.QMenu):
-                self._menu_button(label, label).setMenu(target)
+                button = self._menu_button(label, label)
+                button.setMenu(target)
+                button.setToolButtonStyle(Style.ToolButtonIconOnly)
             else:
-                # a panel button shows only its icon; the name is the tooltip
                 action = self.panel_actions[label] = self._action(label, target)
                 self.widgetForAction(action).setToolButtonStyle(
                     Style.ToolButtonIconOnly
@@ -646,6 +667,35 @@ class ActionToolbar(QtWidgets.QToolBar):
                     note.setEnabled(False)
                 if chains:
                     menu.addSeparator()
+
+    def _set_rock(self, mode, spin):
+        """Rock (spin False) or turn all the way round about one axis."""
+        cmd = self.cmd
+        self._random.stop()
+        angle = cmd.get_setting_float("sweep_angle")
+        if angle > 0:
+            self._rock_angle = angle
+        cmd.set("sweep_mode", mode)
+        cmd.set("sweep_angle", 0 if spin else (self._rock_angle or angle or 20))
+        cmd.rock(1)
+
+    def _start_random(self):
+        self._random_turn()
+        self._random.start()
+
+    def _random_turn(self):
+        """Spin about another axis than now, either way round."""
+        cmd = self.cmd
+        now = cmd.get_setting_int("sweep_mode") if cmd.get_setting_int("rock") else -1
+        mode = random.choice([m for m in (0, 1, 2) if m != now])
+        speed = abs(cmd.get_setting_float("sweep_speed")) or 0.75
+        self._set_rock(mode, True)
+        cmd.set("sweep_speed", random.choice((speed, -speed)))
+
+    def _show_rock(self, on):
+        self.rock.setChecked(bool(on))
+        if not on:
+            self._random.stop()
 
     def _zoom_visible(self):
         """Fill the viewport with what is shown, centered. Hidden objects
