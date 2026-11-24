@@ -95,6 +95,9 @@ LABELS = {
     "seq": "letter-text",
     "wizard": "wand-sparkles",
     "command line": "square-terminal",
+    # chat
+    "sign in": "log-in",
+    "sign out": "log-out",
 }
 
 

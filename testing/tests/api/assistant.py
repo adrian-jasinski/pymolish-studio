@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import types
 
 import pytest
 
@@ -212,3 +213,78 @@ def test_openai_shape(chat):
     assert (
         output["type"] == "function_call_output" and json.loads(output["output"])["ok"]
     )
+
+
+class PlanClient:
+    """Streams the queued events, as requests on a ChatGPT plan must."""
+
+    def __init__(self, *streams):
+        self.streams = list(streams)
+        self.sent = []
+        self.responses = self
+
+    async def create(self, **request):
+        self.sent.append(json.loads(json.dumps(request)))  # input grows later
+        return self
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *error):
+        pass
+
+    async def __aiter__(self):
+        for event in self.streams.pop(0):
+            yield types.SimpleNamespace(**event)
+
+
+def test_chatgpt_plan_streams_namespaced_tools(chat):
+    chat.provider = "ChatGPT"
+    call = {
+        "type": "function_call",
+        "call_id": "a",
+        "namespace": "pymolish",
+        "name": "pymol",
+        "arguments": json.dumps({"operation": "state", "arguments": {}}),
+    }
+    message = {"type": "message", "content": [{"type": "output_text", "text": "Done."}]}
+    client = PlanClient(
+        [
+            {"type": "response.output_item.done", "item": call},
+            # this route may finish without repeating the items
+            {"type": "response.completed", "response": {"output": []}},
+        ],
+        [{"type": "response.completed", "response": {"output": [message]}}],
+    )
+    run(chat, client)
+    first, second = client.sent
+    assert first["stream"] is True and first["store"] is False
+    assert "max_output_tokens" not in first
+    assert [t["type"] for t in first["tools"]] == ["namespace"]
+    assert first["tools"][0]["tools"][0]["name"] == "pymol"
+    output = second["input"][-1]
+    assert output["call_id"] == "a" and json.loads(output["output"])["ok"]
+    assert ("assistant", "Done.") in chat.emitted
+
+
+@pytest.mark.parametrize(
+    "events, message",
+    [
+        (
+            [
+                {
+                    "type": "response.failed",
+                    "response": {
+                        "error": {"code": "subscription_sharing_usage_limit_exceeded"}
+                    },
+                }
+            ],
+            "usage_limit_exceeded",
+        ),
+        ([], "ended before"),
+    ],
+)
+def test_chatgpt_plan_counts_only_a_completed_response(chat, events, message):
+    chat.provider = "ChatGPT"
+    with pytest.raises(CmdException, match=message):
+        run(chat, PlanClient(events))

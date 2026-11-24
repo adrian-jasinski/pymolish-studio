@@ -44,6 +44,7 @@ fix = [
 ai = [
   "openai>=3.58",
   "anthropic>=2.13",
+  "keyring>=25",  # "Stay signed in": the keychain of the operating system
 ]
 dev = [
   "biopython==1.88",

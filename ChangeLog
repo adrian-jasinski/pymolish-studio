@@ -4,6 +4,38 @@ CHANGE LOG
 
 2026-11-24 pymolish-studio
 
+	* 4.66.0
+
+	* Chat: sign in through the browser instead of typing an API key.
+	  Two more providers in the Chat tab, each with a "Continue with ..."
+	  button: ChatGPT (OpenAI's "Sign in with ChatGPT" for open-source
+	  apps; requests are paid from the user's ChatGPT plan) and
+	  OpenRouter (one sign-in for Claude, GPT and other models, paid from
+	  OpenRouter credits; the conversation passes through OpenRouter).
+	  After the sign-in the model field lists the models of that account,
+	  so no model ID is typed. "Stay signed in" keeps the sign-in in the
+	  keychain of the operating system (new optional package keyring, in
+	  the extra "ai"); without it the sign-in ends with the run and an
+	  OpenRouter key is asked to expire after a day. Sign out forgets it;
+	  for ChatGPT it also ends the session at OpenAI.
+
+	  Anthropic stays with an API key: Anthropic does not allow a
+	  Claude.ai login inside another program. A Claude subscription works
+	  through the agent connector (agent_server) with Claude Code.
+
+	  Changed for every provider: the model field is a list that can be
+	  typed into, and the provider and the model of each provider are
+	  remembered between runs. OPENROUTER_API_KEY is read like the other
+	  two key variables.
+
+	  Checked without an account: the stand-in tests, the streamed route
+	  through the real OpenAI package against a local server, OpenAI's
+	  server taking the first authorization request up to its log-in
+	  page, OpenRouter's model list. Not checked: a real sign-in and a
+	  real conversation with either provider.
+
+2026-11-24 pymolish-studio
+
 	* 4.65.0
 
 	* Smooth edges in the viewport: Setting > Rendering > Antialias (Real
