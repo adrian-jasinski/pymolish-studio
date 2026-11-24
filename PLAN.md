@@ -74,7 +74,16 @@ the second place": the Sequence tab, and the AI assistant button in that
 row. It is not a step of this plan; it is recorded with steps 32 and 33,
 which stay finished. Five choices were made while building (81 to 85).
 
-**Shipped state, checked 2026-11-24: 4.67.0.** Built since 4.19.43,
+Built 2026-11-24, 4.68.0, from the request "connect to Claude and ChatGPT
+through the session in my browser; add OAuth verification": the provider
+"Claude Code" of the Chat tab. ChatGPT had its sign-in since 4.66.0. For
+Claude the rule of Anthropic was read again that day and still holds: no
+Claude.ai sign-in inside another program. What it leaves open was built:
+the Claude Code installed on the computer runs the conversation and holds
+the sign-in, which its own "auth login" makes in the browser. It belongs
+to step 31 (31d). Five choices were made while building (86 to 90).
+
+**Shipped state, checked 2026-11-24: 4.68.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
@@ -110,14 +119,16 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.65.0 | Smooth edges in the viewport: Setting > Rendering > Antialias (Real Time), an FXAA pass, off by default (21f). |
 | 4.66.0 | Chat sign-in in the browser (31d): "Continue with ChatGPT" (the user's ChatGPT plan) and "Continue with OpenRouter" (credits there), the models of the account as a list, "Stay signed in" in the keychain of the operating system. Stand-in tests only, no real sign-in yet. |
 | 4.67.0 | The sequence in a tab: Sequence, between Command and Chat, with the clicks, drags and menus of the rows in the viewport; SEQ opens it, and its arrow has "Show in viewport". The AI assistant button moved from the toolbar to the row under the object list. |
+| 4.68.0 | Chat with a Claude account (31d): the provider "Claude Code" runs the conversation through the Claude Code installed on the computer and its own sign-in in the browser; no API key, no extra `ai`. Tried in the real window with a Team plan. |
 
 Of the ten features requested on 2026-11-20, nine have a working version.
 The tenth, the surface looks, waits for the grid surface of 1b. Steps 19, 20,
 26, 29 and 32 are finished. Of the eleven drafts of 2026-11-23, all eleven have a working version;
 the chat (31a, 31c) shipped in 4.58.0, its external connector 31b in 4.61.0,
-the sign-in in the browser 31d in 4.66.0.
-None was tried with a paid provider request or a real sign-in by this
-program itself: the live trial is order 2.
+the sign-in in the browser 31d in 4.66.0, the provider "Claude Code" in
+4.68.0. Only that last one was tried with a real account (two turns on
+the user's Team plan); the other providers saw no paid request and no
+real sign-in by this program itself: the live trial is order 2.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -139,7 +150,7 @@ Questions gate the dependent slice, not unrelated repairs.
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
 | 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Needs the pushed branch: the last CI run is older than the repair. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
-| 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; one real sign-in and one conversation each with ChatGPT and with OpenRouter (31d, shipped in 4.66.0 on stand-ins), which needs the user's accounts; and one call through the connector from Codex, whose account had no credits on 2026-11-24. | Live trial recorded for Anthropic and OpenAI; a sign-in and a conversation recorded for ChatGPT and OpenRouter, on WSL and on one other system; one Codex call through the connector. |
+| 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; one real sign-in and one conversation each with ChatGPT and with OpenRouter (31d, shipped in 4.66.0 on stand-ins), which needs the user's accounts; for the provider "Claude Code" (4.68.0, two turns tried on WSLg with a Team plan) the same five tasks, the button "Continue with Claude Code" with a signed-out Claude Code, and one turn on Windows or macOS; and one call through the connector from Codex, whose account had no credits on 2026-11-24. | Live trial recorded for Anthropic, OpenAI and Claude Code; a sign-in and a conversation recorded for ChatGPT, OpenRouter and Claude Code, on WSL and on one other system; one Codex call through the connector. |
 | 3 | **1b** — [Grid surface experiment](docs/plans/01-performance-gpu.md) | Signed distance grid/marching cubes as a second surface type and a smoothness value. Compare 1aon and 4v6x at two values; user judges the experiment. | Actual times and pictures against today's surface. |
 | 4 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan using the grid-surface result from order 3; no new surface-look setting before that. | New detailed section grounded in the experiment. |
 | 5 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. A second pass over the texture that FXAA reads since 4.65.0 (`SceneRenderAA`, `fxaa.fs`). | Frame times and pictures on black/white. |
@@ -214,7 +225,7 @@ recommended direction, not a claim that an implementation has passed tests.
 No question waits. On 2026-11-24 the user chose the recommended option for
 every question that had no answer; those, the earlier answers, the two
 answers about the sign-in (74 and 75) and the choices made while building
-4.60.1 to 4.67.0 are in
+4.60.1 to 4.68.0 are in
 [PLAN-DONE.md](PLAN-DONE.md) under "Decided by the user" and "Chosen while
 building". The choices say there what it takes to change them.
 
@@ -230,6 +241,21 @@ lists the sequence and `seq_view` only puts it into the viewport as well;
 a click on SEQ opens the tab and "Show in viewport" is in the menu of its
 arrow; the tab has the background color of the viewport; the name of the
 mouse mode is shortened in a narrow panel; the robot keeps its drawing.
+
+The five choices of 4.68.0 (86 to 90) were made without asking, after two
+options were offered and the answer was "add OAuth verification; a button
+or an icon": Claude signs in through the installed Claude Code and not
+through a sign-in of pymolish, which Anthropic does not allow; the button
+starts Claude Code's own sign-in and there is no Sign out; Claude Code's
+own tools, MCP servers and settings are off in the Chat tab; Claude Code
+keeps its transcript; the button keeps the plain sign-in icon, without the
+marks of the providers. One point is the user's to weigh: Anthropic's page
+for the Agent SDK says that, unless approved, a product may not "offer
+claude.ai login or rate limits". Starting the user's own, unchanged Claude
+Code is how its legal page reads to me ("does not prevent an end user from
+signing in to the unmodified Claude Code binary"); nobody at Anthropic was
+asked. Before pymolish is given to others with this provider, ask them, or
+take the provider out (`"Claude Code"` in `assistant.ROUTES`).
 Say so if another one is wanted.
 
 Small things that were left out on the way and are built only if asked for:
@@ -261,13 +287,19 @@ key at OpenRouter on Sign out (today a link to its page). From 4.67.0, in
 the Sequence tab: the dimming of the unaligned residues of an alignment,
 the frame around a drag, the marks of the selection along the scroll bar,
 scrolling on while a drag passes the edge; and the full name of the mouse
-mode in the tooltip of its button.
+mode in the tooltip of its button. From 4.68.0: a Sign out for Claude Code
+(it would sign it out everywhere), the marks of the providers as icons
+(their rules for use were not read), one long-lived Claude Code per
+conversation in place of one start per turn (the start was not timed
+alone; a resumed turn with a one-word answer took 2.66 s in all), a conversation without Claude Code's transcript on disk, and a
+check of the sign-in after a failed turn (the row shows the state of the
+last check).
 
 The user's to do, not decisions:
 
 - Push `feature13` and open its pull request. Checked 2026-11-24 after
-  4.67.0: `origin/feature13` is at the plan commit of 4.66.0; the branch
-  is 2 commits ahead of it (4.67.0 and this plan commit) and contains
+  4.68.0: `origin/feature13` is at the plan commit of 4.66.0; the branch
+  is 4 commits ahead of it (4.67.0, 4.68.0 and their plan commits) and contains
   `feature12` (itself 9 commits ahead of its remote); `feature13` has no
   pull request; the last one is #10
   (`feature11`, merged 2026-11-20). No push or merge was performed in this
@@ -296,6 +328,15 @@ The user's to do, not decisions:
   OpenRouter). "Stay signed in" needs a keychain service: Windows and
   macOS have one, a Linux desktop usually, WSL usually not; without one
   the box says so and the sign-in lasts for the run.
+- Try the provider "Claude Code" of the Chat tab (4.68.0) yourself: choose
+  it, check the account in the row, send a request. On another computer,
+  or after `claude auth logout`, try "Continue with Claude Code": that
+  button was run against a stand-in only, since a real try would have
+  signed your Claude Code out. The trial of 2026-11-24 made eleven small
+  requests on your Team plan (model haiku): seven to find the right
+  switches of Claude Code, four turns in the window. Each conversation leaves a transcript
+  under `~/.claude/projects` (the folder named after the temporary
+  directory).
 - Try the connector from Codex once its account has credits: AI assistant
   > Agent connector, then "Copy setup line for Codex". On 2026-11-24
   `codex mcp list` showed the server as enabled, and `codex exec` stopped

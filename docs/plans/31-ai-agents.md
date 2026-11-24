@@ -1,5 +1,45 @@
 # 31 — Chat that controls this version of pymolish
 
+**Built 2026-11-24 in 4.68.0: the provider "Claude Code", a Claude account
+in the Chat tab (31d).** Read again that day:
+
+- [Legal and compliance](https://code.claude.com/docs/en/legal-and-compliance)
+  of Claude Code: no Claude.ai login in a third-party application, and
+  developers "may not collect, store, or intermediate Claude.ai
+  credentials or session tokens"; it "does not prevent an end user from
+  signing in to the unmodified Claude Code binary with their own Claude
+  subscription".
+- [Agent SDK overview](https://code.claude.com/docs/en/agent-sdk/overview):
+  "Unless previously approved, Anthropic does not allow third party
+  developers to offer claude.ai login or rate limits for their products".
+  How that applies to starting the user's own Claude Code was not asked of
+  Anthropic.
+- [Claude Platform OAuth](https://platform.claude.com/docs/en/manage-claude/oauth-apps/oauth-reference)
+  (beta): links the API billing of an organization to a server product;
+  the client proves itself with a token of an identity provider. Not a
+  sign-in for a desktop program.
+- [Use the Claude Agent SDK with your Claude plan](https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan),
+  note of 2026-10-07: signed in with a plan, `claude -p` draws from the
+  limits of the plan.
+
+Built: `_claude_code` in `assistant.py` starts `claude -p --output-format
+stream-json --verbose --restricted --tools "" --strict-mcp-config
+--mcp-config <file> --allowed-tools mcp__pymolish__pymol
+--system-prompt-file <file>`, with `--model` unless "default" and
+`--resume` from the second turn on, the prompt on stdin, in the temporary
+directory. `claude_status` and `claude_login` in `signin.py`; the row in
+`chat_panel.py`. Measured with Claude Code 2.1.322 on a Team plan, model
+haiku: with `--safe-mode` the session had no tool at all (it switches off
+the server given by `--mcp-config`); with `--restricted` or an empty
+`--setting-sources` the tool was connected and the user's plugins and
+memory files were gone (five built-in plugins stay, and a reminder with
+the user's e-mail); in the real window 4 tool calls in 5.92 s and 11523
+input tokens for the first turn, 2.66 s and 5348 for a resumed second one.
+8 new tests; the suite 1109 passed and 250 skipped. Left out: a Sign out,
+the sign-in button against a real signed-out Claude Code, Windows, macOS,
+a release bundle, the marks of the providers, a conversation without
+Claude Code's transcript.
+
 **Built 2026-11-24 in 4.66.0: 31d, the sign-in in the browser (questions 74
 and 75).** Checked that day against the providers' own pages:
 
