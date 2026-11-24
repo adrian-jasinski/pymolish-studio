@@ -23,6 +23,29 @@ first seven of "Finished milestones of open steps". Step 19 moved to
 "Finished steps". Open orders below were renumbered: 27c 1, the trial of 31
 2, the grid surface 3, 25b 4, 15b 5, the surface worker 6, 21g 7.
 
+**Built 2026-11-24, 4.66.0:** 31d, the sign-in of the Chat tab in the
+browser; its row is the first of "Finished milestones of open steps". The
+open orders keep their numbers; the trial of 31 (order 2) now also covers a
+real sign-in.
+
+Decided by the user on 2026-11-24, asked before 4.66.0 was built:
+
+| Question | Decision | State |
+| --- | --- | --- |
+| 74 | Which sign-in in the browser the Chat tab gets, of the three that the providers allow: OpenRouter (recommended) and the ChatGPT plan. Not chosen: a sign-in to an API account at Anthropic through its `ant` tool. | 4.66.0, both. A real sign-in is open, order 2. |
+| 75 | How long a sign-in lasts: both, this run only or kept in the keychain of the operating system. The new optional package `keyring` was named in the question. Replaces answer 48 for sign-ins; a typed API key is still kept for the run only. | 4.66.0: the box "Stay signed in", off at first. |
+
+Chosen while building 4.66.0, each the smaller option. Say so if another
+one is wanted:
+
+| No. | Choice | Built | To change it |
+| --- | --- | --- | --- |
+| 76 | The sign-in has a row of its own under the provider row, shown for ChatGPT and OpenRouter only: with it in the first row the window would have to grow. The button reads "Continue with ChatGPT", as OpenAI's guideline asks, and so for OpenRouter. Its icon is Lucide's `log-in`; OpenAI's logo is not used. | 4.66.0. | `_show_access` in `chat_panel.py`. |
+| 77 | The keychain holds one entry per provider: the OpenRouter key, or the ChatGPT refresh token (Windows keeps 1280 characters per entry). The registration of pymolish at ChatGPT, the e-mail and a random name of this installation are in the ordinary settings: they are not secrets. | 4.66.0. | The comment marked `ponytail:` above `kept` in `signin.py`. |
+| 78 | Without "Stay signed in" an OpenRouter key is asked to expire after one day (the user can change that on OpenRouter's page): a key that nobody keeps should not live on. | 4.66.0. | `expiring` in `signin.openrouter`. |
+| 79 | The provider and the model of each provider are remembered between runs, for the two providers with an API key too. The keychain and the network are not touched before the Chat tab is shown. | 4.66.0. | `chat/provider` and `chat/model/...` in `chat_panel.py`. |
+| 80 | The signature of ChatGPT's ID token is not checked: the token comes straight from OpenAI's server over TLS and only its e-mail is shown. | 4.66.0. | The comment marked `ponytail:` in `signin.chatgpt`. |
+
 Decided by the user on 2026-11-24: "select the recommended option for those
 unanswered questions". That settles every question that was built with its
 recommendation and still waited for a word:
@@ -41,7 +64,7 @@ recommendation and still waited for a word:
 | 45 | The toolbar button is `bot`, "AI assistant"; measured first: 1297 px of content in a 1305 px window at 150 %, nothing in the overflow menu. | 4.61.0. |
 | 46 | The assistant is present but off until used; nothing listens and no request leaves before the user turns it on. | 4.58.0, 4.61.0. |
 | 47 | Setup helpers for the installed Codex and Claude Code, after a check against each. | 4.61.0: a setup line to copy for each. Checked with Claude Code 2.1.322 (it listed the tool and called it in the real window); Codex 0.163.0 listed the server but had no credits for a call. The Codex call is open, order 2. |
-| 48 | Keys from the session or the environment only; nothing is stored. | 4.58.0. The connector's token follows the same rule (4.61.0). |
+| 48 | Keys from the session or the environment only; nothing is stored. | 4.58.0. The connector's token follows the same rule (4.61.0). For a sign-in in the browser the user chose otherwise on 2026-11-24 (answer 75, 4.66.0). |
 | 57 | A click on an empty star rates up to it, on a filled one down to the one before. | 4.46.0. |
 | 58 | Ctrl+L stays zoom only; `ligand_next` has Ctrl+Shift+M and Ctrl+Shift+H. | 4.51.0. |
 | 59 | Each half of a bond has the color of its atom's ball. | 4.48.0. |
@@ -248,7 +271,8 @@ ones, the new ones win.
 Steps 1, 8, 15, 21, 23, 25, 27 and 31 stay in the roadmap.
 These parts of them have shipped. The rows of steps 3, 11, 17, 18, 19, 20, 22, 26,
 24, 28, 30, 32, 34, 35 and 36, which are finished, are kept here as the record of
-their milestones. The rows are not in order of time: the newest, the seven
+their milestones. The rows are not in order of time: the newest, 31d
+(4.66.0) and the seven
 rows of 2026-11-24 (4.60.1 to 4.65.0), are at the top, the last built first;
 under them the rows of 4.56.0 to 4.60.0 and the ten rows
 of 2026-11-23 (4.43.1 to 4.51.0); under
@@ -258,6 +282,7 @@ the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
+| 31 | 31d — sign-in in the browser | Done 2026-11-24 (4.66.0): [docs/plans/31-ai-agents.md](docs/plans/31-ai-agents.md). `modules/pymol/signin.py`, standard library only: an authorization code with PKCE that comes back to a listener on 127.0.0.1, for OpenRouter (returns a key of the user's account) and for OpenAI's "Sign in with ChatGPT" for open-source apps (pymolish is registered by the user at the first sign-in; tokens for one hour, renewed before a request). The ChatGPT route in `assistant.py` streams, sends the tool in a namespace and no output limit. Chat tab: two more providers, a row with "Continue with ...", "Stay signed in" and the account with a link to its usage page; the model field is a list filled from the account. 16 tests in `api/signin.py`, 3 more in `api/assistant.py`; the suite: 1099 passed, 250 skipped. Checked in the real window with a stand-in browser: the row, Cancel, Sign out, the keyboard order, the window's smallest width unchanged (569 px). Differs from the plan: 31d was planned as an investigation only, and it was built. Its finding: Anthropic forbids a Claude.ai login in another program, so Anthropic keeps the API key; OpenAI and OpenRouter each publish a flow for it. No real sign-in was made. |
 | 21 | 21f, item 1 — smooth edges (FXAA) | Done 2026-11-24 (4.65.0). `data/shaders/fxaa.fs` (written here from the description of the method, one pass), its program on `copy.vs`, `Enable_FXAAShader`; `SceneRenderAA` cut down to it. The offscreen path was in the code and unused. `antialias_shader` 0 or 1, one check row in Setting > Rendering, off by default (choice 73), not saved in sessions as before. Measured on WSLg (integrated AMD, 1500 x 731, 1oky): 10.3 ms a frame without and 12.0 ms with, each including a copy of the frame; pictures looked at on black and white, with `transparency_mode` 3, `grid_mode`, selection markers and a label. `settings.py::testAA` passes in the real window. Differs from the plan: the plan said "about 100 lines of shader"; the file has 50 lines. Not done: stereo, images drawn at another size than the window, Windows and macOS. Four other tests of `settings.py` fail in a real window on this machine, also on the 4.19.17 build: `testTrilines` twice, `testAtomCartoonTransparencyNuc`, `testIsomeshTransparency`. |
 | 21 | 21f, item 3 — background picture in the session | Done 2026-11-24 (4.64.0). A session save task writes the picture as "data:image/png;base64" text into `bg_image_filename`; the core read that form already. Real window: drawn from the file, from the text, and from a session whose file was deleted. PyMOL 3.2.0a loads, ray traces and saves such a session. Test `api/bg_image_session.py`; `jira/PYMOL-1571.py` lost its mark. |
 | 21 | 21f, item 2 — sphere modes 10 and 11 | Done 2026-11-24 (4.63.1). `sphere_mode` stops at 9; the warning, the test and its two reference images are deleted. Of the five test files that carried the mark `incentive`, two are left, both for 21g. |

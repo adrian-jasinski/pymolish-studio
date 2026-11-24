@@ -1,5 +1,41 @@
 # 31 — Chat that controls this version of pymolish
 
+**Built 2026-11-24 in 4.66.0: 31d, the sign-in in the browser (questions 74
+and 75).** Checked that day against the providers' own pages:
+
+- Anthropic: "Anthropic does not permit third-party developers to offer
+  Claude.ai login into their own applications"
+  ([legal and compliance](https://code.claude.com/docs/en/legal-and-compliance)).
+  Nothing was built; Anthropic keeps the API key. A Claude subscription
+  works through 31b with Claude Code.
+- OpenAI: [Sign in with ChatGPT for open-source apps](https://developers.openai.com/siwc/token-sharing-open-source),
+  an authorization code with PKCE on `http://127.0.0.1:<port>/auth/callback`,
+  first with `client_id=dynamic_agent_client`, which makes the user register
+  the app and returns a client ID to reuse. Requests go to
+  `api.openai.com/v1/responses` with `store: false` and `stream: true`,
+  function tools in a namespace, no `max_output_tokens`; the models come
+  from `GET /v1/models`. Paid from the user's plan (Plus and Pro are
+  named; the help page also names Go and Business).
+- OpenRouter: [OAuth PKCE](https://openrouter.ai/docs/guides/overview/auth/oauth),
+  no registration, any port on localhost, returns a key of the user's
+  account; requests to `openrouter.ai/api/v1/responses`.
+
+Built: `modules/pymol/signin.py` (standard library), the providers
+"ChatGPT" and "OpenRouter" in `assistant.py` and the Chat tab, "Stay signed
+in" through the optional package `keyring` (extra `ai`). Measured: 16 tests
+in `api/signin.py` and 3 new ones in `api/assistant.py` pass, the suite
+1099 passed and 250 skipped; the streamed route ran through the real
+`openai` 3.58.0 package against a local server (a tool call, an answer, a
+usage-limit failure); OpenAI's server answered the first authorization
+request with a redirect to its log-in page, and with 400 when
+`agent_name_hint` was left out; OpenRouter listed 386 models with tool
+use; `keyring` 25.7.0 installs ten packages of 18 MB on Linux, 16.5 MB of
+them `cryptography`, `cffi` and `pycparser` for the Secret Service. Left out: any real
+sign-in or conversation (it needs the user's accounts; order 2 of the
+roadmap), the signature check of the ID token, several ChatGPT accounts,
+the model list for the providers with an API key, a sign-in to an API
+account at Anthropic through its `ant` tool.
+
 **Built 2026-11-24 in 4.61.0: 31b and the toolbar button (questions 45 and
 47, the recommended options).** `modules/pymol/agent_server.py`, command
 `agent_server on|off|status`: MCP over Streamable HTTP with the standard
@@ -160,6 +196,9 @@ No automatic edit to another application's file and no public tunnel.
 
 ## 31d — optional subscription login investigation
 
+Investigated and built on 2026-11-24 in 4.66.0 for ChatGPT and OpenRouter;
+see the note at the top. The text below is the plan as it was.
+
 Not on the required delivery path. Before planning a built-in “Sign in” row,
 confirm official third-party authorization, supported OAuth/client flow,
 credential storage, billing and platform coverage for that provider. Report
@@ -178,7 +217,7 @@ concrete deliverable without this investigation succeeding.
 | 45 | Icon/name? | **`bot`, “AI assistant”**, or `message-circle`, “Chat”; measure the toolbar before adding it. |
 | 46 | Present but inactive, or removable build option? | **Present and inactive**; no network work until enabled. |
 | 47 | Which external clients get guided setup? | **The user's installed Codex and Claude Code, after compatibility checks**; other desktop clients only with verified setup, not an assumed shared config. |
-| 48 | Session/environment credentials only, or persistent storage? | **Session/environment first**; persistent credentials need an OS-protected store or a reviewed file implementation on each platform, with dependency approval if needed. |
+| 48 | Session/environment credentials only, or persistent storage? | **Session/environment first**; persistent credentials need an OS-protected store or a reviewed file implementation on each platform, with dependency approval if needed. Answered for sign-ins on 2026-11-24 (75): both, the keychain of the operating system through `keyring` behind "Stay signed in" (4.66.0). |
 
 ## Acceptance and affected files
 

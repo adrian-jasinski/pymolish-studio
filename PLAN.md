@@ -60,6 +60,13 @@ file for [PLAN-DONE.md](PLAN-DONE.md). Not built in that run, and why:
 grid surface, the outline, the surface worker and general undo are each a
 slice of their own.
 
+Built 2026-11-24, 4.66.0, from the request "authorize via web browser, not
+by providing model ID and API key (as an alternative)": 31d, the sign-in
+of the Chat tab with a ChatGPT plan or with OpenRouter. The user chose both
+of these and "Stay signed in" as a box (questions 74 and 75). A Claude
+subscription cannot be signed in to from pymolish: Anthropic's terms do not
+allow it. Not tried with a real account: that is part of order 2.
+
 **Shipped state, checked 2026-11-24: 4.65.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
@@ -94,13 +101,15 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.63.1 | `sphere_mode` stops at 9 (21f). |
 | 4.64.0 | A session carries its background picture (21f). |
 | 4.65.0 | Smooth edges in the viewport: Setting > Rendering > Antialias (Real Time), an FXAA pass, off by default (21f). |
+| 4.66.0 | Chat sign-in in the browser (31d): "Continue with ChatGPT" (the user's ChatGPT plan) and "Continue with OpenRouter" (credits there), the models of the account as a list, "Stay signed in" in the keychain of the operating system. Stand-in tests only, no real sign-in yet. |
 
 Of the ten features requested on 2026-11-20, nine have a working version.
 The tenth, the surface looks, waits for the grid surface of 1b. Steps 19, 20,
 26, 29 and 32 are finished. Of the eleven drafts of 2026-11-23, all eleven have a working version;
-the chat (31a, 31c) shipped in 4.58.0, its external connector 31b in 4.61.0.
-Neither was tried with a paid provider request by this program itself: the
-live trial is order 2.
+the chat (31a, 31c) shipped in 4.58.0, its external connector 31b in 4.61.0,
+the sign-in in the browser 31d in 4.66.0.
+None was tried with a paid provider request or a real sign-in by this
+program itself: the live trial is order 2.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -122,7 +131,7 @@ Questions gate the dependent slice, not unrelated repairs.
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
 | 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Needs the pushed branch: the last CI run is older than the repair. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
-| 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; and one call through the connector from Codex, whose account had no credits on 2026-11-24. Subscription login 31d is only an investigation. | Live trial recorded for Anthropic and OpenAI; one Codex call through the connector. No promise of login entitlement. |
+| 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; one real sign-in and one conversation each with ChatGPT and with OpenRouter (31d, shipped in 4.66.0 on stand-ins), which needs the user's accounts; and one call through the connector from Codex, whose account had no credits on 2026-11-24. | Live trial recorded for Anthropic and OpenAI; a sign-in and a conversation recorded for ChatGPT and OpenRouter, on WSL and on one other system; one Codex call through the connector. |
 | 3 | **1b** — [Grid surface experiment](docs/plans/01-performance-gpu.md) | Signed distance grid/marching cubes as a second surface type and a smoothness value. Compare 1aon and 4v6x at two values; user judges the experiment. | Actual times and pictures against today's surface. |
 | 4 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan using the grid-surface result from order 3; no new surface-look setting before that. | New detailed section grounded in the experiment. |
 | 5 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. A second pass over the texture that FXAA reads since 4.65.0 (`SceneRenderAA`, `fxaa.fs`). | Frame times and pictures on black/white. |
@@ -195,10 +204,11 @@ recommended direction, not a claim that an implementation has passed tests.
 ## Waiting for the user
 
 No question waits. On 2026-11-24 the user chose the recommended option for
-every question that had no answer; those, the earlier answers and the
-choices made while building 4.60.1 to 4.65.0 are in
+every question that had no answer; those, the earlier answers, the two
+answers about the sign-in (74 and 75) and the choices made while building
+4.60.1 to 4.66.0 are in
 [PLAN-DONE.md](PLAN-DONE.md) under "Decided by the user" and "Chosen while
-building". The choices of this run say there what it takes to change them.
+building". The choices say there what it takes to change them.
 
 One of the choices of that run is worth a look, because only the user's
 other computers can settle it: smooth edges (FXAA, 4.65.0) are **off** when
@@ -226,12 +236,17 @@ rows stay under Movie > Program); undo of a drag on the Timeline strip;
 SMAA; smooth edges in stereo and in images drawn at another size than the
 window; ambient occlusion in other looks than "soft"; the answer about the
 paint roller of question 27 ended "rest", cut off, and nothing more was
-built from it.
+built from it. From 4.66.0: the list of models for the two providers with
+an API key; a sign-in to an API account at Anthropic through its `ant`
+tool (offered in question 74, not chosen); more than one ChatGPT account;
+the check of the signature of ChatGPT's ID token; the ChatGPT access token
+kept between runs (today the next run renews it); deleting the OpenRouter
+key at OpenRouter on Sign out (today a link to its page).
 
 The user's to do, not decisions:
 
 - Push `feature13` and open its pull request. Checked 2026-11-24: the
-  branch is 12 commits ahead of `origin/feature13` (this plan commit
+  branch is 14 commits ahead of `origin/feature13` (this plan commit
   included) and contains `feature12`
   (itself 9 commits ahead of its remote); the last pull request is #10
   (`feature11`, merged 2026-11-20). No push or merge was performed in this
@@ -247,6 +262,19 @@ The user's to do, not decisions:
 - Try the Chat tab with your own Anthropic and OpenAI keys and a model
   ID each (`pip install 'pymolish[ai]'`): no request was ever sent by the
   Chat tab itself.
+- Sign in once with each new provider of the Chat tab (4.66.0): choose
+  ChatGPT, then "Continue with ChatGPT"; choose OpenRouter, then "Continue
+  with OpenRouter"; send one request each. No real sign-in was made: the
+  code follows the two published flows, and OpenAI's server took the first
+  request up to its log-in page. Three things only a real try shows:
+  whether OpenAI lets pymolish register without being asked first (its
+  page says the plan route is for "all open-source partners"); whether
+  OpenRouter takes the requests in the form the OpenAI package sends them;
+  and, on WSL, whether the browser of Windows reaches the listener inside
+  WSL (`127.0.0.1:1455` for ChatGPT, `localhost` with a free port for
+  OpenRouter). "Stay signed in" needs a keychain service: Windows and
+  macOS have one, a Linux desktop usually, WSL usually not; without one
+  the box says so and the sign-in lasts for the run.
 - Try the connector from Codex once its account has credits: AI assistant
   > Agent connector, then "Copy setup line for Codex". On 2026-11-24
   `codex mcp list` showed the server as enabled, and `codex exec` stopped
