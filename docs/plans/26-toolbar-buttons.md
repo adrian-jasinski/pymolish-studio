@@ -3,6 +3,9 @@
 [Roadmap](../../PLAN.md) · Request 2026-11-20 · **Done 2026-11-20: 26a in
 4.20.0, 26b in 4.21.0, 26c and 26d in 4.30.0.** The widths below were
 measured in the real window at 150 %.
+2026-11-24, 4.59.0: Bg and Draw show only their icon, Zoom and Rock open
+menus (Rock: spins about X, Y, Z and a random axis), a Sequence alignment
+button; spacing 10 px; 1254 px measured at 150 % (1236 before).
 
 The bar as built, left to right: Open, Residues, the chips P L S ... All and
 "nothing", Undo, Redo, Zoom, Orient, Rock, Presets, Palette, Bg, then

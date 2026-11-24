@@ -1,6 +1,10 @@
 # 33 — Multiple sequences and structures in a separate window
 
-[Roadmap](../../PLAN.md) · **Built 2026-11-24 in 4.57.0**, commit
+[Roadmap](../../PLAN.md) · 2026-11-24, 4.59.0 and 4.60.0: the toolbar has a
+Sequence alignment button after 2D; a consensus secondary-structure track
+(helix cylinders, strand arrows, numbered) and residue colors (Zappo,
+Kyte-Doolittle, percent identity) were added. Not done: a Clustal scheme and
+graphical symbols on the structure rows. · **Built 2026-11-24 in 4.57.0**, commit
 `f25db6d3`. Slices 33a–c shipped together with the user-approved optional
 local MAFFT backend. Loaded chains plus FASTA were included from the start.
 21 sequence/fitting tests passed, including a three-sequence MAFFT 7.505
