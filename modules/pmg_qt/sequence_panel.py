@@ -2,8 +2,10 @@
 
 import copy
 import csv
+import itertools
 import os
 import threading
+from collections import Counter
 from pathlib import Path
 
 from pymol import CmdException, sequence, session_extra
@@ -11,6 +13,126 @@ from pymol.Qt import QtCore, QtGui, QtWidgets
 from pymol.Qt.utils import AsyncFunc, getMonospaceFont, loadUi
 
 Qt = QtCore.Qt
+SS_ROLE = Qt.ItemDataRole.UserRole  # track row: (code, first, last, number)
+HELIX, STRAND, COIL = (
+    QtGui.QColor("#e0413a"),
+    QtGui.QColor("#2fa84f"),
+    QtGui.QColor(128, 128, 128),
+)
+SS_NAMES = {"H": "Helix", "S": "Strand"}
+# Jalview's colour schemes: Zappo by residue kind, Kyte-Doolittle hydropathy
+ZAPPO = {
+    **dict.fromkeys("ILVAM", "#ffafaf"),
+    **dict.fromkeys("FWY", "#ffc800"),
+    **dict.fromkeys("KRH", "#6464ff"),
+    **dict.fromkeys("DE", "#ff0000"),
+    **dict.fromkeys("STNQ", "#00ff00"),
+    **dict.fromkeys("PG", "#ff00ff"),
+    "C": "#ffff00",
+}
+KYTE_DOOLITTLE = dict(
+    I=4.5, V=4.2, L=3.8, F=2.8, C=2.5, M=1.9, A=1.8, G=-0.4, T=-0.7, S=-0.8,
+    W=-0.9, Y=-1.3, P=-1.6, H=-3.2, E=-3.5, Q=-3.5, D=-3.5, N=-3.5, K=-3.9, R=-4.5,
+)  # fmt: skip
+# percent identity: residues equal to the consensus, by how many share it
+IDENTITY = ((0.8, "#6464ff"), (0.6, "#9999ff"), (0.4, "#ccccff"))
+COLORINGS = ("No color", "Residue type", "Hydrophobicity", "Percent identity")
+
+
+def ss_track(mapping):
+    """Consensus secondary structure per column: "H" or "S" where that is
+    the most common assignment of the structure rows, else " "."""
+    track = []
+    for column in itertools.zip_longest(*mapping):
+        best = Counter(r[2] for r in column if r and r[2] in "HSL").most_common(1)
+        track.append(best[0][0] if best and best[0][0] in "HS" else " ")
+    return "".join(track)
+
+
+def ss_elements(track):
+    """Per column (code, first column, last column, number) of the helix
+    or strand it is in, numbered from 1; coil is (" ", column, column, 0)."""
+    elements, number = [], 0
+    for code, run in itertools.groupby(track):
+        n = len(list(run))
+        first = len(elements)
+        if code != " ":
+            number += 1
+        elements += [(code, first, first + n - 1, number if code != " " else 0)] * n
+    return elements
+
+
+def residue_color(scheme, letter, consensus="", conservation=0.0):
+    """Background of one residue under a COLORINGS index, or None."""
+    letter = letter.upper()
+    if scheme == 1:
+        return ZAPPO.get(letter)
+    if scheme == 2 and letter in KYTE_DOOLITTLE:
+        t = (KYTE_DOOLITTLE[letter] + 4.5) / 9  # blue hydrophilic, red hydrophobic
+        return QtGui.QColor.fromRgbF(0.5 + 0.5 * t, 0.5, 1 - 0.5 * t).name()
+    if scheme == 3 and letter == consensus and letter not in "-X?*":
+        return next((c for limit, c in IDENTITY if conservation > limit), None)
+    return None
+
+
+class TrackDelegate(QtWidgets.QStyledItemDelegate):
+    """Draws the secondary structure track: helices as cylinders, strands
+    as arrows, coil as a line, each element numbered at its start."""
+
+    def sizeHint(self, option, index):
+        size = super().sizeHint(option, index)
+        if index.data(SS_ROLE) is not None:
+            size.setHeight(34)
+        return size
+
+    def paint(self, painter, option, index):
+        element = index.data(SS_ROLE)
+        if element is None:
+            return super().paint(painter, option, index)
+        code, first, last, number = element
+        column, rect = index.column(), QtCore.QRectF(option.rect)
+        mid = rect.center().y() + 5
+        painter.save()
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+        painter.setClipRect(rect)
+        painter.setPen(Qt.PenStyle.NoPen)
+        if code == "H":
+            body = QtCore.QRectF(rect.left(), mid - 6, rect.width(), 12)
+            # a run continues past the cell edges, so only its ends are round
+            body.adjust(-8 if column > first else 2, 0, 8 if column < last else -2, 0)
+            painter.setBrush(HELIX)
+            painter.drawRoundedRect(body, 6, 6)
+        elif code == "S":
+            painter.setBrush(STRAND)
+            left = rect.left() + (2 if column == first else 0)
+            if column < last:
+                painter.drawRect(QtCore.QRectF(left, mid - 4, rect.right() - left, 8))
+            else:
+                x = rect.center().x()
+                points = ((left, -4), (x, -4), (x, -8), (rect.right() - 2, 0),
+                          (x, 8), (x, 4), (left, 4))  # fmt: skip
+                painter.drawPolygon(
+                    QtGui.QPolygonF([QtCore.QPointF(px, mid + dy) for px, dy in points])
+                )
+        else:
+            painter.setPen(QtGui.QPen(COIL, 1.5))
+            painter.drawLine(
+                QtCore.QPointF(rect.left(), mid), QtCore.QPointF(rect.right(), mid)
+            )
+        if number and column == first:
+            painter.setPen(option.palette.text().color())
+            font = QtGui.QFont(option.font)
+            font.setPointSizeF(font.pointSizeF() * 0.8)
+            painter.setFont(font)
+            top = QtCore.QRectF(
+                rect.left() + 2, rect.top(), rect.width(), mid - 7 - rect.top()
+            )
+            painter.drawText(
+                top,
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom,
+                str(number),
+            )
+        painter.restore()
 
 
 class AlignmentModel(QtCore.QAbstractTableModel):
@@ -19,6 +141,7 @@ class AlignmentModel(QtCore.QAbstractTableModel):
         self.rows = []
         self.secondary = True
         self.reference = 0
+        self.coloring = 0  # index into COLORINGS
         self.picked = set()
         self.missing = set()
         self.update()
@@ -29,13 +152,17 @@ class AlignmentModel(QtCore.QAbstractTableModel):
         self.consensus, self.conservation, self.identities = sequence.statistics(
             self.rows, self.reference
         )
+        track = ss_track(self.mapping) if self.secondary else ""
+        self.elements = ss_elements(track) if track.strip() else []
+        # under the sequences: the consensus, then the secondary structure
+        self.track_row = len(self.rows) + bool(self.consensus) if self.elements else -1
         self.endResetModel()
 
     def rowCount(self, parent=None):
         return (
             0
             if parent is not None and parent.isValid()
-            else len(self.rows) + bool(self.consensus)
+            else len(self.rows) + bool(self.consensus) + bool(self.elements)
         )
 
     def columnCount(self, parent=None):
@@ -50,6 +177,8 @@ class AlignmentModel(QtCore.QAbstractTableModel):
             return None
         if orientation == Qt.Orientation.Horizontal:
             return str(section + 1)
+        if section == self.track_row:
+            return "Secondary structure"
         if section == len(self.rows):
             return "Consensus"
         identity = self.identities[section] if self.identities else None
@@ -63,6 +192,14 @@ class AlignmentModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return None
         row, column = index.row(), index.column()
+        if row == self.track_row:
+            element = self.elements[column] if column < len(self.elements) else None
+            if role == SS_ROLE:
+                return element or (" ", column, column, 0)
+            if role == Qt.ItemDataRole.ToolTipRole and element and element[3]:
+                code, first, last, number = element
+                return f"{SS_NAMES[code]} {number}, columns {first + 1}–{last + 1} (most rows)"
+            return None
         if row == len(self.rows):
             if role == Qt.ItemDataRole.DisplayRole:
                 return self.consensus[column]
@@ -98,11 +235,29 @@ class AlignmentModel(QtCore.QAbstractTableModel):
                 if record["sequence"][column] == "-"
                 else "No coordinates"
             )
-        if role == Qt.ItemDataRole.BackgroundRole and record["source"] and residue:
-            key = tuple(record["source"][:3]) + tuple(residue[:2])
-            if key in self.picked:
-                return QtWidgets.QApplication.palette().highlight()
+        if role in (Qt.ItemDataRole.BackgroundRole, Qt.ItemDataRole.ForegroundRole):
+            picked = (
+                record["source"]
+                and residue
+                and tuple(record["source"][:3]) + tuple(residue[:2]) in self.picked
+            )
+            palette = QtWidgets.QApplication.palette()
+            color = self.color(row, column)
+            if role == Qt.ItemDataRole.BackgroundRole:
+                return palette.highlight() if picked else color and QtGui.QColor(color)
+            if picked:
+                return palette.highlightedText()
+            return QtGui.QColor("black") if color else None  # the colors are light
         return None
+
+    def color(self, row, column):
+        consensus = self.consensus[column] if self.consensus else ""
+        return residue_color(
+            self.coloring,
+            self.rows[row]["sequence"][column],
+            consensus,
+            self.conservation[column] if consensus else 0.0,
+        )
 
 
 class SequencePanel(QtWidgets.QDockWidget):
@@ -132,6 +287,11 @@ class SequencePanel(QtWidgets.QDockWidget):
         self.model = AlignmentModel(self)
         form.view.setModel(self.model)
         form.view.setFont(getMonospaceFont())
+        form.view.setItemDelegate(TrackDelegate(form.view))
+        form.coloring.addItems(COLORINGS)
+        form.coloring.setCurrentIndex(int(self.settings.value("sequence/coloring", 0)))
+        self.model.coloring = form.coloring.currentIndex()
+        form.coloring.currentIndexChanged.connect(self.coloring_changed)
         form.view.horizontalHeader().setSectionResizeMode(
             QtWidgets.QHeaderView.ResizeMode.Fixed
         )
@@ -386,6 +546,11 @@ class SequencePanel(QtWidgets.QDockWidget):
             self.model.reference = index
             self.model.update()
             self.save()
+
+    def coloring_changed(self, index):
+        self.model.coloring = index
+        self.settings.setValue("sequence/coloring", index)
+        self.form.view.viewport().update()
 
     def secondary_changed(self, checked):
         self.model.secondary = checked

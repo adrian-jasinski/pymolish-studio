@@ -222,3 +222,49 @@ def test_late_worker_result_is_discarded(panel):
     # A non-native job must not leave the core's asynchronous interrupt set.
     cmd.load(testing.datafile("1oky-frag.pdb"), "after_cancel")
     assert cmd.count_atoms("after_cancel") > 0
+
+
+def test_ss_track_and_colors(panel):
+    from pmg_qt import sequence_panel as sp
+    from pymol.Qt import QtCore
+
+    # the consensus track: most rows' H/S per column, numbered elements
+    H, S, L = (("1", "A", c) for c in "HSL")
+    mapping = [[H, H, None, S, S, L], [H, L, L, S, S, None], [L, H, L, S, L, L]]
+    track = sp.ss_track(mapping)
+    assert track == "HH SS "
+    elements = sp.ss_elements(track)
+    assert elements[1] == ("H", 0, 1, 1) and elements[4] == ("S", 3, 4, 2)
+    assert elements[2] == (" ", 2, 2, 0)
+
+    _, window = panel
+    Role = QtCore.Qt.ItemDataRole
+    window.model.rows = sequence.read_fasta(">a\nAKD\n>b\nAKE")
+    window.refresh()
+    # FASTA rows have no structure: no track
+    assert window.model.rowCount() == 3 and window.model.track_row == -1
+    window.model.mapping = [[H, H, S]] * 2
+    window.model.elements = sp.ss_elements(sp.ss_track(window.model.mapping))
+    window.model.track_row = 3
+    assert window.model.headerData(3, QtCore.Qt.Orientation.Vertical) == (
+        "Secondary structure"
+    )
+    assert window.model.data(window.model.index(3, 2), sp.SS_ROLE)[0] == "S"
+    assert "Helix 1" in window.model.data(window.model.index(3, 0), Role.ToolTipRole)
+
+    # colors: none by default, Zappo, hydrophobicity, identity to consensus
+    def background(row, column):
+        value = window.model.data(window.model.index(row, column), Role.BackgroundRole)
+        return value and value.name()
+
+    window.form.coloring.setCurrentIndex(0)
+    assert background(0, 0) is None
+    window.form.coloring.setCurrentIndex(1)
+    assert background(0, 1) == "#6464ff" and background(0, 2) == "#ff0000"
+    window.form.coloring.setCurrentIndex(2)
+    assert background(0, 0) != background(0, 1)  # A hydrophobic, K not
+    window.form.coloring.setCurrentIndex(3)
+    assert background(0, 0) == "#6464ff"  # A in both rows
+    # D and E half each: D is the consensus, at 50 %; E does not match it
+    assert background(0, 2) == "#ccccff" and background(1, 2) is None
+    window.form.coloring.setCurrentIndex(0)

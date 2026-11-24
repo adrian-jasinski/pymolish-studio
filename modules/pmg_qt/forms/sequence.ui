@@ -25,11 +25,12 @@
     <item><widget class="QLineEdit" name="search"><property name="placeholderText"><string>Sequence or residue number; Enter to find</string></property><property name="accessibleName"><string>Find sequence or residue number</string></property></widget></item>
     <item><widget class="QPushButton" name="zoom"><property name="text"><string>&amp;Zoom selection</string></property></widget></item>
     <item><widget class="QPushButton" name="copy"><property name="text"><string>&amp;Copy</string></property></widget></item>
+    <item><widget class="QComboBox" name="coloring"><property name="toolTip"><string>Color the residues: by kind (Zappo), by hydrophobicity (Kyte-Doolittle), or where they match the consensus</string></property><property name="accessibleName"><string>Residue colors</string></property></widget></item>
     <item><widget class="QCheckBox" name="secondary"><property name="text"><string>Secondary structure</string></property><property name="checked"><bool>true</bool></property></widget></item>
     <item><widget class="QPushButton" name="assignSS"><property name="text"><string>Assign SS</string></property><property name="toolTip"><string>Reassign secondary structure with dss for selected structure rows</string></property></widget></item>
     <item><widget class="QCheckBox" name="onlySelected"><property name="text"><string>Selected rows only</string></property></widget></item>
    </layout></item>
-   <item><widget class="QLabel" name="legend"><property name="text"><string>∿ Helix   → Sheet   ─ Coil   ? Unassigned   · No coordinates. Select cells to select residues in 3D; Ctrl adds.</string></property></widget></item>
+   <item><widget class="QLabel" name="legend"><property name="text"><string>∿ Helix   → Sheet   ─ Coil   ? Unassigned   · No coordinates. Bottom track: helices (cylinders) and strands (arrows) most rows share. Select cells to select residues in 3D; Ctrl adds.</string></property></widget></item>
    <item><widget class="QTableView" name="view"><property name="selectionMode"><enum>QAbstractItemView::ExtendedSelection</enum></property><property name="editTriggers"><set>QAbstractItemView::NoEditTriggers</set></property></widget></item>
    <item><widget class="QPlainTextEdit" name="results"><property name="readOnly"><bool>true</bool></property><property name="maximumHeight"><number>110</number></property><property name="accessibleName"><string>Alignment results</string></property></widget></item>
    <item><widget class="QLabel" name="status"><property name="text"><string>Add structure chains or import FASTA. Align sequences does not move structures.</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>

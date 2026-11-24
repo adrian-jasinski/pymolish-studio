@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-24 pymolish-studio
 
+	* 4.60.0
+
+	* Sequence alignment: a Secondary structure track under the consensus,
+	  drawn like Jalview: helices as red cylinders, strands as green
+	  arrows, numbered, coil as a line; a column shows what most structure
+	  rows have there. A color menu: residue type (Zappo), hydrophobicity
+	  (Kyte-Doolittle) or percent identity to the consensus; the choice is
+	  kept.
+
+2026-11-24 pymolish-studio
+
 	* 4.59.0
 
 	* Action toolbar: a Sequence alignment button after 2D opens the
