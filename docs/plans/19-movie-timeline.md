@@ -1,5 +1,19 @@
 # 19 — Movie timeline
 
+**Finished 2026-11-24 in 4.63.0.** The shot list is kept in the session:
+`session_extra` entry "timeline" with the shots, their first frames and the
+length of the movie; the panel takes it back when the loaded movie has that
+length, and passes over an entry it cannot read. The strip has a ruler of
+seconds (click or drag: the playhead); a drag on a block moves the shot to
+the place of the block it is dropped on, a drag of its right end sets its
+length, both applied on release. Movie > Program lost Camera Loop (49
+rows), Scene Loop (43) and State Loop (24): 116 rows, where questions 6 and
+13 said 58; State Sweep, Update and Remove Last Program stay. Checked:
+`api/timeline.py::test_drag_and_session`, and the real window on WSLg
+(three shots moved and stretched, saved, reinitialized, loaded). Left out:
+undo of a timeline edit, a shot "state sweep", lanes for object motions,
+and a rendered export, which was never run.
+
 [Roadmap](../../PLAN.md) · Request 2026-11-18 · **Built 2026-11-18 in 4.18.0:**
 the shot list (D), the strip (A), record (E), tours (F), effects (G), easing
 (H) and export with an estimate (I). What is built, what differs from the

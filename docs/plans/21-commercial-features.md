@@ -1,5 +1,17 @@
 # 21 — Features of the commercial build: removed, kept, to rebuild
 
+**Built 2026-11-24, 4.63.1 to 4.65.0: 21f, all three items.** 4.63.1:
+`sphere_mode` stops at 9; the test and its two images are deleted. 4.64.0:
+on save the picture of `bg_image_filename` goes into the session as "data:"
+text in that setting (the core already read it); PyMOL 3.2.0a loads, ray
+traces and saves such a session. 4.65.0: FXAA, `data/shaders/fxaa.fs`, one
+pass over the offscreen texture the render path already had; the setting
+`antialias_shader` is 0 or 1 and off at start, because only WSLg was tried.
+Measured there (integrated AMD, 1500 x 731, 1oky): 10.3 ms a frame without,
+12.0 ms with. Left out: SMAA, stereo, images drawn at another size than the
+window, Windows and macOS. Two test files still carry the mark `incentive`,
+both for 21g: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`.
+
 [Roadmap](../../PLAN.md) · Request 2026-11-19 · **Removals done in 4.19.18
 to 4.19.26. 21a to 21e built in 4.19.33 to 4.19.37. 21f was decided on
 2026-11-20 and is to build; 21g was decided the same day (option C) and is

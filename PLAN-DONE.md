@@ -17,6 +17,55 @@ historical release record is preserved.
 are the first ten of "Finished milestones of open steps". Steps 22, 28, 34,
 35 and 36 moved to "Finished steps", and step 11 is closed again.
 
+**Built 2026-11-24, 4.60.1 to 4.65.0:** the repair of Rock > Random, 31b,
+15e, the rest of step 19 and the three items of 21f; their rows are the
+first seven of "Finished milestones of open steps". Step 19 moved to
+"Finished steps". Open orders below were renumbered: 27c 1, the trial of 31
+2, the grid surface 3, 25b 4, 15b 5, the surface worker 6, 21g 7.
+
+Decided by the user on 2026-11-24: "select the recommended option for those
+unanswered questions". That settles every question that was built with its
+recommendation and still waited for a word:
+
+| Question | Decision (the recommended option) | State |
+| --- | --- | --- |
+| 33 to 35 | The palette from the brand colors is named `halo`, has the twelve colors with the five of the brand book as published, and does not name the brand. | 4.41.0. |
+| 36 | The icon of the Table button is `sheet`. | Step 30, 4.36.0 to 4.40.0. |
+| 37 | The contact area of "protein-protein interaction" is orange. | Step 30, 4.36.0 to 4.40.0. |
+| 38 | "remove crystallization additives" is one row, sugars and NAD(P) included. | Step 30, 4.36.0 to 4.40.0. |
+| 39 | No preset leaves the preset menu. | Step 30, 4.36.0 to 4.40.0. |
+| 40 | Undo of a preset takes back everything done after it, until 21g builds one stack. | 4.40.0; 21g open, order 7. |
+| 41 | Shared tools, then the chat, then the connector. | 4.58.0 and 4.61.0. |
+| 43 | Reviewed operations; a concrete confirmation for destructive, file and network actions; a separate trusted Python mode. | 4.58.0; the connector uses the same executor (4.61.0). |
+| 44 | A Chat tab in the command area. | 4.58.0. |
+| 45 | The toolbar button is `bot`, "AI assistant"; measured first: 1297 px of content in a 1305 px window at 150 %, nothing in the overflow menu. | 4.61.0. |
+| 46 | The assistant is present but off until used; nothing listens and no request leaves before the user turns it on. | 4.58.0, 4.61.0. |
+| 47 | Setup helpers for the installed Codex and Claude Code, after a check against each. | 4.61.0: a setup line to copy for each. Checked with Claude Code 2.1.322 (it listed the tool and called it in the real window); Codex 0.163.0 listed the server but had no credits for a call. The Codex call is open, order 2. |
+| 48 | Keys from the session or the environment only; nothing is stored. | 4.58.0. The connector's token follows the same rule (4.61.0). |
+| 57 | A click on an empty star rates up to it, on a filled one down to the one before. | 4.46.0. |
+| 58 | Ctrl+L stays zoom only; `ligand_next` has Ctrl+Shift+M and Ctrl+Shift+H. | 4.51.0. |
+| 59 | Each half of a bond has the color of its atom's ball. | 4.48.0. |
+| 60 | SEQ keeps the strip toggle; the alignment window is in its context menu and in Display > Panels. | 4.57.0. |
+| 61 | On WSLg a change of the UI scale waits for the next start, with a message that says why. | 4.43.1. Other displays change at once; 27c open, order 1. |
+| 62 | A session may hold three things PyMOL does not know: the key `pymolish`, a seventh item in the record of a scene, and the key `pymolish_unique_settings`. | Built 2026-11-23, in 4.43.1 to 4.51.0. Since 4.63.0 the key `pymolish` also holds the shot list; since 4.64.0 the setting `bg_image_filename` may hold the picture as text, which PyMOL 3.2.0a reads. |
+| 63 | A loaded structure opens with its ligands as `ball_and_stick`. | 4.49.0. |
+| 64 | The CPK table stays as written, 28 elements. | 4.50.0. Comparing it with the RasMol manual is still on the user's list. |
+| 65 | A scene is picked for Update, Rename and Delete with a right click or the arrow keys. | 4.44.0. |
+
+Chosen while building 4.60.1 to 4.65.0, each the smaller or the recommended
+option, under the same word of the user. Say so if another one is wanted:
+
+| No. | Choice | Built | To change it |
+| --- | --- | --- | --- |
+| 66 | Rock > Random: "change directions by random amount of rotation from 15-180 degrees" was read as: spin a random 15 to 180 degrees about one axis, then about another one, either way round. | 4.60.1. | `RANDOM_DEG` and `_random_turn` in `action_toolbar.py`. |
+| 67 | The connector: command `agent_server`, port 9257, MCP over Streamable HTTP with the standard library (no SDK), token from `PYMOLISH_AGENT_TOKEN` or new each run. | 4.61.0. | The other names considered: `mcp`, `connector`. A kept token needs the storage design of question 48. |
+| 68 | The setup helper copies a line for the user to run; it does not run it and does not edit a client's file. | 4.61.0. | A button that runs `claude mcp add` after a confirmation. |
+| 69 | 15e, fog: a "fog" / "no fog" row in the light menu, on top of any look (the plan offered this or a look with fog). Names: "balls in glass", "cartoon cylinders". Balls in glass draws `ball_and_stick` in the atoms' colors, not grey spheres: presets do not recolor. | 4.62.0. | One row in `menu.presets`; `preset.balls_in_glass`. |
+| 70 | 15e, shade of the look "soft": `ambient_occlusion_scale` 16, chosen by eye on 1oky against 12, 20 and the default 25 (black blotches). | 4.62.0. | One number in `preset.LOOKS`. |
+| 71 | 15e, color steps in the viewport: nothing built. The look "comic" already draws them there (`ray_trace_mode_3` in `anaglyph_header.fs`); a new setting was written, measured to change nothing, and taken out. | 4.62.0. | - |
+| 72 | Step 19: the strip got a ruler of seconds for the playhead, so that a drag on a block can move it. State Sweep stays under Movie > Program: the Timeline has no shot of its kind. | 4.63.0. | A shot "state sweep" in `shots.py`. |
+| 73 | 21f: FXAA is off when the program starts, because only WSLg was tried; the menu is one check row; the setting stops at 1 (no SMAA). | 4.65.0. | Default 1 in `SettingInfo.h`, once seen on Windows and macOS. |
+
 Decided by the user on 2026-11-23:
 
 | Question | Decision | State |
@@ -25,10 +74,10 @@ Decided by the user on 2026-11-23:
 | 54 | The first sequence-window release includes loaded structure chains plus FASTA import/alignment, with secondary structure from loaded coordinates. | 33a–c, built together in 4.57.0 with optional local MAFFT (answer 55). |
 | 56 | Standard CPK atom colors within selected residues. | 11c, built in 4.50.0 (`color_cpk`). |
 | 55 (2026-11-24) | Optional local MAFFT executable. | 4.57.0; separately installed, Linux 7.505 tested. |
-| 42 (2026-11-24) | Optional official OpenAI/Anthropic SDKs. | 31, open at order 2; installed footprint of SDKs and dependencies measured at about 27 MB. |
+| 42 (2026-11-24) | Optional official OpenAI/Anthropic SDKs. | 4.58.0, the extra `ai`; installed footprint of SDKs and dependencies measured at about 27 MB. The live trial of step 31 is open, order 2. |
 
-Not decided by the user, built with the recommended answer on 2026-11-23;
-each is still a question in `PLAN.md`:
+Built with the recommended answer on 2026-11-23, and decided so by the user
+on 2026-11-24 (table above):
 
 | Question | Built | Version |
 | --- | --- | --- |
@@ -40,6 +89,7 @@ each is still a question in `PLAN.md`:
 
 | Step | Detailed plan | Recommendation |
 | --- | --- | --- |
+| 19 | [Movie timeline](docs/plans/19-movie-timeline.md) | The Timeline panel in 4.18.0 (shot list, strip, record, tours, effects, easing, export with an estimate); in 4.63.0 the shot list in the session, dragging on the strip under a ruler of seconds, and Movie > Program without Camera Loop, Scene Loop and State Loop (116 rows). The keyframe strip of the core stays (question 7). Not built: undo of timeline edits, lanes for object motions, a shot "state sweep", rendering through the Export presets was never run (needs ffmpeg or ImageMagick). |
 | 33 | [Sequence alignment window](docs/plans/33-sequence-window.md) | 4.57.0, slices 33a–c delivered together: loaded chains plus FASTA, optional local MAFFT, mapped secondary structure and selections, structure fitting/Undo, consensus/identity/export and session rows. Platform launch checks remain alongside 27c. |
 | 0 | [UI engine research](docs/plans/00-ui-engine.md) | PySide6 + Qt Widgets; preserve the renderer while simplifying bindings. |
 | 3 | [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Named docks with a saved layout, the Objects panel in Qt, the action toolbar on top and the command area at the bottom, the dark theme, the UI scale, scenes as a dock, Qt menus. Closed on 2026-11-20 without its metadata table: the property table of [step 22](docs/plans/22-property-table.md) replaces it. Its open rows went to 22e (a picked atom selects its row), 23b (rows moved by dragging) and question 31 (scene buttons and sequence text drawn by the core); the spacing of dialogs is fixed when a dialog is touched. |
@@ -122,18 +172,18 @@ where the decision shipped, "open" with its order where it has not.
 
 | # | Decision | Where it goes |
 | --- | --- | --- |
-| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 9. |
+| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 6. |
 | 3 | The icon and the logo were generated with ChatGPT; the user owns them. They get "a license that is good for trade marks". | Done in 4.19.43: `data/pymol/icons/LICENSE`, a notice outside the two code licenses (unchanged copies travel with the program and may refer to it; a changed version needs its own). `docs/licenses.md`, plan 9. |
 | 4 | The release builds stay on GitHub Actions for now. | 5c is shelved; nothing was built for it. Plan 5. |
-| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 8. |
+| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 5; the FXAA pass it follows shipped in 4.65.0. |
 | 6 | The ChimeraX object colors become a palette. | 15c. Done in 4.22.0. |
-| 7 | All five effects of 15e. | Open, order 3. |
-| 13 | "Decide by yourself." Decided as recommended: the shot list goes into the session file; the 58 Program rows of the Movie menu go; the keyframe strip of the core stays for now. | Step 19. Open, order 6. |
+| 7 | All five effects of 15e. | Done in 4.62.0: two presets, the fog row, shade in the soft look; the fifth, color steps in the viewport, was already there (choice 71). |
+| 13 | "Decide by yourself." Decided as recommended: the shot list goes into the session file; the 58 Program rows of the Movie menu go; the keyframe strip of the core stays for now. | Step 19. Done in 4.63.0. The rows counted in the menu were 116 (49, 43 and 24), not 58. |
 | 15 | As recommended: blue hover in every menu; Orient acts only on what is visible. | Step 20. Done in 4.23.0. |
-| 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Open, order 7. |
+| 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Done in 4.63.1 (sphere modes), 4.64.0 (background picture) and 4.65.0 (FXAA, off by default: choice 73). |
 | 18 | As recommended: idle OpenMP threads sleep at once. | 1b. Done in 4.23.1. |
-| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 10. |
-| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Open, order 4; moved up by the answer to question 25. |
+| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 7. |
+| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Open, order 3; moved up by the answer to question 25. |
 
 14 was answered by "release 17" (4.19.42).
 
@@ -148,7 +198,7 @@ applicable, the 2026-11-23 follow-up.
 | 22 | As recommended: the rename wizard stays as the fallback without a window. | [Plan 23](docs/plans/23-rename-in-panel.md). Done in 4.24.0. |
 | 23 | The 2D ligand drawing is our own code, rdkit allowed; interactive: selecting a residue in 2D selects it in 3D. | [Plan 24](docs/plans/24-ligand-2d.md); the selection goes both ways. Done in 4.32.0 (command) and 4.33.0 (panel). |
 | 24 | Shadows ray traced only at first. | [Plan 25](docs/plans/25-studio-effects.md), 25a. Done in 4.34.0. |
-| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up (order 4 now); the surface looks and the blob are planned again with its result; no surface look and no new setting before that. Open. |
+| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up (order 3 now); the surface looks and the blob are planned again with its result; no surface look and no new setting before that. Open. |
 | 26 | As recommended: one row, icons. The same day: Builder and Scenes show only the icon, the name on mouse-over; "Draw/Ray" becomes "Draw". | Builder, Scenes and Draw done in 4.20.0; the rest in 4.30.0. |
 | 27 | The paint roller. (The answer ends "rest", cut off.) | Done in 4.20.0 with "Bg". |
 | 28 | As recommended: live scale through Qt's private function, the "next start" message as fallback. | [Plan 27](docs/plans/27-ui-scale.md). Done in 4.31.0 on Linux; 27d investigates the new freeze report before platform verification in 27c, open at order 1. |
@@ -195,17 +245,26 @@ ones, the new ones win.
 
 ## Finished milestones of open steps
 
-Steps 1, 8, 15, 19, 21, 23, 25 and 27 stay in the roadmap.
-These parts of them have shipped. The rows of steps 3, 11, 17, 18, 20, 22, 26,
+Steps 1, 8, 15, 21, 23, 25, 27 and 31 stay in the roadmap.
+These parts of them have shipped. The rows of steps 3, 11, 17, 18, 19, 20, 22, 26,
 24, 28, 30, 32, 34, 35 and 36, which are finished, are kept here as the record of
-their milestones. The rows are not in order of time: the newest, the ten rows
-of 2026-11-23 (4.43.1 to 4.51.0), are at the top, the last built first; under
+their milestones. The rows are not in order of time: the newest, the seven
+rows of 2026-11-24 (4.60.1 to 4.65.0), are at the top, the last built first;
+under them the rows of 4.56.0 to 4.60.0 and the ten rows
+of 2026-11-23 (4.43.1 to 4.51.0); under
 them 4.42.0 and 4.43.0, 32b and 32a; under them 4.41.0, 11b;
 under it the block 4.36.0 to 4.40.0, the six rows of step 30; the block before it, 4.20.0 to 4.35.0, is
 the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
+| 21 | 21f, item 1 — smooth edges (FXAA) | Done 2026-11-24 (4.65.0). `data/shaders/fxaa.fs` (written here from the description of the method, one pass), its program on `copy.vs`, `Enable_FXAAShader`; `SceneRenderAA` cut down to it. The offscreen path was in the code and unused. `antialias_shader` 0 or 1, one check row in Setting > Rendering, off by default (choice 73), not saved in sessions as before. Measured on WSLg (integrated AMD, 1500 x 731, 1oky): 10.3 ms a frame without and 12.0 ms with, each including a copy of the frame; pictures looked at on black and white, with `transparency_mode` 3, `grid_mode`, selection markers and a label. `settings.py::testAA` passes in the real window. Differs from the plan: the plan said "about 100 lines of shader"; the file has 50 lines. Not done: stereo, images drawn at another size than the window, Windows and macOS. Four other tests of `settings.py` fail in a real window on this machine, also on the 4.19.17 build: `testTrilines` twice, `testAtomCartoonTransparencyNuc`, `testIsomeshTransparency`. |
+| 21 | 21f, item 3 — background picture in the session | Done 2026-11-24 (4.64.0). A session save task writes the picture as "data:image/png;base64" text into `bg_image_filename`; the core read that form already. Real window: drawn from the file, from the text, and from a session whose file was deleted. PyMOL 3.2.0a loads, ray traces and saves such a session. Test `api/bg_image_session.py`; `jira/PYMOL-1571.py` lost its mark. |
+| 21 | 21f, item 2 — sphere modes 10 and 11 | Done 2026-11-24 (4.63.1). `sphere_mode` stops at 9; the warning, the test and its two reference images are deleted. Of the five test files that carried the mark `incentive`, two are left, both for 21g. |
+| 19 | The rest of step 19 | Done 2026-11-24 (4.63.0): [docs/plans/19-movie-timeline.md](docs/plans/19-movie-timeline.md). The shot list under `session_extra` entry "timeline", with the starts and the length of the movie it built; a session whose movie still has that length brings it back. The strip: a ruler of seconds for the playhead, a drag moves a shot, a drag of its right end changes its length (`move_shot_to`, `set_seconds`, which the test calls). Movie > Program: 116 rows removed. Checked in the real window on WSLg: drag, stretch, save, reinitialize, load. Differs from the plan: the count of rows; State Sweep stays. |
+| 15 | 15e — effects | Done 2026-11-24 (4.62.0): [docs/plans/15-presets.md](docs/plans/15-presets.md). Presets "balls in glass" and "cartoon cylinders"; a fog row in the light menu; `ambient_occlusion_mode` 1 at scale 16 in the look "soft", off for the objects of glass, balls in glass and illustration. Scenes keep `ambient_occlusion_mode`, `ambient_occlusion_scale` and `ray_transparency_oblique_power`. Measured: a surface build of 1aon (58 996 atoms) took 6.0 and 6.7 s without ambient occlusion and 7.4 and 10.5 s with it; on 4v6x the noise was larger than the difference (52 and 110 s without, 81 and 81 s with). Differs from the plan: color steps needed no code (45 colors in the viewport under "comic", 8436 under the standard light). 15b is open, order 5. |
+| 31 | 31b — agent connector, toolbar button | Done 2026-11-24 (4.61.0): [docs/plans/31-ai-agents.md](docs/plans/31-ai-agents.md). `modules/pymol/agent_server.py`: MCP over Streamable HTTP with the standard library, 127.0.0.1 only, bearer token, Host and Origin checks, requests of at most 1 MB, nothing listening before `agent_server on`; one tool, the operations of `agent.Executor`, each call a turn on the GUI thread with its own Undo snapshot. Toolbar: AI assistant (`bot`), blue while the connector listens. Tests `api/agent_server.py` (5: refused strangers, handshake, calls against the session, simultaneous calls). Real window: Claude Code 2.1.322 listed the tool and called it (the state of the session, then a color change); Codex 0.163.0 was not tried beyond its configuration (no credits). Differs from the plan: no client's file is edited, the helper is a line to copy; the revision 2026-07-28 without a handshake is not answered. |
+| 26 | Rock > Random | Done 2026-11-24 (4.60.1). The turn stopped the timer that had started it, so the spin changed once and stayed. Now a single-shot timer set after each turn, for the time a random 15 to 180 degrees take at the current `sweep_speed`. Real window: four changes in nine seconds with the range set to 15 to 20 degrees, still turning. |
 | 24, 26, 33 | Follow-up request 2026-11-24 | Done 2026-11-24 (4.58.1 to 4.60.0). 4.58.1: ligand 2D residues keyed by their own object; a ligand extracted from 1OKY selected nothing and warned on zoom before (test added). 4.59.0: Sequence alignment button after 2D (Lucide `text-align-start`); Zoom and Rock open their menus from the whole button; Rock menu uses `sweep_mode` and `sweep_angle` 0 for spins, Random a 3 s timer; Bg and Draw icon only; spacing 8 → 10 px; bar 1236 → 1254 px measured at 150 %, no overflow. 4.60.0: consensus secondary-structure track drawn by a delegate, colors Zappo / Kyte-Doolittle / percent identity, kept in QSettings. Different from a Jalview copy: no Clustal scheme; the structure rows keep their text symbols. Suite: 1069 passed, one timing test failed under load and passed alone. |
 | 31 | 31a, 31c — chat and shared agent tools | Done 2026-11-24 (4.58.0). `agent.py` (live catalog from the keyword registry and API, settings with factory defaults from the new `_cmd.get_setting_default`, scene state, bounded atoms, reviewed execution with confirmation, duplicate-safe calls, Undo snapshot, cancel) and `assistant.py` (Anthropic Messages and OpenAI Responses through the official SDKs, extra `ai`) started by another agent and finished here; a Chat tab in the command dock, Display > Panels > AI chat, `ask [prompt]`. `MainThreadCaller` now hands results back through a `Future`. 21 stand-in tests (catalog coverage, policy refusals, plugin override, duplicate call, image, timeout, rate limit, Stop before a queued mutation and during a request, snapshot failure, OpenAI shape). Real WSLg window: `ask` with a comma opens the tab, a stand-in turn colors the model through the worker thread, Undo restores it. Different from the plan: no `data/pymol/agent.md` (the instructions are a constant in `assistant.py`), no toolbar button (question 45), no Clear button (a new provider or model starts a new conversation). Not done: a live provider trial. |
 | 33 | 33a–c — sequence window | Done 2026-11-24 (4.57.0), commit `f25db6d3`. All three slices shipped as one coherent feature: local MAFFT, FASTA/chain input, selection and secondary-structure tracks, fit-to-reference with results/Undo, statistics/export and persistence. 21 sequence/fitting checks passed, including a known three-row MAFFT 7.505 fixture. Real xcb window at scale 1.5 resized to 800 × 450 logical pixels; largest measured heartbeat gap 20.4 ms. A cancelled worker no longer leaves the core interrupt flag set. Stop waits for an active native fit, then skips remaining fits. No joint structure optimizer, backend bundling, native Windows/macOS run, or live scale verification on those platforms. |

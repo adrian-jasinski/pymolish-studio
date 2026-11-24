@@ -1,5 +1,25 @@
 # 31 — Chat that controls this version of pymolish
 
+**Built 2026-11-24 in 4.61.0: 31b and the toolbar button (questions 45 and
+47, the recommended options).** `modules/pymol/agent_server.py`, command
+`agent_server on|off|status`: MCP over Streamable HTTP with the standard
+library, 127.0.0.1 port 9257, a bearer token (`PYMOLISH_AGENT_TOKEN`, or
+new each run), Host and Origin checked, requests of at most 1 MB, GET
+answered 405, nothing listening before "on". One tool, `pymol`, the
+operations of `agent.Executor`; each call is a turn on the GUI thread, with
+the confirmation, the log and the Undo snapshot of the Chat tab, whose
+"Share viewport" and "Trusted Python" switches hold for it too. Toolbar: AI
+assistant (`bot`): Chat, Agent connector, a setup line to copy for Claude
+Code and for Codex. Measured: the bar at 150 % is 1297 px in a 1305 px
+window, nothing in the overflow menu; 5 tests in `api/agent_server.py`; in
+the real window Claude Code 2.1.322 listed the tool and called it twice
+(the state, a color change). Left out: a call from Codex 0.163.0 (it listed
+the server; its account had no credits), the handshake-free revision
+2026-07-28 of MCP, a kept token, editing a client's configuration, a
+headless server (a call from another thread waits for ever without the
+window's event loop, so "on" asks for the Qt interface). The live provider
+trial and 31d stay open.
+
 **Built 2026-11-24 in 4.58.0: 31a and 31c.** Measured: 21 stand-in tests
 pass (no network); one real-window check with a stand-in provider. Left
 out: the live provider trial, `data/pymol/agent.md` (instructions live in

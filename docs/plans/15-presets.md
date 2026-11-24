@@ -1,5 +1,22 @@
 # 15 — Presets and looks
 
+**Built 2026-11-24 in 4.62.0: 15e.** Presets `balls_in_glass` ("balls in
+glass": `ball_and_stick` in the atoms' colors inside a surface at
+`ray_transparency_oblique_power` 20) and `cylinders` ("cartoon cylinders":
+publication with `cartoon_cylindrical_helices` 1); `depth_fog`, a "fog" /
+"no fog" row in the light menu; the look "soft" sets
+`ambient_occlusion_mode` 1 at `ambient_occlusion_scale` 16, and glass,
+balls in glass and illustration switch it off for their objects. Measured:
+scale 16 was picked by eye on 1oky against 12, 20 and 25 (25 paints the
+pockets black); a surface build of 1aon took 6.0 and 6.7 s without ambient
+occlusion and 7.4 and 10.5 s with it, on 4v6x the noise was larger than the
+difference. Left out: color steps in the viewport, because they are already
+there: `ray_trace_mode` 3 switches `ray_trace_mode_3` on in
+`anaglyph_header.fs` (45 colors counted in the viewport under "comic", 8436
+under the standard light), so the table row "One new setting and a few
+lines" below was wrong. Also left out: ambient occlusion in other looks,
+glow and blur. 15b is the only open slice.
+
 **Plan revision 2026-11-23, drafts 3, 4 and 6, at 4.43.0 (not built):**
 [34c](34-ball-and-stick.md) replaces the shared sticks/spheres ligand
 recipe with independent ball-and-stick, ball scale 0.31, for ligands in all
