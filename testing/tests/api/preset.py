@@ -283,6 +283,39 @@ def testGlass():
     assert cmd.get('surface_color', '1oky') == 'default'
 
 
+def testEffects(request):
+    """15e: balls in glass, cylinders, and the shade of the soft look."""
+    request.addfinalizer(lambda: preset.look('default'))
+    cmd.load(testing.datafile('1oky.pdb.gz'))
+    preset.balls_in_glass('all')
+    assert cmd.count_atoms('rep ball_and_stick') == cmd.count_atoms()
+    assert cmd.count_atoms('rep surface') == cmd.count_atoms('polymer')
+    assert cmd.get_setting_float('ray_transparency_oblique_power') == 20
+    assert cmd.get('surface_color', '1oky') == 'default'  # no recoloring
+    preset.cylinders('all')
+    assert cmd.count_atoms('rep surface') == 0
+    assert cmd.get_setting_float('ray_transparency_oblique_power') == 4
+    assert cmd.get_setting_int('cartoon_cylindrical_helices', '1oky') == 1
+    assert cmd.count_atoms('rep cartoon & guide') == cmd.count_atoms('guide')
+    # the soft look shades the pockets of a surface, but not a glass one
+    preset.look('soft')
+    assert cmd.get_setting_int('ambient_occlusion_mode') == 1
+    preset.glass('all')
+    assert cmd.get_setting_int('cartoon_cylindrical_helices', '1oky') == 0
+    assert cmd.get_setting_int('ambient_occlusion_mode', '1oky') == 0
+    preset.pretty('all')  # an opaque surface shown afterwards is shaded
+    assert cmd.get_setting_int('ambient_occlusion_mode', '1oky') == 1
+    preset.look('default')
+    assert cmd.get_setting_int('ambient_occlusion_mode') == 0
+    assert cmd.get_setting_float('ambient_occlusion_scale') == 25
+    # fog on top of a look that has none
+    preset.look('figure')
+    assert not cmd.get_setting_int('depth_cue')
+    preset.depth_fog(1)
+    assert cmd.get_setting_int('depth_cue')
+    assert cmd.get_setting_int('ray_trace_mode') == 1
+
+
 def testWire():
     cmd.load(testing.datafile('1oky.pdb.gz'))
     preset.wire('all')

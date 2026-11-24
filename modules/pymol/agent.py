@@ -20,7 +20,7 @@ QUERIES = set("count_atoms count_states get_names get_object_list get_type get_s
 VISUAL = set("show hide show_as color color_cpk palette bg_color zoom orient center turn clip enable disable frame select scene cartoon set_color ligand_next stage ligand_2d set unset".split())
 CONFIRM = set("delete remove set_name create copy align super cealign dss load save load_table save_table fetch sequence_align load_smiles fix_structure minimize".split())
 REVIEWED = {name: getattr(api, name) for name in QUERIES | VISUAL | CONFIRM}
-PRESETS = {name: getattr(preset, name) for name in "default classified technical ball_and_stick b_factor_putty pretty_solv pub_solv glass wire spring illustration ligands ligand_sites ligand_sites_hq ligand_sites_trans ligand_sites_trans_hq ligand_sites_mesh ligand_sites_dots interface interaction antibody".split()}
+PRESETS = {name: getattr(preset, name) for name in "default classified technical ball_and_stick b_factor_putty pretty_solv pub_solv glass balls_in_glass cylinders wire spring illustration ligands ligand_sites ligand_sites_hq ligand_sites_trans ligand_sites_trans_hq ligand_sites_mesh ligand_sites_dots interface interaction antibody".split()}
 REVIEWED.update({"preset." + name: fn for name, fn in PRESETS.items()})
 REVIEWED.update({"preset.look": preset.look, "preset.theme": preset.theme})
 OPTIONAL = {"load_smiles": ["rdkit"], "clean": ["rdkit"], "ligand_2d": ["rdkit"], "fix_structure": ["pdbfixer", "openmm"], "minimize": ["openmm"], "sequence_align": ["MAFFT"]}

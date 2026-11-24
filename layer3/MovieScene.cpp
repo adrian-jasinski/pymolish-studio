@@ -177,6 +177,7 @@ static const int cSceneSettings[] = {
     cSetting_ray_trace_color, cSetting_light, cSetting_light2, cSetting_light3,
     cSetting_light4, cSetting_light5, cSetting_light6, cSetting_light7,
     cSetting_light8, cSetting_light9, cSetting_two_sided_lighting,
+    cSetting_ambient_occlusion_mode, cSetting_ambient_occlusion_scale,
     // themes and stage: background and fog
     cSetting_bg_rgb, cSetting_bg_rgb_top, cSetting_bg_rgb_bottom,
     cSetting_bg_gradient, cSetting_fog, cSetting_fog_start,
@@ -203,6 +204,7 @@ static const int cSceneSettings[] = {
     cSetting_mesh_width, cSetting_dot_color, cSetting_surface_color,
     cSetting_surface_quality, cSetting_surface_type, cSetting_surface_mode,
     cSetting_transparency, cSetting_ray_transparency_oblique,
+    cSetting_ray_transparency_oblique_power,
 };
 
 static bool SceneSettingIsColor(int index)

@@ -4,6 +4,31 @@ CHANGE LOG
 
 2026-11-24 pymolish-studio
 
+	* 4.62.0
+
+	* Presets (15e): "balls in glass" (balls and sticks inside a surface of
+	  which only the rim shows; for small proteins) and "cartoon cylinders"
+	  ("publication" with the helices as cylinders).
+
+	* Light menu: a "fog" / "no fog" row, on top of any look: what is far
+	  away fades into the background (depth_cue). The looks with an outline
+	  still start without fog.
+
+	* The look "soft" shades the pockets of a surface (ambient_occlusion_mode
+	  1 at ambient_occlusion_scale 16; the default 25 painted them black on
+	  1oky). The surface is built again when the look changes; on 1aon
+	  (58 996 atoms) a build took 6.0 and 6.7 s without and 7.4 and 10.5 s
+	  with it. "glass", "balls in glass" and "illustration" switch the shade
+	  off for their objects.
+
+	* Scenes keep ambient_occlusion_mode, ambient_occlusion_scale and
+	  ray_transparency_oblique_power.
+
+	* Nothing was needed for color steps in the viewport: the look "comic"
+	  already draws them there (ray_trace_mode 3, anaglyph_header.fs).
+
+2026-11-24 pymolish-studio
+
 	* 4.61.0
 
 	* Agent connector (31b): "agent_server on" lets an AI agent on this

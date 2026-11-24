@@ -66,6 +66,9 @@ def _prepare(selection,polar_contacts=None,_self=cmd):
     cmd.set("two_sided_lighting",0) # global
     cmd.unset("cartoon_debug") # global
     cmd.unset("ray_transparency_oblique") # global
+    cmd.unset("ray_transparency_oblique_power") # global
+    cmd.unset("ambient_occlusion_mode", selection)
+    cmd.unset("cartoon_cylindrical_helices", selection)
     cmd.unset("transparency",s)
     cmd.unset("cartoon_transparency",s)
     cmd.unset("cartoon_transparency",selection)
@@ -592,8 +595,46 @@ def glass(selection='*', _self=cmd):
     _surface_like_carbons('?' + s, _self)
     _self.set('transparency', 0.6, s)
     _self.set('ray_transparency_oblique', 1) # global
+    # the shade of the look "soft" in the pockets: black blotches on glass
+    _self.set('ambient_occlusion_mode', 0, selection)
 
     _self.delete(s)
+
+
+def balls_in_glass(selection='*', _self=cmd):
+    '''
+    The atoms as balls and sticks inside a surface of which only the rim
+    shows: what the molecule is made of, in its outline. After the
+    gallery picture "Complex Stylized Protein"; reads on small proteins.
+    '''
+    s, selection = _prepare(selection, _self=_self)[:2]
+
+    _self.show('ball_and_stick', '?' + s)
+    _self.show('surface', 'polymer & ?' + s)
+    _surface_like_carbons('?' + s, _self)
+    _self.set('transparency', 0.6, s)
+    _self.set('ray_transparency_oblique', 1) # global
+    _self.set('ray_transparency_oblique_power', 20) # global: the rim only
+    _self.set('ambient_occlusion_mode', 0, selection)
+
+    _self.delete(s)
+
+
+def cylinders(selection='*', _self=cmd):
+    '''
+    "publication" with the helices as cylinders: a schematic drawing.
+    '''
+    publication(selection, solv=True, _self=_self)
+    for name in _self.get_object_list(selection) or ():
+        _self.set('cartoon_cylindrical_helices', 1, name)
+
+
+def depth_fog(on, _self=cmd):
+    '''
+    The fog row of the light menu: what is far away fades into the
+    background, on top of any look. The looks with an outline turn it off.
+    '''
+    _self.set('depth_cue', int(on))
 
 
 def wire(selection='*', _self=cmd):
@@ -635,6 +676,7 @@ def illustration(selection='*', _self=cmd):
     _self.show('surface', 'polymer & ?' + s)
     _surface_like_carbons('?' + s, _self)
     _self.set('transparency', 0.85, s)
+    _self.set('ambient_occlusion_mode', 0, selection)
     look('flat', _self=_self) # the picture is its outline
     global _lit_by_preset
     _lit_by_preset = True
@@ -680,13 +722,19 @@ LOOKS = {
     'figure': dict(_outline, ambient=0.05, direct=0.2, reflect=0.5,
                    shininess=10, power=1.67),
     # light from eight sides and soft shadows, after ChimeraX "lighting soft"
+    # and the pockets of a surface in shade: ambient occlusion, at a scale
+    # of 16 where the default 25 paints them black. A surface is built
+    # again when the look changes, and that takes longer (1aon: 6 to 7 s
+    # without, 7 to 10 s with).
     'soft': dict(_outline, light_count=8, ambient=0.35, direct=0, reflect=0.9,
                  spec_count=1, shininess=10, specular=0.1,
-                 ray_shadow_decay_factor=0.1, ray_shadow_decay_range=2),
+                 ray_shadow_decay_factor=0.1, ray_shadow_decay_range=2,
+                 ambient_occlusion_mode=1, ambient_occlusion_scale=16),
     # unshaded colors as they are; outlines also around transparent things
     'flat': dict(_outline, ambient=1, direct=0, reflect=0, specular=0,
                  ray_shadow=0, ray_trace_trans_cutoff=1),
-    # bright colors in four steps inside thick outlines, like a comic
+    # bright colors in four steps inside thick outlines, like a comic; the
+    # viewport draws the steps too (ray_trace_mode_3 in anaglyph_header.fs)
     'comic': dict(_outline, ray_trace_mode=3, antialias=1, ambient=0.5,
                   direct=0.6, reflect=0.3, specular=0, ray_shadow=0),
     # black outlines on white and nothing else, a line drawing

@@ -243,8 +243,8 @@ def testPresets(request):
     assert labels == [
         'default', 'classified', 'technical', 'ball and stick',
         'b factor putty', 'pretty', 'publication',
-        'glass', 'cartoon wire', 'cartoon spring',
-        'illustration', 'ligands',
+        'glass', 'balls in glass', 'cartoon wire', 'cartoon spring',
+        'cartoon cylinders', 'illustration', 'ligands',
         'ligand sites', 'protein interface', 'protein-protein interaction',
         'antibody and antigen', 'cartoon transparency',
         'show solvent',
@@ -257,7 +257,7 @@ def testPresets(request):
     assert sub('theme') == ['clay', 'blue', 'sage', 'mint', 'night']
     assert sub('light') == [
         'standard light', 'figure', 'soft', 'flat', 'comic', 'sketch',
-        'x-ray', 'studio', 'top light', 'soft shadow']
+        'x-ray', 'studio', 'top light', 'soft shadow', 'no fog']
     assert sub('floor') == ['floor', 'floor with mirror image', 'no floor']
     lights = _to_dict(d['light'])
     from pymol import preset
@@ -269,6 +269,12 @@ def testPresets(request):
     request.addfinalizer(lambda: preset.look('default'))
     cmd.do(lights['comic'], echo=0)
     assert cmd.get_setting_int('ray_trace_mode') == 3
+    # 15e: the fog row is on top of any look; a look with an outline has none
+    fog = _to_dict(_to_dict(menu.presets(cmd, sele))['light'])
+    assert 'fog' in fog and not cmd.get_setting_int('depth_cue')
+    cmd.do(fog['fog'], echo=0)
+    assert cmd.get_setting_int('depth_cue')
+    assert cmd.get_setting_int('ray_trace_mode') == 3  # the look stays
     cmd.do(lights['standard light'], echo=0)
     assert cmd.get_setting_int('ray_trace_mode') == 0
     # cartoon transparency lasts until the next preset

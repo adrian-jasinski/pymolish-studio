@@ -824,8 +824,10 @@ def presets(self_cmd, sele):
               _preset('pretty', 'pretty_solv', sele),
               _preset('publication', 'pub_solv', sele),
               _preset('glass', 'glass', sele),
+              _preset('balls in glass', 'balls_in_glass', sele),
               _preset('cartoon wire', 'wire', sele),
               _preset('cartoon spring', 'spring', sele),
+              _preset('cartoon cylinders', 'cylinders', sele),
               _preset('illustration', 'illustration', sele),
               [ 0, '', '' ],
               _preset('ligands', 'ligands', sele),
@@ -846,7 +848,11 @@ def presets(self_cmd, sele):
               # light and outline of the whole scene, whatever the menu is on
               [ 1, 'light', [[ 2, 'Light:', '' ]] + [
                   [ 1, 'standard light' if name == 'default' else name,
-                    'preset.look("%s",_self=cmd)' % name ] for name in preset.LOOKS ]],
+                    'preset.look("%s",_self=cmd)' % name ] for name in preset.LOOKS ] + [
+                  [ 0, '', '' ],
+                  [ 1, 'no fog' if self_cmd.get_setting_int('depth_cue') else 'fog',
+                    'preset.depth_fog(%d,_self=cmd)'
+                    % (not self_cmd.get_setting_int('depth_cue')) ]]],
               # a floor under what is shown: its shadow when ray traced
               [ 1, 'floor', [
                   [ 2, 'Floor:', '' ],
