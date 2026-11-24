@@ -72,6 +72,11 @@ class PyMOLQtGUI(QtWidgets.QMainWindow, pymol._gui.PyMOLDesktopGUI):
             self.pymolwidget.pymol.button(*args)
 
     def closeEvent(self, event):
+        self.sequence_panel.stop()
+        if self.sequence_panel.worker and self.sequence_panel.worker.isRunning():
+            event.ignore()
+            QtCore.QTimer.singleShot(100, self.close)
+            return
         self.save_layout()
         self.cmd.quit()
 
@@ -252,6 +257,9 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.property_table = PropertyTable(
             cmd, self, self.pymolwidget, self.object_panel)
 
+        from .sequence_panel import SequencePanel
+        self.sequence_panel = SequencePanel(cmd, self)
+
         '''
         # command completion
         completer = QtWidgets.QCompleter(cmd.kwhash.keywords, self)
@@ -412,10 +420,18 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         seq_action = SettingAction(self, cmd, 'seq_view', 'SEQ')
         seq_action.setToolTip('Sequence viewer')
         seq.setDefaultAction(seq_action)
+        seq.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+
+        def sequence_menu(point):
+            menu = QtWidgets.QMenu(seq)
+            menu.addAction("Sequence alignment…", self.sequence_panel.open)
+            menu.exec(seq.mapToGlobal(point))
+
+        seq.customContextMenuRequested.connect(sequence_menu)
         wizard = QtWidgets.QToolButton()
-        wizard.setText('Wizard')
-        wizard.setToolTip('Wizard')
-        wizard.setMenu(self.menudict['Wizard'])
+        wizard.setText("Wizard")
+        wizard.setToolTip("Wizard")
+        wizard.setMenu(self.menudict["Wizard"])
         command = QtWidgets.QToolButton()
         command.setText('Command line')
         command.setToolTip('Command line and log')
@@ -460,6 +476,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         panels.addAction(self.timeline_panel.toggleViewAction())
         panels.addAction(self.property_table.toggleViewAction())
         panels.addAction(self.ligand_panel.toggleViewAction())
+        panels.addAction('Sequence alignment…', self.sequence_panel.open)
         panels.addAction('Builder', self.open_builder_panel)
         panels.addSeparator()
         panels.addAction('Reset Layout', self.reset_layout)
@@ -1073,6 +1090,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.timeline_panel.poll()
         self.property_table.poll()
         self.ligand_panel.poll()
+        self.sequence_panel.poll()
         # the 2D button is for objects with a ligand; judged again when the
         # objects that are switched on change
         key = tuple(self.cmd.get_names('public', enabled_only=1))

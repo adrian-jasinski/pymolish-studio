@@ -65,6 +65,31 @@ rdkit: the downloadable builds have it, a pip install needs
 | Command | What it does | Example |
 | --- | --- | --- |
 | `search_sequence pattern [, name [, selection]]` | Selects the residues of every protein chain that match a sequence or a regular expression. | `search_sequence N[^P][ST], sequon` |
+| `sequence_align filename [, output [, executable]]` | Aligns FASTA with local MAFFT; returns aligned FASTA and optionally writes it. No coordinates change. | `sequence_align sequences.fasta, aligned.fasta` |
+
+Display > Panels > Sequence alignment opens a separate resizable window.
+It accepts loaded chains and FASTA, aligns selected rows (all rows when none
+are selected), and shows observed secondary structure above the letters.
+Choose a reference and **Fit structures** to move mobile objects with
+`align`, `super` or `cealign`; FASTA-only rows cannot be fitted. Each object
+can appear only once in a fit batch. Results list RMSD and aligned counts.
+Undo restores the whole session snapshot, including changes made after the
+fit; it is unavailable above the existing snapshot limit of 600,000 atoms.
+Stop cancels pending work; a native fit already running finishes first,
+and completed structure changes remain undoable.
+
+Select residues in either view to highlight them in the other. Search accepts
+sequence text or a residue number (including insertion codes). Export saves
+FASTA or identity statistics as CSV. Identity counts positions where both
+rows have a known residue, excluding gaps and X/?/*; conservation applies
+the same exclusions per column. Secondary structure is read from `ss`;
+**Assign SS** explicitly recomputes it with `dss`. FASTA has no observed
+secondary structure. Alignment rows and their reference survive session
+save/load; deleted or renamed objects are marked unmapped. Add their chains
+again to refresh sequence content after editing a structure.
+
+The command's filename arguments use normal filename completion. See
+[MAFFT installation](install.md#optional-sequence-alignment) for the backend.
 
 ## Repair
 

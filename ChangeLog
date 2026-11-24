@@ -2,6 +2,21 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-24 pymolish-studio
+
+	* 4.57.0
+
+	* Sequence alignment window (33a-c), opened from Display > Panels or
+	  the SEQ context menu. Loaded chains and FASTA, local MAFFT alignment,
+	  secondary structure, linked residue selections, search/copy/export,
+	  consensus and identity, and alignment rows kept in PSE/PSEX sessions.
+	* Fit selected structures to a reference with align, super or cealign;
+	  per-mobile RMSD/count/error and one session Undo snapshot per batch.
+	  A fit moves whole objects; conflicting chains/states are rejected.
+	* New public command: sequence_align filename, output, executable.
+	  Returns aligned FASTA, optionally writes it; never moves coordinates.
+	  MAFFT is an optional, separately installed local program.
+
 2026-11-23 pymolish-studio
 
 	* 4.56.0
