@@ -78,7 +78,8 @@ ROCKS = (
     ("Spin about Y", 0, True),
     ("Spin about Z", 2, True),
 )
-RANDOM_MS = 3000  # "Random" turns about another axis this often
+RANDOM_DEG = (15, 180)  # "Random" turns this far, then about another axis
+SPIN_DEG_PER_S = 10 / 0.75  # at sweep_speed 1 (Scene.cpp SceneUpdateCameraRock)
 ICON = 20
 STROKE = 2
 ACCENT = "#1e4fb8"  # the A button of the Objects panel; also in pymol.sty
@@ -231,12 +232,12 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.rock = self._menu_button("Rock", "Rock or spin the view")
         self.rock.setCheckable(True)  # blue while it turns
         self._rock_angle = None  # sweep_angle of the rock, kept while spinning
-        self._random = QtCore.QTimer(self, interval=RANDOM_MS)
+        self._random = QtCore.QTimer(self, singleShot=True)
         self._random.timeout.connect(self._random_turn)
         menu = self.rock.menu()
         for name, mode, spin in ROCKS:
             menu.addAction(name, lambda m=mode, s=spin: self._set_rock(m, s))
-        menu.addAction("Random", self._start_random)
+        menu.addAction("Random", self._random_turn)
         menu.addSeparator()
         menu.addAction("Stop", lambda: cmd.rock(0))
         # The view actions show only their icon: the name is the tooltip and
@@ -679,18 +680,17 @@ class ActionToolbar(QtWidgets.QToolBar):
         cmd.set("sweep_angle", 0 if spin else (self._rock_angle or angle or 20))
         cmd.rock(1)
 
-    def _start_random(self):
-        self._random_turn()
-        self._random.start()
-
     def _random_turn(self):
-        """Spin about another axis than now, either way round."""
+        """Spin about another axis than now, either way round, by a random
+        angle of RANDOM_DEG; then again, until the rock is stopped."""
         cmd = self.cmd
         now = cmd.get_setting_int("sweep_mode") if cmd.get_setting_int("rock") else -1
         mode = random.choice([m for m in (0, 1, 2) if m != now])
         speed = abs(cmd.get_setting_float("sweep_speed")) or 0.75
-        self._set_rock(mode, True)
+        self._set_rock(mode, True)  # stops the timer: start it after
         cmd.set("sweep_speed", random.choice((speed, -speed)))
+        seconds = random.uniform(*RANDOM_DEG) / (SPIN_DEG_PER_S * speed)
+        self._random.start(int(seconds * 1000))
 
     def _show_rock(self, on):
         self.rock.setChecked(bool(on))

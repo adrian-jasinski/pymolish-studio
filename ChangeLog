@@ -4,6 +4,15 @@ CHANGE LOG
 
 2026-11-24 pymolish-studio
 
+	* 4.60.1
+
+	* Rock > Random no longer stops after the second turn (the timer was
+	  stopped by the turn it started). It now spins by a random 15 to 180
+	  degrees about one axis, then about another one, either way round,
+	  until Stop.
+
+2026-11-24 pymolish-studio
+
 	* 4.60.0
 
 	* Sequence alignment: a Secondary structure track under the consensus,

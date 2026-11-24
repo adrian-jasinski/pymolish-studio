@@ -81,9 +81,12 @@ def test_toolbar():
     assert cmd.get_setting_float("sweep_angle") == angle  # back to the rock
     rocks["Random"].trigger()
     assert bar._random.isActive() and cmd.get_setting_float("sweep_angle") == 0
-    mode = cmd.get_setting_int("sweep_mode")
-    bar._random_turn()
-    assert cmd.get_setting_int("sweep_mode") != mode
+    for _ in range(3):  # it keeps turning: 4.59.0 stopped after two
+        mode = cmd.get_setting_int("sweep_mode")
+        bar._random_turn()
+        assert cmd.get_setting_int("sweep_mode") != mode
+        # 15 to 180 degrees at 10 degrees a second (sweep_speed 0.75)
+        assert bar._random.isActive() and 1500 <= bar._random.interval() <= 18000
     rocks["Stop"].trigger()
     for callback in callbacks[cmd.setting._get_index("rock")]:
         callback(0)
