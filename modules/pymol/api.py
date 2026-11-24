@@ -524,3 +524,4 @@ from . import gui
 
 # last: agent.py captures the API functions above at import time
 from .assistant import ask
+from .agent_server import agent_server

@@ -4,6 +4,26 @@ CHANGE LOG
 
 2026-11-24 pymolish-studio
 
+	* 4.61.0
+
+	* Agent connector (31b): "agent_server on" lets an AI agent on this
+	  computer work in the session through MCP (Streamable HTTP): the
+	  reviewed operations of the Chat tab, as one tool. It listens on
+	  127.0.0.1 only (port 9257), wants a bearer token (the environment
+	  variable PYMOLISH_AGENT_TOKEN, or a new one each run), turns away
+	  requests with another Host or Origin, and nothing listens before
+	  "on". Every call shows in the Chat tab and the log; deleting, files
+	  and the network ask first; each change keeps an Undo step. Tried with
+	  Claude Code 2.1.322 in the real window. Codex 0.163.0 accepts the
+	  setup line, but no call could be tried (its account had no credits).
+	  Standard library only, no new dependency.
+
+	* Toolbar: an AI assistant button (bot icon) with Chat, Agent connector
+	  (on/off; the button is blue while it listens) and "Copy setup line"
+	  for Claude Code and Codex.
+
+2026-11-24 pymolish-studio
+
 	* 4.60.1
 
 	* Rock > Random no longer stops after the second turn (the timer was

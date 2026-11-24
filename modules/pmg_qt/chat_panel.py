@@ -18,6 +18,8 @@ class ChatPanel(QtWidgets.QWidget):
         self.cmd = cmd
         self.window_ = window
         self.executor = agent.Executor(cmd, self._confirm, self._log)
+        # the agent connector (pymol.agent_server): turns of its own
+        self.connector = agent.Executor(cmd, self._confirm, self._log)
         self.conversation = None
         self.worker = None
 
@@ -62,6 +64,8 @@ class ChatPanel(QtWidgets.QWidget):
         layout.addWidget(self.history)
         layout.addLayout(entry)
 
+        self.images.toggled.connect(lambda on: setattr(self.connector, "images", on))
+        self.trusted.toggled.connect(lambda on: setattr(self.connector, "trusted", on))
         self.send.clicked.connect(self.start)
         self.prompt.returnPressed.connect(self.start)
         self.stop.clicked.connect(self.executor.cancel.set)

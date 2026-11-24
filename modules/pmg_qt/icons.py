@@ -85,6 +85,7 @@ LABELS = {
     "table": "sheet",
     "2d": "hexagon",
     "sequence alignment": "text-align-start",
+    "ai assistant": "bot",
     "draw": "aperture",
     "ui scale": "scaling",
     "more actions": "ellipsis",

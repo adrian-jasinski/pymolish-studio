@@ -397,6 +397,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
                 ('Sequence alignment', self.sequence_panel.open),
                 ('Table', lambda: self.property_table.setVisible(
                     not self.property_table.isVisible())),
+                ('AI assistant', self.ai_menu()),
                 # the render dialog is built when the menu is first shown, so
                 # it starts with the current viewport and settings
                 ('Draw', WidgetMenu(self).setSetupUi(self.render_dialog)),
@@ -743,6 +744,56 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         form.button_apply.clicked.connect(run)
 
         form._dialog.show()
+
+    def ai_menu(self):
+        """Toolbar > AI assistant: the chat, and the connector that lets an
+        agent on this computer work in the session (pymol.agent_server)."""
+        from pymol import agent_server
+
+        menu = QtWidgets.QMenu(self)
+        menu.addAction('Chat', self.open_chat)
+        menu.addSeparator()
+        self.agent_connector = menu.addAction('Agent connector')
+        self.agent_connector.setCheckable(True)
+        self.agent_connector.setToolTip(
+            'Let Claude Code or Codex on this computer use this session')
+
+        @self.agent_connector.triggered.connect
+        def _(on):
+            try:
+                self.cmd.agent_server('on' if on else 'off')
+            except pymol.CmdException as error:  # the port is taken
+                print(error)
+                self.show_agent_server(False)
+
+        def copy(client):
+            server = agent_server._server
+            QtWidgets.QApplication.clipboard().setText(
+                agent_server.setup(server.server_port, server.token)[client])
+            print(' Copied: run it once in a terminal to connect ' + client)
+
+        self.agent_setup = [
+            menu.addAction('Copy setup line for ' + client,
+                           lambda client=client: copy(client))
+            for client in ('Claude Code', 'Codex')
+        ]
+        menu.setToolTipsVisible(True)
+        self.show_agent_server(False)
+        return menu
+
+    def show_agent_server(self, on):
+        """The connector listens or not: the menu row, and the button blue."""
+        self.agent_connector.setChecked(on)
+        for action in self.agent_setup:
+            action.setEnabled(on)
+        toolbar = getattr(self, 'action_toolbar', None)
+        if toolbar:
+            button = toolbar.panel_buttons['AI assistant']
+            button.setCheckable(True)
+            button.setChecked(on)
+            button.setToolTip(
+                'AI assistant: the agent connector is on' if on
+                else 'AI assistant')
 
     def open_chat(self, prompt=""):
         self.ext_window.show()
