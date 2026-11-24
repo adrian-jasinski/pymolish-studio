@@ -87,6 +87,17 @@ def test_ligands_and_contacts():
 
 
 @needs_rdkit
+def test_ligand_in_its_own_object():
+    # an extracted or docked ligand: the residues name the protein's object
+    cmd.load(testing.datafile("1oky.pdb.gz"), "m")
+    cmd.extract("lig", "resn STU")
+    residues = cmd.ligand_2d("lig")
+    by_name = {"%s%s" % r["label"]: r for r in residues}
+    assert all(cmd.count_atoms(r["sele"]) for r in residues)
+    assert "hydrogen bond" in {c[0] for c in by_name["SER160"]["contacts"]}
+
+
+@needs_rdkit
 def test_picture(tmp_path):
     cmd.load(testing.datafile("1oky.pdb.gz"), "m")
     mol, residues = ligand2d.analyze("resn STU")

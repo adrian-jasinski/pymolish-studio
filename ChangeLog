@@ -4,6 +4,16 @@ CHANGE LOG
 
 2026-11-24 pymolish-studio
 
+	* 4.58.1
+
+	* Ligand 2D: a ligand in an object of its own (extracted, or a docked
+	  pose) found its residues in the protein's object but named them in
+	  the ligand's, so a click selected nothing and a double click warned
+	  "selection doesn't specify any coordinates". Residues now carry
+	  their own object; hydrogen bonds and metals across objects count.
+
+2026-11-24 pymolish-studio
+
 	* 4.58.0
 
 	* AI chat (31a, 31c): a Chat tab next to the command line, also under

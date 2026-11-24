@@ -196,9 +196,12 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
     residues = {}
     protein = _self.get_model(around).atom
     for atom in protein:
-        key = (atom.segi, atom.chain, atom.resn, atom.resi)
+        # by object too: the protein may be another object than the ligand
+        key = (atom.model, atom.segi, atom.chain, atom.resn, atom.resi)
         residues.setdefault(key, []).append(atom)
-    metals = {a.index for a in _self.get_model("(%s) and metals" % around).atom}
+    metals = {
+        (a.model, a.index) for a in _self.get_model("(%s) and metals" % around).atom
+    }
     model = atoms[0].model if hasattr(atoms[0], "model") else ""
     objects = _self.get_object_list(ligand)
     obj = objects[0] if objects else model
@@ -210,8 +213,8 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
         mol.GetAtomWithIdx(i).SetBoolProp("exposed", True)
     result = []
     for key, members in residues.items():
-        segi, chain, resn, resi = key
-        sele = "/%s/%s/%s/%s`%s/" % (obj, segi, chain, resn, resi)
+        sele = "/%s/%s/%s/%s`%s/" % key
+        resn, resi = key[3:]
         near, contacts, pairs = set(), [], []
         nearest = min(math.dist(a, m.coord) for a in xyz for m in members)
         for i, a in enumerate(xyz):
@@ -271,7 +274,7 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
                 ):
                     add("cation-ring", ring, (name,), named[name])
         for m in members:
-            if m.index in metals:
+            if (m.model, m.index) in metals:
                 i = min(range(len(xyz)), key=lambda i: math.dist(xyz[i], m.coord))
                 if math.dist(xyz[i], m.coord) <= METAL:
                     add("metal", (i,), (m.name,), m.coord)
@@ -285,11 +288,11 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
                     "contacts": contacts,
                     "pairs": pairs,
                     "nearest": nearest,
-                    "members": {m.index: (m.name, m.coord) for m in members},
+                    "members": {(m.model, m.index): (m.name, m.coord) for m in members},
                 }
             )
     # hydrogen bonds from the core: distance and angle
-    index = {a.index: i for i, a in enumerate(atoms)}
+    index = {(a.model, a.index): i for i, a in enumerate(atoms)}
     owner = {i: r for r in result for i in r["members"]}
     pairs = _self.find_pairs(
         "(%s) and (donor or acceptor)" % heavy,
@@ -299,7 +302,7 @@ def analyze(ligand, cutoff=CUTOFF, *, _self=cmd):
         angle=55,
     )
     seen = set()
-    for (_, a), (_, b) in pairs:
+    for a, b in pairs:
         residue = owner.get(b)
         if residue is not None and a in index and (id(residue), index[a]) not in seen:
             seen.add((id(residue), index[a]))
