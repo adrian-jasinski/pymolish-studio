@@ -3,7 +3,7 @@
 Steps of the [roadmap](PLAN.md) whose last milestone has shipped. Open work
 stays in `PLAN.md`; the detailed plans stay in `docs/plans/`. Step numbers and
 order numbers in the finished-work table are historical. “Open, order N”
-references below follow the current roadmap (updated 2026-11-23).
+references below follow the current roadmap (updated 2026-11-24).
 
 **Planning update 2026-11-23 at 4.43.0:** no milestone shipped. Step 11 is
 reopened for CPK (11c); its existing palette releases remain recorded below.
@@ -22,8 +22,10 @@ Decided by the user on 2026-11-23:
 | Question | Decision | State |
 | --- | --- | --- |
 | 53 | The reported freeze is the toolbar UI-scale change from 150 % to 120 %. | 27d, built in 4.43.1: reproduced on WSLg, where the scale now waits for the next start. 27c open, order 1. |
-| 54 | The first sequence-window release includes loaded structure chains plus FASTA import/alignment, with secondary structure from loaded coordinates. | 33a, open, order 2; alignment backend (55) still undecided. |
+| 54 | The first sequence-window release includes loaded structure chains plus FASTA import/alignment, with secondary structure from loaded coordinates. | 33a–c, built together in 4.57.0 with optional local MAFFT (answer 55). |
 | 56 | Standard CPK atom colors within selected residues. | 11c, built in 4.50.0 (`color_cpk`). |
+| 55 (2026-11-24) | Optional local MAFFT executable. | 4.57.0; separately installed, Linux 7.505 tested. |
+| 42 (2026-11-24) | Optional official OpenAI/Anthropic SDKs. | 31, open at order 2; installed footprint of SDKs and dependencies measured at about 27 MB. |
 
 Not decided by the user, built with the recommended answer on 2026-11-23;
 each is still a question in `PLAN.md`:
@@ -38,6 +40,7 @@ each is still a question in `PLAN.md`:
 
 | Step | Detailed plan | Recommendation |
 | --- | --- | --- |
+| 33 | [Sequence alignment window](docs/plans/33-sequence-window.md) | 4.57.0, slices 33a–c delivered together: loaded chains plus FASTA, optional local MAFFT, mapped secondary structure and selections, structure fitting/Undo, consensus/identity/export and session rows. Platform launch checks remain alongside 27c. |
 | 0 | [UI engine research](docs/plans/00-ui-engine.md) | PySide6 + Qt Widgets; preserve the renderer while simplifying bindings. |
 | 3 | [Modern workspace and metadata](docs/plans/03-modern-ui.md) | Named docks with a saved layout, the Objects panel in Qt, the action toolbar on top and the command area at the bottom, the dark theme, the UI scale, scenes as a dock, Qt menus. Closed on 2026-11-20 without its metadata table: the property table of [step 22](docs/plans/22-property-table.md) replaces it. Its open rows went to 22e (a picked atom selects its row), 23b (rows moved by dragging) and question 31 (scene buttons and sequence text drawn by the core); the spacing of dialogs is fixed when a dialog is touched. |
 | 24 | [Ligand in 2D with its contacts](docs/plans/24-ligand-2d.md) | Requested 2026-11-20; 4.32.0 and 4.33.0 (the command `ligand_2d` and the panel), 4.43.2 (the picture fits, 24d) and 4.56.0 (24c: the pocket's outline, solvent halos, metal contacts, Show in 3D, distances in tooltips, Tab through the residues). Water bridges, halogen bonds and dragging residues were left out on purpose. |
@@ -119,18 +122,18 @@ where the decision shipped, "open" with its order where it has not.
 
 | # | Decision | Where it goes |
 | --- | --- | --- |
-| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 11. |
+| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 9. |
 | 3 | The icon and the logo were generated with ChatGPT; the user owns them. They get "a license that is good for trade marks". | Done in 4.19.43: `data/pymol/icons/LICENSE`, a notice outside the two code licenses (unchanged copies travel with the program and may refer to it; a changed version needs its own). `docs/licenses.md`, plan 9. |
 | 4 | The release builds stay on GitHub Actions for now. | 5c is shelved; nothing was built for it. Plan 5. |
-| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 10. |
+| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 8. |
 | 6 | The ChimeraX object colors become a palette. | 15c. Done in 4.22.0. |
-| 7 | All five effects of 15e. | Open, order 5. |
-| 13 | "Decide by yourself." Decided as recommended: the shot list goes into the session file; the 58 Program rows of the Movie menu go; the keyframe strip of the core stays for now. | Step 19. Open, order 8. |
+| 7 | All five effects of 15e. | Open, order 3. |
+| 13 | "Decide by yourself." Decided as recommended: the shot list goes into the session file; the 58 Program rows of the Movie menu go; the keyframe strip of the core stays for now. | Step 19. Open, order 6. |
 | 15 | As recommended: blue hover in every menu; Orient acts only on what is visible. | Step 20. Done in 4.23.0. |
-| 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Open, order 9. |
+| 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Open, order 7. |
 | 18 | As recommended: idle OpenMP threads sleep at once. | 1b. Done in 4.23.1. |
-| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 12. |
-| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Open, order 6; moved up by the answer to question 25. |
+| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 10. |
+| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Open, order 4; moved up by the answer to question 25. |
 
 14 was answered by "release 17" (4.19.42).
 
@@ -145,13 +148,13 @@ applicable, the 2026-11-23 follow-up.
 | 22 | As recommended: the rename wizard stays as the fallback without a window. | [Plan 23](docs/plans/23-rename-in-panel.md). Done in 4.24.0. |
 | 23 | The 2D ligand drawing is our own code, rdkit allowed; interactive: selecting a residue in 2D selects it in 3D. | [Plan 24](docs/plans/24-ligand-2d.md); the selection goes both ways. Done in 4.32.0 (command) and 4.33.0 (panel). |
 | 24 | Shadows ray traced only at first. | [Plan 25](docs/plans/25-studio-effects.md), 25a. Done in 4.34.0. |
-| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up (order 6 now); the surface looks and the blob are planned again with its result; no surface look and no new setting before that. Open. |
+| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up (order 4 now); the surface looks and the blob are planned again with its result; no surface look and no new setting before that. Open. |
 | 26 | As recommended: one row, icons. The same day: Builder and Scenes show only the icon, the name on mouse-over; "Draw/Ray" becomes "Draw". | Builder, Scenes and Draw done in 4.20.0; the rest in 4.30.0. |
 | 27 | The paint roller. (The answer ends "rest", cut off.) | Done in 4.20.0 with "Bg". |
 | 28 | As recommended: live scale through Qt's private function, the "next start" message as fallback. | [Plan 27](docs/plans/27-ui-scale.md). Done in 4.31.0 on Linux; 27d investigates the new freeze report before platform verification in 27c, open at order 1. |
 | 29 | As recommended: `.psex` is what Save Session writes; a `.pse` carries the new data too. | [Plan 28](docs/plans/28-session-format.md). The file type done in 4.26.0; the key for new data (28b) comes with its first user. The background picture of 21f stays in its setting. |
 | 30 | As recommended: the version rule by what changed for the user. | Done: `AGENTS.md` §5, step 29. |
-| 31 | As recommended: the scene buttons the core draws are deleted; the sequence viewer stays. | Scene-button removal done in 4.25.0. The sequence decision is superseded by the separate alignment window of step 33 (2026-11-23), open at order 11; the strip stays during delivery. |
+| 31 | As recommended: the scene buttons the core draws are deleted; the sequence viewer stays. | Scene-button removal done in 4.25.0. The sequence decision is superseded by the separate alignment window of step 33 (2026-11-23), built in 4.57.0; the strip stays as a separate toggle. |
 | 32 | As recommended: color themes set protein color and background, as a group of their own. | Plan 25, 25b-2. Done in 4.35.0, ahead of 15e. |
 
 Questions 33 to 35 (11b, the palette from the user's brand colors: its name,
@@ -203,6 +206,7 @@ the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
+| 33 | 33a–c — sequence window | Done 2026-11-24 (4.57.0), commit `f25db6d3`. All three slices shipped as one coherent feature: local MAFFT, FASTA/chain input, selection and secondary-structure tracks, fit-to-reference with results/Undo, statistics/export and persistence. 21 sequence/fitting checks passed, including a known three-row MAFFT 7.505 fixture. Real xcb window at scale 1.5 resized to 800 × 450 logical pixels; largest measured heartbeat gap 20.4 ms. A cancelled worker no longer leaves the core interrupt flag set. Stop waits for an active native fit, then skips remaining fits. No joint structure optimizer, backend bundling, native Windows/macOS run, or live scale verification on those platforms. |
 | 24 | 24c — the rest of the contacts | Done 2026-11-23 (4.56.0): [docs/plans/24-ligand-2d.md](docs/plans/24-ligand-2d.md). The pocket's outline in the residues' colors, open where no residue is near; grey halos on ligand atoms the protein leaves open (own Shrake-Rupley check, 64 points, numpy; 3 of 35 atoms of staurosporine in 1OKY); metal contacts within 3.0 A; Show in 3D, one distance object per kind in the group `ligand_2d`, gone when the panel closes (also from Display > Panels), back on reopening; tooltips with each contact's distance; Tab and Enter. Measured on 1OKY: analysis 0.27 to 0.53 s, the picture 11 to 31 ms. Tried in the real window: three real Tab keys reach Lys111 with its tooltip, Enter selects its 9 atoms; dashes in the viewport; the picture in the dark theme. Different from the plan: the outline has one color per piece, not blended; a metal is drawn as the usual circle, not a small one; the dashes go from center to center (distance mode 4), and a residue drawn only as cartoon has them end in the air. Not done: a look in the light theme, tabbing the panel behind another dock (tried, but the dock stayed visible, so it proves nothing). |
 | 34 | 34b follow-up — the panel menus | Done 2026-11-23 (4.52.0, 4.53.0), at the user's request: S > ball and stick shows it on a click, its hover menu has ball size (0.20 to 0.50) and bond thickness (0.08 to 0.18) only; H hides only it; C > ball and stick only colors only it. `ball_and_stick_scale` defaults to 0.25 (was 0.31), as asked. Tried in the real window at 4.52.0; the trimmed menu of 4.53.0 by the menu test and the suite only. |
 | 36 | 36a — the next ligand with its contacts | Done 2026-11-23 (4.51.0): [docs/plans/36-ligand-navigation.md](docs/plans/36-ligand-navigation.md). `ligand_next [selection [, step]]`; step 0 clears. Measured: 9 ms a step on 2RH1 (10 ligands), 100 ms on 1AON (59,192 atoms, 7 ligands), so no cache. Tried in the real window: the three rows of Display > Zoom, both keys, the 2D panel following, Clear. Different from the plan: the rows are in Display > Zoom (there is no ligand or find menu); the walk's position is kept with the session, under the key of 28b; the site is every residue within 4 A, not only those with a contact; contacts are made for the state that is shown. Not done: Undo of a visit, a look in the light theme. |

@@ -1,5 +1,13 @@
 # 31 — Chat that controls this version of pymolish
 
+**Decision 2026-11-24:** question 42 answered: optional official OpenAI and
+Anthropic SDKs. Installed for implementation: OpenAI 3.58.0 and Anthropic
+2.13.0; their installed files plus dependencies measure about 27 MB (not a
+compressed release-bundle delta). Both SDKs declare Apache-2.0 licenses.
+The planned Chat tab, reviewed commands and session/environment credentials
+remain the implementation defaults. No provider request has been sent.
+
+
 [Roadmap](../../PLAN.md) · Requests 2026-11-20 and 2026-11-23 (draft 11) ·
 **Replanned 2026-11-23 at 4.43.0; nothing is built.** Source inspected and
 provider tool-call/protocol references checked; no live provider, connector,

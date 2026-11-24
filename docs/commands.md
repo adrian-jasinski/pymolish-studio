@@ -85,8 +85,8 @@ rows have a known residue, excluding gaps and X/?/*; conservation applies
 the same exclusions per column. Secondary structure is read from `ss`;
 **Assign SS** explicitly recomputes it with `dss`. FASTA has no observed
 secondary structure. Alignment rows and their reference survive session
-save/load; deleted or renamed objects are marked unmapped. Add their chains
-again to refresh sequence content after editing a structure.
+save/load; deleted or renamed objects are marked unmapped. Remove the affected row and
+add its chain again to refresh sequence content after editing a structure.
 
 The command's filename arguments use normal filename completion. See
 [MAFFT installation](install.md#optional-sequence-alignment) for the backend.

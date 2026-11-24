@@ -1,5 +1,12 @@
 # 27 — UI scale: any value from 50 % to 300 %, without a restart
 
+**Verification attempt 2026-11-24 at 4.57.0:** remote CI was inspected.
+The latest successful master run, `44750297890` at `d40f09f6`, predates
+27d and cannot validate the current scale behavior. This Linux workspace
+cannot supply the required native Windows/macOS manual checks. 27c remains
+open; no additional platform was put on the blocker list without evidence.
+
+
 [Roadmap](../../PLAN.md) · Request 2026-11-20 · **27a and 27b done
 2026-11-20 in 4.31.0** (the field, the range, the live change on Linux, the
 fallback). 27c, Windows and macOS, is open.

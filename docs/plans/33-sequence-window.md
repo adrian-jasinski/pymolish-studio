@@ -1,10 +1,22 @@
 # 33 — Multiple sequences and structures in a separate window
 
-[Roadmap](../../PLAN.md) · Request 2026-11-23, draft 2 · **Planned at
-4.43.0; not built.** Code inspected; no alignment benchmark or GUI trial in
-this planning run. **Question 54 answered 2026-11-23: loaded chains plus
-FASTA import/alignment in the first release**, with helix/sheet/coil for
-loaded structures. Questions 55 (backend) and 60 (entry point) remain open.
+[Roadmap](../../PLAN.md) · **Built 2026-11-24 in 4.57.0**, commit
+`f25db6d3`. Slices 33a–c shipped together with the user-approved optional
+local MAFFT backend. Loaded chains plus FASTA were included from the start.
+21 sequence/fitting tests passed, including a three-sequence MAFFT 7.505
+fixture, unchanged coordinates, fitting/Undo, failure/cancel and session
+restore. A real xcb window at 150% resized to 800 × 450 logical pixels;
+the largest measured event-loop heartbeat gap was 20.4 ms. The toolbar gains
+no button. Native Windows/macOS MAFFT launch and live scale remain unchecked.
+Stop kills a running MAFFT process; an active native fit finishes before the
+remaining mobiles are skipped. Finished structure changes remain undoable.
+Missing objects are labelled unmapped. To refresh an edited sequence, remove
+its row and add the chain again. No joint structure optimizer or bundled
+backend; MAFFT installation is documented in `docs/install.md`.
+
+The tables below retain the design and acceptance scope. Question 55 was
+answered with MAFFT on 2026-11-24; question 60 shipped with its recommended
+menu/context-menu entry point. The strip remains available.
 
 **A resizable sequence window for comparing chains, aligning sequences and
 superposing structures, with secondary structure above the aligned letters.**
@@ -53,7 +65,7 @@ checked. It can close and reopen without losing the alignment.
 | Question | Options and recommendation |
 | --- | --- |
 | 54 — inputs | **Answered 2026-11-23: loaded chains plus FASTA import/alignment in the first release.** Do not release a loaded-chains-only version first. This selects input scope, not an alignment dependency. |
-| 55 — true multiple sequence alignment | **An optional local MAFFT executable (recommended)** supplies an established MSA method without writing a new scientific algorithm. It needs approval as a new native dependency, a license/packaging check on all supported systems and an installation story. Alternative: build a native progressive aligner around `Match.cpp`, with algorithm validation and performance measurements; larger maintenance cost. A reference-anchored alignment can serve as a prototype but does not complete this requirement. |
+| 55 — true multiple sequence alignment | **Answered 2026-11-24: optional local MAFFT executable.** It supplies an established MSA method without writing a new scientific algorithm. Approved by the user, separately installed; core license reviewed and Linux tested, native Windows/macOS checks remain. Alternative: build a native progressive aligner around `Match.cpp`, with algorithm validation and performance measurements; larger maintenance cost. A reference-anchored alignment can serve as a prototype but does not complete this requirement. |
 | 60 — opening the window | **Keep SEQ as the existing strip toggle and add the window to its context menu plus Display > Panels (recommended)**; alternatively make SEQ open the new window and move the strip toggle to Display. Step 32's icon/label stays in either case. |
 
 MAFFT accepts amino-acid or nucleotide sequences in FASTA and provides
@@ -73,8 +85,7 @@ upload of sequences. Do not introduce Biopython just for parsing FASTA.
 | 33c | Consensus/conservation, identity statistics and session persistence. | Documented gap/unknown-letter counting; alignment and residue mapping survive reload, including FASTA-only rows and missing structure objects. |
 
 Answer 54 moves FASTA and its sequence-alignment backend from the former
-33c into 33a. Question 55 must therefore be settled before the first
-release; no new dependency is approved by the input choice alone.
+33c into 33a. Question 55 was settled separately before the first release: local MAFFT.
 
 Files: new `modules/pmg_qt/sequence_panel.py` and form; the window's panel
 registration in `pymol_qt_gui.py`; `fitting.py`, `seqalign.py`, `querying.py`,
