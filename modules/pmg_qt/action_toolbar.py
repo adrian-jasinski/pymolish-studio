@@ -347,11 +347,10 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.addWidget(spacer)
 
         self.panel_actions = {}
-        self.panel_buttons = {}  # those with a menu
         for label, target in panels:
             # a panel button shows only its icon; the name is the tooltip
             if isinstance(target, QtWidgets.QMenu):
-                button = self.panel_buttons[label] = self._menu_button(label, label)
+                button = self._menu_button(label, label)
                 button.setMenu(target)
                 button.setToolButtonStyle(Style.ToolButtonIconOnly)
             else:

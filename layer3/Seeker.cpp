@@ -990,7 +990,13 @@ void SeekerUpdate(PyMOLGlobals * G)
 
   while (ExecutiveIterateObjectMolecule(G, &obj, &hidden)) {
     bool isHidden = (SettingGet<bool>(G, cSetting_hide_underscore_names) && (obj->Name[0] == '_'));
-    if (obj->Enabled && (SettingGet<bool>(*obj, cSetting_seq_view)) && !isHidden) {
+    // While seq_view is off the rows are for the Sequence tab of the window
+    // alone: every object but those that switch it off for themselves.
+    bool listed = SettingGet<bool>(G, cSetting_seq_view)
+                      ? SettingGet<bool>(*obj, cSetting_seq_view)
+                      : SettingGetWD<bool>(
+                            obj->Setting.get(), cSetting_seq_view, true);
+    if (obj->Enabled && listed && !isHidden) {
       int a;
       const AtomInfoType *last = nullptr, *last_segi = nullptr, *last_chain = nullptr;
       const CoordSet *last_disc = nullptr;

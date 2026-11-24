@@ -85,7 +85,6 @@ LABELS = {
     "table": "sheet",
     "2d": "hexagon",
     "sequence alignment": "text-align-start",
-    "ai assistant": "bot",
     "draw": "aperture",
     "ui scale": "scaling",
     "more actions": "ellipsis",
@@ -93,6 +92,7 @@ LABELS = {
     # the row under the object list
     "mouse mode": "mouse",
     "seq": "letter-text",
+    "ai assistant": "bot",
     "wizard": "wand-sparkles",
     "command line": "square-terminal",
     # chat

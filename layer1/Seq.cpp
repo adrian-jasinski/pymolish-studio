@@ -46,6 +46,15 @@ static void SeqClampSkip(CSeq* I)
 }
 
 /**
+ * Whether the rows are shown in the viewport. While seq_view is off they
+ * are kept for the Sequence tab of the window alone.
+ */
+static bool SeqInViewport(PyMOLGlobals* G)
+{
+  return G->Seq->NRow && SettingGet<bool>(G, cSetting_seq_view);
+}
+
+/**
  * Scroll state of the sequence viewer, for the scroll bar that the window
  * puts on the strip under the rows. The core no longer draws a bar there,
  * only the marks of the selected residues.
@@ -57,7 +66,7 @@ static void SeqClampSkip(CSeq* I)
 bool SeqScroll(PyMOLGlobals* G, int offset, int* state)
 {
   CSeq* I = G->Seq;
-  if (!I->NRow || !I->ScrollBarActive) {
+  if (!SeqInViewport(G) || !I->ScrollBarActive) {
     return false;
   }
   if (offset >= 0 && offset != I->NSkip) {
@@ -73,13 +82,46 @@ bool SeqScroll(PyMOLGlobals* G, int offset, int* state)
   return true;
 }
 
+/**
+ * The column of row `row_num` that holds character `char_num`, counted from
+ * the start of the row.
+ * @param fixed the row is the one a drag began in: past its end is its last
+ * column
+ */
+static bool SeqFindCol(
+    CSeq* I, int row_num, int char_num, int* col_num_ptr, bool fixed)
+{
+  if (row_num < 0 || row_num >= I->NRow) {
+    return false;
+  }
+  CSeqRow* row = I->Row.data() + row_num;
+  if (!row->nCol || row->label_flag) {
+    return false;
+  }
+  int col_num;
+  if ((char_num >= 0) && (char_num < row->ext_len) && (row->char2col)) {
+    col_num = row->char2col[char_num] - 1;
+    if (col_num < 0) {
+      return false;
+    }
+    if (col_num >= row->nCol) {
+      if (!fixed) {
+        return false;
+      }
+      col_num = row->nCol - 1;
+    }
+  } else {
+    col_num = char_num == 0 ? 0 : row->nCol - 1;
+  }
+  *col_num_ptr = col_num;
+  return true;
+}
+
 static int SeqFindRowCol(PyMOLGlobals * G, int x, int y, int *row_num_ptr,
                          int *col_num_ptr, int fixed_row)
 {
   CSeq *I = G->Seq;
-  int result = 0;
   int row_num = 0;
-  int col_num = 0;
 
   if(I->ScrollBarActive) {
     y -= DIP2PIXEL(I->ScrollBarWidth);
@@ -90,39 +132,14 @@ static int SeqFindRowCol(PyMOLGlobals * G, int x, int y, int *row_num_ptr,
     row_num = (y - I->rect.bottom) / DIP2PIXEL(I->LineHeight);
     row_num = (I->NRow - 1) - row_num;
   }
-  if((row_num >= 0) && (row_num < I->NRow)) {
-    int char_num;
-    CSeqRow *row;
-    row = I->Row.data() + row_num;
-    char_num = (x - I->rect.left - DIP2PIXEL(I->CharMargin)) / DIP2PIXEL(I->CharWidth);
-    if(row->nCol && !row->label_flag)
-      if(char_num < I->VisSize) {
-        char_num += I->NSkip;
-        if((char_num >= 0) && (char_num < row->ext_len) && (row->char2col)) {
-          col_num = row->char2col[char_num];
-          if(col_num) {
-            col_num--;
-            if(col_num < row->nCol) {
-              result = true;
-            } else if(fixed_row >= 0) {
-              col_num = row->nCol - 1;
-              result = true;
-            }
-          }
-        } else if(char_num == 0) {
-          col_num = 0;
-          result = true;
-        } else {
-          col_num = row->nCol - 1;
-          result = true;
-        }
-      }
-  }
-  if(result) {
+  int char_num =
+      (x - I->rect.left - DIP2PIXEL(I->CharMargin)) / DIP2PIXEL(I->CharWidth);
+  if (char_num < I->VisSize && SeqFindCol(I, row_num, char_num + I->NSkip,
+                                   col_num_ptr, fixed_row >= 0)) {
     *row_num_ptr = row_num;
-    *col_num_ptr = col_num;
+    return true;
   }
-  return result;
+  return false;
 }
 
 void SeqUpdate(PyMOLGlobals * G)
@@ -131,11 +148,12 @@ void SeqUpdate(PyMOLGlobals * G)
 
   if(I->Changed) {
     SeekerUpdate(G);
+    I->Serial++;
     I->Changed = false;
     I->Dirty = true;
     OrthoReshape(G, -1, -1, false);     /* careful, this is recursive... */
   }
-  if(I->Dirty) {
+  if(I->Dirty && I->Handler) { // the first rebuild sets the handler
     I->Handler->refresh(G, I->Row);
     I->Dirty = false;
   }
@@ -228,7 +246,7 @@ int SeqGetHeight(PyMOLGlobals * G)
   CSeq *I = G->Seq;
   int height = 0;
 
-  if(I->NRow) {
+  if(SeqInViewport(G)) {
     height = DIP2PIXEL(I->LineHeight * I->NRow + 4);
     if(I->ScrollBarActive)
       height += DIP2PIXEL(I->ScrollBarWidth);
@@ -242,11 +260,80 @@ void SeqSetHandler(PyMOLGlobals * G, CSeqHandler * handler)
   I->Handler = handler;
 }
 
+/**
+ * A button went down on column `col_num` of row `row_num`, or beside the
+ * rows (`found` false).
+ */
+static void SeqPress(PyMOLGlobals* G, int button, bool found, int row_num,
+    int col_num, int mod, int x, int y)
+{
+  CSeq* I = G->Seq;
+  if (found) {
+    if (I->Handler)
+      I->Handler->click(G, I->Row, button, row_num, col_num, mod, x, y);
+    I->DragFlag = true;
+    I->LastRow = row_num;
+    OrthoDirty(G);
+    return;
+  }
+  switch (button) {
+  case P_GLUT_RIGHT_BUTTON: {
+    ObjectNameType name;
+    if (ExecutiveGetActiveSeleName(G, name, false, false)) {
+      MenuActivate2Arg(
+          G, x, y + DIP2PIXEL(20), x, y, false, "pick_sele", name, name);
+    }
+  } break;
+  case P_GLUT_LEFT_BUTTON:
+    if (I->Handler)
+      I->Handler->click(G, I->Row, button, -1, -1, mod, x, y);
+    break;
+  }
+}
+
+/**
+ * A mouse event of the Sequence tab of the window, which draws the rows
+ * itself and so knows the row and the character under the pointer. Does
+ * what the same event does on the rows in the viewport.
+ * @param kind 0 a button went down, 1 the pointer moved with it down, 2 it
+ * came up
+ * @param char_num character counted from the start of the row
+ */
+void SeqPanelMouse(PyMOLGlobals* G, int kind, int button, int row_num,
+    int char_num, int mod)
+{
+  CSeq* I = G->Seq;
+  SeqUpdate(G); // the handler reads the objects of the rows: no stale ones
+  if (!I->Handler) {
+    return;
+  }
+  bool fixed = kind && I->LastRow >= 0;
+  if (fixed) {
+    row_num = I->LastRow;
+  }
+  int col_num = -1;
+  bool found = SeqFindCol(I, row_num, char_num, &col_num, fixed);
+  switch (kind) {
+  case 0:
+    SeqPress(G, button, found, row_num, col_num, mod, 0, 0);
+    break;
+  case 1:
+    if (found)
+      I->Handler->drag(G, I->Row, row_num, col_num, mod);
+    break;
+  default:
+    I->Handler->release(
+        G, I->Row, button, found ? row_num : -1, found ? col_num : -1, mod);
+    I->DragFlag = false;
+    I->LastRow = -1;
+  }
+  I->Dirty = true; // read the selection again for the next SeqUpdate
+}
+
 int CSeq::click(int button, int x, int y, int mod)
 {
   PyMOLGlobals *G = m_G;
   CSeq *I = G->Seq;
-  int pass = 0;
   int row_num;
   int col_num;
 
@@ -262,32 +349,9 @@ int CSeq::click(int button, int x, int y, int mod)
   }
 
   // the strip under the rows belongs to the window's scroll bar
-  if(I->ScrollBarActive && (y - rect.bottom) < DIP2PIXEL(I->ScrollBarWidth)) {
-    pass = 1;
-  }
-  if(!pass) {
-    if(SeqFindRowCol(G, x, y, &row_num, &col_num, -1)) {
-      if(I->Handler)
-        I->Handler->click(G, I->Row, button, row_num, col_num, mod, x, y);
-      I->DragFlag = true;
-      I->LastRow = row_num;
-      OrthoDirty(G);
-    } else {
-      switch (button) {
-      case P_GLUT_RIGHT_BUTTON:
-        {
-          ObjectNameType name;
-          if(ExecutiveGetActiveSeleName(G, name, false, false)) {
-            MenuActivate2Arg(G, x, y + DIP2PIXEL(20), x, y, false, "pick_sele", name, name);
-          }
-        }
-        break;
-      case P_GLUT_LEFT_BUTTON:
-        if(I->Handler)
-          I->Handler->click(G, I->Row, button, -1, -1, mod, x, y);
-        break;
-      }
-    }
+  if(!(I->ScrollBarActive && (y - rect.bottom) < DIP2PIXEL(I->ScrollBarWidth))) {
+    bool found = SeqFindRowCol(G, x, y, &row_num, &col_num, -1);
+    SeqPress(G, button, found, row_num, col_num, mod, x, y);
   }
   return (1);
 }
@@ -297,7 +361,7 @@ void CSeq::draw(CGO* orthoCGO)
   PyMOLGlobals *G = m_G;
   CSeq *I = G->Seq;
 
-  if(G->HaveGUI && G->ValidContext) {
+  if(G->HaveGUI && G->ValidContext && SeqInViewport(G)) {
 
     int x = rect.left;
     int y = rect.bottom + DIP2PIXEL(I->ScrollBarMargin) + 1;

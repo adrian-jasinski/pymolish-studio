@@ -193,7 +193,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         loglayout.setContentsMargins(0, 0, 0, 0)
         loglayout.addWidget(self.browser)
         loglayout.addLayout(lineeditlayout)
-        # the Chat tab is added once cmd exists
+        # the Sequence and Chat tabs are added once cmd exists
         self.command_tabs = QtWidgets.QTabWidget()
         self.command_tabs.setDocumentMode(True)
         self.command_tabs.addTab(log, "Command")
@@ -268,6 +268,10 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         from .sequence_panel import SequencePanel
         self.sequence_panel = SequencePanel(cmd, self)
+
+        from .sequence_tab import SequenceTab
+        self.sequence_tab = SequenceTab(cmd, self)
+        self.command_tabs.addTab(self.sequence_tab, "Sequence")
 
         from .chat_panel import ChatPanel
         self.chat_panel = ChatPanel(cmd, self)
@@ -397,7 +401,6 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
                 ('Sequence alignment', self.sequence_panel.open),
                 ('Table', lambda: self.property_table.setVisible(
                     not self.property_table.isVisible())),
-                ('AI assistant', self.ai_menu()),
                 # the render dialog is built when the menu is first shown, so
                 # it starts with the current viewport and settings
                 ('Draw', WidgetMenu(self).setSetupUi(self.render_dialog)),
@@ -429,20 +432,21 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.setting_callbacks[cmd.setting._get_index('button_mode_name')].append(
             mouse.setText)
         mouse.setText(cmd.get('button_mode_name'))
+        # the sequence is in a tab of the command panel; its place in the
+        # viewport (the setting seq_view) is a row of the arrow's menu
         seq = QtWidgets.QToolButton()
-        # the button copies text, icon and tooltip from its action at
-        # every click: they are set on the action
-        seq_action = SettingAction(self, cmd, 'seq_view', 'SEQ')
-        seq_action.setToolTip('Sequence viewer')
-        seq.setDefaultAction(seq_action)
-        seq.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-
-        def sequence_menu(point):
-            menu = QtWidgets.QMenu(seq)
-            menu.addAction("Sequence alignment…", self.sequence_panel.open)
-            menu.exec(seq.mapToGlobal(point))
-
-        seq.customContextMenuRequested.connect(sequence_menu)
+        seq.setText('SEQ')
+        seq.setToolTip('Sequence tab')
+        seq.clicked.connect(self.open_sequence)
+        seq.setMenu(QtWidgets.QMenu(seq))
+        seq.menu().addAction(
+            SettingAction(self, cmd, 'seq_view', 'Show in viewport'))
+        seq.menu().addAction('Sequence alignment…', self.sequence_panel.open)
+        # blue while the agent connector listens: show_agent_server
+        self.ai_button = ai = QtWidgets.QToolButton()
+        ai.setText('AI assistant')
+        ai.setCheckable(True)
+        ai.setMenu(self.ai_menu())
         wizard = QtWidgets.QToolButton()
         wizard.setText("Wizard")
         wizard.setToolTip("Wizard")
@@ -455,19 +459,24 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         command.clicked.connect(lambda on: self.ext_window.setVisible(on))
         self.ext_window.toggleViewAction().toggled.connect(command.setChecked)
         Style = Qt.ToolButtonStyle
-        for button in (mouse, seq, wizard, command):
-            button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
+        Popup = QtWidgets.QToolButton.ToolButtonPopupMode
+        for button in (mouse, seq, ai, wizard, command):
+            # the SEQ button itself opens the tab
+            button.setPopupMode(
+                Popup.MenuButtonPopup if button is seq else Popup.InstantPopup)
             button.setToolButtonStyle(
-                Style.ToolButtonIconOnly if button in (wizard, command)
+                Style.ToolButtonIconOnly if button in (ai, wizard, command)
                 else Style.ToolButtonTextBesideIcon)
-            # the mouse mode name is long: it takes the spare width
+            # the mouse mode name is long: it takes the spare width, and
+            # in a narrow panel Qt shortens it down to the width of SEQ
             self.object_panel.footer.addWidget(button, button is mouse)
         mouse.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
                             QtWidgets.QSizePolicy.Policy.Fixed)
         self._footer_icons = (
-            (mouse, 'mouse mode'), (seq_action, 'seq'),
+            (mouse, 'mouse mode'), (seq, 'seq'), (ai, 'ai assistant'),
             (wizard, 'wizard'), (command, 'command line'))
         self._set_footer_icons()
+        mouse.setMinimumWidth(seq.sizeHint().width())
 
         # extra key mappings (MacPyMOL compatible)
         QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+O'), self).activated.connect(self.file_open)
@@ -493,6 +502,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         panels.addAction(self.ligand_panel.toggleViewAction())
         panels.addAction('Sequence alignment…', self.sequence_panel.open)
         panels.addAction('Builder', self.open_builder_panel)
+        panels.addAction('Sequence', self.open_sequence)
         panels.addAction('AI chat', self.open_chat)
         panels.addSeparator()
         panels.addAction('Reset Layout', self.reset_layout)
@@ -746,8 +756,9 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         form._dialog.show()
 
     def ai_menu(self):
-        """Toolbar > AI assistant: the chat, and the connector that lets an
-        agent on this computer work in the session (pymol.agent_server)."""
+        """The AI assistant button under the object list: the chat, and the
+        connector that lets an agent on this computer work in the session
+        (pymol.agent_server)."""
         from pymol import agent_server
 
         menu = QtWidgets.QMenu(self)
@@ -786,14 +797,15 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.agent_connector.setChecked(on)
         for action in self.agent_setup:
             action.setEnabled(on)
-        toolbar = getattr(self, 'action_toolbar', None)
-        if toolbar:
-            button = toolbar.panel_buttons['AI assistant']
-            button.setCheckable(True)
-            button.setChecked(on)
-            button.setToolTip(
-                'AI assistant: the agent connector is on' if on
-                else 'AI assistant')
+        self.ai_button.setChecked(on)
+        self.ai_button.setToolTip(
+            'AI assistant: the agent connector is on' if on
+            else 'AI assistant')
+
+    def open_sequence(self):
+        self.ext_window.show()
+        self.command_tabs.setCurrentWidget(self.sequence_tab)
+        self.sequence_tab.setFocus()
 
     def open_chat(self, prompt=""):
         self.ext_window.show()
@@ -1164,6 +1176,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.property_table.poll()
         self.ligand_panel.poll()
         self.sequence_panel.poll()
+        self.sequence_tab.poll()
         # the 2D button is for objects with a ligand; judged again when the
         # objects that are switched on change
         key = tuple(self.cmd.get_names('public', enabled_only=1))

@@ -4,6 +4,44 @@ CHANGE LOG
 
 2026-11-24 pymolish-studio
 
+	* 4.67.0
+
+	* The sequence has a tab of its own: Sequence, between Command and
+	  Chat. It lists every object that is switched on, without seq_view,
+	  and it works like the rows in the viewport, because the same code of
+	  the core handles the mouse: a click adds a residue to the selection
+	  or takes it out, a drag or a Shift+click takes a range, Ctrl
+	  centers, the middle button centers (with Ctrl: zooms), the right
+	  button opens the menu of the residue or of the selection, a double
+	  click beside the rows selects nothing. The selected residues are
+	  marked, and the tab follows a selection made anywhere else. Sequence
+	  mode, labels and colors of the Display menu apply to it. The tab is
+	  drawn on the background color of the viewport, for which the colors
+	  of the residues are chosen.
+
+	  The SEQ button under the object list opens the tab. Its arrow has
+	  "Show in viewport", the old place of the sequence (the setting
+	  seq_view, as before), and "Sequence alignment". Display > Sequence
+	  is now Display > Sequence in Viewport; Display > Panels has a row
+	  Sequence. An object with seq_view off for itself is in neither
+	  place.
+
+	  Not drawn in the tab, unlike in the viewport: the dimming of the
+	  unaligned residues of an alignment, the frame around a drag, and the
+	  marks of the selection along the scroll bar.
+
+	* The AI assistant button (the robot) moved from the action toolbar
+	  to the row under the object list, after SEQ, drawn like the other
+	  icons there. The mouse mode button gives up the width: in a narrow
+	  panel its name is shortened.
+
+	  Measured in the real window on WSLg at 150 %: the row needs 234 px
+	  (the buttons 73, 73, 24, 24 and 24 px at their smallest), the
+	  toolbar 1254 px in a window of 1262 px, no button in the overflow
+	  menu. The clicks in the tab were tried there on 4hhb.
+
+2026-11-24 pymolish-studio
+
 	* 4.66.0
 
 	* Chat: sign in through the browser instead of typing an API key.

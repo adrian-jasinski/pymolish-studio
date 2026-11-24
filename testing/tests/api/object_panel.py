@@ -387,7 +387,7 @@ def test_footer_icons():
     class Window(QtWidgets.QWidget):
         _set_footer_icons = PyMOLQtGUI._set_footer_icons
 
-    for label in ("mouse mode", "seq", "wizard", "command line"):
+    for label in ("mouse mode", "seq", "ai assistant", "wizard", "command line"):
         assert label in icons.LABELS
     window = Window()
     window._set_footer_icons()  # before the row exists: nothing to do

@@ -42,6 +42,8 @@ Z* -------------------------------------------------------------------
  */
 
 #define PY_SSIZE_T_CLEAN
+#include <algorithm>
+
 #include"os_python.h"
 #include"PyMOLGlobals.h"
 #include"PyMOLOptions.h"
@@ -1799,6 +1801,89 @@ static PyObject* CmdSeqScroll(PyObject* self, PyObject* args)
   }
   return Py_BuildValue("iiiiiii", state[0], state[1], state[2], state[3],
       state[4], state[5], state[6]);
+}
+
+/**
+ * The rows of the sequence viewer for the Sequence tab of the window
+ * (pmg_qt/sequence_tab.py), brought up to date first.
+ * @return (serial, rows, selected, (background, label and fill color as
+ * 0xRRGGBB), fill character). rows is None while `serial` is the current
+ * one, else per row (text, 1 label row | 2 title in the first column,
+ * [offset, start, stop, 0xRRGGBB of each column], [offset, length of each
+ * fill]): a column shows text[start:stop] at character `offset`. selected
+ * has a byte per column of each row, 1 where its residue is selected.
+ */
+static PyObject* CmdSeqRows(PyObject* self, PyObject* args)
+{
+  PyMOLGlobals* G = nullptr;
+  int serial;
+  API_SETUP_ARGS(G, self, args, "Oi", &self, &serial);
+  API_ASSERT(APIEnterNotModal(G));
+  SeqUpdate(G);
+  APIExit(G);
+
+  CSeq* I = G->Seq;
+  auto rgb = [G](int index) {
+    const float* v = ColorGet(G, index);
+    auto byte = [](float f) { return int(std::clamp(f, 0.f, 1.f) * 255 + .5f); };
+    return byte(v[0]) << 16 | byte(v[1]) << 8 | byte(v[2]);
+  };
+  PyObject* rows = nullptr;
+  if (serial != I->Serial) {
+    rows = PyList_New(I->NRow);
+    for (int a = 0; a < I->NRow; a++) {
+      const CSeqRow& row = I->Row[a];
+      std::vector<int> cols, fills;
+      cols.reserve(4 * row.nCol);
+      for (int b = 0; b < row.nCol; b++) {
+        const CSeqCol& col = row.col[b];
+        cols.insert(
+            cols.end(), {col.offset, col.start, col.stop, rgb(col.color)});
+      }
+      for (int b = 0; b < row.nFill; b++) {
+        const CSeqCol& col = row.fill[b];
+        fills.insert(fills.end(), {col.offset, col.stop - col.start});
+      }
+      PyList_SET_ITEM(rows, a,
+          Py_BuildValue("NiNN",
+              PyUnicode_DecodeLatin1(row.txt.data(), row.len, nullptr),
+              row.label_flag | row.column_label_flag << 1,
+              PConvIntArrayToPyList(cols.data(), cols.size()),
+              PConvIntArrayToPyList(fills.data(), fills.size())));
+    }
+  }
+  PyObject* selected = PyList_New(I->NRow);
+  for (int a = 0; a < I->NRow; a++) {
+    const CSeqRow& row = I->Row[a];
+    std::string flags(row.nCol, 0);
+    for (int b = 0; b < row.nCol; b++) {
+      flags[b] = row.col[b].inverse != 0;
+    }
+    PyList_SET_ITEM(
+        selected, a, PyBytes_FromStringAndSize(flags.data(), flags.size()));
+  }
+  bool gradient = SettingGet<bool>(G, cSetting_bg_gradient);
+  return Py_BuildValue("iNN(iii)s", I->Serial,
+      rows ? rows : PConvAutoNone(nullptr), selected,
+      rgb(SettingGet<int>(G, gradient ? cSetting_bg_rgb_top : cSetting_bg_rgb)),
+      rgb(SettingGet<int>(G, cSetting_seq_view_label_color)),
+      rgb(SettingGet<int>(G, cSetting_seq_view_fill_color)),
+      SettingGet<const char*>(G, cSetting_seq_view_fill_char));
+}
+
+/**
+ * A mouse event of the Sequence tab of the window: see SeqPanelMouse.
+ */
+static PyObject* CmdSeqMouse(PyObject* self, PyObject* args)
+{
+  PyMOLGlobals* G = nullptr;
+  int kind, button, row, char_num, mod;
+  API_SETUP_ARGS(
+      G, self, args, "Oiiiii", &self, &kind, &button, &row, &char_num, &mod);
+  API_ASSERT(APIEnterNotModal(G));
+  SeqPanelMouse(G, kind, button, row, char_num, mod);
+  APIExit(G);
+  return APISuccess();
 }
 
 static PyObject *CmdGetMoviePlaying(PyObject * self, PyObject * args)
@@ -6402,6 +6487,8 @@ static PyMethodDef Cmd_methods[] = {
   {"get_movie_locked", CmdGetMovieLocked, METH_VARARGS},
   {"get_movie_playing", CmdGetMoviePlaying, METH_VARARGS},
   {"seq_scroll", CmdSeqScroll, METH_VARARGS},
+  {"seq_rows", CmdSeqRows, METH_VARARGS},
+  {"seq_mouse", CmdSeqMouse, METH_VARARGS},
   {"get_names", CmdGetNames, METH_VARARGS},
   {"get_object_color_index", CmdGetObjectColorIndex, METH_VARARGS},
   {"get_object_matrix", CmdGetObjectMatrix, METH_VARARGS},
