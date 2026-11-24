@@ -4,12 +4,16 @@ blocks as wide as they last, with the playhead; the table under it edits
 them. Every edit rebuilds the movie of the core (pymol.shots.build), so the
 movie that plays, exports and is saved in a session is an ordinary one.
 
-The list lives in this panel only. A movie made with commands or loaded
-from a session has no list: it plays and scrubs here, and "Add" starts a
-new one (docs/plans/19-movie-timeline.md).
+The list is kept in the session under the key "pymolish"
+(pymol.session_extra, entry "timeline"), with the length of the movie it
+built: a session whose movie still has that length brings its list back. A
+movie made with commands has no list: it plays and scrubs here, and "Add"
+starts a new one (docs/plans/19-movie-timeline.md).
 """
 
-from pymol import shots
+import copy
+
+from pymol import session_extra, shots
 from pymol.Qt import QtCore, QtGui, QtWidgets
 
 Qt = QtCore.Qt
@@ -28,16 +32,28 @@ def _duration(seconds):
     return "%d:%02d" % divmod(int(round(seconds)), 60)
 
 
+RULER = 14  # height of the band of seconds above the blocks
+EDGE = 5  # this close to the end of a block, a drag makes it longer
+SLOP = 4  # a press that moves less is a click
+
+
 class Strip(QtWidgets.QWidget):
-    """The shots as blocks on a time axis; click or drag to move the
-    playhead."""
+    """The shots as blocks on a time axis under a ruler of seconds. A click,
+    or a drag on the ruler, moves the playhead; a drag moves a block to
+    another place, and a drag of its right end makes it longer or shorter."""
 
     def __init__(self, panel):
         super().__init__(panel)
         self.panel = panel
         self.frame = 1
-        self.setMinimumHeight(56)
-        self.setToolTip("Click or drag: go to that moment")
+        self._drag = None  # (mode, row, x at press), mode: seek, move, stretch
+        self._x = 0  # where the drag is now
+        self.setMinimumHeight(56 + RULER)
+        self.setMouseTracking(True)
+        self.setToolTip(
+            "Click, or drag on the ruler: go to that moment.\n"
+            "Drag a shot to move it, its right end to change its length."
+        )
         self.setAccessibleName("Movie strip")
 
     def paintEvent(self, event):
@@ -57,10 +73,17 @@ class Strip(QtWidgets.QWidget):
             return
         blocks = panel.blocks() or [(1, total, "Movie made with commands", None)]
         current = panel.table.currentRow()
+        # the ruler: a tick each second, or each ten when they get crowded
+        fps = panel.cmd.get_setting_float("movie_fps") or 30
+        step = fps * (10 if width * fps / total < 6 else 1)
+        painter.setPen(palette.mid().color())
+        for tick in range(int(total / step) + 1):
+            x = int(tick * step * width / total)
+            painter.drawLine(x, RULER - (7 if tick % 5 == 0 else 3), x, RULER)
         for row, (first, count, text, pixmap) in enumerate(blocks):
             x0 = int((first - 1) * width / total)
             x1 = int((first - 1 + count) * width / total)
-            box = QtCore.QRect(x0, 0, max(2, x1 - x0 - 1), height - 1)
+            box = QtCore.QRect(x0, RULER, max(2, x1 - x0 - 1), height - RULER - 1)
             selected = row == current and panel.shots
             painter.fillRect(box, palette.highlight() if selected else palette.button())
             painter.setPen(palette.mid().color())
@@ -68,14 +91,14 @@ class Strip(QtWidgets.QWidget):
             left = box.left() + 4
             if pixmap is not None and box.width() > 60:
                 thumb = pixmap.scaledToHeight(
-                    height - 8, Qt.TransformationMode.SmoothTransformation
+                    box.height() - 8, Qt.TransformationMode.SmoothTransformation
                 )
-                painter.drawPixmap(left, 4, thumb)
+                painter.drawPixmap(left, RULER + 4, thumb)
                 left += thumb.width() + 4
             role = palette.highlightedText() if selected else palette.buttonText()
             painter.setPen(role.color())
             painter.drawText(
-                QtCore.QRect(left, 0, box.right() - left - 2, height),
+                QtCore.QRect(left, RULER, box.right() - left - 2, box.height()),
                 Qt.AlignmentFlag.AlignVCenter | Qt.TextFlag.TextSingleLine,
                 painter.fontMetrics().elidedText(
                     text, Qt.TextElideMode.ElideRight, max(0, box.right() - left - 2)
@@ -84,16 +107,68 @@ class Strip(QtWidgets.QWidget):
         x = int((self.frame - 0.5) * width / total)
         painter.setPen(QtGui.QPen(palette.text().color(), 2))
         painter.drawLine(x, 0, x, height)
+        if self._drag and self._drag[0] != "seek":  # where the drag would end
+            painter.setPen(QtGui.QPen(palette.link().color(), 2))
+            painter.drawLine(self._x, RULER, self._x, height)
 
-    def _seek(self, event):
+    def _seek(self, x):
         total = self.panel.total_frames()
         if total:
-            x = event.position().x()
             frame = 1 + int(max(0, min(self.width() - 1, x)) * total / self.width())
             self.panel.seek(frame)
 
-    mousePressEvent = _seek
-    mouseMoveEvent = _seek
+    def hit(self, x, y):
+        """What a press at (x, y) starts: ("seek" | "move" | "stretch", row)."""
+        total = self.panel.total_frames()
+        if y < RULER or not total or not self.panel.shots:
+            return "seek", -1
+        for row, (first, count, _, _) in enumerate(self.panel.blocks()):
+            end = (first - 1 + count) * self.width() / total
+            if x <= end:
+                return ("stretch" if end - x <= EDGE else "move"), row
+        return "seek", -1
+
+    def mousePressEvent(self, event):
+        x, y = int(event.position().x()), int(event.position().y())
+        self._drag = (*self.hit(x, y), x)
+        self._x = x
+        if self._drag[0] == "seek":
+            self._seek(x)
+
+    def mouseMoveEvent(self, event):
+        x, y = int(event.position().x()), int(event.position().y())
+        if not self._drag:  # no button: show what a drag here would do
+            mode = self.hit(x, y)[0]
+            self.setCursor(
+                Qt.CursorShape.SizeHorCursor
+                if mode == "stretch"
+                else Qt.CursorShape.ArrowCursor
+            )
+            return
+        self._x = x
+        if self._drag[0] == "seek":
+            self._seek(x)
+        self.update()
+
+    def mouseReleaseEvent(self, event):
+        drag, self._drag = self._drag, None
+        if not drag:
+            return
+        mode, row, start = drag
+        panel, x = self.panel, int(event.position().x())
+        total = panel.total_frames()
+        if mode == "seek":
+            pass
+        elif abs(x - start) < SLOP:  # a click on a block
+            self._seek(x)
+        elif mode == "move":
+            panel.move_shot_to(row, self.hit(min(x, self.width() - 1), RULER)[1])
+        else:
+            first = panel.starts[row]
+            frames = x * total / self.width() - (first - 1)
+            fps = panel.cmd.get_setting_float("movie_fps") or 30
+            panel.set_seconds(row, round(frames / fps, 1))
+        self.update()
 
 
 class TimelinePanel(QtWidgets.QDockWidget):
@@ -105,6 +180,7 @@ class TimelinePanel(QtWidgets.QDockWidget):
         self.starts = []
         self._built = 0  # movie length after our last build
         self._thumbs = {}  # scene name -> (png bytes, pixmap)
+        self._kept = None  # our entry in the session, as last written or read
         self._rest = None  # view while it rests, for Record
         self._had_movie = False  # to open once when a movie appears
 
@@ -243,16 +319,43 @@ class TimelinePanel(QtWidgets.QDockWidget):
         if has_movie and not self._had_movie:
             self.show()
         self._had_movie = has_movie
+        kept = session_extra.entries.get("timeline")
+        if kept is not self._kept:  # a session was loaded
+            self._kept = kept
+            self._adopt(kept)
         if not self.isVisible():
             return
         if self.shots and self.total_frames() != self._built:
             self.shots, self.starts = [], []
+            self._forget()
             self._fill()
         frame = self.cmd.get_frame()
         if frame != self.strip.frame:
             self.strip.frame = frame
             self.strip.update()
         self._show_info()
+
+    def _forget(self):
+        session_extra.entries.pop("timeline", None)
+        self._kept = None
+
+    def _adopt(self, kept):
+        """Take the list a session brought, if its movie is still the one
+        the list built; else there is no list."""
+        try:
+            listed = copy.deepcopy(kept["shots"])
+            starts = [int(first) for first in kept["starts"]]
+            ok = (
+                kept["frames"] == self.total_frames()
+                and len(starts) == len(listed)
+                and all(item["kind"] in shots.KINDS for item in listed)
+                and all(float(item["seconds"]) > 0 for item in listed)
+            )
+        except (KeyError, TypeError, ValueError):
+            ok = False
+        self.shots, self.starts = (listed, starts) if ok else ([], [])
+        self._built = self.total_frames() if ok else 0
+        self._fill()
 
     def seek(self, frame):
         self.cmd.frame(frame)
@@ -350,6 +453,14 @@ class TimelinePanel(QtWidgets.QDockWidget):
             print(" Timeline: %s" % error)
         cmd.set_view(view)
         self._built = self.total_frames()
+        if self.shots:  # into the session, with the movie it belongs to
+            self._kept = session_extra.entries["timeline"] = {
+                "shots": copy.deepcopy(self.shots),
+                "starts": list(self.starts),
+                "frames": self._built,
+            }
+        else:
+            self._forget()
         self.strip.frame = 1
         self.strip.update()
         self._show_info()
@@ -383,13 +494,21 @@ class TimelinePanel(QtWidgets.QDockWidget):
 
     def move_shot(self, step):
         row = self.table.currentRow()
-        other = row + step
-        if row < 0 or not 0 <= other < len(self.shots):
+        self.move_shot_to(row, row + step)
+
+    def move_shot_to(self, row, other):
+        """Put shot `row` where shot `other` is (the strip drags to here)."""
+        count = len(self.shots)
+        if row == other or not (0 <= row < count and 0 <= other < count):
             return
-        self.shots[row], self.shots[other] = self.shots[other], self.shots[row]
+        self.shots.insert(other, self.shots.pop(row))
         self.rebuild()
         self._fill()
         self.table.selectRow(other)
+
+    def set_seconds(self, row, seconds):
+        """The length of shot `row`, as typed into the table."""
+        self.table.item(row, SECONDS).setText("%g" % seconds)
 
     def delete(self):
         row = self.table.currentRow()

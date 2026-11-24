@@ -4,6 +4,26 @@ CHANGE LOG
 
 2026-11-24 pymolish-studio
 
+	* 4.63.0
+
+	* Timeline: the shot list is kept in the session (key "pymolish",
+	  entry "timeline") with the length of the movie it built, and comes
+	  back when that session is loaded; a movie changed since then has no
+	  list, as before. PyMOL ignores the key.
+
+	* Timeline strip: a ruler of seconds on top (click or drag there to
+	  go to a moment); a shot is dragged to another place, and its right
+	  end to make it longer or shorter. Alt+Up, Alt+Down and typed seconds
+	  stay.
+
+	* Movie > Program: Camera Loop, Scene Loop and State Loop removed (116
+	  rows: 49, 43 and 24); the Timeline panel adds turns, rocks, nutations,
+	  scenes and states as shots. State Sweep, Update and Remove Last
+	  Program stay, and so do the commands (movie.add_roll, add_rock,
+	  add_nutate, add_scenes, add_state_loop).
+
+2026-11-24 pymolish-studio
+
 	* 4.62.0
 
 	* Presets (15e): "balls in glass" (balls and sticks inside a surface of

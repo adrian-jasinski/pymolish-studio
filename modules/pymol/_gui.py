@@ -248,115 +248,17 @@ class PyMOLDesktopGUI(object):
                     for i in [.25, .5, 1, 2, 3, 4, 6, 8, 12, 18, 24, 30, 48, 60]
                 ]),
                 ('separator',),
+                # Camera Loop, Scene Loop and State Loop went in 4.63.0: the
+                # Timeline panel adds turns, rocks, scenes and states as shots
                 ('menu', 'Program', [
-                    ('menu', 'Camera Loop', [
-                        ('menu', 'Nutate', [
-                            ('command', '15 deg. over 4 sec.', lambda: self.mvprg("movie.add_nutate(4,15,start=%d)")),
-                            ('command', '15 deg. over 8 sec.', lambda: self.mvprg("movie.add_nutate(8,15,start=%d)")),
-                            ('command', '15 deg. over 12 sec.', lambda: self.mvprg("movie.add_nutate(12,15,start=%d)")),
-                            ('separator', ''),
-                            ('command', '30 deg. over 4 sec.', lambda: self.mvprg("movie.add_nutate(4,30,start=%d)")),
-                            ('command', '30 deg. over 8 sec.', lambda: self.mvprg("movie.add_nutate(8,30,start=%d)")),
-                            ('command', '30 deg. over 12 sec.', lambda: self.mvprg("movie.add_nutate(12,30,start=%d)")),
-                            ('command', '30 deg. over 16 sec.', lambda: self.mvprg("movie.add_nutate(16,30,start=%d)")),
-                            ('separator', ''),
-                            ('command', '60 deg. over 8 sec.', lambda: self.mvprg("movie.add_nutate(8,60,start=%d)")),
-                            ('command', '60 deg. over 16 sec.', lambda: self.mvprg("movie.add_nutate(16,60,start=%d)")),
-                            ('command', '60 deg. over 24 sec.', lambda: self.mvprg("movie.add_nutate(24,60,start=%d)")),
-                            ('command', '60 deg. over 32 sec.', lambda: self.mvprg("movie.add_nutate(32,60,start=%d)")),
-                        ]),
-                        ('separator',),
-                        ('menu', 'X-Rock', [
-                            ('command', '30 deg. over 2 sec.', lambda: self.mvprg("movie.add_rock(2,30,axis='x',start=%d)")),
-                            ('command', '30 deg. over 4 sec.', lambda: self.mvprg("movie.add_rock(4,30,axis='x',start=%d)")),
-                            ('command', '30 deg. over 8 sec.', lambda: self.mvprg("movie.add_rock(8,30,axis='x',start=%d)")),
-                            ('separator',),
-                            ('command', '60 deg. over 4 sec.', lambda: self.mvprg("movie.add_rock(4,60,axis='x',start=%d)")),
-                            ('command', '60 deg. over 8 sec.', lambda: self.mvprg("movie.add_rock(8,60,axis='x',start=%d)")),
-                            ('command', '60 deg. over 16 sec.', lambda: self.mvprg("movie.add_rock(16,60,axis='x',start=%d)")),
-                            ('separator',),
-                            ('command', '90 deg. over 6 sec.', lambda: self.mvprg("movie.add_rock(6,90,axis='x',start=%d)")),
-                            ('command', '90 deg. over 12 sec.', lambda: self.mvprg("movie.add_rock(12,90,axis='x',start=%d)")),
-                            ('command', '90 deg. over 24 sec.', lambda: self.mvprg("movie.add_rock(24,90,axis='x',start=%d)")),
-                            ('separator',),
-                            ('command', '120 deg. over 8 sec.', lambda: self.mvprg("movie.add_rock(8,120,axis='x',start=%d)")),
-                            ('command', '120 deg. over 16 sec.', lambda: self.mvprg("movie.add_rock(16,120,axis='x',start=%d)")),
-                            ('command', '120 deg. over 32 sec.', lambda: self.mvprg("movie.add_rock(32,120,axis='x',start=%d)")),
-                            ('separator',),
-                            ('command', '180 deg. over 12 sec.', lambda: self.mvprg("movie.add_rock(12,179.99,axis='x',start=%d)")),
-                            ('command', '180 deg. over 24 sec.', lambda: self.mvprg("movie.add_rock(24,179.99,axis='x',start=%d)")),
-                            ('command', '180 deg. over 48 sec.', lambda: self.mvprg("movie.add_rock(48,179.99,axis='x',start=%d)")),
-                        ]),
-                        ('menu', 'X-Roll', [
-                            ('command', '4 seconds', lambda: self.mvprg("movie.add_roll(4.0,axis='x',start=%d)")),
-                            ('command', '8 seconds', lambda: self.mvprg("movie.add_roll(8.0,axis='x',start=%d)")),
-                            ('command', '16 seconds', lambda: self.mvprg("movie.add_roll(16.0,axis='x',start=%d)")),
-                            ('command', '32 seconds', lambda: self.mvprg("movie.add_roll(32.0,axis='x',start=%d)")),
-                        ]),
-                        ('separator',),
-                        ('menu', 'Y-Rock', [
-                            ('command', '30 deg. over 2 sec.', lambda: self.mvprg("movie.add_rock(2,30,axis='y',start=%d)")),
-                            ('command', '30 deg. over 4 sec.', lambda: self.mvprg("movie.add_rock(4,30,axis='y',start=%d)")),
-                            ('command', '30 deg. over 8 sec.', lambda: self.mvprg("movie.add_rock(8,30,axis='y',start=%d)")),
-                            ('separator',),
-                            ('command', '60 deg. over 4 sec.', lambda: self.mvprg("movie.add_rock(4,60,axis='y',start=%d)")),
-                            ('command', '60 deg. over 8 sec.', lambda: self.mvprg("movie.add_rock(8,60,axis='y',start=%d)")),
-                            ('command', '60 deg. over 16 sec.', lambda: self.mvprg("movie.add_rock(16,60,axis='y',start=%d)")),
-                            ('separator',),
-                            ('command', '90 deg. over 6 sec.', lambda: self.mvprg("movie.add_rock(6,90,axis='y',start=%d)")),
-                            ('command', '90 deg. over 12 sec.', lambda: self.mvprg("movie.add_rock(12,90,axis='y',start=%d)")),
-                            ('command', '90 deg. over 24 sec.', lambda: self.mvprg("movie.add_rock(24,90,axis='y',start=%d)")),
-                            ('separator',),
-                            ('command', '120 deg. over 8 sec.', lambda: self.mvprg("movie.add_rock(8,120,axis='y',start=%d)")),
-                            ('command', '120 deg. over 16 sec.', lambda: self.mvprg("movie.add_rock(16,120,axis='y',start=%d)")),
-                            ('command', '120 deg. over 32 sec.', lambda: self.mvprg("movie.add_rock(32,120,axis='y',start=%d)")),
-                            ('separator',),
-                            ('command', '180 deg. over 12 sec.', lambda: self.mvprg("movie.add_rock(12,179.99,axis='y',start=%d)")),
-                            ('command', '180 deg. over 24 sec.', lambda: self.mvprg("movie.add_rock(24,179.99,axis='y',start=%d)")),
-                            ('command', '180 deg. over 48 sec.', lambda: self.mvprg("movie.add_rock(48,179.99,axis='y',start=%d)")),
-                            ]),
-                        ('menu', 'Y-Roll', [
-                            ('command', '4 seconds', lambda: self.mvprg("movie.add_roll(4.0,axis='y',start=%d)")),
-                            ('command', '8 seconds', lambda: self.mvprg("movie.add_roll(8.0,axis='y',start=%d)")),
-                            ('command', '16 seconds', lambda: self.mvprg("movie.add_roll(16.0,axis='y',start=%d)")),
-                            ('command', '32 seconds', lambda: self.mvprg("movie.add_roll(32.0,axis='y',start=%d)")),
-                        ]),
-                    ]),
-                    ('separator',),
-                    ('menu', 'Scene Loop', [
-                        ('menu', lab, [
-                            ('command', '%d deg. over %d sec.' % (angle, sec), lambda
-                                s='set sweep_angle,%d;cmd.movie.add_scenes(None, %d, rock=%d, start=%%d)' % (angle, sec, rock):
-                                self.mvprg(s))
-                            for angle, seconds in ((30, (2,4,8)), (60, (4,8,16)), (90, (6,12,24)), (120, (8,16,32)))
-                            for sec in seconds
-                        ])
-                        for lab, rock in [
-                            ('Nutate', 4),
-                            ('X-Rock', 2),
-                            ('Y-Rock', 1),
-                        ]
-                    ] + [
-                        ('menu', 'Steady', [
-                            ('command',  str(val) + ' seconds each',
-                                lambda s="movie.add_scenes(None,%.1f," % val: self.mvprg(s + "rock=0,start=%d)"))
-                            for val in [1, 2, 4, 8, 12, 16, 24]
-                        ]),
-                    ]),
-                    ('separator',),
-                ] + [
-                    ('menu', lab, [
+                    ('menu', 'State Sweep', [
                         ('menu', "Full Speed" if speed == 1 else ("1/%d Speed" % speed), [
                             ('command', (str(pause) + " second pause") if pause else "no pause",
-                                lambda s=fmt % (speed, pause): self.mvprg(s + ", start=%d)"))
+                                lambda s='movie.add_state_sweep(%d, %d' % (speed, pause): self.mvprg(s + ", start=%d)"))
                             for pause in [0, 1, 2, 4]
                             ])
                         for speed in [1, 2, 3, 4, 8, 16]
-                    ])
-                    for lab, fmt in [
-                        ('State Loop', 'movie.add_state_loop(%d, %d'),
-                        ('State Sweep', 'movie.add_state_sweep(%d, %d'),
-                    ]
+                    ]),
                 ]),
                 ('command', 'Update Last Program', self.mvprg),
                 ('command', 'Remove Last Program', self.mvprg_remove_last),
