@@ -67,7 +67,14 @@ of these and "Stay signed in" as a box (questions 74 and 75). A Claude
 subscription cannot be signed in to from pymolish: Anthropic's terms do not
 allow it. Not tried with a real account: that is part of order 2.
 
-**Shipped state, checked 2026-11-24: 4.65.0.** Built since 4.19.43,
+Built 2026-11-24, 4.67.0, from the request "move the robot icon into the
+row under the object list, after SEQ; give SEQ a tab between Command and
+Chat that works like the sequence in the viewport; the viewport stays as
+the second place": the Sequence tab, and the AI assistant button in that
+row. It is not a step of this plan; it is recorded with steps 32 and 33,
+which stay finished. Five choices were made while building (81 to 85).
+
+**Shipped state, checked 2026-11-24: 4.67.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
@@ -102,6 +109,7 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.64.0 | A session carries its background picture (21f). |
 | 4.65.0 | Smooth edges in the viewport: Setting > Rendering > Antialias (Real Time), an FXAA pass, off by default (21f). |
 | 4.66.0 | Chat sign-in in the browser (31d): "Continue with ChatGPT" (the user's ChatGPT plan) and "Continue with OpenRouter" (credits there), the models of the account as a list, "Stay signed in" in the keychain of the operating system. Stand-in tests only, no real sign-in yet. |
+| 4.67.0 | The sequence in a tab: Sequence, between Command and Chat, with the clicks, drags and menus of the rows in the viewport; SEQ opens it, and its arrow has "Show in viewport". The AI assistant button moved from the toolbar to the row under the object list. |
 
 Of the ten features requested on 2026-11-20, nine have a working version.
 The tenth, the surface looks, waits for the grid surface of 1b. Steps 19, 20,
@@ -206,7 +214,7 @@ recommended direction, not a claim that an implementation has passed tests.
 No question waits. On 2026-11-24 the user chose the recommended option for
 every question that had no answer; those, the earlier answers, the two
 answers about the sign-in (74 and 75) and the choices made while building
-4.60.1 to 4.66.0 are in
+4.60.1 to 4.67.0 are in
 [PLAN-DONE.md](PLAN-DONE.md) under "Decided by the user" and "Chosen while
 building". The choices say there what it takes to change them.
 
@@ -215,6 +223,14 @@ other computers can settle it: smooth edges (FXAA, 4.65.0) are **off** when
 the program starts, since only WSLg was tried. Recommended: on by default
 once the picture was seen on Windows and macOS (Setting > Rendering >
 Antialias (Real Time), or `set antialias_shader, 1`).
+
+The five choices of 4.67.0 (81 to 85) are about what is seen, and were
+made without asking, each as the request read: the Sequence tab always
+lists the sequence and `seq_view` only puts it into the viewport as well;
+a click on SEQ opens the tab and "Show in viewport" is in the menu of its
+arrow; the tab has the background color of the viewport; the name of the
+mouse mode is shortened in a narrow panel; the robot keeps its drawing.
+Say so if another one is wanted.
 
 Small things that were left out on the way and are built only if asked for:
 shortcuts for the UI scale (Ctrl+=, Ctrl+-, Ctrl+0) and the option
@@ -241,14 +257,19 @@ an API key; a sign-in to an API account at Anthropic through its `ant`
 tool (offered in question 74, not chosen); more than one ChatGPT account;
 the check of the signature of ChatGPT's ID token; the ChatGPT access token
 kept between runs (today the next run renews it); deleting the OpenRouter
-key at OpenRouter on Sign out (today a link to its page).
+key at OpenRouter on Sign out (today a link to its page). From 4.67.0, in
+the Sequence tab: the dimming of the unaligned residues of an alignment,
+the frame around a drag, the marks of the selection along the scroll bar,
+scrolling on while a drag passes the edge; and the full name of the mouse
+mode in the tooltip of its button.
 
 The user's to do, not decisions:
 
-- Push `feature13` and open its pull request. Checked 2026-11-24: the
-  branch is 14 commits ahead of `origin/feature13` (this plan commit
-  included) and contains `feature12`
-  (itself 9 commits ahead of its remote); the last pull request is #10
+- Push `feature13` and open its pull request. Checked 2026-11-24 after
+  4.67.0: `origin/feature13` is at the plan commit of 4.66.0; the branch
+  is 2 commits ahead of it (4.67.0 and this plan commit) and contains
+  `feature12` (itself 9 commits ahead of its remote); `feature13` has no
+  pull request; the last one is #10
   (`feature11`, merged 2026-11-20). No push or merge was performed in this
   run.
 - After the push, read the CI run: the Windows icon, release notes,

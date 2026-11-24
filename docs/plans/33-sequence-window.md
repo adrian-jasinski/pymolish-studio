@@ -1,5 +1,17 @@
 # 33 — Multiple sequences and structures in a separate window
 
+**2026-11-24, 4.67.0, from a request and not from this plan:** the sequence
+of the loaded objects has a tab, Sequence, between Command and Chat
+(`modules/pmg_qt/sequence_tab.py`). It is the sequence viewer of the core
+drawn by Qt, not this window: no alignment, no FASTA. The SEQ button opens
+it; this window is "Sequence alignment" in the menu of SEQ's arrow and in
+the toolbar as before. Tried in the real window on WSLg at 150 % with 4hhb
+and 1ubq: click, Shift+click, drag, Ctrl, middle and right button, a
+selection typed as a command. Measured: 2 tests, the suite 1101 passed and
+250 skipped. Left out: the dimming of unaligned residues, the frame around
+a drag, the marks along the scroll bar; sequences over 1000 residues, the
+light theme, Windows and macOS were not looked at.
+
 [Roadmap](../../PLAN.md) · 2026-11-24, 4.59.0 and 4.60.0: the toolbar has a
 Sequence alignment button after 2D; a consensus secondary-structure track
 (helix cylinders, strand arrows, numbered) and residue colors (Zappo,

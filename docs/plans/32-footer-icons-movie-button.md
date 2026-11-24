@@ -1,5 +1,16 @@
 # 32 — Icons in the row under the object list, and a Movie button
 
+**2026-11-24, 4.67.0, from a request and not from this plan:** the row has
+five buttons: mouse mode, SEQ, AI assistant (moved here from the action
+toolbar, Lucide's `bot`), Wizard, command line. SEQ opens the Sequence tab
+and has an arrow with "Show in viewport" and "Sequence alignment"; it no
+longer shows a state. Measured in the real window on WSLg at 150 %, dark
+theme: the buttons are 139, 73, 24, 24 and 24 px wide in a panel of 300 px;
+the row needs 234 px, since the mouse mode button now shrinks to the width
+of SEQ and Qt shortens its name; the toolbar needs 1254 px in a window of
+1262 px, no button in the overflow menu. Left out: the light theme, a live
+change of the UI scale, Windows and macOS.
+
 **2026-11-23 follow-up:** step 32 stays finished. The separate sequence
 window of [step 33](33-sequence-window.md) has an open choice (question 60)
 about the SEQ entry point; no change to its shipped icon/label is assumed.
