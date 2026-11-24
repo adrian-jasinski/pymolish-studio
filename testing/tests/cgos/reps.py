@@ -82,18 +82,6 @@ def testRepsExist():
         testing.assert_image_has_color('white', msg='cartoon missing: ' + cart)
 
 
-@testing.requires('incentive')
-def test_sphere_mode_10_11():
-    cmd.viewport(200, 100)
-    cmd.set('orthoscopic')
-    cmd.set('opaque_background')
-    cmd.pseudoatom('m1', pos=(1, 2, 3), vdw=1.3, color='blue')
-    cmd.pseudoatom('m1', pos=(5, 2, 3), vdw=2.5, color='red')
-    cmd.zoom()
-    cmd.turn('x', 45)
-    testing.ambient_only()
-    cmd.show_as('spheres')
-    cmd.set('sphere_mode', 10)  # cubes
-    testing.assert_image_equal('ref/sphere_mode_10.png')
-    cmd.set('sphere_mode', 11)  # tetrahedra
-    testing.assert_image_equal('ref/sphere_mode_11.png')
+def test_sphere_mode_stops_at_9():
+    cmd.set('sphere_mode', 11)  # cubes and tetrahedra were never drawn here
+    assert cmd.get_setting_int('sphere_mode') == 9

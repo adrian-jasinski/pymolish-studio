@@ -4,6 +4,15 @@ CHANGE LOG
 
 2026-11-24 pymolish-studio
 
+	* 4.63.1
+
+	* sphere_mode stops at 9. The setting took 10 (cubes) and 11
+	  (tetrahedra), which only the commercial build draws; here they drew
+	  nothing and printed a warning. The test for them and its two reference
+	  images are deleted.
+
+2026-11-24 pymolish-studio
+
 	* 4.63.0
 
 	* Timeline: the shot list is kept in the session (key "pymolish",
