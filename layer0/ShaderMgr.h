@@ -186,10 +186,10 @@ public:
   void freeGPUBuffers(std::vector<size_t> && handles);
   void freeGPUBuffers(size_t * arr, size_t len);
 
+  CShaderPrg *Enable_FXAAShader();
 #ifndef _PYMOL_NO_AA_SHADERS
   bool Reload_SMAA_Shaders();
   int SMAAShadersPresent();
-  CShaderPrg *Enable_FXAAShader();
   CShaderPrg *Enable_SMAA1Shader();
   CShaderPrg *Enable_SMAA2Shader();
   CShaderPrg *Enable_SMAA3Shader();

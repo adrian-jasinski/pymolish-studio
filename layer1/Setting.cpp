@@ -2861,6 +2861,8 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
     SceneChanged(G);
     break;    
   case cSetting_antialias_shader:
+    SceneInvalidate(G);
+    break;
   case cSetting_atom_type_format:
   case cSetting_colored_feedback:
   case cSetting_suspend_undo:

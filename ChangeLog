@@ -4,6 +4,24 @@ CHANGE LOG
 
 2026-11-24 pymolish-studio
 
+	* 4.65.0
+
+	* Smooth edges in the viewport: Setting > Rendering > Antialias (Real
+	  Time), the setting antialias_shader 1, now does something. The
+	  picture is drawn into a texture and passed once through a smoothing
+	  shader (FXAA, data/shaders/fxaa.fs). Off by default; like before, the
+	  setting is not kept in a session. Not in stereo and not for images
+	  drawn at another size than the window. It softens labels and thin
+	  lines a little. Value 2 (SMAA) is not built: the setting stops at 1,
+	  and the menu is one check row.
+
+	  Measured on WSLg (integrated AMD GPU, 1500 x 731, 1oky as cartoon,
+	  sticks and spheres): 10.3 ms a frame without, 12.0 ms with, each
+	  including a copy of the frame for the measurement. Looked at with
+	  transparency_mode 3, grid_mode, selection markers and labels.
+
+2026-11-24 pymolish-studio
+
 	* 4.64.0
 
 	* A session carries its background picture. On save, the picture that

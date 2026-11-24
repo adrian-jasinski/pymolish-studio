@@ -793,7 +793,7 @@ enum {
   /* 0 - none, 1 - just ladder, 2 - just strand, 3 - both ladder and strand */
   REC_i( 693, cartoon_nucleic_acid_as_cylinders       , global    , 1, 0, 3 ),
   REC_b( 694, cgo_shader_ub_flags                     , global    , 0 ),
-  REC_i( 695, antialias_shader                        , global    , 0 ),        /* 0 - none, 1 - fxaa, 2 - smaa */
+  REC_i( 695, antialias_shader                        , global    , 0, 0, 1 ),  /* 0 - none, 1 - fxaa */
   REC_f( 696, offscreen_rendering_multiplier          , unused    , 4.f ),
   REC_b( 697, cylinder_shader_ff_workaround           , unused    , 1 ),
   REC_i( 698, surface_color_smoothing                 , global    , 1 ),

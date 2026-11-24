@@ -630,6 +630,7 @@ void CShaderMgr::Config() {
 
   make_program("oit", "oit.vs", "oit.fs");
   make_program("copy", "copy.vs", "copy.fs");
+  make_program("fxaa", "copy.vs", "fxaa.fs");
   make_program("trilines", "trilines.vs", "trilines.fs");
 
   Reload_Shader_Variables();
@@ -675,6 +676,7 @@ void CShaderMgr::Config() {
   check_program("cylinder", cSetting_render_as_cylinders, 0);
   check_program("sphere", cSetting_sphere_mode, 0);
   }
+  check_program("fxaa", cSetting_antialias_shader, 0);
 
 #ifndef _PYMOL_NO_AA_SHADERS
 #endif
@@ -1115,6 +1117,23 @@ CShaderPrg *CShaderMgr::Enable_OITCopyShader() {
   } else {
     glDisable(GL_BLEND);
   }
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_ALPHA_TEST);
+  return shaderPrg;
+}
+
+// "antialias_shader" 1: the finished picture, smoothed (fxaa.fs)
+CShaderPrg *CShaderMgr::Enable_FXAAShader() {
+  CShaderPrg * shaderPrg = GetShaderPrg("fxaa");
+  if (!shaderPrg) return shaderPrg;
+  shaderPrg->Enable();
+
+  constexpr GLuint colorTexUnit = 2;
+  activateOffscreenTexture(colorTexUnit);
+  shaderPrg->Set1i("colorTex", colorTexUnit);
+  auto size = getGPUBuffer<RenderTargetGL>(offscreen_rt)->size();
+  shaderPrg->Set2f("inv_dimensions", 1.f / size.x, 1.f / size.y);
+  glDisable(GL_BLEND);
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_ALPHA_TEST);
   return shaderPrg;

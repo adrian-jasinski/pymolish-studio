@@ -446,18 +446,15 @@ void SceneRender(PyMOLGlobals* G, const SceneRenderInfo& renderInfo)
 
       auto fog_active = SceneSetFog(G);
 
-#ifndef _PYMOL_NO_AA_SHADERS
-      if (renderInfo.viewportOverride && false) {
-        // Does not apply to Open-Source PyMOL
-        render_to_texture_for_pp = NeedsOffscreenTextureForPP(G);
-      }
+      // The whole window, one eye: the picture goes into a texture and
+      // from there, smoothed, to the screen (SceneRenderAA).
+      render_to_texture_for_pp = !renderInfo.viewportOverride &&
+                                 !must_render_stereo &&
+                                 NeedsOffscreenTextureForPP(G);
       if (render_to_texture_for_pp) {
-        if (!must_render_stereo || postprocessOnce) {
-          G->ShaderMgr->bindOffscreen(I->Width, I->Height, &I->grid);
-          bg_grad(G);
-        }
+        G->ShaderMgr->bindOffscreen(I->Width, I->Height, &I->grid);
+        bg_grad(G);
       }
-#endif
       /* rendering for visualization */
 
       /*** THIS IS AN UGLY EXPERIMENTAL
@@ -564,77 +561,30 @@ void SceneRender(PyMOLGlobals* G, const SceneRenderInfo& renderInfo)
   " SceneRender: leaving...\n" ENDFD;
 }
 
-#ifndef _PYMOL_NO_AA_SHADERS
-static void AppendCopyWithChangedShader(
-    PyMOLGlobals* G, CGO* destCGO, CGO* srcCGO, int frommode, int tomode)
-{
-  CGO* cgo = CGONew(G);
-  CGOAppendNoStop(cgo, srcCGO);
-  CGOChangeShadersTo(cgo, frommode, tomode);
-  CGOAppendNoStop(destCGO, cgo);
-  CGOFreeWithoutVBOs(cgo);
-}
-#endif
-
 /**
- * @brief Renders Anti-aliasing from the I->offscreen_texture texture
- * depending on the antialias_shader setting, FXAA (1 stage) or SMAA (3 stages)
- * are rendered using I->offscreen and into the screen block
+ * @brief Draws the picture of I->offscreen_texture into fbConfig through the
+ * smoothing shader ("antialias_shader" 1, fxaa.fs).
  * @param fbConfig Framebuffer config (currently represents target and parent image)
  */
 void SceneRenderAA(PyMOLGlobals* G, const GLFramebufferConfig& fbConfig)
 {
-#ifndef _PYMOL_NO_AA_SHADERS
   CScene* I = G->Scene;
-  int ok = true;
   G->ShaderMgr->setDrawBuffer(fbConfig);
   if (!I->offscreenCGO) {
-    CGO* unitCGO = GenerateUnitScreenCGO(G);
-    ok &= unitCGO != nullptr;
-    if (ok) {
-      auto antialias_mode = SettingGet<int>(G, cSetting_antialias_shader);
-
-      I->offscreenCGO = CGONew(G);
-
-      switch (antialias_mode) {
-      case 0:
-        break;
-      case 1: // fxaa
-        AppendCopyWithChangedShader(G, I->offscreenCGO, unitCGO,
-            GL_DEFAULT_SHADER_WITH_SETTINGS, GL_FXAA_SHADER);
-        break;
-      default:
-        AppendCopyWithChangedShader(G, I->offscreenCGO, unitCGO,
-            GL_DEFAULT_SHADER_WITH_SETTINGS, GL_SMAA1_SHADER);
-        if (antialias_mode != 3) { // not 1nd Pass as output
-          CGODisable(I->offscreenCGO, GL_SMAA1_SHADER);
-          AppendCopyWithChangedShader(G, I->offscreenCGO, unitCGO,
-              GL_DEFAULT_SHADER_WITH_SETTINGS, GL_SMAA2_SHADER);
-          CGODisable(I->offscreenCGO, GL_SMAA2_SHADER);
-          if (antialias_mode != 4) { // not 2nd Pass as output
-            AppendCopyWithChangedShader(G, I->offscreenCGO, unitCGO,
-                GL_DEFAULT_SHADER_WITH_SETTINGS, GL_SMAA3_SHADER);
-            CGODisable(I->offscreenCGO, GL_SMAA3_SHADER);
-          }
-        }
-        break;
-      }
-      CGOStop(I->offscreenCGO);
-      CGOFreeWithoutVBOs(unitCGO);
-      I->offscreenCGO->use_shader = true;
-    } else {
-      I->offscreenCGO = nullptr;
+    I->offscreenCGO = GenerateUnitScreenCGO(G);
+    if (!I->offscreenCGO) {
+      return;
     }
+    CGOChangeShadersTo(I->offscreenCGO, GL_DEFAULT_SHADER_WITH_SETTINGS,
+        GL_FXAA_SHADER);
+    I->offscreenCGO->use_shader = true;
   }
-  if (ok && I->offscreenCGO) {
-    CGORender(I->offscreenCGO, nullptr, nullptr, nullptr, nullptr, nullptr);
-    // TODO: Restoring to previous state should not happen here.
-    G->ShaderMgr->Disable_Current_Shader();
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glEnable(GL_DEPTH_TEST);
-    G->ShaderMgr->setDrawBuffer(fbConfig);
-  }
-#endif
+  CGORender(I->offscreenCGO, nullptr, nullptr, nullptr, nullptr, nullptr);
+  // TODO: Restoring to previous state should not happen here.
+  G->ShaderMgr->Disable_Current_Shader();
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glEnable(GL_DEPTH_TEST);
+  G->ShaderMgr->setDrawBuffer(fbConfig);
 }
 
 static void SceneRenderAllObject(PyMOLGlobals* G, CScene* I,
@@ -1656,7 +1606,9 @@ CGO* GenerateUnitScreenCGO(PyMOLGlobals* G)
  */
 static bool NeedsOffscreenTextureForPP(PyMOLGlobals* G)
 {
-  return SettingGet<int>(G, cSetting_antialias_shader) != 0;
+  return SettingGet<int>(G, cSetting_antialias_shader) != 0 &&
+         SettingGet<bool>(G, cSetting_use_shaders) &&
+         G->ShaderMgr->ShaderPrgExists("fxaa"); // gone if it did not compile
 }
 
 /**

@@ -593,10 +593,7 @@ class PyMOLDesktopGUI(object):
                     ('check', 'OpenGL 2.0 Shaders', 'use_shaders', 1),
                     ('separator',),
                     ('check', 'Antialias (Ray Tracing)', 'antialias', 1),
-                    ('menu', 'Antialias (Real Time)', [
-                        ('radio', lab, 'antialias_shader', val)
-                        for lab, val in [('off', 0), ('FXAA', 1), ('SMAA', 2)]
-                    ]),
+                    ('check', 'Antialias (Real Time)', 'antialias_shader', 1),
                     ('separator',),
                     ('command', 'Modernize', lambda: cmd.util.modernize_rendering(1, cmd)),
                     ('separator',),
