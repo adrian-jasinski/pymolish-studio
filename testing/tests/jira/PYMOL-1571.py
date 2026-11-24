@@ -6,7 +6,7 @@ import shutil
 import os
 from pymol import cmd, testing
 
-pytestmark = testing.requires('incentive', 'gui')
+pytestmark = testing.requires('gui')
 
 
 def test():

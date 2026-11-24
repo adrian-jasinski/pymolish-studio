@@ -368,6 +368,24 @@ NOTES
                             # std and ray CGO
                             state.append(state[0])
 
+    def session_save_bg_image(session, *, _self=cmd):
+        '''
+        The background picture goes into the session itself, as a "data:"
+        text in the setting that held its file name, so the session shows it
+        where the file is not. The core reads both (MyPNGRead).
+        '''
+        import base64
+        index = _self.setting._get_index('bg_image_filename')
+        for record in session.get('settings') or ():
+            if record[0] == index and record[2] and not record[2].startswith('data:'):
+                try:
+                    with open(record[2], 'rb') as handle:
+                        record[2] = ('data:image/png;base64,'
+                                     + base64.b64encode(handle.read()).decode())
+                except OSError:
+                    pass  # the file is gone: the name stays, as before
+        return 1
+
     def get_session(names='', partial=0, quiet=1, compress=-1, cache=-1,
                     binary=-1, version=-1,
                     *, _self=cmd):

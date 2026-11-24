@@ -4,6 +4,18 @@ CHANGE LOG
 
 2026-11-24 pymolish-studio
 
+	* 4.64.0
+
+	* A session carries its background picture. On save, the picture that
+	  bg_image_filename names is written into the session as "data:" text
+	  in that same setting; loaded, the session shows it where the file is
+	  not. The session grows by about four thirds of the PNG. A name whose
+	  file is gone is saved as the name, as before. PyMOL 3.2.0a loads and
+	  saves such a session (tried); a program older than the "data:" reader
+	  shows no picture. The running program keeps the file name.
+
+2026-11-24 pymolish-studio
+
 	* 4.63.1
 
 	* sphere_mode stops at 9. The setting took 10 (cubes) and 11
