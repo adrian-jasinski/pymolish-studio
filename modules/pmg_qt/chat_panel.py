@@ -13,6 +13,7 @@ from pymol.Qt import QtCore, QtWidgets
 from .icons import menu_icon
 
 SIGN_IN = ("ChatGPT", "OpenRouter")  # a sign-in in the browser, no key field
+CLAUDE = "Claude Code"  # signs in by itself; nothing of it is kept here
 
 
 class ChatPanel(QtWidgets.QWidget):
@@ -31,8 +32,10 @@ class ChatPanel(QtWidgets.QWidget):
         self.worker = None
         self.settings = QtCore.QSettings("pymolish", "pymolish-studio")
         self.credentials = {}  # provider: the tokens of its sign-in
-        self.listed = {}  # provider: its (model ID, name) after a sign-in
+        self.listed = {CLAUDE: signin.CLAUDE_MODELS}  # provider: (model ID, name)
+        self.claude = None  # the account Claude Code is signed in to
         self.cancel = None  # an Event while a sign-in waits for the browser
+        self.waiting = ""  # what that wait is for
         self.restored = False  # kept sign-ins are read when Chat is first shown
 
         self.history = QtWidgets.QPlainTextEdit()
@@ -146,11 +149,27 @@ class ChatPanel(QtWidgets.QWidget):
         provider = self.provider.currentText()
         credential = self.credentials.get(provider)
         self.provider.setEnabled(not self.cancel)
-        self.key.setVisible(provider not in SIGN_IN)
-        for widget in (self.login, self.stay, self.account):
-            widget.setVisible(provider in SIGN_IN)
+        self.key.setVisible(provider not in (*SIGN_IN, CLAUDE))
+        self.stay.setVisible(provider in SIGN_IN)
+        self.account.setVisible(provider in (*SIGN_IN, CLAUDE))
+        # no sign-out here: it would sign the user's Claude Code out everywhere
+        self.login.setVisible(
+            provider in SIGN_IN
+            or (provider == CLAUDE and bool(self.cancel or not self.claude))
+        )
+        self.login.setEnabled(provider != CLAUDE or bool(signin.claude()))
         if self.cancel:
-            icon, text, note = "sign in", "Cancel sign-in", "Waiting for the browser"
+            icon, text, note = "sign in", "Cancel sign-in", self.waiting
+        elif provider == CLAUDE:
+            icon, text, note = "sign in", f"Continue with {provider}", ""
+            if self.claude:
+                who = self.claude.get("email") or "your account"
+                plan = self.claude.get("subscriptionType") or self.claude.get(
+                    "authMethod", ""
+                )
+                note = f"Using Claude Code of {who}" + (f" ({plan})" if plan else "")
+            elif not signin.claude():
+                note = f'<a href="{signin.CLAUDE_SETUP}">Install Claude Code</a> first'
         elif not credential:
             icon, text, note = "sign in", f"Continue with {provider}", ""
         elif provider == "ChatGPT":
@@ -196,6 +215,8 @@ class ChatPanel(QtWidgets.QWidget):
                 secret = ""  # said when the box is ticked, not at every start
             if secret:
                 self._sign_in(provider, secret)
+        if provider == CLAUDE and not self.claude and signin.claude():
+            self._sign_in(provider, "status")  # is Claude Code signed in already?
         self._show_access()
 
     def _login_clicked(self):
@@ -214,6 +235,7 @@ class ChatPanel(QtWidgets.QWidget):
     def _sign_in(self, provider, secret=""):
         """In the browser, or silently from the secret the keychain kept."""
         self.cancel = cancel = threading.Event()
+        self.waiting = "Checking the sign-in" if secret else "Waiting for the browser"
         stay = self.stay.isChecked()
         client = self.settings.value("chat/chatgpt_client", "")
         email = self.settings.value("chat/chatgpt_email", "")
@@ -225,7 +247,16 @@ class ChatPanel(QtWidgets.QWidget):
         def run():
             credential, found = None, []
             try:
-                if provider == "OpenRouter":
+                if provider == CLAUDE:
+                    found = signin.CLAUDE_MODELS  # the same without a sign-in
+                    credential = (
+                        signin.claude_status()
+                        if secret
+                        else signin.claude_login(
+                            cancel, lambda line: self.message.emit("sign-in", line)
+                        )
+                    )
+                elif provider == "OpenRouter":
                     credential = (
                         {"access_token": secret}
                         if secret
@@ -237,7 +268,8 @@ class ChatPanel(QtWidgets.QWidget):
                     )
                 else:
                     credential = signin.chatgpt(host, client, email, cancel, self._open)
-                found = signin.models(provider, credential["access_token"])
+                if provider != CLAUDE:
+                    found = signin.models(provider, credential["access_token"])
             except (CmdException, KeyError) as error:
                 detail = getattr(error, "message", f"the answer lacked {error}")
                 self.message.emit("error", f"Sign-in to {provider}: {detail}")
@@ -252,6 +284,8 @@ class ChatPanel(QtWidgets.QWidget):
         if found is not None:
             self.cancel = None
             self.listed[provider] = found
+        if provider == CLAUDE:
+            self.claude, credential = credential, None
         if credential:
             first = provider not in self.credentials
             self.credentials[provider] = credential
@@ -381,7 +415,7 @@ class ChatPanel(QtWidgets.QWidget):
 
         def run():
             try:
-                token = "" if provider in SIGN_IN else key
+                token = "" if provider in (*SIGN_IN, CLAUDE) else key
                 if credential:
                     renewed = signin.fresh(credential)
                     if renewed is not credential:  # rotating: store the new one

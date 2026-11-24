@@ -3,6 +3,10 @@
 import asyncio
 import json
 import os
+import re
+import secrets
+import tempfile
+import threading
 import time
 import uuid
 
@@ -31,6 +35,7 @@ ROUTES = {
     "OpenAI": ("OPENAI_API_KEY", "https://api.openai.com/v1"),
     "OpenRouter": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1"),
     "ChatGPT": ("", "https://api.openai.com/v1"),  # browser sign-in only
+    "Claude Code": ("", ""),  # the user's own Claude Code and its sign-in
 }
 
 TOOL = {
@@ -54,6 +59,7 @@ class Conversation:
         self.emit = emit or (lambda kind, text: None)
         self.messages = []
         self.secrets = []
+        self.session = None  # of Claude Code, to continue in the next turn
 
     def redact(self, text):
         for secret in self.secrets:
@@ -62,6 +68,13 @@ class Conversation:
         return text
 
     async def run(self, prompt, key=""):
+        if self.provider == "Claude Code":
+            try:
+                return await self._request(self._claude_code(prompt))
+            except Exception as error:
+                self.session = None
+                text = error.message if isinstance(error, CmdException) else str(error)
+                raise CmdException(self.redact(text)) from None
         variable, url = ROUTES[self.provider]
         key = key or os.environ.get(variable, "")
         if not key:
@@ -123,6 +136,99 @@ class Conversation:
                     await task
                 except asyncio.CancelledError:
                     pass
+
+    async def _claude_code(self, prompt):
+        """A turn through the user's own Claude Code ("claude -p"), which holds
+        the sign-in. It gets the tool as the agent connector serves it, on a
+        port and with a token of this turn. Its built-in tools and its other
+        MCP servers are off and the user's settings files are not read
+        ("--safe-mode" would switch off the given server too)."""
+        from . import agent_server, signin
+
+        command = signin.claude()
+        if not command:
+            raise CmdException("Claude Code is not installed: " + signin.CLAUDE_SETUP)
+        if not prompt.strip() or len(prompt) > 16000:
+            raise CmdException("Enter a message of at most 16,000 characters")
+        if not re.fullmatch(r"[\w.:\[\]-]+", self.model):
+            raise CmdException("Not a model name of Claude Code: " + self.model)
+        started, turn, used = time.monotonic(), uuid.uuid4().hex, 0
+        token = secrets.token_urlsafe(24)
+        self.secrets = [token] + [os.environ.get(v, "") for v, _ in ROUTES.values()]
+        instructions = INSTRUCTIONS + "\nInstalled capabilities: " + json.dumps(agent.capabilities(self.executor.cmd))
+
+        def call(operation, arguments):
+            nonlocal used
+            used += 1
+            if used > 24:
+                return {"ok": False, "error": "Tool-call limit reached; inspect the session before continuing"}
+            try:
+                return self.dispatch(turn + ":" + uuid.uuid4().hex, operation, arguments)
+            except CmdException as error:  # cancelled before it ran
+                return {"ok": False, "error": str(error)}
+
+        server = agent_server.Server(0, token, self.executor, self.executor.cmd)
+        server.call = call
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        process, result, noise = None, None, []
+        try:
+            # a folder only this user reads: the token stays off the command line
+            with tempfile.TemporaryDirectory() as folder:
+                config, system = os.path.join(folder, "mcp.json"), os.path.join(folder, "system.txt")
+                with open(config, "w") as handle:
+                    json.dump({"mcpServers": {"pymolish": {
+                        "type": "http", "url": "http://127.0.0.1:%d/mcp" % server.server_port,
+                        "headers": {"Authorization": "Bearer " + token},
+                    }}}, handle)
+                with open(system, "w", encoding="utf-8") as handle:
+                    handle.write(instructions)
+                process = await asyncio.create_subprocess_exec(
+                    *command, "-p", "--output-format", "stream-json", "--verbose",
+                    "--restricted", "--tools", "", "--strict-mcp-config", "--mcp-config", config,
+                    "--allowed-tools", "mcp__pymolish__" + TOOL["name"],
+                    "--system-prompt-file", system,
+                    *(["--model", self.model] if self.model != "default" else []),
+                    *(["--resume", self.session] if self.session else []),
+                    stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.STDOUT,
+                    cwd=tempfile.gettempdir(),  # the same in every turn: a session is resumed from where it began
+                    limit=2**24,  # a line can carry the viewport image
+                )
+                process.stdin.write(prompt.encode())
+                await process.stdin.drain()
+                process.stdin.close()
+                async for line in process.stdout:
+                    try:
+                        event = json.loads(line)
+                        kind = event["type"]
+                    except (ValueError, TypeError, KeyError):
+                        noise.append(line.decode(errors="replace").strip())
+                        continue
+                    if kind == "result":
+                        result = event
+                    elif kind == "assistant":
+                        blocks = event.get("message", {}).get("content", [])
+                        text = "\n".join(b.get("text", "") for b in blocks if b.get("type") == "text")
+                        if text.strip():
+                            self.emit("assistant", self.redact(text))
+                await process.wait()
+        finally:
+            if process and process.returncode is None:
+                process.kill()
+            server.shutdown()
+            server.server_close()
+        if result is None or result.get("is_error"):
+            detail = str((result or {}).get("result") or "\n".join(noise[-5:]) or "no answer")
+            raise CmdException("Claude Code: " + detail[:2000])
+        self.session = result.get("session_id")
+        usage = result.get("usage", {})
+        report = {
+            "input_tokens": sum(usage.get(k, 0) for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")),
+            "output_tokens": usage.get("output_tokens", 0),
+            "seconds": round(time.monotonic() - started, 2), "tool_calls": used,
+        }
+        self.emit("usage", json.dumps(report))
+        return report
 
     async def run_client(self, prompt, client):
         """Also used by offline protocol stand-ins; no SDK is imported here."""
@@ -218,8 +324,10 @@ def ask(prompt="", *, _self=cmd):
     Requires the Qt GUI. Providers: Anthropic and OpenAI with an API key (the
     environment or this run's password field), ChatGPT and OpenRouter with a
     sign-in in the browser, kept in the keychain of the computer only with
-    "Stay signed in". Chat history and credentials are not written into
-    session files.
+    "Stay signed in", and Claude Code: the Claude Code installed on this
+    computer, with the Claude account it is signed in to. Chat history and
+    credentials are not written into session files; Claude Code keeps a
+    transcript of its conversations in its own folder.
     """
     from . import gui
     window = gui.get_qtwindow()

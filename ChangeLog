@@ -4,6 +4,38 @@ CHANGE LOG
 
 2026-11-24 pymolish-studio
 
+	* 4.68.0
+
+	* The Chat tab has the provider "Claude Code": the conversation runs
+	  through the Claude Code that is installed on this computer, with
+	  the Claude account it is signed in to (a Claude plan, or whatever
+	  else Claude Code uses there). No API key, no extra "ai". The row
+	  under the provider shows the account. If Claude Code is signed
+	  out, "Continue with Claude Code" starts its own sign-in ("claude
+	  auth login"), which opens the browser; the address is also written
+	  into the chat. The model field lists Claude Code's default and the
+	  names fable, opus, sonnet and haiku; any other model name can be
+	  typed.
+
+	  Anthropic allows no Claude.ai sign-in inside another program, so
+	  pymolish has none: it reads no token of the account and keeps
+	  nothing, and it has no Sign out for it (that would sign Claude
+	  Code out everywhere; use "claude auth logout").
+
+	  Each turn starts "claude -p" with the tool of the Chat tab only,
+	  served on 127.0.0.1 with a token of that turn. The built-in tools
+	  of Claude Code (shell, files, web), its other MCP servers and the
+	  settings files of the user are off, so the same reviews,
+	  confirmations, Stop and Undo hold as for the other providers.
+	  Claude Code keeps a transcript of each conversation in its own
+	  folder (~/.claude/projects), as it does for its own sessions.
+
+	  Tried in the real window with Claude Code 2.1.322 and a Team plan
+	  (model haiku): four tool calls answered a question and colored the
+	  carbons, a second turn continued the same conversation. Not
+	  tried: the sign-in button with a signed-out Claude Code (tests use
+	  a stand-in), Windows, macOS, and a release bundle.
+
 	* 4.67.0
 
 	* The sequence has a tab of its own: Sequence, between Command and

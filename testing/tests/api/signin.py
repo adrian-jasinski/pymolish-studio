@@ -332,3 +332,77 @@ def test_panel_chatgpt_keeps_the_refresh_token_and_welcomes_once(panel, monkeypa
     assert renewed[0]["refresh_token"] == "r1" and renewed[0]["client_id"] == "oaiapp_1"
     assert again.keychain == {"ChatGPT": "r2"}  # the rotated token replaces the old
     assert len(asked) == 1 and len(welcomed) == 1
+
+
+# A stand-in for "claude auth": signed in once the file beside it exists.
+CLAUDE = r"""
+import json, os, sys, time
+state = sys.argv[1]
+if sys.argv[2:] == ["auth", "status", "--json"]:
+    print(json.dumps({"loggedIn": os.path.exists(state), "email": "a@example.org",
+                      "subscriptionType": "max"}))
+    sys.exit(0 if os.path.exists(state) else 1)
+assert sys.argv[2:] == ["auth", "login"] and not sys.stdin.isatty()
+print("If the browser did not open, visit: https://claude.ai/oauth/authorize?x=1", flush=True)
+if os.path.exists(state + ".slow"):
+    time.sleep(60)
+open(state, "w").close()
+"""
+
+
+@pytest.fixture
+def claude(monkeypatch, tmp_path):
+    script, state = tmp_path / "claude.py", tmp_path / "signed-in"
+    script.write_text(CLAUDE)
+    monkeypatch.setattr(
+        signin, "claude", lambda: [sys.executable, str(script), str(state)]
+    )
+    return state
+
+
+def test_claude_code_signs_in_by_itself(claude, monkeypatch):
+    assert signin.claude_status() == {}
+    said = []
+    status = signin.claude_login(say=said.append)
+    assert status["email"] == "a@example.org" and signin.claude_status() == status
+    assert said == [
+        "If the browser did not open, visit: https://claude.ai/oauth/authorize?x=1"
+    ]
+    monkeypatch.setattr(signin, "claude", lambda: None)
+    assert signin.claude_status() is None
+    with pytest.raises(CmdException, match="not installed"):
+        signin.claude_login()
+
+
+def test_claude_code_sign_in_can_be_cancelled(claude):
+    open(str(claude) + ".slow", "w").close()
+    cancel = threading.Event()
+    threading.Timer(0.3, cancel.set).start()
+    started = time.monotonic()
+    with pytest.raises(CmdException, match="cancelled"):
+        signin.claude_login(cancel)
+    assert time.monotonic() - started < 10 and signin.claude_status() == {}
+
+
+def test_panel_claude_code_shows_its_own_sign_in(panel, claude, monkeypatch):
+    chat = panel()
+    chat.provider.setCurrentText("Claude Code")
+    chat.until(lambda: chat.cancel is None)
+    assert chat.key.isHidden() and chat.stay.isHidden()  # nothing is kept here
+    assert chat.login.text() == "Continue with Claude Code" and chat.login.isEnabled()
+    assert chat.model.currentText() == "Default of Claude Code"
+    assert chat._model() == "default"
+    chat.login.click()
+    chat.until(lambda: chat.claude)
+    assert chat.login.isHidden()  # signing out is left to Claude Code
+    assert chat.account.text() == "Using Claude Code of a@example.org (max)"
+    assert "https://claude.ai/oauth/authorize" in chat.history.toPlainText()
+    assert not chat.credentials and not chat.keychain
+
+    again = panel()  # the next run finds the sign-in of Claude Code
+    again.until(lambda: again.claude)
+    assert again.provider.currentText() == "Claude Code" and again.login.isHidden()
+
+    monkeypatch.setattr(signin, "claude", lambda: None)
+    without = panel()
+    assert not without.login.isEnabled() and "Install" in without.account.text()

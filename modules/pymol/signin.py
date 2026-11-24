@@ -4,12 +4,20 @@ comes back to a listener on this computer. Standard library only, no Qt.
 
 OpenRouter: https://openrouter.ai/docs/guides/overview/auth/oauth
 ChatGPT: https://developers.openai.com/siwc/token-sharing-open-source
+
+A Claude account signs in to the user's own Claude Code, by its "auth login":
+Anthropic allows no Claude.ai sign-in inside another program, and no token of
+that account is read here.
+https://code.claude.com/docs/en/legal-and-compliance
 """
 
 import base64
 import hashlib
 import json
 import secrets
+import shutil
+import subprocess
+import threading
 import time
 import urllib.error
 import urllib.parse
@@ -25,6 +33,15 @@ RESOURCE = "https://api.openai.com/v1"
 PLAN = "chatgpt.tokens.use.direct"
 SCOPE = "openid profile email offline_access resource.invoke " + PLAN
 USAGE = "https://chatgpt.com/settings/usage"
+CLAUDE_SETUP = "https://code.claude.com/docs/en/setup"
+# what "claude --model" takes; "default" leaves the choice to Claude Code
+CLAUDE_MODELS = [
+    ("default", "Default of Claude Code"),
+    ("fable", "Fable"),
+    ("opus", "Opus"),
+    ("sonnet", "Sonnet"),
+    ("haiku", "Haiku"),
+]
 PAGE = b"<html><body><h3>pymolish</h3>Signed in. Close this page.</body></html>"
 
 
@@ -313,3 +330,61 @@ def _keychain(action):
         return action(keyring)
     except Exception as error:  # no keychain service, locked, entry too long
         raise CmdException(f"The keychain of this computer refused: {error}") from None
+
+
+def claude():
+    """The command of the installed Claude Code, or None."""
+    program = shutil.which("claude")
+    return [program] if program else None
+
+
+def claude_status():
+    """The account Claude Code is signed in to: what its "auth status" says,
+    {} when signed out, None without Claude Code."""
+    command = claude()
+    if not command:
+        return None
+    try:
+        done = subprocess.run(
+            [*command, "auth", "status", "--json"],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        status = json.loads(done.stdout)
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        return {}
+    return status if isinstance(status, dict) and status.get("loggedIn") else {}
+
+
+def claude_login(cancel=None, say=print, wait=300):
+    """Sign in to Claude Code in the browser, by its own "auth login"; say
+    gets what it prints (the address to open by hand)."""
+    command = claude()
+    if not command:
+        raise CmdException("Claude Code is not installed: " + CLAUDE_SETUP)
+    with subprocess.Popen(
+        [*command, "auth", "login"],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    ) as process:
+
+        def forward():
+            for line in process.stdout:
+                if line.strip():
+                    say(line.strip())
+
+        threading.Thread(target=forward, daemon=True).start()
+        deadline = time.monotonic() + wait
+        while process.poll() is None:
+            if (cancel and cancel.is_set()) or time.monotonic() > deadline:
+                process.kill()
+                raise CmdException("Sign-in was cancelled")
+            time.sleep(0.2)
+    status = claude_status()
+    if not status:
+        raise CmdException("Claude Code did not sign in")
+    return status
