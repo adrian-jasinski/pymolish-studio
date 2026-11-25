@@ -10787,7 +10787,7 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
                 id_p[2] = 0;
                 id_p += 3;
               }
-              VLASize(align_vla, int, n_pair * 3);
+              align_vla.resize(n_pair * 3);
             }
             {
               ObjectAlignment* obj = nullptr;
@@ -15277,7 +15277,7 @@ pymol::Result<> ExecutiveSetPropertyForObject(PyMOLGlobals* G,
   if (!vla)
     return pymol::make_error("No object(s) found");
   if (ok) {
-    int nObj = VLAGetSize(vla);
+    int nObj = vla.size();
     for (int a = 0; a < nObj; a++) {
       obj = vla[a];
       ok &= ObjectMoleculeSetProperty((ObjectMolecule*) obj, propname, value,

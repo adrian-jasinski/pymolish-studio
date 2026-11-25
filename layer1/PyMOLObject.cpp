@@ -49,14 +49,14 @@ void ObjectPurgeSettings(pymol::CObject * I)
 void ObjectMotionTrim(pymol::CObject *I, int n_frame)
 {
   if(I->ViewElem) {
-    VLASize(I->ViewElem,CViewElem,n_frame);
+    I->ViewElem.resize(n_frame);
   }
 }
 
 int ObjectMotionGetLength(pymol::CObject *I)
 {
   if(I->ViewElem) {
-    return VLAGetSize(I->ViewElem);
+    return I->ViewElem.size();
   }
   return 0;
 }
@@ -89,7 +89,7 @@ int ObjectMotionModify(pymol::CObject *I, ViewElemAction action, int index, int 
   } else {
     ok = ViewElemModify(I->G, &I->ViewElem,action,index,count,target);
     if(ok && I->ViewElem) {
-      int size = VLAGetSize(I->ViewElem);
+      int size = I->ViewElem.size();
       int n_frame = MovieGetLength(I->G);
       if(n_frame != size) { 
         /* extend entire movie */
@@ -109,7 +109,7 @@ int ObjectMotionModify(pymol::CObject *I, ViewElemAction action, int index, int 
 int ObjectGetSpecLevel(pymol::CObject * I, int frame)
 {
   if(I->ViewElem) {
-    int size = VLAGetSize(I->ViewElem);
+    int size = I->ViewElem.size();
     if(frame<0) {
       int max_level = 0;
       int i;
@@ -162,7 +162,7 @@ int ObjectMotion(pymol::CObject * I, MViewAction action, int first,
       frame = first;
       if(first < 0)
         frame = SceneGetFrame(G);
-      VLACheck(I->ViewElem, CViewElem, frame);
+      I->ViewElem.check(frame);
       if (action == MViewAction::Toggle) {
         if(I->ViewElem[frame].specification_level>1) {
           action = MViewAction::Clear;
@@ -199,7 +199,7 @@ int ObjectMotion(pymol::CObject * I, MViewAction action, int first,
       }
       if(first <= last) {
         int a;
-        VLACheck(I->ViewElem, CViewElem, last);
+        I->ViewElem.check(last);
           for(a = 0; a < cycles; a++) {
             ViewElemSmooth(I->ViewElem + first, I->ViewElem + last, window, wrap);
           }
@@ -238,7 +238,7 @@ int ObjectMotion(pymol::CObject * I, MViewAction action, int first,
         
           for(frame = first; frame <= last; frame++) {
             if((frame >= 0) && (frame < nFrame)) {
-              VLACheck(I->ViewElem, CViewElem, frame);
+              I->ViewElem.check(frame);
               if(!quiet) {
                 PRINTFB(G, FB_Object, FB_Details)
                   " ObjectMotion: Setting frame %d.\n", frame + 1 ENDFB(G);
@@ -275,7 +275,7 @@ int ObjectMotion(pymol::CObject * I, MViewAction action, int first,
           last = first;
         for(frame = first; frame <= last; frame++) {
           if((frame >= 0) && (frame < nFrame)) {
-            VLACheck(I->ViewElem, CViewElem, frame);
+            I->ViewElem.check(frame);
             ViewElemArrayPurge(G, I->ViewElem + frame, 1);
             UtilZeroMem((void *) (I->ViewElem + frame), sizeof(CViewElem));
           }
@@ -301,7 +301,7 @@ int ObjectMotion(pymol::CObject * I, MViewAction action, int first,
               last--;
             else {
               int frame = 0;
-              VLACheck(I->ViewElem, CViewElem, last);
+              I->ViewElem.check(last);
               for(frame = 0; frame < last; frame++) {
                 if(I->ViewElem[frame].specification_level > 1) {
                   last += frame;
@@ -318,7 +318,7 @@ int ObjectMotion(pymol::CObject * I, MViewAction action, int first,
           }
         }
 
-        VLACheck(I->ViewElem, CViewElem, last);
+        I->ViewElem.check(last);
 
         if(wrap && (last >= nFrame)) {
           /* if we're interpolating beyond the last frame, then wrap by
@@ -339,7 +339,7 @@ int ObjectMotion(pymol::CObject * I, MViewAction action, int first,
             frame--;
           }
         }
-        VLACheck(I->ViewElem, CViewElem, last);
+        I->ViewElem.check(last);
         if(!quiet) {
            if (action == MViewAction::Interpolate) {
             if(last == nFrame) {
@@ -416,7 +416,7 @@ int ObjectMotion(pymol::CObject * I, MViewAction action, int first,
       break;
     case MViewAction::Reset:
       if(I->ViewElem) {
-        VLAFreeP(I->ViewElem);
+        I->ViewElem.freeP();
       }
       I->ViewElem = pymol::vla<CViewElem>(0);
       break;
@@ -429,7 +429,7 @@ int ObjectMotion(pymol::CObject * I, MViewAction action, int first,
         }
         for(frame = first; frame <= last; frame++) {
           if((frame >= 0) && (frame <= last)) {
-            VLACheck(I->ViewElem, CViewElem, frame);
+            I->ViewElem.check(frame);
             if(I->ViewElem[frame].specification_level < 2) {
               ViewElemArrayPurge(G, I->ViewElem + frame, 1);
               UtilZeroMem((void *) (I->ViewElem + frame), sizeof(CViewElem));
@@ -440,12 +440,12 @@ int ObjectMotion(pymol::CObject * I, MViewAction action, int first,
       break;
     case MViewAction::Purge:
       if(I->ViewElem) {
-        VLAFreeP(I->ViewElem);
+        I->ViewElem.freeP();
       }
       break;
     }
     if(I->ViewElem) {
-      VLASize(I->ViewElem,CViewElem,nFrame);
+      I->ViewElem.resize(nFrame);
     }
   }
   return 1;
@@ -694,7 +694,7 @@ PyObject *ObjectAsPyList(const pymol::CObject * I)
   PyList_SetItem(result, 10, PyInt_FromLong(static_cast<long>(I->getRenderContext())));
   PyList_SetItem(result, 11, PConvFloatArrayToPyList(I->TTT, 16));
   if(I->ViewElem) {
-    int nFrame = VLAGetSize(I->ViewElem);
+    int nFrame = I->ViewElem.size();
     PyList_SetItem(result, 12, PyInt_FromLong(nFrame));
     PyList_SetItem(result, 13, ViewElemVLAAsPyList(I->G, I->ViewElem, nFrame));
   } else {
@@ -755,7 +755,7 @@ int ObjectFromPyList(PyMOLGlobals * G, PyObject * list, pymol::CObject * I)
   if(ok && (ll > 13)) {
     PyObject *tmp;
     int nFrame;
-    VLAFreeP(I->ViewElem);
+    I->ViewElem.freeP();
     I->ViewElem = nullptr;
     if(ok)
       ok = PConvPyIntToInt(PyList_GetItem(list, 12), &nFrame);
@@ -824,7 +824,7 @@ void ObjectCombineTTT(pymol::CObject * I, const float *ttt, int reverse_order, i
       if(I->ViewElem) { /* update motion path waypoint, if active */
         int frame = SceneGetFrame(I->G);
         if(frame >= 0) {
-          VLACheck(I->ViewElem, CViewElem, frame);
+          I->ViewElem.check(frame);
           TTTToViewElem(I->TTT, I->ViewElem + frame);
           I->ViewElem[frame].specification_level = 2;
         }
@@ -855,7 +855,7 @@ void ObjectTranslateTTT(pymol::CObject * I, const float *v, int store)
       if(I->ViewElem) { /* update motion path waypoint, if active */
         int frame = SceneGetFrame(I->G);
         if(frame >= 0) {
-          VLACheck(I->ViewElem, CViewElem, frame);
+          I->ViewElem.check(frame);
           TTTToViewElem(I->TTT, I->ViewElem + frame);
           I->ViewElem[frame].specification_level = 2;
         }
@@ -884,7 +884,7 @@ void ObjectSetTTT(pymol::CObject * I, const float *ttt, int state, int store)
       if(I->ViewElem) { /* update motion path waypoint, if active */
         int frame = SceneGetFrame(I->G);
         if(frame >= 0) {
-          VLACheck(I->ViewElem, CViewElem, frame);
+          I->ViewElem.check(frame);
           TTTToViewElem(I->TTT, I->ViewElem + frame);
           I->ViewElem[frame].specification_level = 2;
         }
@@ -926,7 +926,7 @@ void ObjectResetTTT(pymol::CObject * I,int store)
       int frame = SceneGetFrame(I->G);
       if(frame >= 0) {
         identity44f(I->TTT);
-        VLACheck(I->ViewElem, CViewElem, frame);
+        I->ViewElem.check(frame);
         TTTToViewElem(I->TTT, I->ViewElem + frame);
         I->ViewElem[frame].specification_level = 2;
       }
@@ -986,7 +986,7 @@ void ObjectPrepareContext(pymol::CObject * I, RenderInfo * info)
   if(I->ViewElem) {
     int frame = SceneGetFrame(I->G);
     if(frame >= 0) {
-      VLACheck(I->ViewElem, CViewElem, frame);
+      I->ViewElem.check(frame);
       
       if(I->Grabbed) {
         TTTToViewElem(I->TTT, I->ViewElem + frame);

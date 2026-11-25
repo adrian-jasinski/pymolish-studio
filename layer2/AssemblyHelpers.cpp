@@ -58,7 +58,7 @@ void ObjectMoleculeSetAssemblyCSets(
   for (int i = 0; i < I->NCSet; ++i)
     delete I->CSet[i];
 
-  VLAFreeP(I->CSet);
+  I->CSet.freeP();
 
   // get assembly coordinate sets into ObjectMolecule
   I->CSet = pymol::vla_take_ownership(assembly_csets);

@@ -5801,8 +5801,8 @@ pymol::Result<> SelectorUpdateCmd(PyMOLGlobals* G, //
   auto vla1 = pymol::vla_take_ownership(SelectorGetIndexVLA(G, sele1));
 
   if (vla0 && vla1) {
-    c0 = VLAGetSize(vla0);
-    c1 = VLAGetSize(vla1);
+    c0 = vla0.size();
+    c1 = vla1.size();
   }
 
   if (c0 < 1 || c1 < 1)
@@ -6100,7 +6100,7 @@ int SelectorCreateObjectMolecule(PyMOLGlobals * G, SelectorID_t sele, const char
       if(I->Table[a].index >= 0) {
         obj = I->Obj[I->Table[a].model];
         at = I->Table[a].atom;
-        VLACheck(atInfo, AtomInfoType, c);
+        atInfo.check(c);
         AtomInfoCopy(G, obj->AtomInfo + at, atInfo + c);
         c++;
       }
@@ -6188,7 +6188,7 @@ int SelectorCreateObjectMolecule(PyMOLGlobals * G, SelectorID_t sele, const char
       } else {
         ts = d;
       }
-      VLACheck(targ->CSet, CoordSet *, ts);
+      targ->CSet.check(ts);
       if(targ->NCSet <= ts)
         targ->NCSet = ts + 1;
       delete targ->CSet[ts];
@@ -10154,7 +10154,7 @@ DistSet *SelectorGetDistSet(PyMOLGlobals * G, DistSet * ds,
         scale3f(op.v1, 1.f / op.i1, centroid2);
 
         // store positions in measurement object
-        VLACheck(vv, float, (nv * 3) + 6);
+        vv.check((nv * 3) + 6);
         vv0 = vv + (nv * 3);
         nv += 2;
         copy3f(centroid1, vv0);
@@ -10306,7 +10306,7 @@ DistSet *SelectorGetDistSet(PyMOLGlobals * G, DistSet * ds,
                 dist_cnt++;
                 dist_sum += dist;
 		/* see if vv has room at another 6 floats */
-                VLACheck(vv, float, (nv * 3) + 6);
+                vv.check((nv * 3) + 6);
                 vv0 = vv + (nv * 3);
 		
                 if((mode == 2) && (don_vv) && (acc_vv)) {
@@ -10338,7 +10338,7 @@ DistSet *SelectorGetDistSet(PyMOLGlobals * G, DistSet * ds,
   if(dist_cnt)
     (*result) = dist_sum / dist_cnt;
   if(vv)
-    VLASize(vv, float, (nv + 1) * 3);
+    vv.resize((nv + 1) * 3);
   ds->NIndex = nv;
   ds->Coord = vv;
   return (ds);
@@ -10520,7 +10520,7 @@ DistSet *SelectorGetAngleSet(PyMOLGlobals * G, DistSet * ds,
                                       (*angle_sum) += angle;
                                       (*angle_cnt)++;
 
-                                      VLACheck(vv, float, (nv * 3) + 14);
+                                      vv.check((nv * 3) + 14);
                                       vv0 = vv + (nv * 3);
                                       *(vv0++) = *(v1++);
                                       *(vv0++) = *(v1++);
@@ -10562,7 +10562,7 @@ DistSet *SelectorGetAngleSet(PyMOLGlobals * G, DistSet * ds,
   }
 
   if(vv)
-    VLASize(vv, float, (nv + 1) * 3);
+    vv.resize((nv + 1) * 3);
   ds->NAngleIndex = nv;
   ds->AngleCoord = vv;
   return (ds);
@@ -10829,7 +10829,7 @@ DistSet *SelectorGetDihedralSet(PyMOLGlobals * G, DistSet * ds,
                                                   (*angle_sum) += angle;
                                                   (*angle_cnt)++;
 
-                                                  VLACheck(vv, float, (nv * 3) + 17);
+                                                  vv.check((nv * 3) + 17);
                                                   vv0 = vv + (nv * 3);
                                                   ObjectMoleculeGetAtomTxfVertex(obj1,
                                                                                  state1,
@@ -10883,7 +10883,7 @@ DistSet *SelectorGetDihedralSet(PyMOLGlobals * G, DistSet * ds,
   }
 
   if(vv)
-    VLASize(vv, float, (nv + 1) * 3);
+    vv.resize((nv + 1) * 3);
   ds->NDihedralIndex = nv;
   ds->DihedralCoord = vv;
   return (ds);

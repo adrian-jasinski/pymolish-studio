@@ -348,7 +348,7 @@ static void ObjectSurfaceStateUpdateColors(ObjectSurface * I, ObjectSurfaceState
     case cIsosurfaceMode::triangles_grad_normals:
     case cIsosurfaceMode::triangles_tri_normals:
       {
-        int n_vert = VLAGetSize(ms->V) / 6;
+        int n_vert = ms->V.size() / 6;
         base_n_vert /= 6;
 
         if(!ms->VC.empty() && (ms->VCsize() < n_vert)) {
@@ -394,7 +394,7 @@ static void ObjectSurfaceStateUpdateColors(ObjectSurface * I, ObjectSurfaceState
       break;
     default:
       {
-        int n_vert = VLAGetSize(ms->V) / 3;
+        int n_vert = ms->V.size() / 3;
         base_n_vert /= 3;
         if(!ms->VC.empty() && (ms->VCsize() < n_vert)) {
           ms->VC.clear();
@@ -531,7 +531,7 @@ void ObjectSurface::update()
 
             if(!SettingGet_b
                (I->G, I->Setting.get(), nullptr, cSetting_surface_negative_visible)) {
-              ms->base_n_V = VLAGetSize(ms->V);
+              ms->base_n_V = ms->V.size();
             } else {
               /* do we want the negative surface too? */
 
@@ -548,17 +548,17 @@ void ObjectSurface::update()
                                   ms->Side);
               if(N2 && V2) {
 
-                int base_n_N = VLAGetSize(ms->N);
-                int base_n_V = VLAGetSize(ms->V);
-                int addl_n_N = VLAGetSize(N2);
-                int addl_n_V = VLAGetSize(V2);
+                int base_n_N = ms->N.size();
+                int base_n_V = ms->V.size();
+                int addl_n_N = N2.size();
+                int addl_n_V = V2.size();
 
                 ms->base_n_V = base_n_V;
 
                 /* make room */
 
-                VLASize(ms->N, int, base_n_N + addl_n_N);
-                VLASize(ms->V, float, base_n_V + addl_n_V);
+                ms->N.resize(base_n_N + addl_n_N);
+                ms->V.resize(base_n_V + addl_n_V);
 
                 /* copy vertex data */
                 std::copy_n(V2.data(), addl_n_V, ms->V.data() + base_n_V);
@@ -1090,7 +1090,7 @@ ObjectSurface *ObjectSurfaceFromBox(PyMOLGlobals * G, ObjectSurface * obj,
     const double *matrix = ObjectStateGetInvMatrix(ms);
 
     if(matrix) {
-      int n = VLAGetSize(ms->AtomVertex) / 3;
+      int n = ms->AtomVertex.size() / 3;
       float *v = ms->AtomVertex.data();
       while(n--) {
         /* convert back into original map coordinates 

@@ -1063,7 +1063,7 @@ void SeekerUpdate(PyMOLGlobals * G)
         int st_len;
         /* copy label text */
 
-        VLACheck(lab->col, CSeqCol, nCol);
+        lab->col.check(nCol);
         l1 = lab->col + nCol;
         l1->start = lab->len;
         UtilConcatVLA(&lab->txt, &lab->len, "/");
@@ -1073,7 +1073,7 @@ void SeekerUpdate(PyMOLGlobals * G)
 
         if(label_mode == 2) {
           /* blank equivalent text for sequence row below the fixed label */
-          VLACheck(row->col, CSeqCol, nCol);
+          row->col.check(nCol);
           r1 = row->col + nCol;
           r1->start = row->len;
           UtilFillVLA(&row->txt, &row->len, ' ', st_len);
@@ -1086,7 +1086,7 @@ void SeekerUpdate(PyMOLGlobals * G)
 
         /* copy label text */
 
-        VLACheck(row->col, CSeqCol, nCol);
+        row->col.check(nCol);
         r1 = row->col + nCol;
         r1->start = row->len;
         UtilConcatVLA(&row->txt, &row->len, "/");
@@ -1097,7 +1097,7 @@ void SeekerUpdate(PyMOLGlobals * G)
         row->title_width = row->len;
         nCol++;
       } else if(label_mode == 3) {      /* otherwise just insert a blank zero-length column */
-        VLACheck(row->col, CSeqCol, nCol);
+        row->col.check(nCol);
         r1 = row->col + nCol;
         r1->start = row->len;
         UtilConcatVLA(&row->txt, &row->len, "");
@@ -1111,7 +1111,7 @@ void SeekerUpdate(PyMOLGlobals * G)
         int st_len;
         /* copy label text */
 
-        VLACheck(lab->col, CSeqCol, nCol);
+        lab->col.check(nCol);
         l1 = lab->col + nCol;
         l1->start = lab->len;
         if(obj->NAtom) {
@@ -1130,7 +1130,7 @@ void SeekerUpdate(PyMOLGlobals * G)
         last_segi = ai;
         last_chain = ai;
         /* blank equivalent text for sequence row below the fixed label */
-        VLACheck(row->col, CSeqCol, nCol);
+        row->col.check(nCol);
         r1 = row->col + nCol;
         r1->start = row->len;
         UtilFillVLA(&row->txt, &row->len, ' ', st_len);
@@ -1138,7 +1138,7 @@ void SeekerUpdate(PyMOLGlobals * G)
         r1->spacer = true;
         nCol++;
       } else {                  /* if no labels, just insert a space in row below */
-        VLACheck(row->col, CSeqCol, nCol);
+        row->col.check(nCol);
         r1 = row->col + nCol;
         r1->start = row->len;
         UtilConcatVLA(&row->txt, &row->len, " ");
@@ -1161,7 +1161,7 @@ void SeekerUpdate(PyMOLGlobals * G)
 
           /* copy label text */
 
-          VLACheck(lab->col, CSeqCol, nCol);
+          lab->col.check(nCol);
           l1 = lab->col + nCol;
           l1->start = lab->len;
           UtilConcatVLA(&lab->txt, &lab->len, "/");
@@ -1173,7 +1173,7 @@ void SeekerUpdate(PyMOLGlobals * G)
           st_len = l1->stop - l1->start;
 
           /* blank equivalent text for sequence row */
-          VLACheck(row->col, CSeqCol, nCol);
+          row->col.check(nCol);
           r1 = row->col + nCol;
           r1->start = row->len;
           UtilFillVLA(&row->txt, &row->len, ' ', st_len);
@@ -1197,7 +1197,7 @@ void SeekerUpdate(PyMOLGlobals * G)
 
           /* copy label text */
 
-          VLACheck(lab->col, CSeqCol, nCol);
+          lab->col.check(nCol);
           l1 = lab->col + nCol;
           l1->start = lab->len;
           UtilConcatVLA(&lab->txt, &lab->len, "/");
@@ -1207,7 +1207,7 @@ void SeekerUpdate(PyMOLGlobals * G)
           st_len = l1->stop - l1->start;
 
           /* blank equivalent text for sequence row */
-          VLACheck(row->col, CSeqCol, nCol);
+          row->col.check(nCol);
           r1 = row->col + nCol;
           r1->start = row->len;
           UtilFillVLA(&row->txt, &row->len, ' ', st_len);
@@ -1250,7 +1250,7 @@ void SeekerUpdate(PyMOLGlobals * G)
           {
             auto str_size = strlen(str);
             UtilConcatVLA(&row->txt, &row->len, str);
-            VLACheck(row->col, CSeqCol, nCol + str_size);
+            row->col.check(nCol + str_size);
             r1 = row->col + nCol;
             for(int i = 0; i < str_size; i++){
                 r1->color = missing_color;
@@ -1268,7 +1268,7 @@ void SeekerUpdate(PyMOLGlobals * G)
             char abbr[2] = "1";
             last = ai;
 
-            VLACheck(row->col, CSeqCol, nCol);
+            row->col.check(nCol);
             r1 = row->col + nCol;
             r1->start = row->len;
 
@@ -1336,7 +1336,7 @@ void SeekerUpdate(PyMOLGlobals * G)
           if(!AtomInfoSameResidueP(G, last, ai)) {
             last = ai;
 
-            VLACheck(row->col, CSeqCol, nCol);
+            row->col.check(nCol);
             r1 = row->col + nCol;
             r1->start = row->len;
             if(obj->DiscreteFlag)
@@ -1375,7 +1375,7 @@ void SeekerUpdate(PyMOLGlobals * G)
           }
           break;
         case 2:                /* atom names */
-          VLACheck(row->col, CSeqCol, nCol);
+          row->col.check(nCol);
           r1 = row->col + nCol;
           r1->start = row->len;
           first_atom_in_label = true;
@@ -1403,7 +1403,7 @@ void SeekerUpdate(PyMOLGlobals * G)
           if(!AtomInfoSameChainP(G, last, ai)) {
             last = ai;
 
-            VLACheck(row->col, CSeqCol, nCol);
+            row->col.check(nCol);
             r1 = row->col + nCol;
             r1->start = row->len;
             first_atom_in_label = true;
@@ -1434,7 +1434,7 @@ void SeekerUpdate(PyMOLGlobals * G)
               if(cs) {
                 default_color = SettingGet_i(G, cs->Setting.get(), obj->Setting.get(),
                                              cSetting_seq_view_color);
-                VLACheck(row->col, CSeqCol, nCol);
+                row->col.check(nCol);
                 r1 = row->col + nCol;
                 r1->start = row->len;
                 r1->color = default_color;
@@ -1466,7 +1466,7 @@ void SeekerUpdate(PyMOLGlobals * G)
                   default_color = SettingGet_i(G, cs->Setting.get(), obj->Setting.get(),
                                                cSetting_seq_view_color);
 
-                  VLACheck(row->col, CSeqCol, nCol);
+                  row->col.check(nCol);
                   r1 = row->col + nCol;
                   r1->state = b + 1;
                   r1->start = row->len;
@@ -1492,7 +1492,7 @@ void SeekerUpdate(PyMOLGlobals * G)
 
         if(first_atom_in_label) {
           if(nCol > 1) {        /* terminate current list, if any */
-            VLACheck(row->atom_lists, int, nListEntries);
+            row->atom_lists.check(nListEntries);
             row->atom_lists[nListEntries] = -1;
             nListEntries++;
           }
@@ -1501,7 +1501,7 @@ void SeekerUpdate(PyMOLGlobals * G)
           }
         }
 
-        VLACheck(row->atom_lists, int, nListEntries);
+        row->atom_lists.check(nListEntries);
         row->atom_lists[nListEntries] = a;
         nListEntries++;
         ai++;
@@ -1511,9 +1511,9 @@ void SeekerUpdate(PyMOLGlobals * G)
         /*        if(lab->len<row->len) {
            lab->len = row->len;
            } */
-        VLASize(lab->txt, char, lab->len + 1);
+        lab->txt.resize(lab->len + 1);
         lab->txt[lab->len] = 0;
-        VLACheck(lab->col, CSeqCol, nCol);      /* make sure we've got column records for labels too */
+        lab->col.check(nCol);      /* make sure we've got column records for labels too */
         lab->nCol = nCol;
 
         /*if(row->len<lab->len) {
@@ -1521,13 +1521,13 @@ void SeekerUpdate(PyMOLGlobals * G)
            } */
       }
 
-      VLASize(row->txt, char, row->len + 1);
+      row->txt.resize(row->len + 1);
       row->txt[row->len] = 0;
 
       row->nCol = nCol;
 
       /* terminate last atom list */
-      VLACheck(row->atom_lists, int, nListEntries);
+      row->atom_lists.check(nListEntries);
       row->atom_lists[nListEntries] = -1;
       nListEntries++;
       nRow++;
@@ -1673,7 +1673,7 @@ void SeekerUpdate(PyMOLGlobals * G)
                             if(row2->cCol < row2->nCol) {
                               CSeqCol *r2 = row2->col + row2->cCol;
                               if(stagger || r2->tag || r2->spacer) {
-                                VLACheck(row2->fill, CSeqCol, row2->nFill);
+                                row2->fill.check(row2->nFill);
                                 r2 = row2->fill + row2->nFill;
                                 r2->stop = text_len;
                                 r2->offset = current;
@@ -1681,7 +1681,7 @@ void SeekerUpdate(PyMOLGlobals * G)
                               }
                             } else {
                               CSeqCol *r2 = row2->col + row2->cCol;
-                              VLACheck(row2->fill, CSeqCol, row2->nFill);
+                              row2->fill.check(row2->nFill);
                               r2 = row2->fill + row2->nFill;
                               r2->stop = text_len;
                               r2->offset = current;
@@ -1770,7 +1770,7 @@ void SeekerUpdate(PyMOLGlobals * G)
                     CSeqCol *r1 = row2->col + row2->cCol;
                     if(r1->tag != min_tag) {
                       CSeqCol *r2;
-                      VLACheck(row2->fill, CSeqCol, row2->nFill);
+                      row2->fill.check(row2->nFill);
                       r2 = row2->fill + row2->nFill;
                       r2->stop = max_width;
                       r2->offset = current;
@@ -1778,7 +1778,7 @@ void SeekerUpdate(PyMOLGlobals * G)
                     }
                   } else {
                     CSeqCol *r2;
-                    VLACheck(row2->fill, CSeqCol, row2->nFill);
+                    row2->fill.check(row2->nFill);
                     r2 = row2->fill + row2->nFill;
                     r2->stop = max_width;
                     r2->offset = current;
@@ -1937,7 +1937,7 @@ void SeekerUpdate(PyMOLGlobals * G)
           if(row->ext_len < stop)
             row->ext_len = stop;
         }
-        VLACheck(row->char2col, int, row->ext_len);
+        row->char2col.check(row->ext_len);
         UtilZeroMem(row->char2col.data(), row->ext_len);
         for(b = 0; b < nCol; b++) {
           CSeqCol *r1 = row->col + b;

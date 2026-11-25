@@ -275,7 +275,7 @@ int PlugIOManagerLoadTraj(PyMOLGlobals * G, ObjectMolecule * obj,
 
 		  /* make sure we have room for 'frame' CoordSet*'s in obj->CSet */
 		  /* TODO: TEST this function */
-                  VLACheck(obj->CSet, CoordSet*, frame); /* was CoordSet* */
+                  obj->CSet.check(frame); /* was CoordSet* */
 		  /* bump the object's state count */
                   if(obj->NCSet <= frame) obj->NCSet = frame + 1;
 		  /* if there's data in this state's coordset, emtpy it */
@@ -620,7 +620,7 @@ ObjectMolecule *PlugIOManagerLoadMol(PyMOLGlobals * G, ObjectMolecule *origObj,
   // Create ObjectMolecule
   ok_assert(1, I = new ObjectMolecule(G, false));
   I->Color = AtomInfoUpdateAutoColor(G);
-  VLASize(I->AtomInfo, AtomInfoType, natoms);
+  I->AtomInfo.resize(natoms);
   I->NAtom = natoms;
 
   // copy atom info
@@ -684,7 +684,7 @@ ObjectMolecule *PlugIOManagerLoadMol(PyMOLGlobals * G, ObjectMolecule *origObj,
     cs->Symmetry.reset(SymmetryNewFromTimestep(G, &timestep));
 
     // append to object
-    VLACheck(I->CSet, CoordSet*, I->NCSet);
+    I->CSet.check(I->NCSet);
     I->CSet[I->NCSet++] = cs;
   }
 

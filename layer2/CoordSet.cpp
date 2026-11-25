@@ -151,7 +151,7 @@ static char sHETATM[] = "HETATM";
 int CoordSetValidateRefPos(CoordSet * I)
 {
   if(I->RefPos) {
-    VLACheck(I->RefPos, RefPosType, I->NIndex);
+    I->RefPos.check(I->NIndex);
     return true;
   } else {
     int ok = true && (I->RefPos = pymol::vla<RefPosType>(I->NIndex));

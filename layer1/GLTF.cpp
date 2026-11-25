@@ -939,7 +939,7 @@ void RayRenderGLB(CRay* I, char** vla_ptr)
   /* Assemble the GLB directly in the output VLA */
   char* vla = *vla_ptr;
 
-  VLASize(vla, char, total_size);
+  vla.resize(total_size);
 
   char* out = vla;
 

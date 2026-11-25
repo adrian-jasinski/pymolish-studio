@@ -6281,7 +6281,7 @@ static PyObject *CmdCountDiscrete(PyObject * self, PyObject * args)
   ok_assert(2, SelectorGetTmp(G, str1, s1) >= 0);
 
   if((list = ExecutiveGetObjectMoleculeVLA(G, s1))) {
-    unsigned int i, size = VLAGetSize(list);
+    unsigned int i, size = list.size();
     for(i = 0; i < size; i++)
       if(list[i]->DiscreteFlag)
         discrete++;

@@ -118,7 +118,7 @@ static const float* ObjectGadgetRampGetLevel(ObjectGadgetRamp* I)
   if (!I->Level || !I->Color)
     return I->Level;
 
-  int n_color = VLAGetSize(I->Color) / 3;
+  int n_color = I->Color.size() / 3;
   if (n_color == I->NLevel || n_color < 2)
     return I->Level;
 
@@ -378,7 +378,7 @@ PyObject* ObjectGadgetRampAsPyList(ObjectGadgetRamp* I)
   int pse_export_version =
       SettingGetGlobal_f(I->G, cSetting_pse_export_version) * 1000;
   if (I->Color && pse_export_version < 1800) {
-    int n_color = VLAGetSize(I->Color) / 3;
+    int n_color = I->Color.size() / 3;
     special = VLAlloc(int, n_color);
     for (int a = 0; a < n_color; ++a) {
       any = (special[a] = GetSpecial(I->Color + a * 3)) || any;
@@ -448,13 +448,13 @@ int ObjectGadgetRampNewFromPyList(
       if (extreme) {
         I->NLevel += 2;
 
-        VLASize(I->Level, float, I->NLevel);
+        I->Level.resize(I->NLevel);
         for (int i = I->NLevel - 2; i >= 1; --i)
           I->Level[i] = I->Level[i - 1];
         I->Level[I->NLevel - 1] = I->Level[I->NLevel - 2];
 
         if (I->Color) {
-          VLASize(I->Color, float, I->NLevel * 3);
+          I->Color.resize(I->NLevel * 3);
           for (int i = (I->NLevel - 1) * 3 - 1; i >= 3; --i)
             I->Color[i] = I->Color[i - 3];
           copy3f(extreme, I->Color.data());
@@ -598,7 +598,7 @@ static void ObjectGadgetRampUpdateCGO(ObjectGadgetRamp* I, GadgetSet* gs)
   char buffer[255];
   int blocked = false;
   int font_id = 0;
-  int n_color = I->Color ? VLAGetSize(I->Color) / 3 : 0;
+  int n_color = I->Color ? I->Color.size() / 3 : 0;
 
   blocked = PAutoBlock(I->G);
   font_id = VFontLoad(I->G, 1.0, 1, 1, true);
@@ -894,7 +894,7 @@ void ObjectGadgetRamp::update()
         ExecutiveInvalidateRep(I->G, cKeywordAll, cRepAll, cRepInvColor);
       }
     }
-    VLAFreeP(I->LevelTmp);
+    I->LevelTmp.freeP();
     if (I->NGSet)
       if (I->GSet[0]) {
         ObjectGadgetRampUpdateCGO(I, I->GSet[0]);
@@ -908,19 +908,19 @@ void ObjectGadgetRamp::update()
 
 static int ObjectGadgetRampHandleInputColors(ObjectGadgetRamp* I)
 {
-  VLAFreeP(I->LevelTmp);
+  I->LevelTmp.freeP();
 
   if (I->NLevel < 1) {
-    VLASize(I->Level, float, 1);
+    I->Level.resize(1);
     I->NLevel = 1;
     I->Level[0] = 0.0F;
   }
   if (I->Color) {
-    int n_color = VLAGetSize(I->Color) / 3;
+    int n_color = I->Color.size() / 3;
 
     /* handle cases where number of colors doesn't make expectation */
     if (!n_color) {
-      VLASize(I->Color, float, 3);
+      I->Color.resize(3);
       I->Color[0] = I->Color[1] = I->Color[2] = 1.0F;
       n_color++;
     }
@@ -936,7 +936,7 @@ static int ObjectGadgetRampHandleInputColors(ObjectGadgetRamp* I)
 
     if (n_color < I->NLevel) {
       // repeat last color until n_color == NLevel
-      VLASize(I->Color, float, 3 * I->NLevel);
+      I->Color.resize(3 * I->NLevel);
       while (n_color < I->NLevel) {
         copy3f(I->Color + 3 * (n_color - 1), I->Color + 3 * n_color);
         n_color++;
@@ -985,13 +985,13 @@ ObjectGadgetRamp* ObjectGadgetRampMapNewAsDefined(PyMOLGlobals* G,
       }
       I->Level = pymol::vla<float>(3);
       copy3f(tmp_level, I->Level.data());
-      VLAFreeP(level_vla);
+      level_vla.freeP();
     } else if (level_vla) {
       I->Level = std::move(level_vla);
     }
   }
 
-  I->NLevel = VLAGetSize(I->Level);
+  I->NLevel = I->Level.size();
   ObjectGadgetRampHandleInputColors(I);
   ObjectGadgetRampBuild(I);
 
@@ -1029,7 +1029,7 @@ ObjectGadgetRamp* ObjectGadgetRampMolNewAsDefined(PyMOLGlobals* G,
 
   if (level_vla) {
     I->Level = std::move(level_vla);
-    I->NLevel = VLAGetSize(I->Level);
+    I->NLevel = I->Level.size();
   }
 
   ObjectGadgetRampHandleInputColors(I);

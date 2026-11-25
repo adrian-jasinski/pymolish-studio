@@ -145,7 +145,7 @@ void ObjectMoleculeRemoveDuplicateBonds(PyMOLGlobals * G, ObjectMolecule * I) {
     }
   }
   I->NBond = j;
-  VLASize(I->Bond, BondType, I->NBond);
+  I->Bond.resize(I->NBond);
 }
 
 /**
@@ -158,8 +158,8 @@ bool ObjectMoleculeSetNotDiscrete(PyMOLGlobals * G, ObjectMolecule * I) {
   if (!I->DiscreteFlag)
     return true;
 
-  VLAFreeP(I->DiscreteAtmToIdx);
-  VLAFreeP(I->DiscreteCSet);
+  I->DiscreteAtmToIdx.freeP();
+  I->DiscreteCSet.freeP();
   I->DiscreteFlag = false;
 
   for (int atm = 0; atm < I->NAtom; ++atm) {
@@ -264,7 +264,7 @@ int ObjectMoleculeSetDiscrete(PyMOLGlobals * G, ObjectMolecule * I, int discrete
         // seen before, have to copy
         an = natom++;
 
-        VLACheck(I->AtomInfo, AtomInfoType, an);
+        I->AtomInfo.check(an);
         ok_assert(1, I->AtomInfo);
 
         AtomInfoCopy(G,
@@ -302,7 +302,7 @@ int ObjectMoleculeSetDiscrete(PyMOLGlobals * G, ObjectMolecule * I, int discrete
 
       if (bondseen[idx]) {
         // seen before, have to copy
-        VLACheck(I->Bond, BondType, nbond);
+        I->Bond.check(nbond);
         ok_assert(1, I->Bond);
 
         bond = I->Bond + (nbond++);
@@ -322,9 +322,9 @@ int ObjectMoleculeSetDiscrete(PyMOLGlobals * G, ObjectMolecule * I, int discrete
 
   // trim VLAs memory to actual size
   if (I->NBond)
-    VLASize(I->Bond, BondType, I->NBond);
+    I->Bond.resize(I->NBond);
   if (I->NAtom)
-    VLASize(I->AtomInfo, AtomInfoType, I->NAtom);
+    I->AtomInfo.resize(I->NAtom);
 
   I->setNDiscrete(I->NAtom);
 
@@ -1225,7 +1225,7 @@ ObjectMolecule *ObjectMoleculeLoadTRJFile(PyMOLGlobals * G, ObjectMolecule * I,
                     zoom_flag = true;
                   }
 
-                  VLACheck(I->CSet, CoordSet *, frame);
+                  I->CSet.check(frame);
                   if(I->NCSet <= frame)
                     I->NCSet = frame + 1;
                   delete I->CSet[frame];
@@ -1363,7 +1363,7 @@ ObjectMolecule *ObjectMoleculeLoadRSTFile(PyMOLGlobals * G, ObjectMolecule * I,
               zoom_flag = true;
             }
 
-            VLACheck(I->CSet, CoordSet *, frame);
+            I->CSet.check(frame);
 	    CHECKOK(ok, I->CSet);
 	    if (ok){
 	      if(I->NCSet <= frame)
@@ -2364,7 +2364,7 @@ static ObjectMolecule *ObjectMoleculeReadTOPStr(PyMOLGlobals * G, ObjectMolecule
       I->NAtom = nAtom;
     /* 
        if(frame<0) frame=I->NCSet;
-       VLACheck(I->CSet,CoordSet*,frame);
+       I->CSet.check(frame);
        if(I->NCSet<=frame) I->NCSet=frame+1;
        if(I->CSet[frame]) I->CSet[frame]->fFree(I->CSet[frame]);
        I->CSet[frame] = cset;
@@ -4486,7 +4486,7 @@ int ObjectMoleculeRemoveBonds(ObjectMolecule * I, int sele0, int sele1)
     }
     if(offset) {
       I->NBond += offset;
-      VLASize(I->Bond, BondType, I->NBond);
+      I->Bond.resize(I->NBond);
       I->invalidate(cRepLine, cRepInvBonds, -1);
       I->invalidate(cRepCyl, cRepInvBonds, -1);
       I->invalidate(cRepNonbonded, cRepInvBonds, -1);
@@ -4564,7 +4564,7 @@ void ObjectMoleculePurge(ObjectMolecule * I)
   }
   if(offset) {
     I->NBond += offset;
-    VLASize(I->Bond, BondType, I->NBond);
+    I->Bond.resize(I->NBond);
   }
 
   I->invalidate(cRepAll, cRepInvAtoms, -1);
@@ -7343,7 +7343,7 @@ ObjectMolecule *ObjectMoleculeLoadChemPyModel(PyMOLGlobals * G,
     }
     if(isNew)
       I->NAtom = nAtom;
-    VLACheck(I->CSet, CoordSet *, frame);
+    I->CSet.check(frame);
     if(I->NCSet <= frame)
       I->NCSet = frame + 1;
     delete I->CSet[frame];
@@ -7419,7 +7419,7 @@ ObjectMolecule *ObjectMoleculeLoadCoords(PyMOLGlobals * G, ObjectMolecule * I,
 
   // include coordinate set
   if (is_new) {
-    VLACheck(I->CSet, CoordSet *, frame);
+    I->CSet.check(frame);
     if(I->NCSet <= frame)
       I->NCSet = frame + 1;
     I->CSet[frame] = cset;
@@ -7520,7 +7520,7 @@ ObjectMolecule *ObjectMoleculeLoadCoords(PyMOLGlobals * G, ObjectMolecule * I,
 
   // include coordinate set
   if (is_new) {
-    VLACheck(I->CSet, CoordSet *, frame);
+    I->CSet.check(frame);
     if(I->NCSet <= frame)
       I->NCSet = frame + 1;
     I->CSet[frame] = cset;
@@ -8738,7 +8738,7 @@ ObjectMolecule *ObjectMoleculeReadStr(PyMOLGlobals * G, ObjectMolecule * I,
 
     if(!cset) {
       if(!isNew)
-        VLAFreeP(atInfo);
+        atInfo.freeP();
       if(!successCnt) {
 	if (isNew)
           std::swap(I->AtomInfo, atInfo);
@@ -8764,7 +8764,7 @@ ObjectMolecule *ObjectMoleculeReadStr(PyMOLGlobals * G, ObjectMolecule * I,
         frame = I->NCSet;
       if(I->NCSet <= frame)
         I->NCSet = frame + 1;
-      VLACheck(I->CSet, CoordSet *, frame);
+      I->CSet.check(frame);
 
       nAtom = cset->NIndex;
 
@@ -8794,7 +8794,7 @@ ObjectMolecule *ObjectMoleculeReadStr(PyMOLGlobals * G, ObjectMolecule * I,
         I->NAtom = nAtom;
       if(frame < 0)
         frame = I->NCSet;
-      VLACheck(I->CSet, CoordSet *, frame);
+      I->CSet.check(frame);
       if(I->NCSet <= frame)
         I->NCSet = frame + 1;
       delete I->CSet[frame];
@@ -8975,7 +8975,7 @@ int ObjectMoleculeMerge(ObjectMolecule * I, pymol::vla<AtomInfoType>&& ai,
       nAt = I->NAtom;
     }
     if(expansionFlag) {
-      VLACheck(I->AtomInfo, AtomInfoType, nAt);
+      I->AtomInfo.check(nAt);
       CHECKOK(ok, I->AtomInfo);
     }
   }
@@ -9002,7 +9002,7 @@ int ObjectMoleculeMerge(ObjectMolecule * I, pymol::vla<AtomInfoType>&& ai,
     cs->updateNonDiscreteAtmToIdx(nAt);
   }
 
-  VLAFreeP(ai);                 /* note that we're trusting AtomInfoCombine to have 
+  ai.freeP();                 /* note that we're trusting AtomInfoCombine to have 
                                    already purged all atom-dependent storage (such as strings) */
 
   AtomInfoFreeSortedIndexes(G, &index, &outdex);
@@ -9063,7 +9063,7 @@ int ObjectMoleculeMerge(ObjectMolecule * I, pymol::vla<AtomInfoType>&& ai,
           I->Bond = pymol::vla<BondType>(1);
 	CHECKOK(ok, I->Bond);
 	if (ok)
-	  VLACheck(I->Bond, BondType, nBd);
+	  I->Bond.check(nBd);
 	CHECKOK(ok, I->Bond);
         for(a = 0; a < nBond; a++) {    /* copy the new bonds */
           a2 = index[a];
@@ -11213,7 +11213,7 @@ void ObjectMoleculeCopyNoAlloc(const ObjectMolecule* obj, ObjectMolecule* I)
     I->CSTmpl = CoordSetCopy(obj->CSTmpl);
 
   if (obj->DiscreteFlag){
-    int sz = VLAGetSize(obj->DiscreteAtmToIdx);
+    int sz = obj->DiscreteAtmToIdx.size();
     I->DiscreteAtmToIdx = VLACopy2(obj->DiscreteAtmToIdx);
     I->DiscreteCSet = pymol::vla<CoordSet*>(sz);
     I->updateAtmToIdx();
@@ -11266,7 +11266,7 @@ int ObjectMoleculeSetStateOrder(ObjectMolecule * I, int * order, int len) {
     csets[a] = I->CSet[i];
   }
 
-  VLAFreeP(I->CSet);
+  I->CSet.freeP();
   I->CSet = pymol::vla_take_ownership(csets);
 
   return true;
@@ -11326,9 +11326,9 @@ ObjectMolecule::~ObjectMolecule()
       I->CSet[a] = nullptr;
     }
   }
-  VLAFreeP(I->DiscreteAtmToIdx);
-  VLAFreeP(I->DiscreteCSet);
-  VLAFreeP(I->CSet);
+  I->DiscreteAtmToIdx.freeP();
+  I->DiscreteCSet.freeP();
+  I->CSet.freeP();
   I->m_ciffile.reset(); // free data
 
   {
@@ -11339,7 +11339,7 @@ ObjectMolecule::~ObjectMolecule()
       AtomInfoPurge(I->G, ai);
       ai++;
     }
-    VLAFreeP(I->AtomInfo);
+    I->AtomInfo.freeP();
   }
   {
     int nBond = I->NBond;
@@ -11349,7 +11349,7 @@ ObjectMolecule::~ObjectMolecule()
       AtomInfoPurgeBond(I->G, bi);
       bi++;
     }
-    VLAFreeP(I->Bond);
+    I->Bond.freeP();
   }
   for(a = 0; a <= cUndoMask; a++)
     FreeP(I->UndoCoord[a]);
@@ -11449,7 +11449,7 @@ ObjectMolecule *ObjectMoleculeReadPDBStr(PyMOLGlobals * G, ObjectMolecule * I,
         if(SettingGetGlobal_b(G, cSetting_pdb_honor_model_number))
           state = *model_number - 1;
       }
-      VLACheck(I->CSet, CoordSet *, state);
+      I->CSet.check(state);
       CHECKOK(ok, I->CSet);
       if(ok){
 	if(I->NCSet <= state)
@@ -11805,13 +11805,13 @@ ok_except1:
  * them with -1/NULL if necessary.
  */
 bool ObjectMolecule::setNDiscrete(int natom) {
-  int n = VLAGetSize(DiscreteAtmToIdx);
+  int n = DiscreteAtmToIdx.size();
 
   if (n == natom)
     return true;
 
-  VLASize(DiscreteAtmToIdx, int, natom);
-  VLASize(DiscreteCSet, CoordSet*, natom);
+  DiscreteAtmToIdx.resize(natom);
+  DiscreteCSet.resize(natom);
 
   if (!DiscreteAtmToIdx || !DiscreteCSet)
     return false;

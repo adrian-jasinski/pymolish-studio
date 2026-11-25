@@ -4,6 +4,18 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.76.2
+
+	* Core
+	  - 203 calls of the VLACheck, VLASize, VLAFreeP and VLAGetSize
+	    macros on arrays that already are pymol::vla objects are
+	    member calls now (check, resize, freeP, size), in 21 files.
+	    The macros forwarded to exactly these members; the compiler
+	    refused every call on a raw pointer, and those stay. No
+	    behavior change. Step 8d, the mechanical part.
+
+2026-11-25 pymolish-studio
+
 	* 4.76.1
 
 	* Core

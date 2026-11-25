@@ -426,7 +426,7 @@ static void ObjectMeshStateUpdateColors(ObjectMesh* I, ObjectMeshState* ms)
     int* rc;
     int a;
     int state = ms - I->State.data();
-    int n_vert = VLAGetSize(ms->V) / 3;
+    int n_vert = ms->V.size() / 3;
     int base_n_vert = ms->base_n_V / 3;
 
     if (!ms->VC.empty() && (ms->VCsize < n_vert)) {
@@ -575,7 +575,7 @@ void ObjectMesh::update()
 
             if (!SettingGet_b(I->G, I->Setting.get(), nullptr,
                     cSetting_mesh_negative_visible)) {
-              ms->base_n_V = VLAGetSize(ms->V);
+              ms->base_n_V = ms->V.size();
             } else if (ms->MeshMode != cIsomeshMode::gradient) {
               /* do we want the negative surface too? */
 
@@ -587,17 +587,17 @@ void ObjectMesh::update()
 
               if (N2 && V2) {
 
-                int base_n_N = VLAGetSize(ms->N);
-                int base_n_V = VLAGetSize(ms->V);
-                int addl_n_N = VLAGetSize(N2);
-                int addl_n_V = VLAGetSize(V2);
+                int base_n_N = ms->N.size();
+                int base_n_V = ms->V.size();
+                int addl_n_N = N2.size();
+                int addl_n_V = V2.size();
 
                 ms->base_n_V = base_n_V;
 
                 /* make room */
 
-                VLASize(ms->N, int, base_n_N + addl_n_N);
-                VLASize(ms->V, float, base_n_V + addl_n_V);
+                ms->N.resize(base_n_N + addl_n_N);
+                ms->V.resize(base_n_V + addl_n_V);
 
                 /* copy vertex data */
 
@@ -610,27 +610,27 @@ void ObjectMesh::update()
                     N2, sizeof(int) * addl_n_N);
                 ms->N[base_n_N + addl_n_N - 1] = 0;
 
-                VLAFreeP(N2);
-                VLAFreeP(V2);
+                N2.freeP();
+                V2.freeP();
               }
             }
 
-            if (!ms->Matrix.empty() && VLAGetSize(ms->N) && VLAGetSize(ms->V)) {
+            if (!ms->Matrix.empty() && ms->N.size() && ms->V.size()) {
               int count;
               /* take map coordinates back to view coordinates if necessary */
               v = ms->V.data();
-              count = VLAGetSize(ms->V) / 3;
+              count = ms->V.size() / 3;
               while (count--) {
                 transform44d3f(ms->Matrix.data(), v, v);
                 v += 3;
               }
             }
           }
-          if (ms->CarveFlag && ms->AtomVertex && VLAGetSize(ms->N) &&
-              VLAGetSize(ms->V)) {
+          if (ms->CarveFlag && ms->AtomVertex && ms->N.size() &&
+              ms->V.size()) {
             /* cull my friend, cull */
             auto carvehelper = CarveHelper(G, ms->CarveBuffer, ms->AtomVertex,
-                VLAGetSize(ms->AtomVertex) / 3);
+                ms->AtomVertex.size() / 3);
             {
               pymol::vla<int> old_n = std::move(ms->N);
               pymol::vla<float> old_v = std::move(ms->V);
@@ -648,19 +648,19 @@ void ObjectMesh::update()
                 while (c--) {
                   flag = !carvehelper.is_excluded(v);
                   if (flag && (!last_flag)) {
-                    VLACheck(ms->V, float, 3 * (n_line + 1));
+                    ms->V.check(3 * (n_line + 1));
                     copy3f(v, ms->V + n_line * 3);
                     n_cur++;
                     n_line++;
                   }
                   if (flag && last_flag) { /* continue segment */
-                    VLACheck(ms->V, float, 3 * (n_line + 1));
+                    ms->V.check(3 * (n_line + 1));
                     copy3f(v, ms->V + n_line * 3);
                     n_cur++;
                     n_line++;
                   }
                   if ((!flag) && last_flag) { /* terminate segment */
-                    VLACheck(ms->N, int, n_seg);
+                    ms->N.check(n_seg);
                     ms->N[n_seg] = n_cur;
                     n_seg++;
                     n_cur = 0;
@@ -673,13 +673,13 @@ void ObjectMesh::update()
                   }
                 }
                 if (last_flag) { /* terminate segment */
-                  VLACheck(ms->N, int, n_seg);
+                  ms->N.check(n_seg);
                   ms->N[n_seg] = n_cur;
                   n_seg++;
                   n_cur = 0;
                 }
               }
-              VLACheck(ms->N, int, n_seg);
+              ms->N.check(n_seg);
               ms->N[n_seg] = 0;
             }
           }

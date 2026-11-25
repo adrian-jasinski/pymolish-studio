@@ -409,7 +409,7 @@ int ObjectMoleculeAddPseudoatom(ObjectMolecule * I, int sele_index, const char *
           ai_merged = true;
         }
         if(state >= I->NCSet) {
-          VLACheck(I->CSet, CoordSet *, state);
+          I->CSet.check(state);
           I->NCSet = state + 1;
         }
         if(!I->CSet[state]) {
@@ -433,7 +433,7 @@ int ObjectMoleculeAddPseudoatom(ObjectMolecule * I, int sele_index, const char *
     ObjectMoleculeUpdateNonbonded(I);
     I->invalidate(cRepAll, cRepInvAtoms, -1);
   } else {
-    VLAFreeP(atInfo);
+    atInfo.freeP();
   }
   return (ok);
 }
@@ -2999,7 +2999,7 @@ static int ObjectMoleculeCSetFromPyList(ObjectMolecule * I, PyObject * list)
   if(ok)
     ok = PyList_Check(list);
   if(ok) {
-    VLACheck(I->CSet, CoordSet *, I->NCSet);
+    I->CSet.check(I->NCSet);
     for(a = 0; a < I->NCSet; a++) {
       if(ok)
         ok = CoordSetFromPyList(I->G, PyList_GetItem(list, a), &I->CSet[a]);
@@ -3359,7 +3359,7 @@ static int ObjectMoleculeAtomFromPyList(ObjectMolecule * I, PyObject * list)
     CPythonVal *strobj = CPythonVal_PyList_GetItem(G, list, 1);
     auto strval_2 = PyBytes_AsSomeString(strobj);
 
-    VLACheck(I->AtomInfo, AtomInfoType, I->NAtom + 1);
+    I->AtomInfo.check(I->NAtom + 1);
     converter.copy(I->AtomInfo.data(), strval_2.data(), atomInfo_version);
 
     // go through AtomInfo array, swap new strings, convert colors, convert settings
@@ -3392,7 +3392,7 @@ static int ObjectMoleculeAtomFromPyList(ObjectMolecule * I, PyObject * list)
   } else {
     // The old slow way of loading in AtomInfo, using python lists
     if (ok)
-      VLACheck(I->AtomInfo, AtomInfoType, I->NAtom + 1);
+      I->AtomInfo.check(I->NAtom + 1);
     CHECKOK(ok, I->AtomInfo);
     ai = I->AtomInfo.data();
     for(a = 0; ok && a < I->NAtom; a++) {
@@ -3676,7 +3676,7 @@ bool ObjectMoleculeConnect(ObjectMolecule* I, int& nBond, pymol::vla<BondType>& 
     // provided with file.
     bondSearchMode = true;
     cs->NTmpBond = 0;
-    VLAFreeP(cs->TmpBond);
+    cs->TmpBond.freeP();
   } else if (connect_mode == 4) {
     // mmCIF specific, fall back to default to get any bonds for PDB, XYZ, etc.
     connect_mode = 0;
@@ -3880,7 +3880,7 @@ bool ObjectMoleculeConnect(ObjectMolecule* I, int& nBond, pymol::vla<BondType>& 
       }
     }
 
-    VLAFreeP(cs->TmpBond);
+    cs->TmpBond.freeP();
     cs->NTmpBond = 0;
 
     if(pdb_conect_all) {
@@ -3920,7 +3920,7 @@ bool ObjectMoleculeConnect(ObjectMolecule* I, int& nBond, pymol::vla<BondType>& 
       ii2++;
     }
     nBond += cs->NTmpLinkBond;
-    VLAFreeP(cs->TmpLinkBond);
+    cs->TmpLinkBond.freeP();
     cs->NTmpLinkBond = 0;
   }
 
