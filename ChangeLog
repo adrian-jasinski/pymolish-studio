@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.69.0
+
+	* The Delete key in the Objects list deletes the object or the
+	  selection of the current row (the row with the frame: the one
+	  clicked last, or reached with the arrow keys), without a question.
+	  For a group it asks first, names what is inside it, nested groups
+	  included, and deletes the group with all of that; Cancel is the
+	  default. Nothing happens on "all", and a held key deletes one row
+	  only. In the filter field and while a row is renamed the key edits
+	  the text. No button was added; "delete" in the menus is as before.
+
 	* 4.68.1
 
 	* File > Get by UniProt and File > Get Predicted Structure failed

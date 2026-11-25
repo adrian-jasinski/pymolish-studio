@@ -2,7 +2,7 @@
 Objects panel: the Qt replacement for the object list and the wizard buttons
 of the viewport's internal GUI. One row per object or selection (group members
 nested) with a visibility dot and the A/S/H/L/C menus from pymol.menu; a click
-on the row shows or hides the object. Under the list: the states panel (step,
+on the row shows or hides the object, the Delete key deletes it. Under the list: the states panel (step,
 play, speed) while there is more than one state or frame.
 Everything is Qt text, so it follows the application font, the theme and
 the toolbar's UI scale, and the dock is resized by dragging its edge.
@@ -507,6 +507,11 @@ class ObjectPanel(QtWidgets.QDockWidget):
         f2 = QtGui.QShortcut(Qt.Key.Key_F2, tree)
         f2.setContext(Qt.ShortcutContext.WidgetShortcut)
         f2.activated.connect(self.rename)
+        # this widget only: Delete in the filter or in a rename edits text
+        delete = QtGui.QShortcut(Qt.Key.Key_Delete, tree)
+        delete.setContext(Qt.ShortcutContext.WidgetShortcut)
+        delete.setAutoRepeat(False)  # a held key must not empty the list
+        delete.activated.connect(self.delete)
 
         self.filter = QtWidgets.QLineEdit()
         self.filter.setPlaceholderText("Filter by name")
@@ -616,6 +621,42 @@ class ObjectPanel(QtWidgets.QDockWidget):
             self.cmd.disable(name)
         else:
             self.cmd.enable(name)
+        self.refresh()
+
+    def delete(self):
+        """The Delete key: delete the object or selection of the current
+        row. A group asks first, and goes with everything inside it."""
+        item = self.tree.currentItem()
+        if item is None or item.data(0, UserRole)[1] == "all":
+            return
+        name, kind = item.data(0, UserRole)
+        if kind == "object:group":
+            inside, queue = [], [item]
+            for parent in queue:  # nested groups and their members too
+                children = [parent.child(i) for i in range(parent.childCount())]
+                inside += [child.data(0, UserRole) for child in children]
+                queue += children
+            groups = sum(k == "object:group" for _, k in inside)
+            counts = "%d objects" % (len(inside) - groups) + (
+                " and %d groups" % groups if groups else ""
+            )
+            names = ", ".join(n for n, _ in inside[:12]) + (
+                " ..." if len(inside) > 12 else ""
+            )
+            Button = QtWidgets.QMessageBox.StandardButton
+            answer = QtWidgets.QMessageBox.question(
+                self,
+                "Delete group",
+                'Delete the group "%s" and the %s inside it?\n\n%s'
+                % (name, counts, names)
+                if inside
+                else 'Delete the empty group "%s"?' % name,
+                Button.Yes | Button.Cancel,
+                Button.Cancel,
+            )
+            if answer != Button.Yes:
+                return
+        self.cmd.delete(name)  # of a group: with all its members
         self.refresh()
 
     def _clicked(self, item, column):

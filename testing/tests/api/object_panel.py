@@ -228,6 +228,73 @@ def test_panel():
     assert "g1" not in panel.items
 
 
+def test_delete_key(monkeypatch):
+    """37b: Delete on the current row. An object or selection goes at once,
+    a group asks and goes with everything inside it."""
+    from PySide6 import QtTest
+    from pymol.Qt import QtCore, QtGui, QtWidgets
+    from pmg_qt.object_panel import ObjectPanel
+
+    Button = QtWidgets.QMessageBox.StandardButton
+    asked = []
+    answer = [Button.Cancel]
+
+    def question(parent, title, text, buttons, default):
+        asked.append(text)
+        assert default == Button.Cancel
+        return answer[0]
+
+    monkeypatch.setattr(QtWidgets.QMessageBox, "question", question)
+    for name in ("one", "m1", "m2", "keep"):
+        cmd.fragment("gly", name)
+    cmd.select("picked", "one and name CA")
+    cmd.group("inner", "m2")
+    cmd.group("outer", "m1 inner")
+    cmd.group("hollow")
+    panel = ObjectPanel(cmd)
+    panel.refresh()
+
+    def press(name):
+        panel.tree.setCurrentItem(panel.items[name])
+        panel.delete()
+
+    press("one")  # no question for an object
+    assert "one" not in cmd.get_names() and "one" not in panel.items
+    assert panel.tree.currentItem() is None
+    panel.delete()  # no current row after it: a second press does nothing
+    press("picked")
+    assert "picked" not in cmd.get_names("all") and not asked
+    press("all")
+    assert "keep" in cmd.get_names()
+    assert "keep" in cmd.get_names("public_objects", enabled_only=1)  # not hidden
+
+    press("outer")  # Cancel: nothing changes
+    assert asked == [
+        'Delete the group "outer" and the 2 objects and 1 groups inside it?'
+        "\n\nm1, inner, m2"
+    ]
+    assert {"outer", "inner", "m1", "m2"} <= set(cmd.get_names())
+    answer[0] = Button.Yes
+    press("outer")
+    assert cmd.get_names() == ["keep", "hollow"]
+    press("hollow")
+    assert asked[-1] == 'Delete the empty group "hollow"?'
+    assert cmd.get_names() == ["keep"] and list(panel.items) == ["all", "keep"]
+
+    # the key is bound to the list alone: in the filter it edits the text
+    shortcuts = panel.findChildren(QtGui.QShortcut)
+    bound = [s for s in shortcuts if s.key().toString() == "Del"]
+    assert [s.parent() for s in bound] == [panel.tree]
+    assert bound[0].context() == QtCore.Qt.ShortcutContext.WidgetShortcut
+    assert not bound[0].autoRepeat()
+    panel.show()
+    panel.filter.setText("ke")
+    panel.filter.setFocus()
+    panel.filter.setCursorPosition(0)
+    QtTest.QTest.keyClick(panel.filter, QtCore.Qt.Key.Key_Delete)
+    assert panel.filter.text() == "e" and cmd.get_names() == ["keep"]
+
+
 def test_states():
     from pmg_qt.object_panel import StatesPanel
 
