@@ -17,6 +17,8 @@ Z* -------------------------------------------------------------------
 #ifndef _H_Extrude
 #define _H_Extrude
 
+#include <memory>
+
 #include "Basis.h"
 
 struct PyMOLGlobals;
@@ -27,19 +29,22 @@ struct CExtrude {
   PyMOLGlobals* G{};
   int N{}; /* number of points in the extrusion segment */
 
-  float* p{};        /* points */
-  float* n{};        /* normals (3x3f) at each point */
-  float* c{};        /* colors */
-  float* alpha{};    /* alpha values*/
-  unsigned int* i{}; /* atom indices */
+  // arrays, not vectors: sized for the worst case and left unfilled, and
+  // const functions write the scratch arrays tv and tn
+  std::unique_ptr<float[]> p;        /* points */
+  std::unique_ptr<float[]> n;        /* normals (3x3f) at each point */
+  std::unique_ptr<float[]> c;        /* colors */
+  std::unique_ptr<float[]> alpha;    /* alpha values*/
+  std::unique_ptr<unsigned int[]> i; /* atom indices */
 
   float r{};
-  float* sf{}; /* scale factors for variable-width extrusions (single point) */
+  /* scale factors for variable-width extrusions (single point) */
+  std::unique_ptr<float[]> sf;
 
-  float* sv{};
-  float* tv{};
-  float* sn{};
-  float* tn{};
+  std::unique_ptr<float[]> sv;
+  std::unique_ptr<float[]> tv;
+  std::unique_ptr<float[]> sn;
+  std::unique_ptr<float[]> tn;
   int Ns;
 };
 
@@ -76,13 +81,7 @@ int ExtrudeCGOSurfacePolygonTaper(const CExtrude * I, CGO * cgo,
                                    int sampling, const float *color_override);
 int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling,
                              const float *color_override);
-#if 0
-void ExtrudeCGOTraceFrame(CExtrude * I, CGO * cgo);
-void ExtrudeCGOTrace(CExtrude * I, CGO * cgo);
-void ExtrudeCGOTraceAxes(CExtrude * I, CGO * cgo);
-#endif
 int ExtrudeDumbbell1(CExtrude * I, float width, float length, int mode);
-int ExtrudeDumbbell2(CExtrude * I, int n, int sign, float length, float size);
 void ExtrudeDumbbellEdge(CExtrude * I, int samp, int sign, float length);
 
 #endif

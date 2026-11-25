@@ -589,7 +589,6 @@ Rep *RepWireBondNew(CoordSet * cs, int state)
   int ribbon_side_chain_helper = 0;
   int line_stick_helper = 0;
   int na_mode;
-  bool *marked = nullptr;
   int valence_found = false;
   int variable_width = false;
   float last_line_width = -1.f;
@@ -619,11 +618,7 @@ Rep *RepWireBondNew(CoordSet * cs, int state)
   if(!visFlag) {
     return (nullptr);              /* skip if no dots are visible */
   }
-  marked = pymol::calloc<bool>(obj->NAtom);
-  CHECKOK(ok, marked);
-  if (!ok){
-    return (nullptr);
-  }
+  auto marked = std::make_unique<bool[]>(obj->NAtom);
   
   valence_flag = SettingGet_b(G, cs->Setting.get(), obj->Setting.get(), cSetting_valence);
   valence = SettingGet_f(G, cs->Setting.get(), obj->Setting.get(), cSetting_valence_size);
@@ -687,7 +682,7 @@ Rep *RepWireBondNew(CoordSet * cs, int state)
       other = ObjectMoleculeGetPrioritizedOtherIndexList(obj, cs);
 
     if(ok && (cartoon_side_chain_helper || ribbon_side_chain_helper)) {
-      SideChainHelperMarkNonCartoonBonded(marked, obj, cs,
+      SideChainHelperMarkNonCartoonBonded(marked.get(), obj, cs,
           cartoon_side_chain_helper,
           ribbon_side_chain_helper);
     }
@@ -800,7 +795,7 @@ Rep *RepWireBondNew(CoordSet * cs, int state)
                 AtomSettingGetIfDefined(G, ati2, cSetting_cartoon_side_chain_helper, &sc_helper);
 
               if (sc_helper &&
-                  SideChainHelperFilterBond(G, marked, ati1, ati2, b1, b2, na_mode, &c1, &c2))
+                  SideChainHelperFilterBond(G, marked.get(), ati1, ati2, b1, b2, na_mode, &c1, &c2))
                 s1 = s2 = 0;
             }
 
@@ -812,7 +807,7 @@ Rep *RepWireBondNew(CoordSet * cs, int state)
                 AtomSettingGetIfDefined(G, ati2, cSetting_ribbon_side_chain_helper, &sc_helper);
 
               if (sc_helper &&
-                  SideChainHelperFilterBond(G, marked, ati1, ati2, b1, b2, na_mode_ribbon, &c1, &c2))
+                  SideChainHelperFilterBond(G, marked.get(), ati1, ati2, b1, b2, na_mode_ribbon, &c1, &c2))
                 s1 = s2 = 0;
             }
           }
@@ -854,7 +849,6 @@ Rep *RepWireBondNew(CoordSet * cs, int state)
   CGOEnd(I->primitiveCGO);
   CGOSpecialWithArg(I->primitiveCGO, LINE_LIGHTING, 1.f);
   CGOStop(I->primitiveCGO);
-  FreeP(marked);
   FreeP(other);
   if (!ok || !line_counter){
     delete I;

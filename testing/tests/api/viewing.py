@@ -466,6 +466,30 @@ def testCartoon():
     testing.assert_image_equal("viewing-ref/cartoon.png", delta=1)
 
 
+def testCartoonNucleicAcidRings():
+    # rings and ladder of the nucleic acid cartoon, and the sphere normals
+    # of sphere_mode 7: no other test builds them
+    import re
+
+    def count(word):
+        return len(re.findall("^" + word, cmd.get_povray()[1], re.M))
+
+    cmd.load(testing.datafile("1bna.cif"))
+    cmd.show_as("cartoon")
+    cmd.set("cartoon_ladder_mode", 0)
+    n_backbone = count("mesh2")
+    assert n_backbone > 0
+    assert count("sphere") == 0
+    cmd.set("cartoon_ladder_mode", 1)
+    assert count("sphere") == 2 * cmd.count_atoms("name C1'")
+    cmd.set("cartoon_ring_mode", 3)
+    assert count("mesh2") > n_backbone
+
+    cmd.show_as("spheres")
+    cmd.set("sphere_mode", 7)
+    assert count("sphere") == cmd.count_atoms()
+
+
 def testCapture():
     cmd.capture
     pytest.skip('TODO')

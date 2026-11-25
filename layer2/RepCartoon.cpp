@@ -88,7 +88,7 @@ struct RepCartoon : Rep {
     }
   }
 
-  char* LastVisib = nullptr;
+  std::vector<char> LastVisib;
 };
 
 #include"ObjectMolecule.h"
@@ -102,7 +102,6 @@ RepCartoon::~RepCartoon()
   CGOFree(I->preshader);
   CGOFree(I->ray);
   CGOFree(I->std);
-  FreeP(I->LastVisib);
 }
 
 /**
@@ -1599,8 +1598,8 @@ int GenerateRepCartoonDrawDebugNormals(CGO *cgo, CExtrude *ex, int n_p){
   float *v, *vn;
   float t0[3];
   ok = CGOColor(cgo, 0.0, 1.0, 0.0);
-  v = ex->p;
-  vn = ex->n + 3;
+  v = ex->p.get();
+  vn = ex->n.get() + 3;
   if (ok)
     ok &= CGODisable(cgo, GL_LIGHTING);
   if (ok)
@@ -1686,10 +1685,10 @@ int GenerateRepCartoonProcessCylindricalHelices(PyMOLGlobals * G, ObjectMolecule
     /* this is confusing because we're borrowing Extrude's arrays 
      * for convenient storage, but not actually calling Extrude */
   n_p = 0;
-  v = ex->p;
-  vc = ex->c;
-  valpha = ex->alpha;
-  vi = ex->i;
+  v = ex->p.get();
+  vc = ex->c.get();
+  valpha = ex->alpha.get();
+  vi = ex->i.get();
   
   last_color = -1;
   uniform_color = true;
@@ -1712,10 +1711,10 @@ int GenerateRepCartoonProcessCylindricalHelices(PyMOLGlobals * G, ObjectMolecule
       } else {
         cur_car = *(cc);      /* now: go ahead and switch cartoons */
         n_p = 0;
-        v = ex->p;
-        vc = ex->c;
-        valpha = ex->alpha;
-        vi = ex->i;
+        v = ex->p.get();
+        vc = ex->c.get();
+        valpha = ex->alpha.get();
+        vi = ex->i.get();
         last_color = -1;
         uniform_color = true;
       }
@@ -1726,10 +1725,10 @@ int GenerateRepCartoonProcessCylindricalHelices(PyMOLGlobals * G, ObjectMolecule
           extrudeFlag = true;
         } else {
           n_p = 0;
-          v = ex->p;
-          vc = ex->c;
-          valpha = ex->alpha;
-          vi = ex->i;
+          v = ex->p.get();
+          vc = ex->c.get();
+          valpha = ex->alpha.get();
+          vi = ex->i.get();
           last_color = -1;
           uniform_color = true;
         }
@@ -1824,11 +1823,11 @@ int GenerateRepCartoonProcessCylindricalHelices(PyMOLGlobals * G, ObjectMolecule
         if (c1 < 0) c1 = (obj->AtomInfo + atom_index1)->color;
 
         if(n_p < 5) {
-          copy3f(ex->p, t3);
+          copy3f(ex->p.get(), t3);
           copy3f(v - 3, t4);
         } else {
-          add3f(ex->p, ex->p + 9, t0);
-          add3f(ex->p + 3, ex->p + 6, t1);
+          add3f(ex->p.get(), ex->p.get() + 9, t0);
+          add3f(ex->p.get() + 3, ex->p.get() + 6, t1);
           scale3f(t0, 0.2130F, t0);
           scale3f(t1, 0.2870F, t1);
           add3f(t0, t1, t3);
@@ -1845,7 +1844,7 @@ int GenerateRepCartoonProcessCylindricalHelices(PyMOLGlobals * G, ObjectMolecule
           project3f(t1, t0, t4);
           add3f(t3, t4, t4);
           invert3f(t0);
-          subtract3f(ex->p, t4, t1);
+          subtract3f(ex->p.get(), t4, t1);
           project3f(t1, t0, t3);
           add3f(t3, t4, t3);
           
@@ -1875,7 +1874,7 @@ int GenerateRepCartoonProcessCylindricalHelices(PyMOLGlobals * G, ObjectMolecule
         invert3f(t0);
         add3f(t0, t3, t3);
         if(uniform_color && !hasAtomLevelTrans) {
-          cgo->add<cgo::draw::cylinder>(t3, t4, helix_radius, ex->c, ex->c);
+          cgo->add<cgo::draw::cylinder>(t3, t4, helix_radius, ex->c.get(), ex->c.get());
         } else {
           subtract3f(t4, t3, t0);
           n_pm1 = n_p - 1;
@@ -1887,12 +1886,12 @@ int GenerateRepCartoonProcessCylindricalHelices(PyMOLGlobals * G, ObjectMolecule
             add3f(t3, t1, t1);
             add3f(t3, t2, t2);
             if(hasAtomLevelTrans){
-              cgo->add<cgo::draw::custom_cylinder_alpha>(t1, t2, helix_radius, ex->c + (b * 3),
-                                     ex->c + (b + 1) * 3, ex->alpha[b], ex->alpha[b + 1], (float) (b ? cCylCap::None : cCylCap::Flat),
+              cgo->add<cgo::draw::custom_cylinder_alpha>(t1, t2, helix_radius, ex->c.get() + (b * 3),
+                                     ex->c.get() + (b + 1) * 3, ex->alpha[b], ex->alpha[b + 1], (float) (b ? cCylCap::None : cCylCap::Flat),
                                      (float) (b == n_pm2 ? cCylCap::Flat : cCylCap::None));
            } else {
-              cgo->add<cgo::draw::custom_cylinder>(t1, t2, helix_radius, ex->c + (b * 3),
-                                     ex->c + (b + 1) * 3, (float) (b ? cCylCap::None : cCylCap::Flat),
+              cgo->add<cgo::draw::custom_cylinder>(t1, t2, helix_radius, ex->c.get() + (b * 3),
+                                     ex->c.get() + (b + 1) * 3, (float) (b ? cCylCap::None : cCylCap::Flat),
                                      (float) (b == n_pm2 ? cCylCap::Flat : cCylCap::None));
 
            }
@@ -1902,10 +1901,10 @@ int GenerateRepCartoonProcessCylindricalHelices(PyMOLGlobals * G, ObjectMolecule
       a--;                    /* undo above... */
       extrudeFlag = false;
       n_p = 0;
-      v = ex->p;
-      vc = ex->c;
-      valpha = ex->alpha;
-      vi = ex->i;
+      v = ex->p.get();
+      vc = ex->c.get();
+      valpha = ex->alpha.get();
+      vi = ex->i.get();
       uniform_color = true;
       last_color = -1;
     }
@@ -1920,8 +1919,8 @@ int GenerateRepCartoonDrawRings(PyMOLGlobals * G, nuc_acid_data *ndata, ObjectMo
   int ring_i;
   int mem[8];
   int nbr[7];
-  int *marked = pymol::calloc<int>(obj->NAtom);
-  float *moved = pymol::calloc<float>(obj->NAtom * 3);
+  std::vector<int> marked(obj->NAtom);
+  std::vector<float> moved(obj->NAtom * 3);
   int ring_color;
   int ok = true;
   int escape_count;
@@ -1990,7 +1989,8 @@ int GenerateRepCartoonDrawRings(PyMOLGlobals * G, nuc_acid_data *ndata, ObjectMo
                         do_ring(G, ndata, 5, mem, obj, cs, ring_width, cgo, ring_color,
                                 ladder_radius, ladder_color, ladder_mode,
                                 cartoon_side_chain_helper,
-                                ring_alpha, alpha, marked, moved, ring_radius);
+                                ring_alpha, alpha, marked.data(), moved.data(),
+                                ring_radius);
                       }
                       nbr[5] = neighbor[mem[5]] + 1;
                       while(((mem[6] = neighbor[nbr[5]]) >= 0) &&
@@ -2009,7 +2009,7 @@ int GenerateRepCartoonDrawRings(PyMOLGlobals * G, nuc_acid_data *ndata, ObjectMo
                             do_ring(G, ndata, 6, mem, obj, cs, ring_width, cgo, ring_color,
                                     ladder_radius, ladder_color, ladder_mode,
                                     cartoon_side_chain_helper,
-                                    ring_alpha, alpha, marked, moved,
+                                    ring_alpha, alpha, marked.data(), moved.data(),
                                     ring_radius);
                           }
                           nbr[6] = neighbor[mem[6]] + 1;
@@ -2023,7 +2023,8 @@ int GenerateRepCartoonDrawRings(PyMOLGlobals * G, nuc_acid_data *ndata, ObjectMo
                                         ring_color, ladder_radius,
                                         ladder_color, ladder_mode,
                                         cartoon_side_chain_helper,
-                                        ring_alpha, alpha, marked, moved, ring_radius);
+                                        ring_alpha, alpha, marked.data(),
+                                        moved.data(), ring_radius);
                               }
                             }
                             nbr[6] += 2;
@@ -2049,8 +2050,6 @@ int GenerateRepCartoonDrawRings(PyMOLGlobals * G, nuc_acid_data *ndata, ObjectMo
     escape_count = ESCAPE_MAX;        /* don't get bogged down with structures 
                                          that have unreasonable connectivity */
   }
-  FreeP(marked);
-  FreeP(moved);
   return ok;
 }
 
@@ -2507,7 +2506,6 @@ CGO *GenerateRepCartoonCGO(CoordSet *cs, ObjectMolecule *obj, nuc_acid_data *nda
   int c1, c2;
   int a;
   int sampling;
-  float *sampling_tmp;
   int *segptr;
   const CCInOut *cc;
   int cur_car;
@@ -2529,11 +2527,11 @@ CGO *GenerateRepCartoonCGO(CoordSet *cs, ObjectMolecule *obj, nuc_acid_data *nda
   auto EXTRUDE_TRUNCATE = [&ex, &n_p, &v, &vc, &valpha, &vn, &vi]() {
     ExtrudeTruncate(ex, 0);
     n_p = 0;
-    v = ex->p;
-    vc = ex->c;
-    valpha = ex->alpha;
-    vn = ex->n;
-    vi = ex->i;
+    v = ex->p.get();
+    vc = ex->c.get();
+    valpha = ex->alpha.get();
+    vn = ex->n.get();
+    vi = ex->i.get();
   };
 
   cartoon_color =
@@ -2607,7 +2605,7 @@ CGO *GenerateRepCartoonCGO(CoordSet *cs, ObjectMolecule *obj, nuc_acid_data *nda
     SettingGet_i(G, cs->Setting.get(), obj->Setting.get(), cSetting_cartoon_cylindrical_helices);
   int const sampling_cylindrical_helices = sampling / 8 + 1;
 
-  sampling_tmp = pymol::malloc<float>(sampling * 3);
+  std::vector<float> sampling_tmp(sampling * 3);
   cartoon_debug = SettingGet_i(G, cs->Setting.get(), obj->Setting.get(), cSetting_cartoon_debug);
 
   cgo = CGONew(G);
@@ -2712,7 +2710,7 @@ CGO *GenerateRepCartoonCGO(CoordSet *cs, ObjectMolecule *obj, nuc_acid_data *nda
 
           /* now do a smoothing pass along orientation 
              vector to smooth helices, etc... */
-          CartoonGenerateRefine(refine, cur_sampling, v, vn, vo, sampling_tmp);
+          CartoonGenerateRefine(refine, cur_sampling, v, vn, vo, sampling_tmp.data());
         }
         v1 += 3;
         v2 += 3;
@@ -2784,7 +2782,7 @@ CGO *GenerateRepCartoonCGO(CoordSet *cs, ObjectMolecule *obj, nuc_acid_data *nda
                 &vc, &valpha, &vi, &v, &vn);
 
             CartoonGenerateRefine(refine, cur_sampling, v, vn, close_vo,
-                sampling_tmp);
+                sampling_tmp.data());
 
             // Continue past firstIdx through skipped atoms so this extrusion
             // covers the full loop section with no seam at the joint
@@ -2818,7 +2816,7 @@ CGO *GenerateRepCartoonCGO(CoordSet *cs, ObjectMolecule *obj, nuc_acid_data *nda
                   cai2->masked ? -1 : contAtom2, power_a, power_b,
                   &vc, &valpha, &vi, &v, &vn);
               CartoonGenerateRefine(refine, cur_sampling, v, vn, cont_vo,
-                  sampling_tmp);
+                  sampling_tmp.data());
             }
             } // if firstCarType matches
           }
@@ -2903,8 +2901,6 @@ CGO *GenerateRepCartoonCGO(CoordSet *cs, ObjectMolecule *obj, nuc_acid_data *nda
   if (ok)
     CGOStop(cgo);
 
-  FreeP(sampling_tmp);
-
   if (!ok){
     CGOFree(cgo);
   }
@@ -2913,7 +2909,7 @@ CGO *GenerateRepCartoonCGO(CoordSet *cs, ObjectMolecule *obj, nuc_acid_data *nda
 
 bool RepCartoon::sameVis() const
 {
-  if (!LastVisib)
+  if (LastVisib.empty())
     return false;
 
   for (int idx = 0; idx < cs->NIndex; idx++) {
@@ -2929,7 +2925,7 @@ bool RepCartoon::sameVis() const
 void RepCartoon::invalidate(cRepInv_t level)
 {
   if (level >= cRepInvColor){
-    FreeP(LastVisib);
+    LastVisib.clear();
   }
   Rep::invalidate(level);
 }
@@ -2988,7 +2984,7 @@ void RepCartoonGeneratePASS1(PyMOLGlobals *G, RepCartoon *I, ObjectMolecule *obj
                              nuc_acid_data *ndata){
   int st, nd;
   int a, a1, a3, a4 = 0;
-  char *lv = I->LastVisib;
+  char *lv = I->LastVisib.data();
   int trace, trace_mode;
   AtomInfoType *ai, *last_ai = nullptr;
   int cartoon_side_chain_helper;
@@ -4094,23 +4090,15 @@ Rep *RepCartoonNew(CoordSet * cs, int state)
 {
   PyMOLGlobals *G = cs->G;
   ObjectMolecule *obj;
-  int *i, *sptr, *at, *seg, nAt;
-  CCInOut *car, *cc;
-  float *pv = nullptr;
-  float *pvo = nullptr, *pva = nullptr;
-  float *dv = nullptr;
-  float *nv = nullptr;
-  float *tv = nullptr;
-  float *tmp = nullptr;
-  float *dl = nullptr;
+  int *i, *sptr, nAt;
+  CCInOut *cc;
+  std::vector<float> dv, nv, tv, dl;
 
   int ladder_mode;
   int round_helices;
   int na_mode;
-  int *flag_tmp;
   float putty_vals[4] = { 10.0F, 0.0F, FLT_MAX, -FLT_MAX }; // putty_mean, putty_stdev, putty_min, putty_max
   int *ring_anchor = nullptr;
-  int *nuc_flag = nullptr;
   float alpha;
   int ok = true;
   nuc_acid_data ndata;
@@ -4146,18 +4134,18 @@ Rep *RepCartoonNew(CoordSet * cs, int state)
   /* find all of the CA points */
 
   auto const nAtIndex = obj->NAtom; // was NAtIndex
-  at = pymol::malloc<int>(nAtIndex);        /* cs index pointers */
-  pv = pymol::malloc<float>(nAtIndex * 3);
-  tmp = pymol::malloc<float>(nAtIndex * 3);
-  pvo = pymol::malloc<float>(nAtIndex * 3); /* orientation vector */
-  pva = pymol::malloc<float>(nAtIndex * 6); /* alternative orientation vectors, two per atom */
-  seg = pymol::malloc<int>(nAtIndex);
-  car = pymol::calloc<CCInOut>(nAtIndex);       /* cartoon type for each atom */
-  auto sstype = pymol::malloc<ss_t>(nAtIndex);
-  flag_tmp = pymol::calloc<int>(nAtIndex);
-  nuc_flag = pymol::calloc<int>(nAtIndex);
+  std::vector<int> at(nAtIndex);        /* cs index pointers */
+  std::vector<float> pv(nAtIndex * 3);
+  std::vector<float> tmp(nAtIndex * 3);
+  std::vector<float> pvo(nAtIndex * 3); /* orientation vector */
+  std::vector<float> pva(nAtIndex * 6); /* alternative orientation vectors, two per atom */
+  std::vector<int> seg(nAtIndex);
+  std::vector<CCInOut> car(nAtIndex);       /* cartoon type for each atom */
+  std::vector<ss_t> sstype(nAtIndex);
+  std::vector<int> flag_tmp(nAtIndex);
+  std::vector<int> nuc_flag(nAtIndex);
 
-  I->LastVisib = pymol::calloc<char>(nAtIndex);
+  I->LastVisib.assign(nAtIndex, 0);
   
   auto cartoon_all_alt =
     SettingGet_b(G, cs->Setting.get(), obj->Setting.get(), cSetting_cartoon_all_alt);
@@ -4167,19 +4155,19 @@ Rep *RepCartoonNew(CoordSet * cs, int state)
   do {
     ndata.alt = ndata.next_alt;
     ndata.next_alt = 0;
-    memset(car,      0, sizeof(*car)      * nAtIndex);
-    memset(sstype,   0, sizeof(*sstype)   * nAtIndex);
-    memset(flag_tmp, 0, sizeof(*flag_tmp) * nAtIndex);
-    memset(nuc_flag, 0, sizeof(*nuc_flag) * nAtIndex);
+    std::fill(car.begin(), car.end(), CCInOut());
+    std::fill(sstype.begin(), sstype.end(), ss_t());
+    std::fill(flag_tmp.begin(), flag_tmp.end(), 0);
+    std::fill(nuc_flag.begin(), nuc_flag.end(), 0);
 
-  i = at;
-  sptr = seg;
-  cc = car;
-  auto* ss = sstype;
+  i = at.data();
+  sptr = seg.data();
+  cc = car.data();
+  auto* ss = sstype.data();
   nAt = 0;
 
   ndata.na_mode = na_mode;
-  ndata.nuc_flag = nuc_flag;
+  ndata.nuc_flag = nuc_flag.data();
   ndata.a2 = -1;
   ndata.nSeg = 0;
   ndata.v_o_last = nullptr;
@@ -4189,9 +4177,9 @@ Rep *RepCartoonNew(CoordSet * cs, int state)
   ndata.nAt = nAt;
   ndata.ss = ss;
   ndata.putty_flag = false;
-  ndata.fp = flag_tmp;
-  ndata.vptr = pv;
-  ndata.voptr = pvo;
+  ndata.fp = flag_tmp.data();
+  ndata.vptr = pv.data();
+  ndata.voptr = pvo.data();
   ndata.ring_mode = SettingGet_i(G, cs->Setting.get(), obj->Setting.get(), cSetting_cartoon_ring_mode);
   ndata.ring_finder =
     SettingGet_i(G, cs->Setting.get(), obj->Setting.get(), cSetting_cartoon_ring_finder);
@@ -4211,63 +4199,75 @@ Rep *RepCartoonNew(CoordSet * cs, int state)
   }
 
   // Detect cyclic segments (e.g. cyclic peptides like 2NB5)
-  auto cyclicSegs = RepCartoonDetectCyclicSegments(obj, cs, nAt, seg, at);
+  auto cyclicSegs = RepCartoonDetectCyclicSegments(obj, cs, nAt, seg.data(), at.data());
 
   PRINTFD(G, FB_RepCartoon)
     " RepCartoon-Debug: path outlined, interpolating... nAt=%d\n", nAt ENDFD;
 
   if(nAt) {
-    dv = pymol::malloc<float>(nAt * 3);  /* differences between next and current 3f */
-    nv = pymol::malloc<float>(nAt * 3);  /* normal */
-    dl = pymol::malloc<float>(nAt);      /* length (i.e., normal * length = difference) */
+    dv.resize(nAt * 3);  /* differences between next and current 3f */
+    nv.resize(nAt * 3);  /* normal */
+    dl.resize(nAt);      /* length (i.e., normal * length = difference) */
     if (cyclicSegs.empty()) {
-      RepCartoonComputeDifferencesAndNormals(G, nAt, seg, pv, dv, nv, dl, true);
+      RepCartoonComputeDifferencesAndNormals(G, nAt, seg.data(), pv.data(),
+          dv.data(), nv.data(), dl.data(), true);
     } else {
-      RepCartoonComputeDifferencesAndNormalsCyclic(G, nAt, seg, pv, dv, nv, dl, true, cyclicSegs);
+      RepCartoonComputeDifferencesAndNormalsCyclic(G, nAt, seg.data(),
+          pv.data(), dv.data(), nv.data(), dl.data(), true, cyclicSegs);
     }
 
     /* compute tangents */
-    tv = pymol::malloc<float>(nAt * 3 + 6);
+    tv.resize(nAt * 3 + 6);
     if (cyclicSegs.empty()) {
-      RepCartoonComputeTangents(nAt, seg, nv, tv);
+      RepCartoonComputeTangents(nAt, seg.data(), nv.data(), tv.data());
     } else {
-      RepCartoonComputeTangentsCyclic(nAt, seg, nv, tv, cyclicSegs);
+      RepCartoonComputeTangentsCyclic(nAt, seg.data(), nv.data(), tv.data(), cyclicSegs);
     }
 
     PRINTFD(G, FB_RepCartoon)
       " RepCartoon-Debug: generating coordinate systems...\n" ENDFD;
 
     if(round_helices) {
-      ndata.voptr = pvo;
-      RepCartoonComputeRoundHelices(&ndata, nAt, seg, sstype, tv, pv);
+      ndata.voptr = pvo.data();
+      RepCartoonComputeRoundHelices(&ndata, nAt, seg.data(), sstype.data(),
+          tv.data(), pv.data());
     }
 
-    RepCartoonRefineNormals(G, I, obj, cs, &ndata, nAt, seg, tv, pvo, pva, sstype, nv);
+    RepCartoonRefineNormals(G, I, obj, cs, &ndata, nAt, seg.data(), tv.data(),
+        pvo.data(), pva.data(), sstype.data(), nv.data());
 
     {
       int smooth_loops = SettingGet_i(G, cs->Setting.get(), obj->Setting.get(), cSetting_cartoon_smooth_loops);
       bool cartoon_flat_sheets = SettingGet_b(G, cs->Setting.get(), obj->Setting.get(), cSetting_cartoon_flat_sheets);
       if(smooth_loops || cartoon_flat_sheets) {
         if(cartoon_flat_sheets) {
-          RepCartoonFlattenSheets(G, obj, cs, &ndata, nAt, seg, car, pv, pvo, sstype, tv, tmp, flag_tmp);
+          RepCartoonFlattenSheets(G, obj, cs, &ndata, nAt, seg.data(),
+              car.data(), pv.data(), pvo.data(), sstype.data(), tv.data(),
+              tmp.data(), flag_tmp.data());
         }
         if(smooth_loops) {
-          RepCartoonSmoothLoops(G, obj, cs, &ndata, nAt, seg, pv, sstype, pvo, tv, tmp, flag_tmp);
+          RepCartoonSmoothLoops(G, obj, cs, &ndata, nAt, seg.data(), pv.data(),
+              sstype.data(), pvo.data(), tv.data(), tmp.data(),
+              flag_tmp.data());
         }
         /* recompute differences and normals */
         if (cyclicSegs.empty()) {
-          RepCartoonComputeDifferencesAndNormals(G, nAt, seg, pv, dv, nv, dl, true);
+          RepCartoonComputeDifferencesAndNormals(G, nAt, seg.data(), pv.data(),
+              dv.data(), nv.data(), dl.data(), true);
         } else {
-          RepCartoonComputeDifferencesAndNormalsCyclic(G, nAt, seg, pv, dv, nv, dl, true, cyclicSegs);
+          RepCartoonComputeDifferencesAndNormalsCyclic(G, nAt, seg.data(),
+              pv.data(), dv.data(), nv.data(), dl.data(), true, cyclicSegs);
         }
         /* recompute tangents */
         if (cyclicSegs.empty()) {
-          RepCartoonComputeTangents(nAt, seg, nv, tv);
+          RepCartoonComputeTangents(nAt, seg.data(), nv.data(), tv.data());
         } else {
-          RepCartoonComputeTangentsCyclic(nAt, seg, nv, tv, cyclicSegs);
+          RepCartoonComputeTangentsCyclic(nAt, seg.data(), nv.data(), tv.data(),
+              cyclicSegs);
         }
         if(cartoon_flat_sheets) {
-          RepCartoonFlattenSheetsRefineTips(G, obj, cs, nAt, seg, sstype, tv);
+          RepCartoonFlattenSheetsRefineTips(G, obj, cs, nAt, seg.data(),
+              sstype.data(), tv.data());
         }
       }
     }
@@ -4276,8 +4276,9 @@ Rep *RepCartoonNew(CoordSet * cs, int state)
 
     auto* cyclicSegsPtr = cyclicSegs.empty() ? nullptr : &cyclicSegs;
     CGO* preshadercgo =
-        GenerateRepCartoonCGO(cs, obj, &ndata, na_strands_as_cylinders, pv, nAt,
-            tv, pvo, dl, car, seg, at, nuc_flag, putty_vals, alpha, cyclicSegsPtr);
+        GenerateRepCartoonCGO(cs, obj, &ndata, na_strands_as_cylinders, pv.data(), nAt,
+            tv.data(), pvo.data(), dl.data(), car.data(), seg.data(), at.data(),
+            nuc_flag.data(), putty_vals, alpha, cyclicSegsPtr);
 
     if (preshadercgo && preshadercgo->has_begin_end) {
       CGOCombineBeginEnd(&preshadercgo);
@@ -4298,20 +4299,6 @@ Rep *RepCartoonNew(CoordSet * cs, int state)
     delete I;
     I = nullptr;
   }
-  FreeP(dv);
-  FreeP(dl);
-  FreeP(tv);
-  FreeP(nv);
-  FreeP(at);
-  FreeP(seg);
-  FreeP(pv);
-  FreeP(pvo);
-  FreeP(pva);
-  FreeP(car);
-  FreeP(tmp);
-  FreeP(sstype);
-  FreeP(flag_tmp);
-  FreeP(nuc_flag);
   VLAFreeP(ndata.ring_anchor);
   return (Rep *) I;
 }

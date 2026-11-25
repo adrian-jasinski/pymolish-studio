@@ -71,8 +71,6 @@ RepSphere::~RepSphere()
   CGOFree(I->primitiveCGO);
   CGOFree(I->renderCGO);
   CGOFree(I->spheroidCGO);
-  FreeP(I->LastColor);
-  FreeP(I->LastVisib);
 }
 
 void RenderSphereComputeFog(PyMOLGlobals *G, RenderInfo *info, float *fog_info)
@@ -207,7 +205,7 @@ void RepSphere::render(RenderInfo* info)
 
 bool RepSphere::sameVis() const
 {
-  if (!LastVisib || !LastColor) {
+  if (LastVisib.empty() || LastColor.empty()) {
         return false;
       }
 
@@ -469,7 +467,7 @@ Rep *RepSphereNew(CoordSet * cs, int state)
   ObjectMolecule *obj;
   int ok = true;
   int a, a1;
-  bool *lv;
+  char *lv;
   int *lc;
   float sphere_scale, sphere_add = 0.f;
   int sphere_color;
@@ -477,7 +475,6 @@ Rep *RepSphereNew(CoordSet * cs, int state)
   int ribbon_side_chain_helper = 0;
   AtomInfoType *ati1;
   int sphere_mode = 0;
-  bool *marked = nullptr;
   float transp;
   int variable_alpha = false;
   short use_shader = SettingGetGlobal_b(G, cSetting_sphere_use_shader) &&
@@ -487,9 +484,7 @@ Rep *RepSphereNew(CoordSet * cs, int state)
     return nullptr;
 
   obj = cs->Obj;
-  marked = pymol::calloc<bool>(obj->NAtom);
-  if (!marked)
-    return nullptr;
+  std::vector<char> marked(obj->NAtom);
 
   auto I = new RepSphere(cs, state);
   if (!cs->Spheroid.empty())
@@ -541,21 +536,20 @@ Rep *RepSphereNew(CoordSet * cs, int state)
     float cut_mult = SphereComputeCutMultiplier(G->Sphere->Sphere[1]);
     float *dot = G->Sphere->Sphere[1]->dot[0];
     int n_dot = G->Sphere->Sphere[1]->nDot;
-    int *active = pymol::malloc<int>(2 * n_dot);
+    std::vector<int> active(2 * n_dot);
 
 	ok &= MapSetupExpress(map);
     for(a = 0; ok && a < cs->NIndex; a++) {
       a1 = cs->IdxToAtm[a];
       if(marked[a1]) {
       ati1 = obj->AtomInfo + a1;
-        RepSphereSetNormalForSphere(I, map, v_tmp, &v_tmp[a * 3], cut_mult, a, active, dot, n_dot);
+        RepSphereSetNormalForSphere(I, map, v_tmp, &v_tmp[a * 3], cut_mult, a, active.data(), dot, n_dot);
         RepSphereAddAtomVisInfoToStoredVC(I, obj, cs, state, a1, ati1, a,
             sphere_scale, sphere_color, transp, &variable_alpha, sphere_add,
             sphere_mode);
       }
 	ok &= !G->Interrupt;
       }
-    FreeP(active);
     VLAFreeP(v_tmp);
     MapFree(map);
   } else { // no normals necessary
@@ -578,15 +572,11 @@ Rep *RepSphereNew(CoordSet * cs, int state)
   CGOStop(I->primitiveCGO);
 
   if(ok) {
-    if(!I->LastVisib)
-      I->LastVisib = pymol::malloc<bool>(cs->NIndex);
-    CHECKOK(ok, I->LastVisib);
-    if(ok && !I->LastColor)
-      I->LastColor = pymol::malloc<int>(cs->NIndex);
-    CHECKOK(ok, I->LastColor);
+    I->LastVisib.resize(cs->NIndex);
+    I->LastColor.resize(cs->NIndex);
     if (ok){
-      lv = I->LastVisib;
-      lc = I->LastColor;
+      lv = I->LastVisib.data();
+      lc = I->LastColor.data();
       obj = cs->Obj;
       const AtomInfoType *ai2 = obj->AtomInfo.data();
       if(sphere_color == -1){
@@ -604,7 +594,6 @@ Rep *RepSphereNew(CoordSet * cs, int state)
     }
   }
 
-  FreeP(marked);
   if(nspheres == 0 || !ok) {
     delete I;
     I = nullptr;

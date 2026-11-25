@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.76.10
+
+	* Core
+	  - Extrude.cpp, RepCartoon.cpp, RepRibbon.cpp, RepSphere.cpp,
+	    RepCylBond.cpp, RepWireBond.cpp and RepNonbondedSphere.cpp:
+	    72 lines that allocate with malloc and 110 that free by hand
+	    are gone; the arrays of the extrusion (cartoon tubes, sheets,
+	    helices), of the cartoon and ribbon builders and of the
+	    sphere, stick and line reps own their memory now. The
+	    compiled-out blocks of Extrude.cpp (179 lines) went with it.
+	    No behavior change: the ray geometry of 365 combinations of
+	    structure, rep and setting is identical to 4.76.0. Step 8c.
+
+2026-11-25 pymolish-studio
+
 	* 4.76.9
 
 	* Core

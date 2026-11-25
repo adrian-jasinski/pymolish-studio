@@ -560,8 +560,6 @@ static Rep* RepCylBondNewImpl(CoordSet* cs, int state, cRep_t rep)
   int cartoon_side_chain_helper = 0;
   int ribbon_side_chain_helper = 1;
   int na_mode;
-  bool *marked = nullptr;
-  float *capdrawn = nullptr;
   float scale_r = 1.0F;
   float transp, h_scale;
   float prev_transp = -1;
@@ -595,12 +593,8 @@ static Rep* RepCylBondNewImpl(CoordSet* cs, int state, cRep_t rep)
     return (nullptr);              /* skip if no sticks are visible */
   }
 
-  capdrawn = pymol::calloc<float>(obj->NAtom); // max radius of caps
-  marked = pymol::calloc<bool>(obj->NAtom);
-  CHECKOK(ok, marked);
-  if (!ok){
-    return nullptr;
-  }
+  std::vector<float> capdrawn(obj->NAtom); // max radius of caps
+  auto marked = std::make_unique<bool[]>(obj->NAtom);
 
   valence = SettingGet_b(G, cs->Setting.get(), obj->Setting.get(), cSetting_valence);
   valence_flag = (valence != 0.0F);
@@ -685,7 +679,7 @@ static Rep* RepCylBondNewImpl(CoordSet* cs, int state, cRep_t rep)
       && SettingGetGlobal_b(G, cSetting_render_as_cylinders) && SettingGetGlobal_b(G, cSetting_stick_use_shader);
 
     if(cartoon_side_chain_helper || ribbon_side_chain_helper) {
-      SideChainHelperMarkNonCartoonBonded(marked, obj, cs,
+      SideChainHelperMarkNonCartoonBonded(marked.get(), obj, cs,
           cartoon_side_chain_helper,
           ribbon_side_chain_helper);
     }
@@ -815,7 +809,7 @@ static Rep* RepCylBondNewImpl(CoordSet* cs, int state, cRep_t rep)
               AtomSettingGetWD(G, ati2,
                   cSetting_cartoon_side_chain_helper, cartoon_side_chain_helper);
             if (sc_helper &&
-                SideChainHelperFilterBond(G, marked, ati1, ati2, b1, b2, na_mode, &c1, &c2))
+                SideChainHelperFilterBond(G, marked.get(), ati1, ati2, b1, b2, na_mode, &c1, &c2))
               s1 = s2 = 0;
           }
 
@@ -826,7 +820,7 @@ static Rep* RepCylBondNewImpl(CoordSet* cs, int state, cRep_t rep)
               AtomSettingGetWD(G, ati2,
                   cSetting_ribbon_side_chain_helper, ribbon_side_chain_helper);
             if (sc_helper &&
-                SideChainHelperFilterBond(G, marked, ati1, ati2, b1, b2, na_mode_ribbon, &c1, &c2))
+                SideChainHelperFilterBond(G, marked.get(), ati1, ati2, b1, b2, na_mode_ribbon, &c1, &c2))
               s1 = s2 = 0;
           }
         }
@@ -977,8 +971,6 @@ static Rep* RepCylBondNewImpl(CoordSet* cs, int state, cRep_t rep)
     }
   }
   FreeP(other);
-  FreeP(marked);
-  FreeP(capdrawn);
 
   CGOStop(I->primitiveCGO);
   if (!ok){

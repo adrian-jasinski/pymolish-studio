@@ -107,7 +107,7 @@ Rep *RepNonbondedSphereNew(CoordSet * cs, int state)
   PyMOLGlobals *G = cs->G;
   ObjectMolecule *obj = cs->Obj;
 
-  unsigned char *active = nullptr;
+  std::vector<unsigned char> active(cs->NIndex);
   int nSphere = 0;
 
   float prev_transp = -1;
@@ -115,10 +115,6 @@ Rep *RepNonbondedSphereNew(CoordSet * cs, int state)
       obj->Setting.get(), cSetting_nonbonded_transparency);
 
   int ok = true;
-
-  if (ok)
-    active = pymol::malloc<unsigned char>(cs->NIndex);
-  CHECKOK(ok, active);
 
   if((obj->RepVisCache & cRepNonbondedSphereBit)){
     for(int a = 0; a < cs->NIndex; a++) {
@@ -129,7 +125,6 @@ Rep *RepNonbondedSphereNew(CoordSet * cs, int state)
     }
   }
   if(!nSphere) {
-    FreeP(active);
     return (nullptr);
   }
   float nb_spheres_size =
@@ -176,7 +171,6 @@ Rep *RepNonbondedSphereNew(CoordSet * cs, int state)
   }
   CGOStop(I->primitiveCGO);
   I->primitiveCGO->sphere_quality = SettingGet_i(G, cs->Setting.get(), obj->Setting.get(), cSetting_nb_spheres_quality);
-  FreeP(active);
   if (!ok){
     delete I;
     I = nullptr;
