@@ -38,6 +38,20 @@ a Claude account through the installed Claude Code; its row is the first of
 "Finished milestones of open steps", under step 31. The open orders keep
 their numbers; the trial of 31 (order 2) now also covers this provider.
 
+Decided by the user on 2026-11-25, choices 91–97 from the GUI request of
+2026-11-24. Planning only: the decisions below are recorded, but no feature
+shipped in this update. Open orders refer to [PLAN.md](PLAN.md).
+
+| Question | Decision | State |
+| --- | --- | --- |
+| 91 | Delete key only (option B): bind keyboard Del to the selected object/group in the focused Objects list, keep the existing menu action, and add no new button. Objects are deleted without confirmation. | 37b. Open, order 2. |
+| 92 | Confirm deletion of the group and all its members, including nested groups; show the scope before applying. | 37b. Open, order 2. |
+| 93 | Recommended option A: hold the right mouse button on a row, drag and release to drop; a click without dragging still opens the context menu. Ordinary left-click visibility stays. | 23b. Open, order 3. |
+| 94 | Recommended option A: extend all named built-ins to 30 colors by appending colors, preserving existing entries/order. Leave legacy “PyMOL default” and saved user palettes as they are; preview only the first 10 colors. | 37c. Open, order 4. |
+| 95 | Mouse icon plus compact mode name, such as “Viewing” or “Editing”; full name in the tooltip. Also reduce the button's spare width and excess horizontal padding, sizing it to its content. Supersedes the expanding/shortened-label behavior of choice 84. | 37e. Open, order 6. |
+| 96 | Recommended option A: A− / A+ and Reset at the right of the tab strip adjust the active tab's content; remember each tab's size separately. Tab-title fonts follow the application theme. | 37g. Open, order 8. |
+| 97 | Option B: a row of Mode/Labels/Gaps dropdowns and an alignment button inside the Sequence tab. | 37f. Open, order 7. |
+
 Chosen while building 4.68.0. Two options were offered first (this
 provider, or nothing new), and brand marks or the plain icon; the answer
 was "the solution for login can be icon or button; add OAuth
@@ -59,7 +73,7 @@ so if another one is wanted:
 | 81 | The Sequence tab always lists the sequence; `seq_view` only puts it into the viewport as well, so both places can be on. The other way was one switch and a preference for the place. An object with `seq_view` off for itself is in neither place. | 4.67.0. | `SeqInViewport` in `layer1/Seq.cpp` and `listed` in `SeekerUpdate`. |
 | 82 | A click on SEQ opens the tab (the preferred place); "Show in viewport" and "Sequence alignment" are in the menu of its arrow, and Display > Sequence became "Sequence in Viewport". SEQ no longer shows a state. | 4.67.0. | The `seq` button in `pymol_qt_gui.py`. |
 | 83 | The tab is drawn on the background color of the viewport with its label color, not in the colors of the theme: the colors of the residues are chosen for that background. | 4.67.0. | `CmdSeqRows` in `layer4/Cmd.cpp` sends the colors, `paintEvent` in `sequence_tab.py` uses them. |
-| 84 | The mouse mode button gives up width down to that of SEQ, and Qt shortens its name in the middle ("3-…ng"); the names were not abbreviated. | 4.67.0. | `mouse.setMinimumWidth` in `pymol_qt_gui.py`. |
+| 84 | The mouse mode button gives up width down to that of SEQ, and Qt shortens its name in the middle ("3-…ng"); the names were not abbreviated. | 4.67.0. | Superseded by choice 95 on 2026-11-25: 37e, open at order 6. `mouse.setMinimumWidth` in `pymol_qt_gui.py`. |
 | 85 | The robot keeps Lucide's `bot`, drawn like the other four icons of the row (16 px, lines of 1.5, blue while the agent connector is on); no new drawing. | 4.67.0. | `"ai assistant"` in `icons.py`. |
 
 Decided by the user on 2026-11-24, asked before 4.66.0 was built:

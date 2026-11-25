@@ -87,7 +87,9 @@ Extended 2026-11-24 at 4.68.0 with the File > Get by UniProt error and
 the requested Objects, palette, Sequence and font controls: step 37 below,
 plus the existing drag-and-drop slice 23b promoted into execution order.
 Planning only; nothing shipped or measured in the GUI in this update.
-The palette sizes below are requested targets. Choices 91 to 97 are open.
+The palette sizes below are requested targets. Choices 91 to 97 were
+answered on 2026-11-25 and are recorded in [PLAN-DONE.md](PLAN-DONE.md).
+Their decisions are applied below; implementation remains open.
 
 **Shipped state, checked 2026-11-24: 4.68.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
@@ -158,13 +160,13 @@ Questions gate the dependent slice, not unrelated repairs.
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
 | 1 | **37a** — [UniProt fetch from File](#step-37--gui-follow-ups-requested-2026-11-24) | Diagnose `fetch_by_uniprot P01542, async_=1` raising an unexpected-keyword `TypeError`; repair the active GUI dispatch path. | File action reaches the native asynchronous fetch; no keyword error or blocked GUI; regression check covers command registration. |
-| 2 | **37b** — [Delete objects and groups](#step-37--gui-follow-ups-requested-2026-11-24) | Delete directly from the Objects list: no confirmation for an object, confirmation for a group. Choices 91–92. | Object deletion is immediate; group Cancel changes nothing; confirmed deletion has exactly the scope shown in the dialog. |
-| 3 | **23b** — [Rows moved by dragging](docs/plans/23-rename-in-panel.md) | Promote the existing reorder/regroup work; the request specifies a right button, move and drop. Gesture choice 93 and acceptance checks are below. | Real mouse drop and keyboard equivalent update core order/group membership, survive refresh and session reload, and share a tested operation. |
-| 4 | **37c** — [Thirty-color palettes](#step-37--gui-follow-ups-requested-2026-11-24) | Extend existing palettes to 30 colors; show only the first 10 in GUI palette previews. Scope choice 94. | Full cycle uses all 30 before repeating; previews show 10; existing colors and names are preserved under the recommended scope. |
+| 2 | **37b** — [Delete objects and groups](#step-37--gui-follow-ups-requested-2026-11-24) | Bind Del to the selected object/group in Objects; no new button. Delete an object immediately; confirm deletion of a group and all its members, including nested groups, showing the scope first (91–92). | Object deletion is immediate; group Cancel changes nothing; confirmed deletion has exactly the scope shown in the dialog. |
+| 3 | **23b** — [Rows moved by dragging](docs/plans/23-rename-in-panel.md) | Hold the right mouse button, drag and release to reorder/regroup; a click without dragging opens the context menu (93). | Real mouse drop and keyboard equivalent update core order/group membership, survive refresh and session reload, and share a tested operation. |
+| 4 | **37c** — [Thirty-color palettes](#step-37--gui-follow-ups-requested-2026-11-24) | Append colors to all named built-ins up to 30, preserving existing entries/order; preview only the first 10. Leave legacy “PyMOL default” and saved user palettes unchanged (94). | Full named built-in cycles use all 30 before repeating; previews show 10; existing colors, order and names are preserved. |
 | 5 | **37d** — [Drag palette colors](#step-37--gui-follow-ups-requested-2026-11-24) | Reorder colors by drag and drop in both New palette and Edit palette. | Saved order drives coloring and survives reopening/restart; Cancel preserves the old palette; keyboard Up/Down still works. |
-| 6 | **37e** — [Narrower mouse-mode button](#step-37--gui-follow-ups-requested-2026-11-24) | Shorten the width of “3-Button Viewing” at the bottom of Objects. Choice 95. | Button no longer expands to fill spare width; all footer controls remain usable in a narrow panel and at supported UI scales. |
-| 7 | **37f** — [Sequence tab controls](#step-37--gui-follow-ups-requested-2026-11-24) | Add Sequence Mode, labels, gaps and a multiple sequence alignment viewer action inside the tab between Command and Chat. Placement choice 97. | All existing sequence options work from the tab and stay synchronized with Display/commands; alignment opens the existing viewer. |
-| 8 | **37g** — [Command, Sequence and Chat font size](#step-37--gui-follow-ups-requested-2026-11-24) | Add font controls beside the tabs, with immediate resizing and a reset. Scope choice 96. | Each requested tab can be resized; text input, drawing, scrolling and sequence picking stay correct; chosen sizes survive restart. |
+| 6 | **37e** — [Narrower mouse-mode button](#step-37--gui-follow-ups-requested-2026-11-24) | Mouse icon plus compact mode name (“Viewing”/“Editing”), full name in the tooltip; reduce spare width and excess horizontal padding (95). | Button fits its content without stretching or excess empty space; all footer controls remain usable in a narrow panel and at supported UI scales. |
+| 7 | **37f** — [Sequence tab controls](#step-37--gui-follow-ups-requested-2026-11-24) | Add a row of Mode/Labels/Gaps dropdowns and an alignment button inside the tab between Command and Chat (97, option B). | All existing sequence options work from the tab and stay synchronized with Display/commands; alignment opens the existing viewer. |
+| 8 | **37g** — [Command, Sequence and Chat font size](#step-37--gui-follow-ups-requested-2026-11-24) | A− / A+ and Reset at the right of the tab strip resize the active tab's content immediately; remember each tab's size separately (96). | Each requested tab can be resized; text input, drawing, scrolling and sequence picking stay correct; chosen sizes survive restart. |
 | 9 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Needs the pushed branch: the last CI run is older than the repair. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
 | 10 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; one real sign-in and one conversation each with ChatGPT and with OpenRouter (31d, shipped in 4.66.0 on stand-ins), which needs the user's accounts; for the provider "Claude Code" (4.68.0, two turns tried on WSLg with a Team plan) the same five tasks, the button "Continue with Claude Code" with a signed-out Claude Code, and one turn on Windows or macOS; and one call through the connector from Codex, whose account had no credits on 2026-11-24. | Live trial recorded for Anthropic, OpenAI and Claude Code; a sign-in and a conversation recorded for ChatGPT, OpenRouter and Claude Code, on WSL and on one other system; one Codex call through the connector. |
 | 11 | **1b** — [Grid surface experiment](docs/plans/01-performance-gpu.md) | Signed distance grid/marching cubes as a second surface type and a smoothness value. Compare 1aon and 4v6x at two values; user judges the experiment. | Actual times and pictures against today's surface. |
@@ -194,7 +196,8 @@ steps [11](docs/plans/11-color-palettes.md),
 [32](docs/plans/32-footer-icons-movie-button.md) and
 [33](docs/plans/33-sequence-window.md) remain shipped. The Objects drag
 work is still **23b**, not a second implementation under a new number.
-Recommendations below await the choices in “Waiting for the user”.
+Choices 91–97 were decided by the user on 2026-11-25; the specifications
+below include those answers. No feature shipped in this decision update.
 
 **37a — UniProt fetch.** Reported from File > Get by UniProt:
 
@@ -217,21 +220,23 @@ for the same cause. Leave a GUI-to-command regression in
 the real window: loading or a useful no-results/network error is acceptable;
 the keyword error and a frozen GUI are not.
 
-**37b — Delete from Objects.** An object is deleted immediately; a group
-always asks first. Resolve the visible button versus Delete-key wording
-(91), and whether group deletion includes its members (92). Recommendation:
-a small trash button on each object/group row plus Delete for the focused
-row; group confirmation names the group and summarizes affected members,
-including nested groups. No delete action on “all”; a row action must not
-also toggle visibility or zoom. Use the native deletion/group operations
-in `modules/pmg_qt/object_panel.py`, matching the confirmed scope. Tests in
-`testing/tests/api/object_panel.py`: object, empty/nested group, Cancel,
-and unrelated objects retained. General undo stays in 21g.
+**37b — Delete from Objects.** Bind the keyboard Delete (Del) key to the
+selected object/group while the Objects list has focus; add no new button
+and keep the existing menu action (91). An object is deleted immediately;
+a group always asks first. Confirm deletion of the group and all its
+members, including nested groups; name the group and show the full scope
+before applying (92). No delete action on “all”; deletion must not also
+toggle visibility or zoom. Use the native deletion/group operations in
+`modules/pmg_qt/object_panel.py`, matching the confirmed scope. Tests in
+`testing/tests/api/object_panel.py`: Del on the selected object, empty/nested
+group, Cancel, unrelated objects retained, and Delete in a text editor
+does not delete an object. General undo stays in 21g.
 
-**23b — Object order by dragging.** Resolve right mouse button versus a
-handle on the right of the row (93). Keep an ordinary right click as the
-context menu, left click as visibility, and F2 as rename. Show the drop
-position; between rows calls `cmd.order`, onto a group uses `cmd.group`
+**23b — Object order by dragging.** Hold the right mouse button on a row,
+drag and release to drop (93, recommended option accepted). A right click
+without dragging still opens the context menu; keep left click as
+visibility and F2 as rename. Show the drop position; between rows calls
+`cmd.order`, onto a group uses `cmd.group`
 as already planned, and a root drop can move a member out of its group.
 Reject moving “all”, dropping a group into itself/its descendants, and
 invalid targets. Keep refresh from interrupting a drag. Use Qt's existing
@@ -241,9 +246,10 @@ filtered lists, nested groups, refresh and a PSE round trip; then exercise
 the chosen gesture in the real window.
 
 **37c — Palette length and preview.** Requested sizes: 30 usable colors
-per palette, only the first 10 shown in the GUI preview. Recommended scope
-(94): all named built-ins in `modules/pymol/palettes.py`; keep existing hex
-values and their order, append distinct colors in each palette's style.
+per named built-in palette, only the first 10 shown in the GUI preview.
+Chosen scope (94): all named built-ins in `modules/pymol/palettes.py`; keep
+existing hex values and their order, append distinct colors in each palette's style.
+Leave legacy “PyMOL default” and saved user palettes as they are.
 The menu already slices `colors[:10]` in
 `modules/pmg_qt/action_toolbar.py`; retain and test it. Full object and chain
 color cycles must use all 30, not just the preview. Review contrast and
@@ -263,10 +269,12 @@ palette/toolbar tests. No external drag source or new palette format needed.
 
 **37e — Compact mouse mode.** The current button in
 `modules/pmg_qt/pymol_qt_gui.py` expands into spare footer width and only
-shortens its label when squeezed. Replace that behavior with the chosen
-compact label (95); recommend the mouse icon plus “Viewing”/“Editing”, full
-mode name in the tooltip and the existing menu. Measure the before/after
-width in the real window, including a narrow Objects panel and UI scaling;
+shortens its label when squeezed. Use the mouse icon plus a compact mode
+name such as “Viewing”/“Editing”, with the full name in the tooltip and the
+existing menu (95). Size the button to its content and reduce excess
+horizontal padding as requested; shortening the text alone does not remove
+the current spare space. Measure the before/after width in the real window,
+including a narrow Objects panel and UI scaling;
 do not choose an unmeasured fixed pixel width. This supersedes choice 84's
 expanding button, not the menu's available mouse modes.
 
@@ -281,8 +289,8 @@ listed by Display > Sequence Mode in `modules/pymol/_gui.py`:
 - “Multiple sequence alignment…” opens the existing `sequence_panel.open`
   viewer, with loaded chains/FASTA and its existing local MAFFT action.
 
-Recommend one Options menu in the Sequence tab with Mode/Labels/Gaps
-submenus and the alignment action (97). Keep Command → Sequence → Chat
+Use a row of Mode/Labels/Gaps dropdowns and an alignment button inside the
+Sequence tab (97, option B). Keep Command → Sequence → Chat
 order. Wire existing settings/actions in `pymol_qt_gui.py` and
 `sequence_tab.py`: Display, commands, the tab and viewport stay synchronized.
 Test every option, command-driven updates, picking after format changes and
@@ -290,10 +298,11 @@ opening the same alignment viewer in `testing/tests/api/sequence_tab.py` /
 `sequence_window.py`. MAFFT remains separately installed; reuse its current
 missing-executable message. No second viewer or alignment engine.
 
-**37g — Font size beside the tabs.** Recommend compact A− / A+ and Reset
+**37g — Font size beside the tabs.** Use compact A− / A+ and Reset
 controls on the right of `command_tabs`, acting on the active tab's content
-and remembering a separate size per tab in QSettings (96). Command covers
-log and entry; Chat covers conversation and prompt; Sequence keeps its
+and remembering a separate size per tab in QSettings (96, recommended
+option accepted). Tab-title fonts follow the application theme. Command
+covers log and entry; Chat covers conversation and prompt; Sequence keeps its
 monospace font and recalculates scroll ranges and mouse hit positions.
 Use `pymol_qt_gui.py`, `sequence_tab.py` and `chat_panel.py`; preserve each
 tab's font family. Changes are live and independent of overall UI scale.
@@ -357,21 +366,10 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-**New choices 91–97 from the GUI request of 2026-11-24.** These are design
-choices for later implementation, not permission to update this plan.
-No answer is needed to diagnose 37a or plan the independent slices.
-Object deletion without confirmation, group deletion with confirmation,
-30-color palettes and 10-color previews are already requested requirements.
-
-| Question | A — recommended | B — alternative | Dependent work |
-| --- | --- | --- | --- |
-| 91 — “Delete button” in Objects | A visible trash button per object/group row, plus the Delete key on the focused row. | Delete key only, keeping the existing menu action and adding no row button. | 37b: settle whether “button” means a GUI button or a keyboard key. |
-| 92 — What happens to a group's members? | Confirm deletion of the group and all its members, including nested groups; show the scope before applying. | Confirm removal of the group container only; retain its objects. | 37b: confirmation is required in either case; do not infer permission to remove members. |
-| 93 — “Right button, moving and dropping” | Hold the right mouse button on a row, drag and release to drop; a click without dragging still opens the context menu. | A handle on the right side of each row, dragged with the left mouse button. | 23b: both retain the ordinary left-click visibility action. |
-| 94 — Which existing palettes grow to 30? | All named built-ins; append colors, preserve existing entries/order. Leave legacy “PyMOL default” and saved user palettes as they are. | Include “PyMOL default” too; still leave user-created palettes at their chosen length. | 37c: the GUI preview is limited to the first 10 either way. |
-| 95 — Shorter “3-Button Viewing” | Mouse icon plus compact mode name, such as “Viewing” or “Editing”; full name in the tooltip. | Mouse icon only; full mode name in the tooltip/menu. | 37e: both use content width instead of stretching across the footer. |
-| 96 — Font controls for Command / Sequence / Chat | A− / A+ and Reset at the right of the tab strip; adjust content in the active tab, remember each tab separately. | The same controls set one shared content size for all three tabs. | 37g: tab-title font follows the application theme; clarify if title text was intended instead. |
-| 97 — Sequence controls placement | One Options menu inside the Sequence tab: Mode, Labels, Gaps and Multiple sequence alignment. | A row of Mode/Labels/Gaps dropdowns and an alignment button inside the tab. | 37f: the menu uses less width; the dropdowns expose current settings without opening a menu. |
+**Choices 91–97 were answered on 2026-11-25.** The decisions are recorded
+in [PLAN-DONE.md](PLAN-DONE.md) and applied to 37b–g and 23b above.
+These slices remain open for implementation; none awaits a design answer
+from that set of questions.
 
 Earlier on 2026-11-24 the user chose the recommended option for every
 question that then had no answer; those, the earlier answers, the two
@@ -437,8 +435,9 @@ kept between runs (today the next run renews it); deleting the OpenRouter
 key at OpenRouter on Sign out (today a link to its page). From 4.67.0, in
 the Sequence tab: the dimming of the unaligned residues of an alignment,
 the frame around a drag, the marks of the selection along the scroll bar,
-scrolling on while a drag passes the edge; and the full name of the mouse
-mode in the tooltip of its button. From 4.68.0: a Sign out for Claude Code
+scrolling on while a drag passes the edge. The full mouse-mode name in the
+button's tooltip is now requested in 37e (choice 95, order 6).
+From 4.68.0: a Sign out for Claude Code
 (it would sign it out everywhere), the marks of the providers as icons
 (their rules for use were not read), one long-lived Claude Code per
 conversation in place of one start per turn (the start was not timed
@@ -448,7 +447,6 @@ last check).
 
 The user's to do:
 
-- Choose options 91–97 above before the corresponding GUI slices are built.
 - Push `feature13` and open its pull request. Local tracking refs checked
   2026-11-24: `origin/feature13` is at the plan commit of 4.66.0; including
   this documentation commit, the branch is 5 commits ahead (4.67.0,

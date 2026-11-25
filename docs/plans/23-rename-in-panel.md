@@ -1,7 +1,15 @@
 # 23 — Rename in the Objects panel
 
 [Roadmap](../../PLAN.md) · Request 2026-11-20 · **23a done 2026-11-20 in
-4.24.0.** 23b (rows moved by dragging) is open, any time.
+4.24.0.** 23b (rows moved by dragging) is open, order 3 in the roadmap.
+
+**Decision update 2026-11-25:** choice 93 accepts the recommended gesture:
+hold the right mouse button on a row, drag and release to drop; a right
+click without dragging still opens the context menu. Left click still
+toggles visibility; F2 still renames. The drop-position indicator, keyboard
+move actions and checks for order/group membership, invalid targets,
+refresh and session reload are specified in [the roadmap's 23b section](../../PLAN.md#step-37--gui-follow-ups-requested-2026-11-24).
+Planning only; no feature shipped or GUI measurement made in this update.
 
 Built as planned, with two differences. A taken name gives a line in the log
 and no rename, but the editor does not stay open: Qt has closed it by then,
@@ -49,7 +57,7 @@ is no longer the way to rename.**
 | Slice | What | Files | Check |
 | --- | --- | --- | --- |
 | 23a | Rename in place, the hook, the guard in the poll. | `object_panel.py`, `scene_panel.py` (takes the hook for scenes), `menu.py` (eight rows), `pymol_qt_gui.py` | `testing/tests/api/object_panel.py`: F2 opens the editor; Enter renames; Esc and an existing name do not; a refresh during editing keeps the editor; "all" is not editable. Real window: right click > rename, type, paste. |
-| 23b | Rows moved by dragging: reorder (`cmd.order`) and drop on a group (`cmd.group`). Carried over from step 3; any time. | `object_panel.py` | Drop through the same function a test calls |
+| 23b | Rows moved by holding the right mouse button, dragging and releasing: reorder (`cmd.order`), drop on a group (`cmd.group`), or drop at the root to ungroup. Right click without dragging keeps the context menu. Carried over from step 3; open, order 3 (choice 93). | `object_panel.py` | Real mouse drop and keyboard move actions share the operation tested in `testing/tests/api/object_panel.py`; order and membership survive refresh and a PSE round trip. |
 
 ## Skipped
 
