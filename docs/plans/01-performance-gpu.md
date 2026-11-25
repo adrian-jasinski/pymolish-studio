@@ -52,7 +52,13 @@ Built as the answer to "Grid surface: yes, as an experiment" below:
 `set surface_type, 7`, `SurfaceJobRunGrid` in `layer2/RepSurface.cpp`.
 Two distance grids and two runs of the marching cubes that were already
 in the code; every step is a loop over grid planes, one plane a thread.
-The user judges it: question 105 in [PLAN.md](../../PLAN.md).
+
+**Decision 2026-11-25, question 105: A, recommended.** Keep it as an
+optional surface beside today's default. The next surface plan, 25b
+(order 3), adds "Solid (grid)" in Setting > Surface, carving and cavity
+support, and uses the grid with a probe of about 3 A for clay. Reconsider
+the default after the surface worker (order 5). This is a planning
+decision; those additions are not built and no new measurements were made.
 
 Measured on this laptop (32 threads), mmCIF from
 `~/.cache/pymolish-compare`, one process per row; "build" is `show_as
@@ -104,7 +110,8 @@ Left out, each named in the code: carving, cavity culling and cavity
 mode, `surface_solvent`, trimming; strips of more than one triangle; a
 grid in blocks (above 67 million cells the cells grow instead); a
 smoothness setting of its own (`solvent_radius` is that value); frame
-times in the viewport.
+times in the viewport. Carving, cavity culling and cavity mode are now
+accepted work under answer 105 A; the other omissions remain deferred.
 
 ## Status 2026-11-19, later: a profile of the surface build
 
@@ -183,7 +190,7 @@ at two smoothness values next to its times.
 | --- | --- | --- |
 | A large surface freezes the window | **A, build it on a worker thread.** | The next large item of 1b. `SurfaceJob` leaves the GUI thread; the status line says "building surface"; the surface appears when it is ready. To settle while building: what happens when the atoms change during a job (drop the result and start again), and the headless path, which must still wait. Checks: 1aon and 4v6x in the real window, the suite, the sanitizer job. |
 | Idle OpenMP threads (row 4 above) | **Yes.** | `OMP_WAIT_POLICY=passive` at start, before the core loads, unless the user set the variable or `GOMP_SPINCOUNT`. One line next to the place that picks the GPU on WSL. Numbers again after the change. **Done 2026-11-20 in 4.23.1**, in `pymol/__init__.py` just before the core is imported (the GUI start is too late, and a headless run gains too). 1aon, three surface builds, three interleaved runs each: CPU 99, 101 and 93 s with the old spinning (`GOMP_SPINCOUNT=300000`, what libgomp does when nothing is set), 65, 66 and 68 s with the policy; wall time per build 5.1 to 6.1 s in both. The ray tracer has no OpenMP loop and is not touched; its times drifted from 4 to 16 s in both settings as the laptop heated up during the runs, so they are not reported. Not the same thing: `OMP_WAIT_POLICY=active` spins without end and made the builds 3 to 5 times slower here. |
-| Grid surface (row 3 above) | **Yes, as an experiment.** | A second `surface_type` with the distance grid and the marching cubes of `layer0/marching_cubes.cpp`. Table: build time, triangles, memory and ray time for 1aon and 4v6x against today's surface; pictures side by side. Then the user decides whether it stays, and for which sizes. Written from the description of the method, not from EDTSurf's code. |
+| Grid surface (row 3 above) | **Yes, as an experiment; kept as an option by answer 105 A on 2026-11-25.** | Built in 4.76.0 as `surface_type 7`, with measurements and pictures above. Today's default stays; menu row, carving/cavities and clay remain open in 25b, order 3. Reconsider the default after the worker, order 5. Written from the description of the method, not from EDTSurf's code. |
 
 Order: the one-line change first, the worker thread next, the experiment
 last. With a worker thread the build time matters less; the experiment

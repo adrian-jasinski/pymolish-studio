@@ -101,10 +101,11 @@ choices were made while building (98 to 104).
 
 Built in the same run, 4.76.0: the grid surface experiment of 1b,
 `surface_type 7`, with its times, triangle counts, memory and pictures for
-1aon and 4v6x. It is an experiment to be judged (question 105), not a
-default. Not started in that run: the outline (15b), the surface worker
-and general undo (21g), each a slice of its own in the core; 25b waits for
-that judgment. Two of them need long benchmark runs and many test windows
+1aon and 4v6x. The user chose to keep it as an option (question 105, A,
+2026-11-25); today's surface remains the default. Not started in that run:
+the outline (15b), the surface worker and general undo (21g), each a slice
+of its own in the core; 25b waited for that judgment, now recorded in
+[PLAN-DONE.md](PLAN-DONE.md). Two of them need long benchmark runs and many test windows
 on the machine the user was working at: the runs of 4v6x took 10 of its
 17 GB, and a test window once caught what the user was typing. What was
 read for 15b is noted in its plan.
@@ -176,14 +177,15 @@ implementation task/PR, with an `X` feature or `Y` fix version under
 | --- | --- | --- | --- |
 | 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Needs the pushed branch: the last CI run is older than the repair. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
 | 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; one real sign-in and one conversation each with ChatGPT (since 4.80.0 the button of the provider "OpenAI") and with OpenRouter (31d, shipped in 4.66.0 on stand-ins), which needs the user's accounts; for the provider "Claude Code" (4.68.0, two turns tried on WSLg with a Team plan) the same five tasks, the button "Continue with Claude Code" with a signed-out Claude Code, and one turn on Windows or macOS; and one call through the connector from Codex, whose account had no credits on 2026-11-24. | Live trial recorded for Anthropic, OpenAI and Claude Code; a sign-in and a conversation recorded for ChatGPT, OpenRouter and Claude Code, on WSL and on one other system; one Codex call through the connector. |
-| 3 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan with the result of the grid surface experiment (4.76.0: times and pictures are there). Waits for the user's judgment of it, question 105; no new surface-look setting before that. | New detailed section grounded in the experiment. |
+| 3 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan with the grid surface experiment (4.76.0) and answer 105 A: keep today's default, offer "Solid (grid)" in Setting > Surface, add carving and cavity support, and use the grid with a probe of about 3 A for clay. The judgment is complete; the menu row, support and looks remain to build. Reconsider the default after the surface worker (order 5). | New detailed section grounded in the experiment and the accepted choice. |
 | 4 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. A second pass over the texture that FXAA reads since 4.65.0 (`SceneRenderAA`, `fxaa.fs`). | Frame times and pictures on black/white. |
 | 5 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. | Real-window responsiveness, suite and sanitizer checks. |
 | 6 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 
-The earlier surface dependency is preserved: the grid experiment (tried in
-4.76.0) and its judgment come before the surface looks. FXAA shipped in 4.65.0, so the outline can follow it. MAFFT stays
+The earlier surface dependency is satisfied: the grid experiment (tried in
+4.76.0) was accepted in answer 105 A before the surface looks. FXAA shipped
+in 4.65.0, so the outline can follow it. MAFFT stays
 separately installed and the provider SDKs are the lazy extra `ai`. 5c stays
 shelved; builds stay on GitHub Actions.
 
@@ -244,15 +246,10 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-One question waits, the judgment of the grid surface (4.76.0). Its
-numbers are in the `ChangeLog` and in
-[docs/plans/01-performance-gpu.md](docs/plans/01-performance-gpu.md), its
-pictures are `docs/img/grid-surface-1aon.jpg` and
-`docs/img/grid-surface-4v6x.jpg`; try it with `set surface_type, 7`.
-
-| Question | A — recommended | B | C | Dependent work |
-| --- | --- | --- | --- | --- |
-| 105 — Does the grid surface stay, and for what? | It stays as a choice beside today's surface, which remains the default: a row "Solid (grid)" in Setting > Surface, and the settings it lacks (carving, cavities) are added. Decide about a default once the surface worker (order 5) is built, since a build then no longer blocks the window. | It becomes the default above a size, for example 100,000 atoms, where today's surface takes longest (4v6x: 34 s against 9 s). Colors meet in more jagged borders there. | It is taken out again: the three-fold shorter build is not worth a second kind of surface. | 25b (order 3): with A or B the rounded "clay" surface is this surface with a probe of about 3 A, which keeps fine triangles where today's surface gets coarse; with C it stays the Gaussian map. |
+No unanswered question remains. Question 105 was answered on 2026-11-25:
+option A, recommended. The grid surface stays as an optional choice;
+today's surface remains the default. The decision and the work still to
+build are recorded in [PLAN-DONE.md](PLAN-DONE.md) and order 3 above.
 
 Choices 91–97 were answered on 2026-11-25 and built the same day (4.69.0
 to 4.75.0); they are in [PLAN-DONE.md](PLAN-DONE.md). So are 107 and 108
@@ -354,8 +351,9 @@ Objects list at once; Esc to give up a drag of a row (release it where no
 mark is shown), and scrolling the list while a row is dragged past its
 edge; keys for A−, A+ and Reset (Tab reaches them); less padding inside
 the mouse mode button than its neighbors have; a check of the thirty
-colors for color-vision deficiencies. From 4.76.0, the grid surface:
-carving, cavity culling and cavity mode, `surface_solvent` and trimming;
+colors for color-vision deficiencies. From 4.76.0, the grid surface
+(carving, cavity culling and cavity mode are now accepted work under
+answer 105 A, order 3): `surface_solvent` and trimming;
 strips longer than one triangle; a grid in blocks instead of one over the
 whole box (above 67 million cells the cells grow); frame times in the
 viewport; ray times on a cool machine. From 4.80.0: a provider "Codex"
@@ -373,8 +371,6 @@ The user's to do:
   `.venv` was rebuilt to 4.76.0 with the extras `dev`, `chem`, `fix` and
   `ai` (it had 4.67.0; the extra `ai` added `keyring` 25.7.0, which "Stay
   signed in" needs), and the suite passed there: 1121 passed, 252 skipped.
-- Judge the grid surface (question 105): the two pictures in `docs/img`,
-  and `set surface_type, 7` on a structure of your own.
 - Say where File > Get by UniProt failed (37a). On this machine the old
   plugin is not loaded (`~/.pymolpluginsrc.py` sets an empty startup
   path) and the action worked before the change; the error was

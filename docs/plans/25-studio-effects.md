@@ -15,9 +15,16 @@ that only sets surface settings and no new setting is added before that.
 table is in [1b](01-performance-gpu.md)). What it means here: with a probe
 of 3 A it is a rounded surface with fine triangles (1aon: 668,588
 triangles in 1.38 s; today's surface has 195,556 coarse ones at that
-probe), so "clay" could be this surface instead of a Gaussian map in a
-second object. This plan is written again once the user has judged the
-experiment: question 105 in [PLAN.md](../../PLAN.md).
+probe).
+
+**Decision 2026-11-25, question 105: A, recommended.** Keep the grid
+surface as a choice beside today's default. Add "Solid (grid)" in
+Setting > Surface and support carving, cavity culling and cavity mode.
+Clay uses `surface_type 7` with `solvent_radius` about 3 A, instead of a
+Gaussian map in a second object. Reconsider the default after the surface
+worker (order 5). The experiment's judgment is complete; the detailed
+replan remains open at order 3. No menu row, missing-setting support or
+surface look shipped with this decision, and no new measurements were made.
 Question 32: the color themes are built, as a group of their own.
 
 **25a-1 done 2026-11-20 in 4.34.0:** the command `stage` and three light
@@ -79,7 +86,7 @@ background and one accent color for the ligand.
 | Rim transparency | `ray_transparency_oblique`: a transparent surface gets denser where it turns away from the eye. In the ray tracer and, since the shaders have the same term (`compute_color_for_light.fs`), in the viewport. |
 | A smooth blob | `map_new name, gaussian` and `isosurface`: a rounded shape without the creases of the molecular surface. A separate object, not a representation. |
 | Depth by shading | `ambient_occlusion_mode` 1 on surfaces (planned for the soft look in 15e). |
-| Open in the roadmap | [15e](15-presets.md) five effects, [15b](15-presets.md) outline in the viewport, [21f](21-commercial-features.md) FXAA pass, [1b](01-performance-gpu.md) a grid surface as a second `surface_type`. 25 builds on them; nothing here replaces them. |
+| Roadmap dependencies | [15e](15-presets.md) five effects shipped in 4.62.0, [21f](21-commercial-features.md) FXAA in 4.65.0, and [1b](01-performance-gpu.md) the grid surface in 4.76.0 (kept by answer 105 A). [15b](15-presets.md) outline in the viewport remains open. 25 builds on them; nothing here replaces them. |
 
 ## What others do (read 2026-11-20)
 
@@ -168,8 +175,8 @@ and Molecular Nodes show.
 
 | | Option | Note |
 | --- | --- | --- |
-| A | **Now: `solvent_radius` 3 for candy glass, and the gaussian map with `isosurface` for clay, made by the preset as a second object. Then: when the grid surface of [1b](01-performance-gpu.md) (order 7 of the old roadmap) is tried, give it a "smoothness" value. If it stays, the blob becomes a `surface_type` and the presets switch to it. Recommended.** | Works today (the pictures). The second object does not follow atom colors or `hide`, which is the reason to move to a real surface type once one exists. No second smooth-surface code is written. |
-| B | A new `surface_type` for the blob right away, own code. | Same goal, but written before 1b's experiment says whether the grid surface is kept: possibly twice. |
+| A | **Selected by answer 105 A: reuse the grid `surface_type 7` with `solvent_radius` about 3 A for clay.** | The existing surface follows atom colors and visibility; no second object, surface implementation or smoothness setting is needed. The trial pictures above used the old Gaussian map. |
+| B | A separate `surface_type` implementation for the blob. | Not selected: the grid surface of 1b is now kept. |
 | C | Looks only, no blob. | Smallest; clay and night are then matte versions of today's surface. |
 
 ### Color themes
@@ -200,10 +207,10 @@ so the pieces can be mixed.
 
 | Slice | What | Check |
 | --- | --- | --- |
-| 25b-1 | Waits for 1b. Looks glossy, candy glass, frosted. | `testing/tests/api/preset.py`: each look sets and the next one undoes its settings; a picture each on black and on white. |
+| 25b-1 | Looks glossy, candy glass, frosted; replan with answer 105 A. The grid experiment and its judgment are complete. | `testing/tests/api/preset.py`: each look sets and the next one undoes its settings; a picture each on black and on white. |
 | 25b-2 | Themes: five rows, five palettes, five backgrounds. Built with 15e's five effects. | The palette and background tests list them; pictures. |
 | 25a-1 | `stage`: floor, shadow, soft, mirror, off; looks studio, top light, soft box. | `testing/tests/api/stage.py`: the floor lies under every visible atom; `off` leaves no object and the old view; `zoom` ignores the floor; a ray-traced picture has darker floor pixels under the molecule. Ray times in the plan. |
-| 25b-3 | Waits for 1b. Clay on the blob surface, as a surface type if the grid surface stays. | Blob built in under 1 s for 1AON; picture. |
+| 25b-3 | Clay on the kept grid surface (`surface_type 7`, probe about 3 A); include "Solid (grid)" and carving/cavity support in the replan. | Target: blob built in under 1 s for 1aon; picture. Not met in 4.76.0 (1.38 s). |
 | 25a-2 | Not planned now (question 24: ray traced only at first). A viewport shadow is asked again after 25a-1 is seen. | |
 
 ## Skipped

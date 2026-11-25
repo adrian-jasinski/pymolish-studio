@@ -39,8 +39,9 @@ a Claude account through the installed Claude Code; its row is the first of
 their numbers; the trial of 31 (order 2) now also covers this provider.
 
 **Built 2026-11-25, 4.76.0:** the grid surface experiment of 1b; its row
-is the first of "Finished milestones of open steps". Whether it stays is
-question 105 in [PLAN.md](PLAN.md). The open orders moved up by one: 25b 3,
+is the first of "Finished milestones of open steps". Question 105 was
+answered the same day: keep it as an option (A, recorded below).
+The open orders moved up by one: 25b 3,
 15b 4, the surface worker 5, 21g 6.
 
 **Built 2026-11-25, 4.68.1 to 4.75.0:** all of step 37 (37a to 37g) and
@@ -107,6 +108,13 @@ Decided by the user on 2026-11-25, after the run of step 8 (4.76.1 to
 | Question | Decision | State |
 | --- | --- | --- |
 | 106 | Option C, "finish here": step 8 ends with what is built. The VLA macros, raw `new` / `delete`, the `ok_assert` chains and `ov/` stay as they are. Recommended was A (go on with what ends in a deletion). | Step 8 closed at 4.76.14; nothing to build. To reopen: the counts and the reasons per file are in [docs/plans/08-cpp-modernization.md](docs/plans/08-cpp-modernization.md). |
+
+Decided by the user on 2026-11-25, after the grid surface experiment
+(4.76.0). This records the choice; no new feature shipped.
+
+| Question | Decision | State |
+| --- | --- | --- |
+| 105 — Does the grid surface stay, and for what? | Option A, recommended: keep it beside today's surface, which remains the default; add "Solid (grid)" in Setting > Surface and support carving and cavities. Use the grid with a probe of about 3 A for the rounded clay surface. Reconsider the default after the surface worker. | Grid surface available as `surface_type 7` since 4.76.0. Menu row, carving/cavities and looks open under 25b, order 3; the worker is order 5. B (default above a size) and C (remove it) were not selected. |
 
 Decided by the user on 2026-11-25, choices 91–97 from the GUI request of
 2026-11-24, and built the same day.
@@ -326,7 +334,7 @@ where the decision shipped, "open" with its order where it has not.
 | 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Done in 4.63.1 (sphere modes), 4.64.0 (background picture) and 4.65.0 (FXAA, off by default: choice 73). |
 | 18 | As recommended: idle OpenMP threads sleep at once. | 1b. Done in 4.23.1. |
 | 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 7. |
-| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Built as an experiment in 4.76.0 (`surface_type 7`); the judgment is question 105. Moved up by the answer to question 25. |
+| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Built as an experiment in 4.76.0 (`surface_type 7`); kept as an option by answer 105 A. Moved up by the answer to question 25. |
 
 14 was answered by "release 17" (4.19.42).
 
@@ -341,7 +349,7 @@ applicable, the 2026-11-23 follow-up.
 | 22 | As recommended: the rename wizard stays as the fallback without a window. | [Plan 23](docs/plans/23-rename-in-panel.md). Done in 4.24.0. |
 | 23 | The 2D ligand drawing is our own code, rdkit allowed; interactive: selecting a residue in 2D selects it in 3D. | [Plan 24](docs/plans/24-ligand-2d.md); the selection goes both ways. Done in 4.32.0 (command) and 4.33.0 (panel). |
 | 24 | Shadows ray traced only at first. | [Plan 25](docs/plans/25-studio-effects.md), 25a. Done in 4.34.0. |
-| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up and was built in 4.76.0; the surface looks and the blob are planned again with its result; no surface look and no new setting before that. Open. |
+| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up and was built in 4.76.0, then kept by answer 105 A. Replan the surface looks and blob with that result and choice; open, order 3. |
 | 26 | As recommended: one row, icons. The same day: Builder and Scenes show only the icon, the name on mouse-over; "Draw/Ray" becomes "Draw". | Builder, Scenes and Draw done in 4.20.0; the rest in 4.30.0. |
 | 27 | The paint roller. (The answer ends "rest", cut off.) | Done in 4.20.0 with "Bg". |
 | 28 | As recommended: live scale through Qt's private function, the "next start" message as fallback. | [Plan 27](docs/plans/27-ui-scale.md). Done in 4.31.0 on Linux; 27d investigates the new freeze report before platform verification in 27c, open at order 1. |

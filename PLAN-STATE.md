@@ -56,8 +56,10 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.80.0 | The provider "OpenAI" of the Chat tab has the button "Continue with ChatGPT" next to its field for an API key; while signed in the ChatGPT plan is used and the key field is hidden. The entry "ChatGPT" left the list of providers. The sign-in is that of 4.66.0: stand-in tests only, no real sign-in yet. |
 
 Of the ten features requested on 2026-11-20, nine have a working version.
-The tenth, the surface looks, waits for the judgment of the grid surface of 1b
-(4.76.0, question 105). Steps 19, 20,
+The tenth, the surface looks, remains open at order 3. Question 105 was
+answered on 2026-11-25: keep the grid surface of 1b (4.76.0) as an option
+and use it for clay; today's default stays. The menu row, carving and
+cavity support, and surface looks are not built yet. Steps 19, 20,
 26, 29 and 32 are finished. Of the eleven drafts of 2026-11-23, all eleven have a working version;
 the chat (31a, 31c) shipped in 4.58.0, its external connector 31b in 4.61.0,
 the sign-in in the browser 31d in 4.66.0 (its ChatGPT half sits in the
