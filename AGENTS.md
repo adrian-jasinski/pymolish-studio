@@ -96,8 +96,9 @@ CI (`.github/workflows/build.yml`) builds Linux (apt) / Windows / macOS (native 
 - Don't commit build output (`build/`, `generated/`, `*.pyc`).
 - Commit messages: `<type>(<scope>): <summary>` with type in `remove | perf | simplify | ui | fix | deps | ci | docs`. Example: `remove(gui): drop Tk GUI and Pmw support`.
 - Commit after each completed task. No AI attribution trailers in commit messages. Never force-push `master`.
-- Keep the plans true (rule of 2026-11-20). At the end of every run that ships a feature (a version with a new `X`), bring `PLAN.md` and `PLAN-DONE.md` up to date before the last message, in a `docs(plan)` commit of their own:
-  - `PLAN.md`: take the shipped row out of the open-work table, or cut it down to what is left; renumber the order and fix every "order N" in the text; add the version to the state table at the top; correct "Waiting for the user" and the user's to-do list against the facts (pull requests, what is pushed, files that are named).
+- Keep the plans true (rule of 2026-11-20). At the end of every run that ships a feature (a version with a new `X`), bring `PLAN.md`, `PLAN-STATE.md` and `PLAN-DONE.md` up to date before the last message, in a `docs(plan)` commit of their own:
+  - `PLAN.md`: take the shipped row out of the open-work table, or cut it down to what is left; renumber the order and fix every "order N" in the text; correct "Waiting for the user" and the user's to-do list against the facts (pull requests, what is pushed, files that are named).
+  - `PLAN-STATE.md`: add the version to the shipped-state table and update the checked version and summary.
   - `PLAN-DONE.md`: one row per shipped milestone with date, version, what shipped and what differs from the plan; move a step to "Finished steps" when its last milestone ships; in the tables of decisions, replace "to build" by the version or by "open" with its order.
   - The detailed plan in `docs/plans/`: a note at the top with the date, the version, what was measured and what was left out.
   - A number in these files (a width, a time, a count) is one that was measured in that run, or it says that it is an estimate.
