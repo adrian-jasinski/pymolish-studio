@@ -201,6 +201,17 @@ wire, illustration, the solvent row and cartoon transparency came.
   glass in the new flat.
 - Commit: `ui(presets): wire and illustration presets, shades of one color`.
 
+**Read for 15b on 2026-11-25, nothing built.** The picture that the FXAA
+pass reads (`CShaderMgr::bindOffscreen`, `SceneRenderAA`) is a color
+texture with a depth *renderbuffer* (`RenderTargetGL::layout` in
+`layer0/GenericBuffer.cpp`), and a shader cannot read a renderbuffer. An
+edge pass over the depth needs a depth texture on that target. The same
+renderbuffer is handed to the pass for transparency mode 3
+(`bindOffscreenOIT` takes `offscreen_rt->_rbo`), so that path has to be
+given the texture too, or keep a renderbuffer of its own. The shaders are
+GLSL 1.20, where a depth texture is read like any other. Only one driver
+can be tried on this machine (d3d12 under WSLg, or llvmpipe).
+
 **15b, outline in the viewport. Approved 2026-11-20, to build.** The answer:
 "black, or a color that will be visible on the selected background". So the
 line takes its color from the background, as the ray-traced outline does

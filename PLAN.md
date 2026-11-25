@@ -102,9 +102,12 @@ choices were made while building (98 to 104).
 Built in the same run, 4.76.0: the grid surface experiment of 1b,
 `surface_type 7`, with its times, triangle counts, memory and pictures for
 1aon and 4v6x. It is an experiment to be judged (question 105), not a
-default. Not started in that run: the outline, the surface worker and
-general undo, each a slice of its own in the core; 25b waits for that
-judgment.
+default. Not started in that run: the outline (15b), the surface worker
+and general undo (21g), each a slice of its own in the core; 25b waits for
+that judgment. Two of them need long benchmark runs and many test windows
+on the machine the user was working at: the runs of 4v6x took 10 of its
+17 GB, and a test window once caught what the user was typing. What was
+read for 15b is noted in its plan.
 
 **Shipped state, checked 2026-11-25: 4.76.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
@@ -365,10 +368,13 @@ viewport; ray times on a cool machine.
 
 The user's to do:
 
-- Look at the eight changes of 2026-11-25 in your own window. Your
-  `.venv` holds an older build: close pymolish and run
-  `uv pip install --python .venv/bin/python --no-build-isolation --config-settings use-msgpackc=no '.[dev,chem,fix]'`.
-  They were built and tried in a copy of their own.
+- Look at the changes of 2026-11-25 in your own window. They were built
+  and tried in a copy; at the end of the run, with pymolish closed, your
+  `.venv` was rebuilt to 4.76.0 with the extras `dev`, `chem`, `fix` and
+  `ai` (it had 4.67.0; the extra `ai` added `keyring` 25.7.0, which "Stay
+  signed in" needs), and the suite passed there: 1121 passed, 252 skipped.
+- Judge the grid surface (question 105): the two pictures in `docs/img`,
+  and `set surface_type, 7` on a structure of your own.
 - Say where File > Get by UniProt failed (37a). On this machine the old
   plugin is not loaded (`~/.pymolpluginsrc.py` sets an empty startup
   path) and the action worked before the change; the error was
@@ -379,7 +385,7 @@ The user's to do:
   on Linux when it is pressed. Both are handled; only Linux was tried.
 - Push `feature13` and open its pull request. Local tracking refs checked
   2026-11-25 after 4.75.0: `origin/feature13` is at the plan commit of
-  4.66.0; including this plan commit the branch is 19 commits ahead
+  4.66.0; including this plan commit the branch is 20 commits ahead
   (4.67.0 to 4.76.0 with their plan commits, the decisions 91 to 97 and a
   repair of the tests) and contains `feature12` (itself 9 commits ahead
   of its tracking ref). At the last remote check `feature13` had no pull
