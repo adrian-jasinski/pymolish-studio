@@ -3,14 +3,14 @@
 [Roadmap](../../PLAN.md) · Request 2026-11-13 · Draft; counts are `grep` counts,
 nothing was built, timed or changed for this plan
 
-> **2026-11-25, 4.76.1 to 4.76.13.** The `malloc` half of 8c is done as far
+> **2026-11-25, 4.76.1 to 4.76.14.** The `malloc` half of 8c is done as far
 > as a buffer has one owner: 230 of 297 allocation sites and 274 of 353
 > frees are gone (67 and 79 left, each with its reason below). The
 > mechanical part of 8d is done: 215 macro calls on `pymol::vla` objects are
 > member calls; 611 calls on raw pointers are left. Measured: the suite
-> (1153 passed, 250 skipped), a sanitizer run without a report, the ray
+> (1154 passed, 250 skipped), a sanitizer run without a report, the ray
 > geometry of 385 combinations and a session round trip identical to
-> 4.76.0. Five defects that were in 4.76.0 came out and are fixed. Left
+> 4.76.0. Eight defects that were in 4.76.0 came out and are fixed. Left
 > out: `compare.py` (the machine was in use), any run on Windows, macOS or
 > GCC 11, any look at a window. Not started: raw `new` / `delete`, 8e, 8f,
 > 8g. Where the step should end is question 106 in
@@ -287,7 +287,7 @@ removal lays bare, not removed because it is not neutral:
   Not run: `compare.py` (the machine was busy with the sanitizer build;
   none of the seven functions is on a profile of the benchmark rows).
 
-**8c, the `malloc` half, 2026-11-25 in 4.76.1 to 4.76.13.**
+**8c, the `malloc` half, 2026-11-25 in 4.76.1 to 4.76.14.**
 
 - Done in four groups of files, three of them in parallel branches, one
   commit per group: Selector, ObjectMolecule, ObjectMolecule2, PlugIOManager
@@ -320,6 +320,8 @@ removal lays bare, not removed because it is not neutral:
   | `load_png` and `bg_image_filename` crash on a `data:image/png;base64,` text that is not base64 | a new test | 4.76.5 |
   | `valence` with a source object writes one byte before a vector (bond index -1) and ends in "double free or corruption" | a new test | 4.76.6 |
   | a surface with `ambient_occlusion_mode` 3 reads a neighbor map that was freed | the sanitizer run on a new test | 4.76.13 |
+  | spheres of a part of an object with `sphere_mode` 6 to 8 take their normals from the wrong atoms and read past the coordinate buffer | reading, then reproduced under the sanitizer | 4.76.14 |
+  | with `cartoon_all_alt` the cartoon leaks four arrays per alternate location | reading | 4.76.10 |
   | every surface leaks two arrays (`LastVisib`, `LastColor`) | reading | 4.76.8 |
   | a mesh without solvent dots writes into a zero-size buffer | reading | 4.76.8 |
   | `MatchAlign` leaks one table when the other allocation fails | reading | 4.76.3 |
@@ -337,12 +339,11 @@ removal lays bare, not removed because it is not neutral:
   | `MyPNG.cpp` | 2 | assigned after `setjmp` |
   | `RepLabel.cpp`, `RepDistLabel.cpp`, `RepCylBond.cpp`, `Pixmap.cpp`, `CGOGL.cpp`, `Field.cpp`, `TestPyMOL.cpp`, `ListMacros.h` | 11 | `Rep::P` is freed in `Rep.cpp`; `CPixmap` is memset; a three-float block per bond; the rest was not looked at |
 
-- Checks: the suite on the final tree, 1153 passed and 250 skipped (1122
+- Checks: the suite on the final tree, 1154 passed and 250 skipped (1122
   and 251 before; the new tests are in `core_buffers.py`,
   `buffers_ray_surface.py` and five existing files). A sanitizer build of the committed tree in a
   copy (address and undefined behavior, the flags of the CI job, GCC 13):
-  no report; 1122 passed, 274 skipped (no rdkit, PDBFixer or OpenMM there),
-  one failed for a missing skip mark that is added since.
+  no report; 1123 passed, 275 skipped (no rdkit, PDBFixer or OpenMM there).
   Ray geometry: the SHA-256 of `cmd.get_povray()` is the same on the 4.76.0
   build and on the new one for 385 combinations of five structures
   (protein, DNA, RNA), nine cartoon types, 31 cartoon settings, ribbon,
@@ -365,6 +366,9 @@ removal lays bare, not removed because it is not neutral:
   `Selector.cpp` 4, `RepMesh.cpp` 4, `Extrude.cpp` 4, `Sculpt.cpp` 2,
   `ShaderPrg.cpp` 2, `Util.cpp` 1, `Triangle.cpp` 1. These compile and
   were read; no test or picture proves them.
+- Seen and not fixed: in `RepCartoonNew` the VLA `ring_anchor` is
+  allocated on every pass of the loop over alternate locations and freed
+  once after it (a leak with `cartoon_all_alt`; it goes with 8d).
 - Not run: `compare.py` (the user's own pymolish ran on the machine; none
   of the changed functions got a new zero-fill inside a loop per atom or
   pixel). Nothing was compiled with MSVC, Apple Clang or GCC 11: the first
@@ -384,7 +388,7 @@ removal lays bare, not removed because it is not neutral:
   `Executive.cpp`, `ObjectMolecule.cpp`, `Selector.cpp`, `Cmd.cpp`), the
   lists of `Selector.cpp`, the readers of `ObjectMolecule.cpp`.
 
-**Counts on 2026-11-25 at 4.76.13** (`grep`, same patterns as above):
+**Counts on 2026-11-25 at 4.76.13, unchanged by 4.76.14** (`grep`, same patterns as above):
 
 | Idiom | Left | Slice |
 | --- | --- | --- |
