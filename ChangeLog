@@ -4,6 +4,22 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.75.0
+
+	* Three buttons at the right of the tabs Command, Sequence and Chat
+	  set the size of the text in the tab that is shown: A- one point
+	  smaller, A+ one point larger, Reset back to what the tab starts
+	  with. Command: the log and the entry line. Sequence: the rows, in
+	  their monospace font; the scroll range and the place of a click
+	  follow. Chat: the conversation and the prompt. The change is seen
+	  at once, each tab has its own size, and the sizes come back at
+	  the next start. The titles of the tabs, the lists of the Sequence
+	  tab and the UI scale are not touched. Between 6 and 40 points.
+
+	  Tried in the real window: three points more in Command, two in
+	  Sequence, one less in Chat; after a restart the tabs had 12, 11
+	  and 8 points where they start with 9.
+
 	* 4.74.0
 
 	* The Sequence tab has a row of its own over the sequence: the lists

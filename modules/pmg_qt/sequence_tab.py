@@ -147,6 +147,13 @@ class SequenceTab(QtWidgets.QAbstractScrollArea):
     def resizeEvent(self, event):
         self.set_ranges()
 
+    def changeEvent(self, event):
+        # another text size: other characters per line, other places to hit
+        if event.type() == QtCore.QEvent.Type.FontChange and hasattr(self, "state"):
+            self.set_ranges()
+            self.viewport().update()
+        super().changeEvent(event)
+
     def showEvent(self, event):
         self.refresh()
 

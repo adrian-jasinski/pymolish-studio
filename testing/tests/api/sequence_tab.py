@@ -169,3 +169,121 @@ def test_options_row():
     for setting, _, choices in SEQUENCE_OPTIONS:
         expected += [None] + [(label, setting, value) for label, value in choices]
     assert rows == expected[1:] and len(rows) == 14
+
+
+def test_tab_font_buttons(monkeypatch, tmp_path):
+    """37g: A-, A+ and Reset beside the tabs size the text of the tab that
+    is shown, each tab for itself, and the sizes come back at the next start."""
+    from pmg_qt.pymol_qt_gui import TabFontButtons
+    from pmg_qt.sequence_tab import MARGIN, SequenceTab
+    from pymol.Qt import QtCore, QtWidgets
+    from PySide6.QtTest import QTest
+
+    ini = str(tmp_path / "settings.ini")
+    Settings = QtCore.QSettings
+    monkeypatch.setattr(
+        QtCore, "QSettings", lambda *a: Settings(ini, Settings.Format.IniFormat)
+    )
+    cmd.fab("ACDEFGHIKL" * 10, "m")
+
+    def window():
+        tabs = QtWidgets.QTabWidget()
+        log, entry = (
+            QtWidgets.QPlainTextEdit("a long line " * 40),
+            QtWidgets.QLineEdit(),
+        )
+        font = log.font()
+        font.setPointSizeF(9)
+        log.setFont(font)
+        sequence = SequenceTab(cmd)
+        history, prompt = QtWidgets.QPlainTextEdit(), QtWidgets.QLineEdit()
+        for title, widgets in (
+            ("Command", (log, entry)),
+            ("Sequence", (sequence,)),
+            ("Chat", (history, prompt)),
+        ):
+            page = QtWidgets.QWidget()
+            layout = QtWidgets.QVBoxLayout(page)
+            for widget in widgets:
+                layout.addWidget(widget)
+            tabs.addTab(page, title)
+        targets = {
+            "Command": (log, entry),
+            "Sequence": (sequence,),
+            "Chat": (history, prompt),
+        }
+        buttons = TabFontButtons(tabs, targets)
+        tabs.setCornerWidget(buttons)
+        tabs.resize(600, 160)
+        tabs.show()
+        sequence.refresh()
+        return tabs, buttons, targets
+
+    def sizes(targets):
+        return {t: [w.font().pointSizeF() for w in ws] for t, ws in targets.items()}
+
+    tabs, buttons, targets = window()
+    start = sizes(targets)
+    smaller, larger, reset = buttons.findChildren(QtWidgets.QToolButton)
+    assert [b.text() for b in (smaller, larger, reset)] == ["A−", "A+", "Reset"]
+    for button in (smaller, larger, reset):  # reached with Tab, and explained
+        assert (
+            button.toolTip() and button.focusPolicy() & QtCore.Qt.FocusPolicy.TabFocus
+        )
+    assert start["Command"][0] == 9
+
+    larger.click()
+    larger.click()  # the Command tab is shown: its log and its entry
+    assert sizes(targets)["Command"] == [s + 2 for s in start["Command"]]
+    assert sizes(targets)["Chat"] == start["Chat"]
+    assert sizes(targets)["Sequence"] == start["Sequence"]
+    assert (
+        targets["Command"][0].font().family()
+        == tabs.widget(0).findChild(QtWidgets.QPlainTextEdit).font().family()
+    )
+
+    # the Sequence tab: other cells, other scroll range, and a click still
+    # finds the residue under it
+    sequence = targets["Sequence"][0]
+    tabs.setCurrentIndex(1)
+    QtWidgets.QApplication.processEvents()
+    width, _ = sequence.cell()
+    reach = sequence.horizontalScrollBar().maximum()
+    for _ in range(4):
+        larger.click()
+    assert sizes(targets)["Sequence"] == [start["Sequence"][0] + 4]
+    wide, height = sequence.cell()
+    assert wide > width and sequence.horizontalScrollBar().maximum() > reach
+    offsets = sequence.rows[1][2]
+    first = offsets.index(5)
+    x = MARGIN + (offsets[first + 3] + 0.5) * wide
+    QTest.mouseClick(
+        sequence.viewport(),
+        QtCore.Qt.MouseButton.LeftButton,
+        QtCore.Qt.KeyboardModifier.NoModifier,
+        QtCore.QPoint(int(x), int(1.5 * height)),
+    )
+    assert selected() == [4]
+    assert sequence.font().family() == SequenceTab(cmd).font().family()
+
+    tabs.setCurrentIndex(2)
+    smaller.click()
+    assert sizes(targets)["Chat"] == [s - 1 for s in start["Chat"]]
+    for _ in range(60):  # never unreadable
+        smaller.click()
+    assert min(sizes(targets)["Chat"]) == TabFontButtons.SMALLEST
+
+    # the next start: each tab has its size again
+    again, buttons2, targets2 = window()
+    assert sizes(targets2)["Command"] == [s + 2 for s in start["Command"]]
+    assert sizes(targets2)["Sequence"] == [start["Sequence"][0] + 4]
+    assert min(sizes(targets2)["Chat"]) == TabFontButtons.SMALLEST
+    again.setCurrentIndex(2)
+    buttons2.change(0)  # Reset: this tab only
+    assert sizes(targets2)["Chat"] == start["Chat"]
+    assert sizes(targets2)["Command"] == [s + 2 for s in start["Command"]]
+    third, _, targets3 = window()
+    assert sizes(targets3)["Chat"] == start["Chat"]
+    for _ in range(60):
+        buttons2.change(1)
+    assert max(sizes(targets2)["Chat"]) == TabFontButtons.LARGEST

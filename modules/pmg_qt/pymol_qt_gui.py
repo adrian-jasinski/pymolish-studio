@@ -283,6 +283,11 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         from .chat_panel import ChatPanel
         self.chat_panel = ChatPanel(cmd, self)
         self.command_tabs.addTab(self.chat_panel, "Chat")
+        self.command_tabs.setCornerWidget(TabFontButtons(self.command_tabs, {
+            "Command": (self.browser, self.lineedit),
+            "Sequence": (self.sequence_tab,),
+            "Chat": (self.chat_panel.history, self.chat_panel.prompt),
+        }))
 
         '''
         # command completion
@@ -1307,6 +1312,69 @@ def SettingAction(parent, cmd, name, label='', true_value=1, false_value=0,
     return action
 
 window = None
+
+
+class TabFontButtons(QtWidgets.QWidget):
+    """A-, A+ and Reset at the right of the tabs of the command panel: the
+    size of the text in the tab that is shown, remembered for each tab.
+    targets: tab title -> the widgets of that tab whose text is sized; each
+    keeps its font and its distance to the others, all move by one point."""
+
+    SMALLEST, LARGEST = 6, 40  # points
+
+    def __init__(self, tabs, targets):
+        super().__init__(tabs)
+        self.tabs, self.targets = tabs, targets
+        self.settings = QtCore.QSettings("pymolish", "pymolish-studio")
+        # what the widgets start with: Reset goes back to it
+        self.defaults = {
+            title: [QtGui.QFontInfo(w.font()).pointSizeF() for w in widgets]
+            for title, widgets in targets.items()
+        }
+        row = QtWidgets.QHBoxLayout(self)
+        row.setContentsMargins(0, 0, 2, 0)
+        row.setSpacing(2)
+        for text, tip, step in (
+                ("A\u2212", "Smaller text in this tab", -1),
+                ("A+", "Larger text in this tab", 1),
+                ("Reset", "The text size this tab starts with", 0)):
+            button = QtWidgets.QToolButton()
+            button.setText(text)
+            button.setToolTip(tip)
+            button.setAccessibleName(tip)
+            button.setAutoRaise(True)
+            button.clicked.connect(lambda _=False, step=step: self.change(step))
+            row.addWidget(button)
+        for title in targets:
+            self._apply(title, self.step(title))
+
+    def step(self, title):
+        """Points added to the text of that tab."""
+        try:
+            return int(self.settings.value("fonts/" + title, 0))
+        except (TypeError, ValueError):
+            return 0
+
+    def _apply(self, title, step):
+        for widget, size in zip(self.targets[title], self.defaults[title]):
+            font = widget.font()
+            font.setPointSizeF(size + step)
+            widget.setFont(font)
+
+    def change(self, step):
+        """One point smaller (-1) or larger (1) in the tab that is shown,
+        or back to what it starts with (0)."""
+        title = self.tabs.tabText(self.tabs.currentIndex())
+        if title not in self.targets:
+            return
+        sizes = self.defaults[title]
+        new = self.step(title) + step if step else 0
+        new = max(self.SMALLEST - min(sizes), min(self.LARGEST - max(sizes), new))
+        if new:
+            self.settings.setValue("fonts/" + title, int(new))
+        else:
+            self.settings.remove("fonts/" + title)
+        self._apply(title, new)
 
 
 class CommandLineEdit(QtWidgets.QLineEdit):
