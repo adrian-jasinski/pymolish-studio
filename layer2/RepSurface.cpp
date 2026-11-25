@@ -41,8 +41,10 @@ Z* -------------------------------------------------------------------
 #include "Util.h"
 #include "Vector.h"
 #include "main.h"
+#include "marching_cubes.h"
 
 #include <algorithm>
+#include <cmath>
 #include <vector>
 
 #ifdef NT
@@ -56,7 +58,8 @@ enum class SurfaceType {
   SolidDeterministic = 3,
   SolidWeightings = 4,
   SolidScribed = 5,
-  SolidEmpirical = 6
+  SolidEmpirical = 6,
+  SolidGrid = 7 //!< built on a distance grid; drawn as Solid
 };
 
 struct RepSurface : Rep {
@@ -3771,8 +3774,242 @@ static void SurfaceJobSetProbeRadius(SurfaceType surface_type, float point_sep,
   *probe_rad_less2 = (*probe_rad_less) * (*probe_rad_less);
 }
 
+namespace
+{
+/// Values on a regular grid, for marching cubes.
+struct GridField : mc::Field {
+  size_t n[3]{};
+  float origin[3]{};
+  float h{}; //!< edge of a cell
+  std::vector<float> data;
+
+  size_t xDim() const override { return n[0]; }
+  size_t yDim() const override { return n[1]; }
+  size_t zDim() const override { return n[2]; }
+  float get(size_t x, size_t y, size_t z) const override
+  {
+    return data[(z * n[1] + y) * n[0] + x];
+  }
+  mc::Point get_point(size_t x, size_t y, size_t z) const override
+  {
+    return {origin[0] + h * x, origin[1] + h * y, origin[2] + h * z};
+  }
+};
+} // namespace
+
+/**
+ * Lowers every cell to its distance from the nearest sphere, where that is
+ * less than the cell holds: |cell - center| - radius, for the cells up to
+ * `reach` beyond a sphere.
+ *
+ * @param radii per center, or nullptr for points
+ * @param more added to every radius
+ */
+static void GridFieldMinDistance(GridField& field, const float* centers,
+    size_t n_centers, const float* radii, float more, float reach)
+{
+  auto const nz = static_cast<int>(field.n[2]);
+  auto const h = field.h;
+  auto const* o = field.origin;
+  auto plane_range = [&](size_t a, int& first, int& last) {
+    float r = (radii ? radii[a] : 0.f) + more + reach;
+    float z = centers[3 * a + 2] - o[2];
+    first = std::max(0, static_cast<int>(std::ceil((z - r) / h)));
+    last = std::min(nz - 1, static_cast<int>(std::floor((z + r) / h)));
+  };
+  // the centers that reach each z plane: a thread owns a plane, so no two
+  // write the same cell
+  std::vector<size_t> start(nz + 1);
+  for (size_t a = 0; a < n_centers; ++a) {
+    int first, last;
+    plane_range(a, first, last);
+    for (int k = first; k <= last; ++k)
+      ++start[k + 1];
+  }
+  for (int k = 0; k < nz; ++k)
+    start[k + 1] += start[k];
+  std::vector<unsigned> listed(start[nz]);
+  {
+    std::vector<size_t> fill(start.begin(), start.end() - 1);
+    for (size_t a = 0; a < n_centers; ++a) {
+      int first, last;
+      plane_range(a, first, last);
+      for (int k = first; k <= last; ++k)
+        listed[fill[k]++] = static_cast<unsigned>(a);
+    }
+  }
+  auto const nx = static_cast<int>(field.n[0]);
+  auto const ny = static_cast<int>(field.n[1]);
+#pragma omp parallel for schedule(dynamic)
+  for (int k = 0; k < nz; ++k) {
+    float* plane = field.data.data() + static_cast<size_t>(k) * ny * nx;
+    for (size_t b = start[k]; b < start[k + 1]; ++b) {
+      size_t a = listed[b];
+      float radius = (radii ? radii[a] : 0.f) + more;
+      float r = radius + reach;
+      float cx = centers[3 * a] - o[0];
+      float cy = centers[3 * a + 1] - o[1];
+      float dz = k * h - (centers[3 * a + 2] - o[2]);
+      float ry2 = r * r - dz * dz;
+      if (ry2 < 0.f)
+        continue;
+      float ry = std::sqrt(ry2);
+      int j0 = std::max(0, static_cast<int>(std::ceil((cy - ry) / h)));
+      int j1 = std::min(ny - 1, static_cast<int>(std::floor((cy + ry) / h)));
+      for (int j = j0; j <= j1; ++j) {
+        float dy = j * h - cy;
+        float rx2 = ry2 - dy * dy;
+        if (rx2 < 0.f)
+          continue;
+        float rx = std::sqrt(rx2);
+        int i0 = std::max(0, static_cast<int>(std::ceil((cx - rx) / h)));
+        int i1 = std::min(nx - 1, static_cast<int>(std::floor((cx + rx) / h)));
+        float* row = plane + static_cast<size_t>(j) * nx;
+        float d2 = dy * dy + dz * dz;
+        for (int i = i0; i <= i1; ++i) {
+          float dx = i * h - cx;
+          float d = std::sqrt(dx * dx + d2) - radius;
+          if (d < row[i])
+            row[i] = d;
+        }
+      }
+    }
+  }
+}
+
+/**
+ * The solvent excluded surface from two distance grids and marching cubes
+ * (surface_type 7), after the method ChimeraX describes: the surface the
+ * probe center can reach is where the distance to the atoms, each enlarged
+ * by the probe, is zero; the molecular surface is what lies one probe
+ * radius inside of that. Every step is a loop over grid planes.
+ *
+ * ponytail: an experiment (docs/plans/01-performance-gpu.md). Unlike the
+ * surface of triangulated dots it has no carving (surface_carve_*), no
+ * cavity culling or cavity mode, no surface_solvent and no trimming, and it
+ * gives the drawing code strips of one triangle each. The grid covers the
+ * whole box: above GRID_CELLS the cells get larger. If the surface stays:
+ * those settings, longer strips, and a grid in blocks.
+ */
+static int SurfaceJobRunGrid(PyMOLGlobals* G, SurfaceJob* I)
+{
+  const size_t GRID_CELLS = size_t(1) << 26; // two grids of 256 MB
+  auto const n_atom = I->atomInfo.size();
+  const int* present = I->presentVla.empty() ? nullptr : I->presentVla.data();
+
+  SurfaceJobPurgeResult(G, I);
+  I->V.resize(1);
+  I->VN.resize(1);
+
+  std::vector<float> centers, radii;
+  float lo[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
+  float hi[3] = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
+  float max_vdw = 0.f;
+  for (size_t a = 0; a < n_atom; ++a) {
+    if (present && !present[a])
+      continue;
+    const float* v = I->coord.data() + 3 * a;
+    centers.insert(centers.end(), v, v + 3);
+    radii.push_back(I->atomInfo[a].vdw);
+    max_vdw = std::max(max_vdw, radii.back());
+    for (int i = 0; i < 3; ++i) {
+      lo[i] = std::min(lo[i], v[i]);
+      hi[i] = std::max(hi[i], v[i]);
+    }
+  }
+  if (radii.empty())
+    return true;
+
+  GridField sas;
+  // The triangulated dots end up about two point separations apart (1aon:
+  // 1.8 triangles per square Angstrom at 0.5). Cells of that size give as
+  // many triangles; cells of one separation gave 4.4 times as many, and
+  // drawing, coloring and ray tracing then cost more than the build saved.
+  sas.h = 2 * I->pointSep;
+  float probe, margin;
+  for (;;) { // larger cells until the box fits
+    probe = std::max(I->probeRadius, sas.h);
+    margin = max_vdw + probe + 3 * sas.h;
+    size_t cells = 1;
+    for (int i = 0; i < 3; ++i) {
+      sas.origin[i] = lo[i] - margin;
+      sas.n[i] = static_cast<size_t>((hi[i] - lo[i] + 2 * margin) / sas.h) + 2;
+      cells *= sas.n[i];
+    }
+    if (cells <= GRID_CELLS)
+      break;
+    sas.h *= std::cbrt(static_cast<float>(cells) / GRID_CELLS) * 1.01f;
+  }
+  auto const cells = sas.n[0] * sas.n[1] * sas.n[2];
+  auto const band = 2 * sas.h; // how far from a surface the distance is kept
+  PRINTFB(G, FB_RepSurface, FB_Blather)
+  " RepSurface: grid of %zu x %zu x %zu cells of %.2f A, probe %.2f A.\n",
+      sas.n[0], sas.n[1], sas.n[2], sas.h, probe ENDFB(G);
+
+  // 1: the distance to the atoms enlarged by the probe; outside: band
+  sas.data.assign(cells, band);
+  GridFieldMinDistance(
+      sas, centers.data(), radii.size(), radii.data(), probe, band);
+  if (G->Interrupt)
+    return false;
+  OrthoBusyFast(G, 1, 5);
+  // the places of the probe center: the vertices of that surface
+  auto reach = mc::march(sas, 0.f, false);
+  if (G->Interrupt)
+    return false;
+  OrthoBusyFast(G, 2, 5);
+
+  // 2: inside it, the distance to those places, less the probe radius:
+  // positive in the molecule, zero on its surface. Outside it the first
+  // distance goes on, so the field has no step at the probe's surface.
+  GridField ses;
+  std::copy_n(sas.n, 3, ses.n);
+  std::copy_n(sas.origin, 3, ses.origin);
+  ses.h = sas.h;
+  ses.data.assign(cells, probe + band);
+  GridFieldMinDistance(ses, &reach.vertices[0].x, reach.vertexCount, nullptr,
+      0.f, probe + band);
+  reach = {};
+#pragma omp parallel for
+  for (int k = 0; k < static_cast<int>(ses.n[2]); ++k) {
+    auto const plane = ses.n[0] * ses.n[1];
+    float* out = ses.data.data() + k * plane;
+    const float* outside = sas.data.data() + k * plane;
+    for (size_t c = 0; c < plane; ++c)
+      out[c] = outside[c] < 0.f ? out[c] - probe : -(outside[c] + probe);
+  }
+  sas.data = {};
+  if (G->Interrupt)
+    return false;
+  OrthoBusyFast(G, 3, 5);
+  auto mesh = mc::march(ses, 0.f, true);
+  if (G->Interrupt || !mesh.vertexCount || mesh.faceCount > INT_MAX / 4)
+    return !G->Interrupt;
+
+  I->N = static_cast<int>(mesh.vertexCount);
+  I->NT = static_cast<int>(mesh.faceCount);
+  I->V.assign(&mesh.vertices[0].x, &mesh.vertices[0].x + 3 * I->N);
+  I->VN.assign(&mesh.normals[0].x, &mesh.normals[0].x + 3 * I->N);
+  I->T.resize(3 * I->NT);
+  I->S.resize(4 * static_cast<size_t>(I->NT) + 1);
+  for (int t = 0; t < I->NT; ++t) {
+    I->S[4 * t] = 1; // a strip of one triangle
+    // the other way round than marching cubes gives them: the viewport
+    // takes the front of a triangle from the order of its corners
+    for (int i = 0; i < 3; ++i)
+      I->T[3 * t + i] = I->S[4 * t + 1 + i] =
+          static_cast<int>(mesh.faces[3 * t + 2 - i]);
+  }
+  PRINTFB(G, FB_RepSurface, FB_Blather)
+  " RepSurface: %i surface points, %i triangles.\n", I->N, I->NT ENDFB(G);
+  return true;
+}
+
 static int SurfaceJobRun(PyMOLGlobals* G, SurfaceJob* I)
 {
+  if (I->surfaceType == SurfaceType::SolidGrid)
+    return SurfaceJobRunGrid(G, I);
+
   int ok = true;
   int MaxN;
   int n_present = I->nPresent;
@@ -4420,7 +4657,9 @@ Rep* RepSurfaceNew(CoordSet* cs, int state)
     bool smooth_edges = SettingGet_b(G, cs->Setting.get(), obj->Setting.get(),
         cSetting_surface_smooth_edges);
 
-    I->Type = surface_type;
+    // the grid changes how the surface is built, not how it is drawn
+    I->Type = surface_type == SurfaceType::SolidGrid ? SurfaceType::Solid
+                                                    : surface_type;
 
     I->max_vdw = ObjectMoleculeGetMaxVDW(obj);
 

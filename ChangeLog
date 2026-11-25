@@ -4,6 +4,62 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.76.0
+
+	* An experiment, to be judged: "set surface_type, 7" builds the
+	  molecular surface on a grid. The distance to the atoms, each
+	  enlarged by the probe, is put on a grid; marching cubes gives the
+	  surface the probe center can reach; a second grid holds the
+	  distance to that surface, and marching cubes cuts it one probe
+	  radius inside. It is drawn, colored and ray traced like the solid
+	  surface. Today's surface (type 0) is unchanged and stays the
+	  default; there is no menu row for the new one.
+
+	  The cells are two point separations wide (1 A at surface_quality
+	  0), which gives about as many triangles as today's surface;
+	  surface_quality 1 halves them. solvent_radius is the smoothness:
+	  a larger probe gives a rounder surface, and the grid surface keeps
+	  its density of triangles there, where today's surface gets
+	  coarser.
+
+	  Measured on this laptop (32 threads, mmCIF, the fastest of the
+	  builds; "build" is show_as surface until the first picture):
+
+	    1aon, 59,192 atoms         build    triangles   peak memory
+	    today, probe 1.4           5.18 s     905,146     2,648 MB
+	    grid 1 A, probe 1.4        1.67 s     924,276     2,570 MB
+	    grid 0.5 A, probe 1.4      9.67 s   3,992,212    10,263 MB
+	    today, probe 3.0           1.16 s     195,556       929 MB
+	    grid 1 A, probe 3.0        1.38 s     668,588     1,990 MB
+
+	    4v6x, 239,306 atoms
+	    today, probe 1.4          34.31 s   3,886,165     9,983 MB
+	    grid 1 A, probe 1.4        9.41 s   3,919,688    10,173 MB
+	    today, probe 3.0           5.12 s     730,230     2,104 MB
+	    grid 1 A, probe 3.0        6.29 s   2,500,536     6,578 MB
+
+	  The grid work itself takes 0.30 s for 1aon and 1.56 s for 4v6x;
+	  the rest of a build is what every surface pays after it (colors,
+	  the triangles for drawing and for the ray tracer), and it grows
+	  with the triangles. Ray tracing the two surfaces of 1aon at 800 x
+	  600 took 4.05 and 4.08 s in one pair of runs, with the same count
+	  of primitives; other runs drifted from 4.6 to 15.6 s for both as
+	  the laptop got warm, so no ray times are in the table. Frame times
+	  in the viewport were not measured.
+
+	  How it looks: docs/img/grid-surface-1aon.jpg and
+	  grid-surface-4v6x.jpg. On a whole complex the surfaces look alike.
+	  Close up, with cells of 1 A the borders between the colors are
+	  more jagged than on today's surface and narrow grooves are a
+	  little shallower; with cells of 0.5 A it looks like today's
+	  surface and costs 4.4 times the triangles.
+
+	  Not in the experiment: carving (surface_carve_*), cavity culling
+	  and cavity mode, surface_solvent, trimming. The grid covers the
+	  whole box in memory; above 67 million cells the cells get larger.
+	  A session that has surface_type 7 shows no such surface in other
+	  PyMOL versions.
+
 	* 4.75.0
 
 	* Three buttons at the right of the tabs Command, Sequence and Chat
