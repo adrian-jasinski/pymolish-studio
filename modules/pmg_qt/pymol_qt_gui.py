@@ -427,11 +427,16 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         # toggle bar under the object list: an icon each, and a text where
         # it says more than the drawing (the mouse mode is a state)
         mouse = QtWidgets.QToolButton()
-        mouse.setToolTip('Mouse mode')
         mouse.setMenu(self.menudict['Mouse'])
+
+        def show_mouse_mode(name):
+            # "3-Button Viewing": the button says "Viewing", the tooltip all
+            mouse.setText(name.split(' ', 1)[-1])
+            mouse.setToolTip('Mouse mode: ' + name)
+
         self.setting_callbacks[cmd.setting._get_index('button_mode_name')].append(
-            mouse.setText)
-        mouse.setText(cmd.get('button_mode_name'))
+            show_mouse_mode)
+        show_mouse_mode(cmd.get('button_mode_name'))
         # the sequence is in a tab of the command panel; its place in the
         # viewport (the setting seq_view) is a row of the arrow's menu
         seq = QtWidgets.QToolButton()
@@ -467,15 +472,17 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
             button.setToolButtonStyle(
                 Style.ToolButtonIconOnly if button in (ai, wizard, command)
                 else Style.ToolButtonTextBesideIcon)
-            # the mouse mode name is long: it takes the spare width, and
-            # in a narrow panel Qt shortens it down to the width of SEQ
-            self.object_panel.footer.addWidget(button, button is mouse)
-        mouse.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
-                            QtWidgets.QSizePolicy.Policy.Fixed)
+            self.object_panel.footer.addWidget(button)
+        # each button as wide as its content; the spare width stays empty
+        self.object_panel.footer.addStretch(1)
         self._footer_icons = (
             (mouse, 'mouse mode'), (seq, 'seq'), (ai, 'ai assistant'),
             (wizard, 'wizard'), (command, 'command line'))
         self._set_footer_icons()
+        # never wider than its content; in a panel too narrow for the row Qt
+        # shortens the name, down to the width of SEQ
+        mouse.setSizePolicy(QtWidgets.QSizePolicy.Policy.Maximum,
+                            QtWidgets.QSizePolicy.Policy.Fixed)
         mouse.setMinimumWidth(seq.sizeHint().width())
 
         # extra key mappings (MacPyMOL compatible)

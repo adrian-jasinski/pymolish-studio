@@ -639,3 +639,37 @@ def test_footer_icons():
     Mode, State = QtGui.QIcon.Mode, QtGui.QIcon.State
     off = seq.icon().pixmap(16, 16, Mode.Normal, State.Off).toImage()
     assert seq.icon().pixmap(16, 16, Mode.Normal, State.On).toImage() != off
+
+
+@testing.requires("gui")
+def test_mouse_mode_button_is_as_wide_as_its_content():
+    """37e, in the real window: the short name of the mode, the whole one in
+    the tooltip, and no growth into the spare width of a wide panel."""
+    import time
+
+    import pymol
+    from pymol.Qt import QtCore, QtWidgets
+
+    window = pymol.gui.get_qtwindow()
+    button = window._footer_icons[0][0]
+
+    def shows(text):  # the window hears of a changed setting a moment later
+        deadline = time.monotonic() + 3
+        while button.text() != text and time.monotonic() < deadline:
+            QtWidgets.QApplication.processEvents()
+            time.sleep(0.02)
+        return button.text() == text
+
+    cmd.edit_mode(0)
+    assert shows("Viewing")
+    assert button.toolTip() == "Mouse mode: 3-Button Viewing"
+    window.resizeDocks([window.object_panel], [420], QtCore.Qt.Orientation.Horizontal)
+    QtWidgets.QApplication.processEvents()
+    assert window.object_panel.width() > 400
+    assert button.width() == button.sizeHint().width() < 120
+    cmd.edit_mode(1)
+    assert shows("Editing")
+    assert button.toolTip() == "Mouse mode: 3-Button Editing"
+    QtWidgets.QApplication.processEvents()  # the row is laid out again
+    assert button.width() == button.sizeHint().width()
+    cmd.edit_mode(0)

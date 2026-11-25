@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.73.0
+
+	* The mouse mode button under the object list shows the mouse icon
+	  and the short name of the mode ("Viewing", "Editing", "Selecting",
+	  "Lights", ...). The whole name is in its tooltip ("Mouse mode:
+	  3-Button Viewing") and in its menu, which is unchanged. The button
+	  is as wide as that content and no longer grows into the spare
+	  width of the row: the five buttons stand at the left.
+
+	  Measured in the real window on WSLg: the button is 83 px wide for
+	  "Viewing" and 78 px for "Editing", where "3-Button Viewing" took
+	  139 px and more in a wider panel; the same at a UI scale of 100,
+	  150 and 200 %. The narrowest panel is 234 px as before; there Qt
+	  shortens the name, down to the width of SEQ (73 px).
+
 	* 4.72.0
 
 	* In "New palette" and "Edit palette" a color is dragged to another
