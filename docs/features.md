@@ -19,7 +19,7 @@ Numbers in brackets are pymolish-studio versions; the
 | Theme | Dark by default; Display > Dark Theme switches it (4.5.2). |
 | Size | The percent button in the toolbar sets the size of text and controls, 100 to 200 %. It starts at 150 % (4.7.0). |
 | Layout | Toolbar with icons on top, viewport in the middle, log and command line at the bottom. The layout is remembered (4.5.0, 4.5.14). |
-| Objects panel | Lists objects, selections and groups. Click a row to show or hide, double-click to zoom; each row has the Action, Show, Hide, Label and Color menus (4.5.11, 4.5.15). |
+| Objects panel | Lists objects, selections and groups. Click a row to show or hide, double-click to zoom; each row has the Action, Show, Hide, Label and Color menus (4.5.11, 4.5.15). Delete removes the current row, and asks first for a group (4.69.0). A row is moved by a drag with the right mouse button, or with Alt and the arrow keys: to another place, into a group, out of it (4.70.0). The mouse mode button under the list shows the short name of the mode, the whole name is in its tooltip (4.73.0). |
 | States panel | First, previous, play, next, last, jump to a state, speed. Appears when there is more than one state or movie frame (4.6.0). |
 | Menus | The right-click menu opens at the pointer as a normal menu, with icons (4.5.18). |
 | Select and split | The A menu of an object or group has "select" (one row per chain and per kind of molecule the object has: protein, nucleic, membrane, ligand, ions, solvent) and "split" (by chain or by type: new objects in a group, the original switched off). With more than one state, "split" also has "by state" (4.19.3). Presets left the A menus; they are in the toolbar (4.19.2). |
@@ -28,7 +28,9 @@ Numbers in brackets are pymolish-studio versions; the
 | Movie timeline | Movie > Timeline: the movie as a list of shots (scenes, views, zoom, turn, rock, nutate, states, hold) with a strip and a table; record views as you move, one-click tours, fades, export with an estimate (4.18.0). |
 | Sequence viewer | The scroll bar under the sequence is a rounded Qt scroll bar; the marks of the selection show through it (4.17.0). |
 | Background | The button after the palette sets the background: plain colors, two blues and six gradients. "Remember after restart" in the same menu keeps the choice (4.15.0). |
-| Own palettes | Palette menu > New palette: a name and a list of colors; listed with the others and kept between starts (4.19.0). |
+| Own palettes | Palette menu > New palette: a name and a list of colors; listed with the others and kept between starts (4.19.0). A color is dragged to its place in the list (4.72.0). |
+| Sequence tab | The sequence in a tab between Command and Chat, with the clicks of the sequence in the viewport (4.67.0); over it the lists Mode, Labels and Gaps and a button for the alignment window (4.74.0). |
+| Text size of the tabs | A−, A+ and Reset at the right of the tabs Command, Sequence and Chat: a size for each tab, kept between starts (4.75.0). |
 | Object colors | The palette button in the toolbar shows the palettes as color strips. Picking one recolors the loaded objects, and new objects and "by chain" follow it. The choice is remembered (4.10.0, 4.13.1). |
 | Complex presets | Presets > "protein-protein interaction": every chain as a surface in its own colors, orange where it touches another chain (4.38.0). "antibody and antigen": the antibody as cartoon, the residues that touch the antigen as sticks, polar contacts as dashes, the antigen as a surface in its own colors with the epitope in orange (4.19.1, 4.38.0). A preset from the toolbar acts on the objects that are switched on. |
 | Presets keep the colors | No preset changes the color of a cartoon or of a surface: color the chains first, then pick any preset. A surface drawn by a preset has the color of the carbons under it. Only the themes color, and the two presets for complexes color the contact area (4.19.29, 4.38.0). |
@@ -55,6 +57,10 @@ also recolors what is loaded; typed, `palette vivid` leaves it alone and
 | `catppuccin` | dark background | ![catppuccin](img/palette-catppuccin.png) |
 | `chimerax` | any background | ![chimerax](img/palette-chimerax.png) |
 | `halo` | any background | ![halo](img/palette-halo.png) |
+
+Every palette has 30 colors (4.71.0). The pictures show the colors a palette
+was made with; the ones after them were computed in the same tone and belong
+to no published set. The palette menu shows the first ten.
 
 `colorblind` is Okabe-Ito followed by Paul Tol's bright and muted sets, with
 the published values. Only the first seven colors are designed as one set.
