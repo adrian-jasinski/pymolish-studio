@@ -123,7 +123,18 @@ counts, is in its plan. Where the step should end was question 106; the
 user answered it the same day: finish here. Step 8 is closed and left this
 file for [PLAN-DONE.md](PLAN-DONE.md).
 
-**Shipped state, checked 2026-11-25: 4.76.14.** Built since 4.19.43,
+Built 2026-11-25, 4.77.0 to 4.78.0, from a conversation in the Chat tab
+that failed ("download EGFR structures by UniProt id": every UniProt
+command was refused) and the request that followed, "check other commands
+if they are in the allowed list, if not add them". The model now runs 286
+of the 504 commands it finds (84 before the run); 218 stay out, with the reason
+per kind in the `ChangeLog`. A switch "Download without asking" is new in
+the Chat tab (choices 107 and 108, answered in the run). Found by the
+check and fixed in 4.77.1: `safe_eval` ran any Python, and `set_color`
+gave it text of the model without a question. Step 31 stays open for its
+trial with real accounts (order 2).
+
+**Shipped state, checked 2026-11-25: 4.78.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
@@ -170,6 +181,9 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.75.0 | A−, A+ and Reset beside the tabs Command, Sequence and Chat: a text size per tab, kept (37g). |
 | 4.76.0 | An experiment: `set surface_type, 7` builds the molecular surface on a grid with marching cubes (1b). 1aon 1.67 s against 5.18 s, 4v6x 9.41 s against 34.31 s, at the same count of triangles. Not a default, no menu row. |
 | 4.76.1 to 4.76.14 | Step 8, no feature: 230 hand-managed buffers of the core own their memory, 215 VLA macro calls are member calls, 894 lines of dead code deleted. Fixed on the way: `load_png` with a data URL that is not base64, `valence` with a source object, a surface with `ambient_occlusion_mode` 3 and spheres of a part of an object with `sphere_mode` 6 to 8 no longer crash or corrupt memory; three leaks. |
+| 4.77.0 | The model of the Chat tab and of the agent connector runs `list_uniprot_structures`, `fetch_by_uniprot`, `fetch_uniprot_ligands` and `fetch_fold`; more than ten entries load in the background. A switch "Download without asking" in the Chat tab. |
+| 4.77.1 | No feature: `safe_eval` (the reader of vectors and color lists given as text) no longer runs Python. |
+| 4.78.0 | The model runs 286 of the 504 commands it finds, before 88: measurements, labels, spectrum, presets, groups, maps, movie frames without a question; builder, fit, split and file commands with one. |
 
 Of the ten features requested on 2026-11-20, nine have a working version.
 The tenth, the surface looks, waits for the judgment of the grid surface of 1b
@@ -281,7 +295,9 @@ pictures are `docs/img/grid-surface-1aon.jpg` and
 | 105 — Does the grid surface stay, and for what? | It stays as a choice beside today's surface, which remains the default: a row "Solid (grid)" in Setting > Surface, and the settings it lacks (carving, cavities) are added. Decide about a default once the surface worker (order 5) is built, since a build then no longer blocks the window. | It becomes the default above a size, for example 100,000 atoms, where today's surface takes longest (4v6x: 34 s against 9 s). Colors meet in more jagged borders there. | It is taken out again: the three-fold shorter build is not worth a second kind of surface. | 25b (order 3): with A or B the rounded "clay" surface is this surface with a probe of about 3 A, which keeps fine triangles where today's surface gets coarse; with C it stays the Gaussian map. |
 
 Choices 91–97 were answered on 2026-11-25 and built the same day (4.69.0
-to 4.75.0); they are in [PLAN-DONE.md](PLAN-DONE.md).
+to 4.75.0); they are in [PLAN-DONE.md](PLAN-DONE.md). So are 107 and 108
+(big downloads of the chat in the background; a switch that turns the
+question for downloads off), asked and answered in the run of 4.77.0.
 
 Seven choices were made while building 4.68.1 to 4.75.0 (98 to 104),
 each the smaller option; they are listed in PLAN-DONE.md with what it
@@ -397,21 +413,24 @@ The user's to do:
 - Try the drag with the right button (4.70.0) once on Windows and on
   macOS: there the system asks for the menu when the button is released,
   on Linux when it is pressed. Both are handled; only Linux was tried.
-- Push `feature13` and open its pull request. Local tracking refs checked
-  2026-11-25 after 4.76.14: `origin/feature13` is at the plan commit of
-  4.66.0; including this plan commit the branch is 38 commits ahead
-  (4.67.0 to 4.76.14 with their plan commits, the decisions 91 to 97 and
-  two repairs of the tests) and contains `feature12` (itself 9 commits
-  ahead of its tracking ref). At the last remote check `feature13` had no pull
-  request; the last one was #10 (`feature11`, merged 2026-11-20). The
-  remote was not asked again in this run; no push or merge was performed.
+- Push `feature13` again. Checked 2026-11-25 after 4.78.0:
+  `origin/feature13` is at the plan commit of 4.76.14 (`5101e943`), so
+  what was listed here before is pushed, and pull request #11 ("Feature13")
+  is open. Including this plan commit the branch is 4 commits ahead:
+  4.77.0, 4.77.1 and 4.78.0. No push or merge was performed in this run.
 - After the push, read the CI run first for step 8: 4.76.1 to 4.76.14
   changed 60 files of the core and were compiled with GCC 13 on Linux
   only. The Windows (MSVC), macOS (Apple Clang) and `sanitize-Linux` (GCC
   11) jobs are the check that was not possible here.
-- Your `.venv` still holds 4.76.0: your own pymolish was running during
-  the run of step 8, so it was not rebuilt. The suite of 4.76.14 passed in
-  a copy (1154 passed, 250 skipped).
+- Your `.venv` still holds an older build: your own pymolish was running
+  during the run of step 8 and during the run of 4.77.0 to 4.78.0, so it
+  was not rebuilt. Rebuild it to get the new chat commands. The suite of
+  4.78.0 passed in a copy (1172 passed, 250 skipped).
+- Try in the Chat tab what failed: "download EGFR structures, human, by
+  UniProt id". All 388 entries of P00533 (counted 2026-11-25) load in the
+  background; they pass 600,000 atoms (an estimate from the first five
+  entries, 28,061 atoms), and above that the chat refuses further changes
+  of the session, its Undo limit. A limit ("the first 20") avoids that.
 - Then the rest of the CI run: the Windows icon, release notes,
   `chem`/`fix` extras on three systems, and for 27c the line that
   `test_scale_change_keeps_the_window_alive` prints in the Windows and

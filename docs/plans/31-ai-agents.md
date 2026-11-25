@@ -1,5 +1,29 @@
 # 31 — Chat that controls this version of pymolish
 
+**Built 2026-11-25 in 4.77.0, 4.77.1 and 4.78.0: the commands the model
+may run.** From a conversation in which every UniProt command was refused.
+
+- 4.77.0: `list_uniprot_structures` (a query, no question),
+  `fetch_by_uniprot`, `fetch_uniprot_ligands` and `fetch_fold` (one
+  question per call). Above ten entries the two UniProt downloads run
+  through `cmd.async_`. The switch "Download without asking" of the Chat
+  tab holds for the connector too (choices 107 and 108).
+- 4.77.1: `safe_eval` ran any Python through an attribute of a value;
+  `set_color`, reviewed and without a question, gave it text of the model.
+- 4.78.0: 286 of 504 commands are reviewed, before 88.
+
+Measured: P00533 has 388 PDB entries; the first 5 took 2.5 s and are
+28,061 atoms; 12 entries in the background of the real window took 4.2 s
+with a longest pause of 0.17 s. The suite: 1172 passed, 250 skipped.
+
+Left out: 218 commands, by kind in the `ChangeLog` of 4.78.0. Not built:
+a result for a background download (the model reads `state` to follow
+it); a limit on the atoms of a download, so all entries of a protein like
+EGFR pass the Undo limit of 600,000 atoms (an estimate) and the chat then
+refuses further changes; reading of the callees below the first call
+level was by scan for `eval`, `exec`, `open`, `getattr` and expressions,
+not line by line.
+
 **Built 2026-11-24 in 4.68.0: the provider "Claude Code", a Claude account
 in the Chat tab (31d).** Read again that day:
 
