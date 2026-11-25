@@ -11,14 +11,16 @@ import shutil
 import threading
 from pathlib import Path
 
-from pymol import CmdException, api, cmd, palettes, preset, snapshots
+from pymol import CmdException, api, cmd, fetching, palettes, preset, snapshots
 
 
 # Execution is deliberately narrower than discovery. Capture the native API
 # functions, then reject registry overrides; never feed model text to cmd.do.
-QUERIES = set("count_atoms count_states get_names get_object_list get_type get_state get_view get_distance get_angle get_dihedral get_color_tuple get_atom_coords get_setting_tuple get_setting_int get_setting_float get get_names_of_type".split())
+QUERIES = set("count_atoms count_states get_names get_object_list get_type get_state get_view get_distance get_angle get_dihedral get_color_tuple get_atom_coords get_setting_tuple get_setting_int get_setting_float get get_names_of_type list_uniprot_structures".split())
 VISUAL = set("show hide show_as color color_cpk palette bg_color zoom orient center turn clip enable disable frame select scene cartoon set_color ligand_next stage ligand_2d set unset".split())
-CONFIRM = set("delete remove set_name create copy align super cealign dss load save load_table save_table fetch sequence_align load_smiles fix_structure minimize".split())
+CONFIRM = set("delete remove set_name create copy align super cealign dss load save load_table save_table fetch sequence_align load_smiles fix_structure minimize fetch_by_uniprot fetch_uniprot_ligands fetch_fold".split())
+# the user can switch the question off for these (Executor.downloads)
+DOWNLOADS = set("fetch fetch_by_uniprot fetch_uniprot_ligands fetch_fold".split())
 REVIEWED = {name: getattr(api, name) for name in QUERIES | VISUAL | CONFIRM}
 PRESETS = {name: getattr(preset, name) for name in "default classified technical ball_and_stick b_factor_putty pretty_solv pub_solv glass balls_in_glass cylinders wire spring illustration ligands ligand_sites ligand_sites_hq ligand_sites_trans ligand_sites_trans_hq ligand_sites_mesh ligand_sites_dots interface interaction antibody".split()}
 REVIEWED.update({"preset." + name: fn for name, fn in PRESETS.items()})
@@ -49,7 +51,7 @@ def capabilities(_self=cmd):
         "version": _self.get_version()[0],
         "commands": len(_functions(_self)),
         "optional": {name: bool(shutil.which("mafft") or shutil.which("mafft.bat")) if name == "MAFFT" else importlib.util.find_spec(name) is not None for name in {p for packages in OPTIONAL.values() for p in packages} | {"openai", "anthropic"}},
-        "execution": "Reviewed API calls; file/network/destructive actions require confirmation. Python is separately trusted and confirmed. Discovery is not permission.",
+        "execution": "Reviewed API calls; file/network/destructive actions require confirmation (downloads not, while the user has ticked 'Download without asking' in the Chat tab). A UniProt download of more than ten entries runs in the background. Python is separately trusted and confirmed. Discovery is not permission.",
     }
 
 
@@ -150,10 +152,19 @@ def _policy(name, arguments, _self):
         if format not in ("pdb", "cif", "mmcif", "sdf", "mol"):
             raise CmdException("Reviewed load accepts PDB/mmCIF/SDF/MOL only. Sessions and scripts can execute Python; use separately trusted Python after reviewing the file.")
         arguments["format"] = format
-    if name == "fetch":
+    if name in ("fetch", "fetch_fold"):
         arguments["async_"] = 0  # completion, errors and Undo belong to this turn
+    if name == "fetch":
         if not isinstance(arguments.get("code"), str) or len(arguments["code"].split()) > 10:
             raise CmdException("Fetch at most ten identifiers per action")
+    if "accession" in arguments:  # the three UniProt commands
+        if not fetching._ACCESSION.fullmatch(str(arguments["accession"]).strip().upper()):
+            raise CmdException("Not a UniProt accession; an example is P00533")
+        if name == "list_uniprot_structures":
+            arguments.setdefault("quiet", 0)  # the table: method, resolution, chains
+        else:
+            # more than ten entries would block the window: they load in the background
+            arguments["async_"] = int(not 0 < int(arguments.get("limit") or 0) <= 10)
     if name == "scene" and arguments.get("action", "recall") not in ("recall", "store", "insert", "update", "clear", "rename", "delete", "next", "previous"):
         raise CmdException("Unsupported scene action")
     return (name in CONFIRM or name == "ligand_2d" and bool(arguments.get("filename"))
@@ -168,6 +179,7 @@ class Executor:
         self.cancel = threading.Event()
         self.trusted = False
         self.images = False
+        self.downloads = False  # True: DOWNLOADS run without the question
         self.snapshot = None
         self.results = {}
 
@@ -202,7 +214,8 @@ class Executor:
         proposal = {"command": command, "arguments": arguments,
                     "effect": "File/network or destructive operation; external effects cannot be undone."}
         self._check()
-        if confirmation and not self.confirm(proposal):
+        asked = confirmation and not (self.downloads and command in DOWNLOADS)
+        if asked and not self.confirm(proposal):
             raise CmdException("The user declined this action")
         self._check()
         if command not in QUERIES:
@@ -210,6 +223,8 @@ class Executor:
         if "_self" in inspect.signature(function).parameters:
             arguments["_self"] = self.cmd
         value = function(**arguments)
+        if arguments.get("async_"):
+            value = "Runs in the background; this turn does not see its result. Use state to follow it."
         # Older APIs sometimes report failure as -1 rather than raising.
         if isinstance(value, int) and not isinstance(value, bool) and value < 0:
             raise CmdException(f"{command} returned failure ({value})")

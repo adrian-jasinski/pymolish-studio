@@ -4,6 +4,38 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.77.0
+
+	* Chat and agent connector
+	  - The model can run the UniProt commands: list_uniprot_structures,
+	    fetch_by_uniprot, fetch_uniprot_ligands and fetch_fold. Before,
+	    it found them and read their help, and every call was refused
+	    ("not reviewed for execution"). The list asks nothing and gives
+	    the model the table of method, resolution and chains. A
+	    download asks once per call, not once per structure.
+	  - fetch_by_uniprot and fetch_uniprot_ligands with a limit of 1
+	    to 10 are waited for, as "fetch" is. With a larger limit or
+	    none they run in the background, as File > Get by UniProt
+	    does: the window stays usable and the model is told that the
+	    download runs. Human EGFR (P00533) has 388 entries today.
+	  - New switch "Download without asking" in the Chat tab, off at
+	    every start. While it is on, fetch and the three downloads
+	    above run without the question. Deleting, loading and saving
+	    files ask as before. It holds for the agent connector too.
+	  - A text that is not a UniProt accession is refused before any
+	    request is sent.
+	  - Known limit: above 600,000 atoms in the session the chat
+	    refuses further changes (its Undo limit); all entries of a
+	    protein like EGFR pass that.
+
+	  Tried in the real window: 12 entries of P00533 through the chat's
+	  executor with the switch on: no question, the call returned in
+	  0.01 s, the 12 objects were in the group after 4.2 s, the longest
+	  pause of the window in that time was 0.17 s. The tab is as wide
+	  as before (smallest width 565 px with and without the switch).
+
+2026-11-25 pymolish-studio
+
 	* 4.76.14
 
 	* Core

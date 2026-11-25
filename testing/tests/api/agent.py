@@ -125,3 +125,38 @@ def test_python_and_look_are_off(executor):
     assert not executor.call("1", "python", {"code": "cmd.delete('all')"})["ok"]
     assert not executor.call("2", "look", {})["ok"]
     assert cmd.get_names() == ["ala"]
+
+
+def test_uniprot_downloads(executor, monkeypatch):
+    from pymol import fetching
+
+    rows = [(code, "X-ray", "2.00 A", "A=1-9") for code in ("1TUP", "2OCJ")]
+    monkeypatch.setattr(fetching, "pdb_entries", lambda accession: rows)
+    monkeypatch.setattr(cmd, "fetch", lambda code, name, **_: cmd.fragment("gly", name))
+    background = []
+    monkeypatch.setattr(cmd, "async_", lambda *a, **k: background.append(a))
+    asked = []
+    executor.confirm = lambda proposal: asked.append(proposal) or True
+
+    def run(call_id, command, **arguments):
+        call = {"command": command, "arguments": arguments}
+        return executor.call(call_id, "execute", call)
+
+    for name in agent.DOWNLOADS | {"list_uniprot_structures"}:
+        assert agent.help_command(name)["policy"] == "reviewed"
+    # the list asks nothing, keeps no snapshot and shows the table
+    listed = run("1", "list_uniprot_structures", accession="P00533")
+    assert listed["result"]["value"] == ["1TUP", "2OCJ"] and not asked
+    assert "X-ray" in listed["output"] and not listed["result"]["undo_snapshot"]
+    assert not run("2", "list_uniprot_structures", accession="P00533/../x")["ok"]
+    # up to ten entries: one question, the result in this turn
+    loaded = run("3", "fetch_by_uniprot", accession="P00533", limit=2, async_=1)
+    assert loaded["result"]["value"] == ["P00533_1TUP", "P00533_2OCJ"]
+    assert len(asked) == 1 and not background
+    # all entries: in the background, and without a question once switched off
+    executor.downloads = True
+    started = run("4", "fetch_by_uniprot", accession="P00533", group="egfr")
+    assert "background" in started["result"]["value"] and len(asked) == 1
+    assert background[0][:4] == (fetching.fetch_by_uniprot, "P00533", 0, "egfr")
+    # the switch is for downloads only
+    assert run("5", "delete", name="none")["ok"] and len(asked) == 2

@@ -187,8 +187,8 @@ def agent_server(action="status", port=PORT, quiet=0, *, _self=cmd):
         "agent_server" lets an AI agent on this computer (Claude Code, Codex)
         work in this session through MCP: it finds the installed commands and
         settings, reads the session and runs reviewed operations, the same ones
-        as the Chat tab, and its switches "Share viewport" and "Trusted Python"
-        hold here too. Actions that delete, read or write files or use the
+        as the Chat tab, and its switches "Share viewport", "Trusted Python"
+        and "Download without asking" hold here too. Actions that delete, read or write files or use the
         network ask first in the window. Requires the Qt interface.
 
         Nothing listens until "agent_server on". The server answers on
