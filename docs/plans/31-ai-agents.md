@@ -1,5 +1,22 @@
 # 31 — Chat that controls this version of pymolish
 
+**Built 2026-11-25 in 4.79.0: the switch "Run without asking".** A check
+box in the Chat tab, off at every start, that holds for the model of the
+tab and for the agents on the connector. While it is on, no reviewed
+command asks "Allow this action?", and with "Trusted Python" ticked
+Python runs without the question too. It replaces "Download without
+asking" of 4.77.0 (choices 109 to 111; the user chose Python in, the
+recommendation was commands only).
+
+Measured: in the real window a `delete` through the connector asked once
+with the box off and not at all with it on, and Python ran without a
+question with both boxes ticked. The suite: 1173 passed, 250 skipped.
+
+Left out: a tick that is kept between runs (choice 111); a list of
+commands that always ask (save over an existing file, for example); a
+mark in the Chat history that a call ran unasked, beyond the line every
+call already writes there.
+
 **Built 2026-11-25 in 4.77.0, 4.77.1 and 4.78.0: the commands the model
 may run.** From a conversation in which every UniProt command was refused.
 

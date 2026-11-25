@@ -128,11 +128,21 @@ that failed ("download EGFR structures by UniProt id": every UniProt
 command was refused) and the request that followed, "check other commands
 if they are in the allowed list, if not add them". The model now runs 286
 of the 504 commands it finds (84 before the run); 218 stay out, with the reason
-per kind in the `ChangeLog`. A switch "Download without asking" is new in
-the Chat tab (choices 107 and 108, answered in the run). Found by the
+per kind in the `ChangeLog`. A switch "Download without asking" was new in
+the Chat tab (choices 107 and 108, answered in the run; replaced in
+4.79.0). Found by the
 check and fixed in 4.77.1: `safe_eval` ran any Python, and `set_color`
 gave it text of the model without a question. Step 31 stays open for its
 trial with real accounts (order 2).
+
+Built 2026-11-25, 4.79.0, from the request "add option to chat windows
+to run agents / commands without asking (like checkbox to mark)": the
+check box "Run without asking" in the Chat tab, off at every start. While
+it is on, no reviewed command asks "Allow this action?", for the model of
+the tab and for the agents on the connector, and with "Trusted Python"
+ticked Python runs without the question too. "Download without asking"
+(4.77.0) is gone, the new switch covers it. Choices 109 to 111 were asked
+and answered in the run.
 
 See [Shipped state](PLAN-STATE.md) for the shipped versions and their summary.
 
@@ -238,7 +248,10 @@ pictures are `docs/img/grid-surface-1aon.jpg` and
 Choices 91–97 were answered on 2026-11-25 and built the same day (4.69.0
 to 4.75.0); they are in [PLAN-DONE.md](PLAN-DONE.md). So are 107 and 108
 (big downloads of the chat in the background; a switch that turns the
-question for downloads off), asked and answered in the run of 4.77.0.
+question for downloads off), asked and answered in the run of 4.77.0,
+and 109 to 111 ("Run without asking": commands and Python, in place of
+the download switch, off at every start), asked and answered in the run
+of 4.79.0.
 
 Seven choices were made while building 4.68.1 to 4.75.0 (98 to 104),
 each the smaller option; they are listed in PLAN-DONE.md with what it
@@ -354,19 +367,21 @@ The user's to do:
 - Try the drag with the right button (4.70.0) once on Windows and on
   macOS: there the system asks for the menu when the button is released,
   on Linux when it is pressed. Both are handled; only Linux was tried.
-- Push `feature13` again. Checked 2026-11-25 after 4.78.0:
+- Push `feature13` again. Checked 2026-11-25 after 4.79.0:
   `origin/feature13` is at the plan commit of 4.76.14 (`5101e943`), so
   what was listed here before is pushed, and pull request #11 ("Feature13")
-  is open. Including this plan commit the branch is 4 commits ahead:
-  4.77.0, 4.77.1 and 4.78.0. No push or merge was performed in this run.
+  is open. Including this plan commit the branch is 7 commits ahead:
+  4.77.0, 4.77.1, 4.78.0, 4.79.0 and three plan commits. No push or merge
+  was performed in this run.
 - After the push, read the CI run first for step 8: 4.76.1 to 4.76.14
   changed 60 files of the core and were compiled with GCC 13 on Linux
   only. The Windows (MSVC), macOS (Apple Clang) and `sanitize-Linux` (GCC
   11) jobs are the check that was not possible here.
-- Your `.venv` still holds an older build: your own pymolish was running
-  during the run of step 8 and during the run of 4.77.0 to 4.78.0, so it
-  was not rebuilt. Rebuild it to get the new chat commands. The suite of
-  4.78.0 passed in a copy (1172 passed, 250 skipped).
+- With "Run without asking" and "Trusted Python" both ticked, Python of
+  the model or of an agent runs unseen, with your rights on this
+  computer. That was your choice (109); recommended was commands only.
+  Untick one of the two before you let it read files or pages you do not
+  trust.
 - Try in the Chat tab what failed: "download EGFR structures, human, by
   UniProt id". All 388 entries of P00533 (counted 2026-11-25) load in the
   background; they pass 600,000 atoms (an estimate from the first five

@@ -2,7 +2,7 @@
 
 [Back to the roadmap](PLAN.md).
 
-**Shipped state, checked 2026-11-25: 4.78.0.** Built since 4.19.43,
+**Shipped state, checked 2026-11-25: 4.79.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
@@ -52,6 +52,7 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.77.0 | The model of the Chat tab and of the agent connector runs `list_uniprot_structures`, `fetch_by_uniprot`, `fetch_uniprot_ligands` and `fetch_fold`; more than ten entries load in the background. A switch "Download without asking" in the Chat tab. |
 | 4.77.1 | No feature: `safe_eval` (the reader of vectors and color lists given as text) no longer runs Python. |
 | 4.78.0 | The model runs 286 of the 504 commands it finds, before 88: measurements, labels, spectrum, presets, groups, maps, movie frames without a question; builder, fit, split and file commands with one. |
+| 4.79.0 | A switch "Run without asking" in the Chat tab, off at every start: while it is on, the model and the agents on the connector run every reviewed command, and Python with "Trusted Python" ticked, without the question. It replaces "Download without asking" (4.77.0). |
 
 Of the ten features requested on 2026-11-20, nine have a working version.
 The tenth, the surface looks, waits for the judgment of the grid surface of 1b
