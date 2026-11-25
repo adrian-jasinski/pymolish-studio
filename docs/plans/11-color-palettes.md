@@ -1,5 +1,13 @@
 # 11 — Color palettes
 
+**2026-11-25, 4.71.0 and 4.72.0 (37c, 37d of [step 37](37-gui-followups.md)):**
+each of the ten named palettes has 30 colors, where "at most 30" and
+"shorter than 30 on purpose" stand below; the colors a palette had keep
+their value and place, the added ones are computed in its own tone and
+belong to no published set. Smallest RGB distance between neighbors in a
+cycle: 0.23. Not checked for color-vision deficiencies. In the palette
+dialog a color is dragged to its place.
+
 **2026-11-23, draft 5: 11c below adds explicit CPK coloring; planned at
 4.43.0 and built the same day in 4.50.0: see the note below.** Question 56 was answered that day: standard CPK
 atom colors within selected residues. Object/chain palettes already

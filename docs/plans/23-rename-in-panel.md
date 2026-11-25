@@ -1,14 +1,25 @@
 # 23 — Rename in the Objects panel
 
 [Roadmap](../../PLAN.md) · Request 2026-11-20 · **23a done 2026-11-20 in
-4.24.0.** 23b (rows moved by dragging) is open, order 3 in the roadmap.
+4.24.0, 23b done 2026-11-25 in 4.70.0: finished.**
+
+**23b built 2026-11-25 in 4.70.0.** `ObjectPanel.move(name, target, where)`
+in `object_panel.py` serves the drag with the right button and Alt+arrows.
+Found on the way: `group <g>, <member>, remove` does nothing in the core,
+`ungroup <group>` empties that group instead of taking it out of its
+parent (the action "raise" does that), and the core accepts a group inside
+itself; the panel never asks for that. Tried in the real window with real
+right-button input through the X server: a drag above another row, a drag
+onto a group, a click (the menu opened on release). 3 tests, one with a
+session round trip. Left out: Esc to give up a drag, scrolling while a row
+is dragged past the edge, a try on Windows and macOS.
 
 **Decision update 2026-11-25:** choice 93 accepts the recommended gesture:
 hold the right mouse button on a row, drag and release to drop; a right
 click without dragging still opens the context menu. Left click still
 toggles visibility; F2 still renames. The drop-position indicator, keyboard
 move actions and checks for order/group membership, invalid targets,
-refresh and session reload are specified in [the roadmap's 23b section](../../PLAN.md#step-37--gui-follow-ups-requested-2026-11-24).
+refresh and session reload are specified in [the plan of step 37](37-gui-followups.md).
 Planning only; no feature shipped or GUI measurement made in this update.
 
 Built as planned, with two differences. A taken name gives a line in the log

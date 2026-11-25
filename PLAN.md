@@ -65,7 +65,7 @@ by providing model ID and API key (as an alternative)": 31d, the sign-in
 of the Chat tab with a ChatGPT plan or with OpenRouter. The user chose both
 of these and "Stay signed in" as a box (questions 74 and 75). A Claude
 subscription cannot be signed in to from pymolish: Anthropic's terms do not
-allow it. Not tried with a real account: that is part of order 10.
+allow it. Not tried with a real account: that is part of order 2.
 
 Built 2026-11-24, 4.67.0, from the request "move the robot icon into the
 row under the object list, after SEQ; give SEQ a tab between Command and
@@ -84,14 +84,24 @@ the sign-in, which its own "auth login" makes in the browser. It belongs
 to step 31 (31d). Five choices were made while building (86 to 90).
 
 Extended 2026-11-24 at 4.68.0 with the File > Get by UniProt error and
-the requested Objects, palette, Sequence and font controls: step 37 below,
+the requested Objects, palette, Sequence and font controls: step 37,
 plus the existing drag-and-drop slice 23b promoted into execution order.
 Planning only; nothing shipped or measured in the GUI in this update.
 The palette sizes below are requested targets. Choices 91 to 97 were
 answered on 2026-11-25 and are recorded in [PLAN-DONE.md](PLAN-DONE.md).
-Their decisions are applied below; implementation remains open.
 
-**Shipped state, checked 2026-11-24: 4.68.0.** Built since 4.19.43,
+Built 2026-11-25, 4.68.1 to 4.75.0, from the request "run the planned
+tasks that can be run now, except 27c and the trial of 31": all of step
+37 (37a to 37g) and 23b, one version each. Steps 23 and 37 are finished
+and left this file; the specification of step 37 is now
+[docs/plans/37-gui-followups.md](docs/plans/37-gui-followups.md). 37b and
+37f follow the user's answers of that day where they differ from what was
+recommended (the Delete key without a button; a row of lists). Seven
+choices were made while building (98 to 104). Not started in that run:
+the grid surface, the outline, the surface worker and general undo, each a
+slice of its own in the core.
+
+**Shipped state, checked 2026-11-25: 4.75.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
@@ -128,6 +138,14 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.66.0 | Chat sign-in in the browser (31d): "Continue with ChatGPT" (the user's ChatGPT plan) and "Continue with OpenRouter" (credits there), the models of the account as a list, "Stay signed in" in the keychain of the operating system. Stand-in tests only, no real sign-in yet. |
 | 4.67.0 | The sequence in a tab: Sequence, between Command and Chat, with the clicks, drags and menus of the rows in the viewport; SEQ opens it, and its arrow has "Show in viewport". The AI assistant button moved from the toolbar to the row under the object list. |
 | 4.68.0 | Chat with a Claude account (31d): the provider "Claude Code" runs the conversation through the Claude Code installed on the computer and its own sign-in in the browser; no API key, no extra `ai`. Tried in the real window with a Team plan. |
+| 4.68.1 | File > Get by UniProt and Get Predicted Structure no longer fail where the old pymolish plugin is a startup plugin: that plugin is not loaded (37a). |
+| 4.69.0 | The Delete key deletes the current row of the Objects list; a group asks first and goes with its members (37b). |
+| 4.70.0 | Rows of the Objects list are moved by a drag with the right button, or with Alt and the arrow keys: order, into a group, out of it (23b). |
+| 4.71.0 | Thirty colors in each of the ten named palettes; the menu shows the first ten (37c). |
+| 4.72.0 | Colors are dragged to their place in the New/Edit palette dialog (37d). |
+| 4.73.0 | The mouse mode button shows the icon and the short name ("Viewing") and is as wide as that (37e). |
+| 4.74.0 | The Sequence tab has the lists Mode, Labels and Gaps and a button for the alignment window (37f). |
+| 4.75.0 | A−, A+ and Reset beside the tabs Command, Sequence and Chat: a text size per tab, kept (37g). |
 
 Of the ten features requested on 2026-11-20, nine have a working version.
 The tenth, the surface looks, waits for the grid surface of 1b. Steps 19, 20,
@@ -136,7 +154,7 @@ the chat (31a, 31c) shipped in 4.58.0, its external connector 31b in 4.61.0,
 the sign-in in the browser 31d in 4.66.0, the provider "Claude Code" in
 4.68.0. Only that last one was tried with a real account (two turns on
 the user's Team plan); the other providers saw no paid request and no
-real sign-in by this program itself: the live trial is order 10.
+real sign-in by this program itself: the live trial is order 2.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -149,31 +167,21 @@ milestone ships; its detailed plan stays in `docs/plans/`.
 
 ## Open work, in execution order
 
-The order below puts the new reported breakage and requested workflows first;
-the platform/provider trials still need access to other systems or accounts.
-Step numbers identify detailed plans, or the step 37 specification below;
-slice letters remain stable. No release dates are promised. Each slice is a
-separate implementation task/PR, with an `X` feature or `Y` fix version under
+The first two orders need what this machine does not have: other systems,
+keys and accounts. Step numbers identify detailed plans; slice letters
+remain stable. No release dates are promised. Each slice is a separate
+implementation task/PR, with an `X` feature or `Y` fix version under
 `AGENTS.md`.
-Questions gate the dependent slice, not unrelated repairs.
 
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
-| 1 | **37a** — [UniProt fetch from File](#step-37--gui-follow-ups-requested-2026-11-24) | Diagnose `fetch_by_uniprot P01542, async_=1` raising an unexpected-keyword `TypeError`; repair the active GUI dispatch path. | File action reaches the native asynchronous fetch; no keyword error or blocked GUI; regression check covers command registration. |
-| 2 | **37b** — [Delete objects and groups](#step-37--gui-follow-ups-requested-2026-11-24) | Bind Del to the selected object/group in Objects; no new button. Delete an object immediately; confirm deletion of a group and all its members, including nested groups, showing the scope first (91–92). | Object deletion is immediate; group Cancel changes nothing; confirmed deletion has exactly the scope shown in the dialog. |
-| 3 | **23b** — [Rows moved by dragging](docs/plans/23-rename-in-panel.md) | Hold the right mouse button, drag and release to reorder/regroup; a click without dragging opens the context menu (93). | Real mouse drop and keyboard equivalent update core order/group membership, survive refresh and session reload, and share a tested operation. |
-| 4 | **37c** — [Thirty-color palettes](#step-37--gui-follow-ups-requested-2026-11-24) | Append colors to all named built-ins up to 30, preserving existing entries/order; preview only the first 10. Leave legacy “PyMOL default” and saved user palettes unchanged (94). | Full named built-in cycles use all 30 before repeating; previews show 10; existing colors, order and names are preserved. |
-| 5 | **37d** — [Drag palette colors](#step-37--gui-follow-ups-requested-2026-11-24) | Reorder colors by drag and drop in both New palette and Edit palette. | Saved order drives coloring and survives reopening/restart; Cancel preserves the old palette; keyboard Up/Down still works. |
-| 6 | **37e** — [Narrower mouse-mode button](#step-37--gui-follow-ups-requested-2026-11-24) | Mouse icon plus compact mode name (“Viewing”/“Editing”), full name in the tooltip; reduce spare width and excess horizontal padding (95). | Button fits its content without stretching or excess empty space; all footer controls remain usable in a narrow panel and at supported UI scales. |
-| 7 | **37f** — [Sequence tab controls](#step-37--gui-follow-ups-requested-2026-11-24) | Add a row of Mode/Labels/Gaps dropdowns and an alignment button inside the tab between Command and Chat (97, option B). | All existing sequence options work from the tab and stay synchronized with Display/commands; alignment opens the existing viewer. |
-| 8 | **37g** — [Command, Sequence and Chat font size](#step-37--gui-follow-ups-requested-2026-11-24) | A− / A+ and Reset at the right of the tab strip resize the active tab's content immediately; remember each tab's size separately (96). | Each requested tab can be resized; text input, drawing, scrolling and sequence picking stay correct; chosen sizes survive restart. |
-| 9 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Needs the pushed branch: the last CI run is older than the repair. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
-| 10 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; one real sign-in and one conversation each with ChatGPT and with OpenRouter (31d, shipped in 4.66.0 on stand-ins), which needs the user's accounts; for the provider "Claude Code" (4.68.0, two turns tried on WSLg with a Team plan) the same five tasks, the button "Continue with Claude Code" with a signed-out Claude Code, and one turn on Windows or macOS; and one call through the connector from Codex, whose account had no credits on 2026-11-24. | Live trial recorded for Anthropic, OpenAI and Claude Code; a sign-in and a conversation recorded for ChatGPT, OpenRouter and Claude Code, on WSL and on one other system; one Codex call through the connector. |
-| 11 | **1b** — [Grid surface experiment](docs/plans/01-performance-gpu.md) | Signed distance grid/marching cubes as a second surface type and a smoothness value. Compare 1aon and 4v6x at two values; user judges the experiment. | Actual times and pictures against today's surface. |
-| 12 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan using the grid-surface result from order 11; no new surface-look setting before that. | New detailed section grounded in the experiment. |
-| 13 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. A second pass over the texture that FXAA reads since 4.65.0 (`SceneRenderAA`, `fxaa.fs`). | Frame times and pictures on black/white. |
-| 14 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. | Real-window responsiveness, suite and sanitizer checks. |
-| 15 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
+| 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Needs the pushed branch: the last CI run is older than the repair. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
+| 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; one real sign-in and one conversation each with ChatGPT and with OpenRouter (31d, shipped in 4.66.0 on stand-ins), which needs the user's accounts; for the provider "Claude Code" (4.68.0, two turns tried on WSLg with a Team plan) the same five tasks, the button "Continue with Claude Code" with a signed-out Claude Code, and one turn on Windows or macOS; and one call through the connector from Codex, whose account had no credits on 2026-11-24. | Live trial recorded for Anthropic, OpenAI and Claude Code; a sign-in and a conversation recorded for ChatGPT, OpenRouter and Claude Code, on WSL and on one other system; one Codex call through the connector. |
+| 3 | **1b** — [Grid surface experiment](docs/plans/01-performance-gpu.md) | Signed distance grid/marching cubes as a second surface type and a smoothness value. Compare 1aon and 4v6x at two values; user judges the experiment. | Actual times and pictures against today's surface. |
+| 4 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan using the grid-surface result from order 3; no new surface-look setting before that. | New detailed section grounded in the experiment. |
+| 5 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. A second pass over the texture that FXAA reads since 4.65.0 (`SceneRenderAA`, `fxaa.fs`). | Frame times and pictures on black/white. |
+| 6 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. | Real-window responsiveness, suite and sanitizer checks. |
+| 7 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 | any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
 
@@ -187,133 +195,6 @@ assistant button: 1297 px of content, a 1305 px window, nothing in the
 overflow menu. (4.43.0: 1236 px in 1244 px; the Sequence alignment button of
 4.59.0 was not measured on its own.) The user's screen is 1707 px wide at
 150 %: a further button still has to be measured before it is added.
-
-## Step 37 — GUI follow-ups requested 2026-11-24
-
-Open at 4.68.0. This section specifies the new work; earlier deliveries in
-steps [11](docs/plans/11-color-palettes.md),
-[20](docs/plans/20-toolbar-look.md),
-[32](docs/plans/32-footer-icons-movie-button.md) and
-[33](docs/plans/33-sequence-window.md) remain shipped. The Objects drag
-work is still **23b**, not a second implementation under a new number.
-Choices 91–97 were decided by the user on 2026-11-25; the specifications
-below include those answers. No feature shipped in this decision update.
-
-**37a — UniProt fetch.** Reported from File > Get by UniProt:
-
-```text
-fetch_by_uniprot P01542, async_=1
-TypeError: fetch_by_uniprot() got an unexpected keyword argument 'async_'
-```
-
-Source inspection: `file_fetch_uniprot` in `modules/pmg_qt/file_dialogs.py`
-passes that argument, and the native function in `modules/pymol/fetching.py`
-already accepts it and uses `_self.async_`. First inspect the function
-registered in `cmd.keyword`, its module/signature and the installed version;
-compare normal startup with plugins disabled. A legacy startup override or
-an older installed build is a hypothesis, not a confirmed cause. Fix the
-dispatch/registration mismatch at its source; do not remove background
-execution to hide the error. Check the adjacent predicted-structure action
-for the same cause. Leave a GUI-to-command regression in
-`testing/tests/api/test_file_dialogs.py` and the relevant dispatch check in
-`testing/tests/api/fetching.py`, with mocked network results. Try P01542 in
-the real window: loading or a useful no-results/network error is acceptable;
-the keyword error and a frozen GUI are not.
-
-**37b — Delete from Objects.** Bind the keyboard Delete (Del) key to the
-selected object/group while the Objects list has focus; add no new button
-and keep the existing menu action (91). An object is deleted immediately;
-a group always asks first. Confirm deletion of the group and all its
-members, including nested groups; name the group and show the full scope
-before applying (92). No delete action on “all”; deletion must not also
-toggle visibility or zoom. Use the native deletion/group operations in
-`modules/pmg_qt/object_panel.py`, matching the confirmed scope. Tests in
-`testing/tests/api/object_panel.py`: Del on the selected object, empty/nested
-group, Cancel, unrelated objects retained, and Delete in a text editor
-does not delete an object. General undo stays in 21g.
-
-**23b — Object order by dragging.** Hold the right mouse button on a row,
-drag and release to drop (93, recommended option accepted). A right click
-without dragging still opens the context menu; keep left click as
-visibility and F2 as rename. Show the drop position; between rows calls
-`cmd.order`, onto a group uses `cmd.group`
-as already planned, and a root drop can move a member out of its group.
-Reject moving “all”, dropping a group into itself/its descendants, and
-invalid targets. Keep refresh from interrupting a drag. Use Qt's existing
-tree and provide keyboard move actions through the same operation. Check
-order and membership in `testing/tests/api/object_panel.py`, including
-filtered lists, nested groups, refresh and a PSE round trip; then exercise
-the chosen gesture in the real window.
-
-**37c — Palette length and preview.** Requested sizes: 30 usable colors
-per named built-in palette, only the first 10 shown in the GUI preview.
-Chosen scope (94): all named built-ins in `modules/pymol/palettes.py`; keep
-existing hex values and their order, append distinct colors in each palette's style.
-Leave legacy “PyMOL default” and saved user palettes as they are.
-The menu already slices `colors[:10]` in
-`modules/pmg_qt/action_toolbar.py`; retain and test it. Full object and chain
-color cycles must use all 30, not just the preview. Review contrast and
-neighbor separation with the existing palette checks, including the wrap
-from last to first; do not claim 30 colors are all distinguishable with
-color-vision deficiencies. The editor must still expose every color.
-Extend `testing/tests/api/palettes.py` to check lengths, retained prefixes,
-cycle and session behavior; check previews in
-`testing/tests/api/action_toolbar.py`.
-
-**37d — Drag colors in New/Edit palette.** Enable Qt internal list moves
-in `modules/pmg_qt/palette_dialog.py`. Moving a swatch changes its position,
-not its value; retain Add, Change, Remove and keyboard Up/Down. Saving uses
-the visible order; Cancel leaves the stored palette untouched. Check first,
-middle and last moves, reopening and QSettings persistence in the existing
-palette/toolbar tests. No external drag source or new palette format needed.
-
-**37e — Compact mouse mode.** The current button in
-`modules/pmg_qt/pymol_qt_gui.py` expands into spare footer width and only
-shortens its label when squeezed. Use the mouse icon plus a compact mode
-name such as “Viewing”/“Editing”, with the full name in the tooltip and the
-existing menu (95). Size the button to its content and reduce excess
-horizontal padding as requested; shortening the text alone does not remove
-the current spare space. Measure the before/after width in the real window,
-including a narrow Objects panel and UI scaling;
-do not choose an unmeasured fixed pixel width. This supersedes choice 84's
-expanding button, not the menu's available mouse modes.
-
-**37f — Sequence tab options and alignment.** Reuse the settings already
-listed by Display > Sequence Mode in `modules/pymol/_gui.py`:
-
-- Mode (`seq_view_format`): Residue Codes, Residue Names, Chain Identifiers,
-  Atom Names, States.
-- Labels (`seq_view_label_mode`): All Residue Numbers, Top Sequence Only,
-  Object Names Only, No Labels.
-- Gaps (`seq_view_gap_mode`): No Gaps, All Gaps, Single Gap.
-- “Multiple sequence alignment…” opens the existing `sequence_panel.open`
-  viewer, with loaded chains/FASTA and its existing local MAFFT action.
-
-Use a row of Mode/Labels/Gaps dropdowns and an alignment button inside the
-Sequence tab (97, option B). Keep Command → Sequence → Chat
-order. Wire existing settings/actions in `pymol_qt_gui.py` and
-`sequence_tab.py`: Display, commands, the tab and viewport stay synchronized.
-Test every option, command-driven updates, picking after format changes and
-opening the same alignment viewer in `testing/tests/api/sequence_tab.py` /
-`sequence_window.py`. MAFFT remains separately installed; reuse its current
-missing-executable message. No second viewer or alignment engine.
-
-**37g — Font size beside the tabs.** Use compact A− / A+ and Reset
-controls on the right of `command_tabs`, acting on the active tab's content
-and remembering a separate size per tab in QSettings (96, recommended
-option accepted). Tab-title fonts follow the application theme. Command
-covers log and entry; Chat covers conversation and prompt; Sequence keeps its
-monospace font and recalculates scroll ranges and mouse hit positions.
-Use `pymol_qt_gui.py`, `sequence_tab.py` and `chat_panel.py`; preserve each
-tab's font family. Changes are live and independent of overall UI scale.
-Keyboard access and tooltips are required. Check changing tabs, reset,
-restart, long text and sequence selection at changed sizes; no provider
-request is needed to test Chat fonts.
-
-Each shipped slice follows the normal version/ChangeLog and runnable-check
-rules; this documentation update has neither a version nor a ChangeLog entry.
-Skipped here: implementation, live fetch/GUI trials, new dependencies,
-bulk deletion UI, palette import/export and a new alignment backend.
 
 ## Coverage of the 2026-11-23 drafts and superseded decisions
 
@@ -329,7 +210,7 @@ bulk deletion UI, palette import/export and a new alignment backend.
 | 8 — freeze on 150 → 120 | 27d, built in 4.43.1; 27c open | Answer 53 confirms toolbar UI scale at 150 % → 120 %. Reliability must be established before claiming live scale support; the accepted next-start fallback remains. |
 | 9 — three stars in the property table | 22f, built in 4.46.0 | Promotes the explicitly deferred `stars` idea into requested work. |
 | 10 — next ligand with protein contacts and zoom | 36a, built in 4.51.0 | Adds a workflow beyond Ctrl+L's existing zoom-only helper; shortcut choice is open. |
-| 11 — chat control, aware of the fork | 31, built in 4.58.0 (chat) and 4.61.0 (connector) | In-app chat plus a live capability catalog, and the external connector on the same operations. The live trial is open (order 10). |
+| 11 — chat control, aware of the fork | 31, built in 4.58.0 (chat) and 4.61.0 (connector) | In-app chat plus a live capability catalog, and the external connector on the same operations. The live trial is open (order 2). |
 
 ## Validation of the original draft
 
@@ -366,10 +247,23 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-**Choices 91–97 were answered on 2026-11-25.** The decisions are recorded
-in [PLAN-DONE.md](PLAN-DONE.md) and applied to 37b–g and 23b above.
-These slices remain open for implementation; none awaits a design answer
-from that set of questions.
+No question waits. Choices 91–97 were answered on 2026-11-25 and built
+the same day (4.69.0 to 4.75.0); they are in [PLAN-DONE.md](PLAN-DONE.md).
+
+Seven choices were made while building 4.68.1 to 4.75.0 (98 to 104),
+each the smaller option; they are listed in PLAN-DONE.md with what it
+takes to change them. Three are worth a look:
+
+- 98: the old pymolish plugin is not loaded at all when it is found as a
+  startup plugin, so the commands of it that this program does not have
+  are gone too. The other way: load it and refuse only the names that are
+  built in.
+- 99: Delete acts on the current row, the one with the frame, which is
+  the row clicked last. A click on a row hides or shows the object first,
+  as always; the arrow keys reach a row without that.
+- 101: the colors added to the palettes are computed in each palette's own
+  tone, not taken from Material, Nord, Dracula, Catppuccin, ChimeraX or
+  the color-blind sets. Say which palettes should rather stay short.
 
 Earlier on 2026-11-24 the user chose the recommended option for every
 question that then had no answer; those, the earlier answers, the two
@@ -435,26 +329,42 @@ kept between runs (today the next run renews it); deleting the OpenRouter
 key at OpenRouter on Sign out (today a link to its page). From 4.67.0, in
 the Sequence tab: the dimming of the unaligned residues of an alignment,
 the frame around a drag, the marks of the selection along the scroll bar,
-scrolling on while a drag passes the edge. The full mouse-mode name in the
-button's tooltip is now requested in 37e (choice 95, order 6).
+scrolling on while a drag passes the edge.
 From 4.68.0: a Sign out for Claude Code
 (it would sign it out everywhere), the marks of the providers as icons
 (their rules for use were not read), one long-lived Claude Code per
 conversation in place of one start per turn (the start was not timed
 alone; a resumed turn with a one-word answer took 2.66 s in all), a conversation without Claude Code's transcript on disk, and a
 check of the sign-in after a failed turn (the row shows the state of the
-last check).
+last check). From 4.68.1 to 4.75.0: deleting several selected rows of the
+Objects list at once; Esc to give up a drag of a row (release it where no
+mark is shown), and scrolling the list while a row is dragged past its
+edge; keys for A−, A+ and Reset (Tab reaches them); less padding inside
+the mouse mode button than its neighbors have; a check of the thirty
+colors for color-vision deficiencies.
 
 The user's to do:
 
+- Look at the eight changes of 2026-11-25 in your own window. Your
+  `.venv` holds an older build: close pymolish and run
+  `uv pip install --python .venv/bin/python --no-build-isolation --config-settings use-msgpackc=no '.[dev,chem,fix]'`.
+  They were built and tried in a copy of their own.
+- Say where File > Get by UniProt failed (37a). On this machine the old
+  plugin is not loaded (`~/.pymolpluginsrc.py` sets an empty startup
+  path) and the action worked before the change; the error was
+  reproduced only by putting `~/.pymol/startup` into the startup path. If
+  it happened elsewhere, with another cause, it is not fixed.
+- Try the drag with the right button (4.70.0) once on Windows and on
+  macOS: there the system asks for the menu when the button is released,
+  on Linux when it is pressed. Both are handled; only Linux was tried.
 - Push `feature13` and open its pull request. Local tracking refs checked
-  2026-11-24: `origin/feature13` is at the plan commit of 4.66.0; including
-  this documentation commit, the branch is 5 commits ahead (4.67.0,
-  4.68.0, their plan commits and this update) and contains `feature12`
-  (itself 9 commits ahead of its tracking ref). At the previous remote check,
-  `feature13` had no pull request; the last one was #10 (`feature11`, merged
-  2026-11-20). Remote PR/CI state was not rechecked in this documentation
-  run; no push or merge was performed.
+  2026-11-25 after 4.75.0: `origin/feature13` is at the plan commit of
+  4.66.0; including this plan commit the branch is 16 commits ahead
+  (4.67.0 to 4.75.0 with their plan commits, the decisions 91 to 97 and a
+  repair of the tests) and contains `feature12` (itself 9 commits ahead
+  of its tracking ref). At the last remote check `feature13` had no pull
+  request; the last one was #10 (`feature11`, merged 2026-11-20). The
+  remote was not asked again in this run; no push or merge was performed.
 - After the push, read the CI run: the Windows icon, release notes,
   `chem`/`fix` extras on three systems, and for 27c the line that
   `test_scale_change_keeps_the_window_alive` prints in the Windows and
@@ -503,7 +413,8 @@ The user's to do:
   whatever window had the focus on the Windows desktop. The working tree
   was unchanged; an editor or a terminal that had the focus may show it.
 - Remove the pymolish plugin from `~/.pymol/startup` (still there on
-  2026-11-20): it wins over the native commands.
+  2026-11-25). Since 4.68.1 it is no longer loaded, and the log says so
+  at every start where the startup path names that folder.
 - `plan_images/` (the pictures of the request of 2026-11-20) is ignored by
   git. It is deleted when the last plan made from it is built: 25b
   (22d and 24c are built). The plans name its files by path.

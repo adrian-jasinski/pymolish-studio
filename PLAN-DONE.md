@@ -3,7 +3,7 @@
 Steps of the [roadmap](PLAN.md) whose last milestone has shipped. Open work
 stays in `PLAN.md`; the detailed plans stay in `docs/plans/`. Step numbers and
 order numbers in the finished-work table are historical. “Open, order N”
-references below follow the current roadmap (updated 2026-11-24).
+references below follow the current roadmap (updated 2026-11-25).
 
 **Planning update 2026-11-23 at 4.43.0:** no milestone shipped. Step 11 is
 reopened for CPK (11c); its existing palette releases remain recorded below.
@@ -38,19 +38,37 @@ a Claude account through the installed Claude Code; its row is the first of
 "Finished milestones of open steps", under step 31. The open orders keep
 their numbers; the trial of 31 (order 2) now also covers this provider.
 
+**Built 2026-11-25, 4.68.1 to 4.75.0:** all of step 37 (37a to 37g) and
+23b; their eight rows are the first of "Finished milestones of open
+steps". Steps 23 and 37 moved to "Finished steps". The open orders were
+renumbered: 27c 1, the trial of 31 2, the grid surface 3, 25b 4, 15b 5,
+the surface worker 6, 21g 7.
+
+Chosen while building 4.68.1 to 4.75.0, without asking, each the smaller
+option. Say so if another one is wanted:
+
+| No. | Choice | Built | To change it |
+| --- | --- | --- | --- |
+| 98 | A startup plugin named "pymolish" is not loaded at all. The other way, loading it and refusing only the command names that are built in, keeps its other commands, and needs a list of the built-in names in the plugin loader. | 4.68.1. | `PluginInfo.load` in `modules/pymol/plugins/__init__.py`. |
+| 99 | Delete acts on the current row of the list (the framed one: clicked last, or reached with the arrow keys), not on the rows marked with Ctrl+click for copying. After a delete no row is current, so a second press does nothing. | 4.69.0. | `ObjectPanel.delete` in `object_panel.py`. |
+| 100 | Moving rows: on a group the middle half of the row means "into" (all of the row below its top quarter while the group is open, since its members follow); under the last row means the end of the top level; the moved row becomes the current one. With the keys: Alt and the arrows. | 4.70.0. | `_drop` and `move_current` in `object_panel.py`. |
+| 101 | The colors added to the ten palettes are computed: an OKLCH grid inside each palette's own range of lightness and chroma, a contrast of 3 to its background, the farthest from all colors already there first, then ordered so that neighbors differ. The other way was to take more colors from each source; most sources have no more. | 4.71.0. | The lines after "added" in `PALETTES` of `modules/pymol/palettes.py`. |
+| 102 | The five buttons under the object list stand at the left and the spare width is at the right. The other way: the three icon buttons at the right edge. | 4.73.0. | `footer.addStretch` in `pymol_qt_gui.py`. |
+| 103 | The three lists of the Sequence tab have a word before each (Mode, Labels, Gaps) and no key of their own: Tab reaches them. | 4.74.0. | `Options` in `sequence_tab.py`. |
+| 104 | A−, A+ and Reset change the text by one point per click, between 6 and 40 points, and keep the difference to the start size of each tab, so every widget keeps its font and its distance to the others. | 4.75.0. | `TabFontButtons` in `pymol_qt_gui.py`; the keys `fonts/<tab>` in the settings. |
+
 Decided by the user on 2026-11-25, choices 91–97 from the GUI request of
-2026-11-24. Planning only: the decisions below are recorded, but no feature
-shipped in this update. Open orders refer to [PLAN.md](PLAN.md).
+2026-11-24, and built the same day.
 
 | Question | Decision | State |
 | --- | --- | --- |
-| 91 | Delete key only (option B): bind keyboard Del to the selected object/group in the focused Objects list, keep the existing menu action, and add no new button. Objects are deleted without confirmation. | 37b. Open, order 2. |
-| 92 | Confirm deletion of the group and all its members, including nested groups; show the scope before applying. | 37b. Open, order 2. |
-| 93 | Recommended option A: hold the right mouse button on a row, drag and release to drop; a click without dragging still opens the context menu. Ordinary left-click visibility stays. | 23b. Open, order 3. |
-| 94 | Recommended option A: extend all named built-ins to 30 colors by appending colors, preserving existing entries/order. Leave legacy “PyMOL default” and saved user palettes as they are; preview only the first 10 colors. | 37c. Open, order 4. |
-| 95 | Mouse icon plus compact mode name, such as “Viewing” or “Editing”; full name in the tooltip. Also reduce the button's spare width and excess horizontal padding, sizing it to its content. Supersedes the expanding/shortened-label behavior of choice 84. | 37e. Open, order 6. |
-| 96 | Recommended option A: A− / A+ and Reset at the right of the tab strip adjust the active tab's content; remember each tab's size separately. Tab-title fonts follow the application theme. | 37g. Open, order 8. |
-| 97 | Option B: a row of Mode/Labels/Gaps dropdowns and an alignment button inside the Sequence tab. | 37f. Open, order 7. |
+| 91 | Delete key only (option B): bind keyboard Del to the selected object/group in the focused Objects list, keep the existing menu action, and add no new button. Objects are deleted without confirmation. | 37b. 4.69.0. |
+| 92 | Confirm deletion of the group and all its members, including nested groups; show the scope before applying. | 37b. 4.69.0. |
+| 93 | Recommended option A: hold the right mouse button on a row, drag and release to drop; a click without dragging still opens the context menu. Ordinary left-click visibility stays. | 23b. 4.70.0. |
+| 94 | Recommended option A: extend all named built-ins to 30 colors by appending colors, preserving existing entries/order. Leave legacy “PyMOL default” and saved user palettes as they are; preview only the first 10 colors. | 37c. 4.71.0; 37d (dragging in the dialog) 4.72.0. |
+| 95 | Mouse icon plus compact mode name, such as “Viewing” or “Editing”; full name in the tooltip. Also reduce the button's spare width and excess horizontal padding, sizing it to its content. Supersedes the expanding/shortened-label behavior of choice 84. | 37e. 4.73.0. |
+| 96 | Recommended option A: A− / A+ and Reset at the right of the tab strip adjust the active tab's content; remember each tab's size separately. Tab-title fonts follow the application theme. | 37g. 4.75.0. |
+| 97 | Option B: a row of Mode/Labels/Gaps dropdowns and an alignment button inside the Sequence tab. | 37f. 4.74.0. |
 
 Chosen while building 4.68.0. Two options were offered first (this
 provider, or nothing new), and brand marks or the plain icon; the answer
@@ -73,7 +91,7 @@ so if another one is wanted:
 | 81 | The Sequence tab always lists the sequence; `seq_view` only puts it into the viewport as well, so both places can be on. The other way was one switch and a preference for the place. An object with `seq_view` off for itself is in neither place. | 4.67.0. | `SeqInViewport` in `layer1/Seq.cpp` and `listed` in `SeekerUpdate`. |
 | 82 | A click on SEQ opens the tab (the preferred place); "Show in viewport" and "Sequence alignment" are in the menu of its arrow, and Display > Sequence became "Sequence in Viewport". SEQ no longer shows a state. | 4.67.0. | The `seq` button in `pymol_qt_gui.py`. |
 | 83 | The tab is drawn on the background color of the viewport with its label color, not in the colors of the theme: the colors of the residues are chosen for that background. | 4.67.0. | `CmdSeqRows` in `layer4/Cmd.cpp` sends the colors, `paintEvent` in `sequence_tab.py` uses them. |
-| 84 | The mouse mode button gives up width down to that of SEQ, and Qt shortens its name in the middle ("3-…ng"); the names were not abbreviated. | 4.67.0. | Superseded by choice 95 on 2026-11-25: 37e, open at order 6. `mouse.setMinimumWidth` in `pymol_qt_gui.py`. |
+| 84 | The mouse mode button gives up width down to that of SEQ, and Qt shortens its name in the middle ("3-…ng"); the names were not abbreviated. | 4.67.0. | Superseded by choice 95 on 2026-11-25: 37e, built in 4.73.0. `mouse.setMinimumWidth` in `pymol_qt_gui.py`. |
 | 85 | The robot keeps Lucide's `bot`, drawn like the other four icons of the row (16 px, lines of 1.5, blue while the agent connector is on); no new drawing. | 4.67.0. | `"ai assistant"` in `icons.py`. |
 
 Decided by the user on 2026-11-24, asked before 4.66.0 was built:
@@ -160,6 +178,8 @@ on 2026-11-24 (table above):
 
 | Step | Detailed plan | Recommendation |
 | --- | --- | --- |
+| 37 | [GUI follow-ups of 2026-11-24](docs/plans/37-gui-followups.md) | Requested 2026-11-24, answered and built 2026-11-25, 4.68.1 to 4.75.0, seven slices: the old plugin no longer takes the names of the fetch commands (37a); Delete in the Objects list (37b); thirty colors a palette, ten in the preview (37c); colors dragged in the palette dialog (37d); a compact mouse mode button (37e); Mode, Labels and Gaps lists and the alignment button in the Sequence tab (37f); A−, A+ and Reset beside the tabs (37g). |
+| 23 | [Rename and move rows in the Objects panel](docs/plans/23-rename-in-panel.md) | Requested 2026-11-20. 23a, 4.24.0: F2 or "rename" edits the name on the row. 23b, 4.70.0: a row is moved by a drag with the right button or with Alt and the arrow keys, between rows, into a group and out of it; the order and the groups are the core's and are kept in a session. |
 | 19 | [Movie timeline](docs/plans/19-movie-timeline.md) | The Timeline panel in 4.18.0 (shot list, strip, record, tours, effects, easing, export with an estimate); in 4.63.0 the shot list in the session, dragging on the strip under a ruler of seconds, and Movie > Program without Camera Loop, Scene Loop and State Loop (116 rows). The keyframe strip of the core stays (question 7). Not built: undo of timeline edits, lanes for object motions, a shot "state sweep", rendering through the Export presets was never run (needs ffmpeg or ImageMagick). |
 | 33 | [Sequence alignment window](docs/plans/33-sequence-window.md) | 4.57.0, slices 33a–c delivered together: loaded chains plus FASTA, optional local MAFFT, mapped secondary structure and selections, structure fitting/Undo, consensus/identity/export and session rows. Platform launch checks remain alongside 27c. Added 4.67.0, not from the plan: the sequence of the loaded objects in a tab between Command and Chat. |
 | 0 | [UI engine research](docs/plans/00-ui-engine.md) | PySide6 + Qt Widgets; preserve the renderer while simplifying bindings. |
@@ -316,10 +336,11 @@ ones, the new ones win.
 
 ## Finished milestones of open steps
 
-Steps 1, 8, 15, 21, 23, 25, 27 and 31 stay in the roadmap.
+Steps 1, 8, 15, 21, 25, 27 and 31 stay in the roadmap.
 These parts of them have shipped. The rows of steps 3, 11, 17, 18, 19, 20, 22, 26,
-24, 28, 30, 32, 34, 35 and 36, which are finished, are kept here as the record of
+23, 24, 28, 30, 32, 34, 35, 36 and 37, which are finished, are kept here as the record of
 their milestones. The rows are not in order of time: the newest, the
+eight rows of 2026-11-25 (4.68.1 to 4.75.0, the last built first), the
 provider "Claude Code" (4.68.0), the
 Sequence tab (4.67.0), 31d
 (4.66.0) and the seven
@@ -332,6 +353,14 @@ the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
+| 37 | 37g — text size beside the tabs | Done 2026-11-25 (4.75.0): [docs/plans/37-gui-followups.md](docs/plans/37-gui-followups.md). `TabFontButtons` in `pymol_qt_gui.py`, the corner widget of the command tabs: A−, A+ and Reset move the text of the tab that is shown by one point; the difference to the start size is kept per tab in the settings. The Sequence tab recalculates its scroll ranges on a font change. 1 test in `api/sequence_tab.py`. Real window with a settings folder of its own: 12, 11 and 8 points after the clicks and at the second start, where a tab starts with 9. Suite: 1120 passed, 251 skipped. |
+| 37 | 37f — lists and the alignment button in the Sequence tab | Done 2026-11-25 (4.74.0). `Options` in `sequence_tab.py`: three lists that set and follow `seq_view_format`, `seq_view_label_mode` and `seq_view_gap_mode` through the window's setting callbacks, and a button for the alignment window; the choices are one table, `SEQUENCE_OPTIONS` in `pymol/_gui.py`, from which Display > Sequence Mode is built as well. 1 test. Real window: "Residue Names" in the list changed the rows and the mark in the Display menu; the button opened the window. Differs from the recommendation: a row of lists, not one menu (the user's choice 97). |
+| 37 | 37e — compact mouse mode button | Done 2026-11-25 (4.73.0). Icon and the name of the mode without its count of buttons, the whole name in the tooltip; size policy Maximum, a stretch after the five buttons. Real window on WSLg: 83 px for "Viewing" and 78 px for "Editing" (139 px for "3-Button Viewing" before), the same at 100, 150 and 200 %; narrowest panel 234 px before and after. 1 test that runs in a real window only. |
+| 37 | 37d — colors dragged in the palette dialog | Done 2026-11-25 (4.72.0). Qt's internal move on the list of `palette_dialog.py`; OK stores the order shown. Checks added to `test_user_palette`. A real left-button drag on the dialog: the first of five colors dropped below the fourth. |
+| 37 | 37c — thirty colors a palette | Done 2026-11-25 (4.71.0). The ten named palettes grew from 7 to 22 colors to 30 by appending; what they had keeps value and place. The added colors are computed (choice 101). The menu shows ten as before, a tooltip gives the number. 2 tests more; smallest RGB distance between neighbors 0.23 (pastel). Not checked for color-vision deficiencies. |
+| 23 | 23b — rows moved by dragging | Done 2026-11-25 (4.70.0): [docs/plans/23-rename-in-panel.md](docs/plans/23-rename-in-panel.md). `ObjectPanel.move(name, target, where)` behind the drag with the right button and Alt+arrows: `cmd.group`, `cmd.ungroup` or the group action "raise" for the membership, then the whole new order through `cmd.order`. A line between rows or a frame on a group shows the place; a group does not go into itself (the core would accept that). The menu of a right click opens on release. 3 tests, one with a session round trip. Real window with real right-button input: a drag above a row, a drag onto a group, a click. Not tried on Windows and macOS. |
+| 37 | 37b — Delete in the Objects list | Done 2026-11-25 (4.69.0). The Delete key on the current row; a group asks (default Cancel), names what is inside, nested groups included, and goes with it. The shortcut belongs to the list alone and does not repeat. 1 test. Real window: a click and Delete, a second press, the question of a group, Delete inside the rename editor. Differs from the recommendation: no trash button (the user's choice 91); one had been built and was taken out. |
+| 37 | 37a — the fetch commands keep their names | Done 2026-11-25 (4.68.1). The reported `TypeError` of File > Get by UniProt came from the old pymolish plugin, which as a startup plugin registers its own `fetch_by_uniprot`, `fetch_fold`, `fetch_uniprot_ligands` and `load_smiles`; `PluginInfo.load` no longer loads a plugin of that name. 3 tests (`api/plugins.py`, `api/test_file_dialogs.py`). Reproduced and repaired in the real window with `~/.pymol/startup` in the startup path; on this machine that path is empty and the action worked before. Differs from the plan: no test with mocked network in `api/fetching.py`, the fault was not there. |
 | 31 | 31d — a Claude account through Claude Code | Done 2026-11-24 (4.68.0): [docs/plans/31-ai-agents.md](docs/plans/31-ai-agents.md). The provider "Claude Code" of the Chat tab: each turn starts the installed `claude -p` with stream-json output; the tool is served to it by `agent_server.Server` on 127.0.0.1, on a port and with a token of that turn, the token in a file of a private folder; a later turn resumes the session. `signin.py` reads `claude auth status` and starts `claude auth login`. No SDK and no extra `ai`. 5 tests more in `api/assistant.py`, 3 in `api/signin.py`; the suite: 1109 passed, 250 skipped. Tried in the real window (WSLg) with Claude Code 2.1.322 on the user's Team plan, model haiku: the row showed the account; "how many atoms, color the carbons orange" took 4 tool calls and 5.92 s, the carbons had the color index of orange; a second turn answered from the same session in 2.66 s. Differs from the plan: the plan of 31d ruled out the "reuse of a CLI's private tokens", and none is read; the first build used `--safe-mode`, which the stand-in tests passed and the real trial did not (it switches off the given MCP server too), so `--restricted` took its place. Not tried: the sign-in button with a signed-out Claude Code, Windows, macOS, a release bundle. |
 | 33 | The sequence in a tab; the AI button under the object list (a request, not a plan) | Done 2026-11-24 (4.67.0). `modules/pmg_qt/sequence_tab.py` draws the rows of the core's sequence viewer in a tab between Command and Chat; the core keeps the rows and handles the mouse through two new calls, `_cmd.seq_rows` and `_cmd.seq_mouse` (`SeqPanelMouse`), so the code of the viewport's rows runs for the tab. The rows are built without `seq_view`; `SeqInViewport` keeps them out of the viewport while it is off. SEQ opens the tab, its arrow has "Show in viewport". The AI assistant button moved from the action toolbar to the row under the object list, after SEQ. 2 tests in `api/sequence_tab.py`; the suite: 1101 passed, 250 skipped. Tried in the real window (WSLg, 150 %) on 4hhb and 1ubq: click, second click, Shift+click, drag, Ctrl+click and the middle button (the view moved), Ctrl+middle (zoomed), the right button on a selected and on an unselected residue (two menus), a double click beside the rows, a selection typed as a command (marked in the tab), residue names as Sequence Mode, colors by secondary structure; the viewport with `seq_view` on and off. Measured there: the row under the object list needs 234 px (it needed 254 px at 4.42.0), the toolbar 1254 px in a window of 1262 px, no button in the overflow menu. Left out: the dimming of unaligned residues, the frame around a drag and the marks along the scroll bar; the light theme, a sequence longer than 1000 residues, Windows and macOS were not looked at. |
 | 31 | 31d — sign-in in the browser | Done 2026-11-24 (4.66.0): [docs/plans/31-ai-agents.md](docs/plans/31-ai-agents.md). `modules/pymol/signin.py`, standard library only: an authorization code with PKCE that comes back to a listener on 127.0.0.1, for OpenRouter (returns a key of the user's account) and for OpenAI's "Sign in with ChatGPT" for open-source apps (pymolish is registered by the user at the first sign-in; tokens for one hour, renewed before a request). The ChatGPT route in `assistant.py` streams, sends the tool in a namespace and no output limit. Chat tab: two more providers, a row with "Continue with ...", "Stay signed in" and the account with a link to its usage page; the model field is a list filled from the account. 16 tests in `api/signin.py`, 3 more in `api/assistant.py`; the suite: 1099 passed, 250 skipped. Checked in the real window with a stand-in browser: the row, Cancel, Sign out, the keyboard order, the window's smallest width unchanged (569 px). Differs from the plan: 31d was planned as an investigation only, and it was built. Its finding: Anthropic forbids a Claude.ai login in another program, so Anthropic keeps the API key; OpenAI and OpenRouter each publish a flow for it. No real sign-in was made. |
