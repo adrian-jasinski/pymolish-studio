@@ -34,7 +34,7 @@ ROUTES = {
     "Anthropic": ("ANTHROPIC_API_KEY", "https://api.anthropic.com"),
     "OpenAI": ("OPENAI_API_KEY", "https://api.openai.com/v1"),
     "OpenRouter": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1"),
-    "ChatGPT": ("", "https://api.openai.com/v1"),  # browser sign-in only
+    "ChatGPT": ("", "https://api.openai.com/v1"),  # the sign-in of "OpenAI"
     "Claude Code": ("", ""),  # the user's own Claude Code and its sign-in
 }
 
@@ -322,12 +322,12 @@ def ask(prompt="", *, _self=cmd):
 
     Usage: ask [prompt]
     Requires the Qt GUI. Providers: Anthropic and OpenAI with an API key (the
-    environment or this run's password field), ChatGPT and OpenRouter with a
-    sign-in in the browser, kept in the keychain of the computer only with
-    "Stay signed in", and Claude Code: the Claude Code installed on this
-    computer, with the Claude account it is signed in to. Chat history and
-    credentials are not written into session files; Claude Code keeps a
-    transcript of its conversations in its own folder.
+    environment or this run's password field), OpenAI (a ChatGPT plan) and
+    OpenRouter with a sign-in in the browser, kept in the keychain of the
+    computer only with "Stay signed in", and Claude Code: the Claude Code
+    installed on this computer, with the Claude account it is signed in to.
+    Chat history and credentials are not written into session files; Claude
+    Code keeps a transcript of its conversations in its own folder.
     """
     from . import gui
     window = gui.get_qtwindow()

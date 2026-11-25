@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.80.0
+
+	* Chat
+	  - The provider "OpenAI" of the Chat tab has both ways in now: the
+	    field for an API key, and the button "Continue with ChatGPT",
+	    the sign-in in the browser of 4.66.0 that is paid from the
+	    ChatGPT plan. While signed in, the key field is hidden, the
+	    plan is used and the models of the account are listed; "Sign
+	    out" brings the key field back.
+	  - The entry "ChatGPT" is gone from the list of providers. A
+	    sign-in kept with "Stay signed in", the model chosen for it and
+	    a saved choice of "ChatGPT" carry over to "OpenAI".
+
+2026-11-25 pymolish-studio
+
 	* 4.79.1
 
 	* Build
