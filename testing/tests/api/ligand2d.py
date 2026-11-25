@@ -144,6 +144,7 @@ def test_picture(tmp_path):
         assert path.stat().st_size > 2000
 
 
+@needs_rdkit
 def test_ring_inside_the_picture():
     """24d: a ligand whose atoms lie to one side of its box (carazolol of
     2RH1): every circle is whole, above the legend."""
