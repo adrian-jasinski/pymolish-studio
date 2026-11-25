@@ -4274,15 +4274,12 @@ void SceneUpdate(PyMOLGlobals * G, int force)
           int cnt = I->NonGadgetObjs.size();
 
           if(cnt) {
-            CObjectUpdateThreadInfo *thread_info = pymol::malloc<CObjectUpdateThreadInfo>(cnt);
-            if(thread_info) {
-              cnt = 0;
-              for (auto& NonGadgetObj : I->NonGadgetObjs) {
-                thread_info[cnt++].obj = NonGadgetObj;
-              }
-              SceneObjectUpdateSpawn(G, thread_info, n_thread, cnt);
-              FreeP(thread_info);
+            std::vector<CObjectUpdateThreadInfo> thread_info(cnt);
+            cnt = 0;
+            for (auto& NonGadgetObj : I->NonGadgetObjs) {
+              thread_info[cnt++].obj = NonGadgetObj;
             }
+            SceneObjectUpdateSpawn(G, thread_info.data(), n_thread, cnt);
           }
         } else
           /* single-threaded update */

@@ -696,7 +696,8 @@ int ViewElemSmooth(CViewElem * first, CViewElem * last, int window, int loop)
     window = (int) n;
   delta = (window - 1) / 2;
   if(n && delta) {
-    CViewElem *cpy = pymol::malloc<CViewElem>((n + 2 * delta));
+    std::vector<CViewElem> cpy_buf(n + 2 * delta);
+    CViewElem* cpy = cpy_buf.data();
     CViewElem *src, *dst;
     int a, b, c, cnt;
     memcpy(cpy + delta, first, sizeof(CViewElem) * n);
@@ -797,7 +798,6 @@ int ViewElemSmooth(CViewElem * first, CViewElem * last, int window, int loop)
 
       }
     }
-    FreeP(cpy);
   }
   return 1;
 }

@@ -18,6 +18,8 @@ Z* -------------------------------------------------------------------
 #ifndef _H_Word
 #define _H_Word
 
+#include <vector>
+
 #include "PyMOLGlobals.h"
 #include "Lex.h"
 
@@ -27,8 +29,8 @@ typedef struct {
 } WordKeyValue;
 
 struct CWordList {
-  char* word{};
-  char** start{};
+  std::vector<char> word;
+  std::vector<char*> start;
   int n_word{};
 };
 

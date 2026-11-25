@@ -82,12 +82,11 @@ int CShaderPrg::Link() {
 	ENDFB(G);
       glGetProgramiv(id, GL_INFO_LOG_LENGTH, &infoLogLength);
       if (!glGetError() && infoLogLength>0){
-	char *infoLog = pymol::malloc<char>(infoLogLength);
-	glGetProgramInfoLog(id, infoLogLength, &howLong, infoLog);
+	std::vector<char> infoLog(infoLogLength);
+	glGetProgramInfoLog(id, infoLogLength, &howLong, infoLog.data());
 	PRINTFB(G, FB_ShaderMgr, FB_Errors)
-	  "%s\n", infoLog
+	  "%s\n", infoLog.data()
 	  ENDFB(G);
-	FreeP(infoLog);
       }
     }
     return 0;

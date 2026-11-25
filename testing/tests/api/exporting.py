@@ -159,6 +159,27 @@ def testPngNoFile():
     testing.assert_image_has_color('yellow', img)
 
 
+def testPngPPM():
+    cmd.fragment('gly')
+    with testing.mktemp('.ppm') as filename:
+        cmd.png(filename, 20, 10, ray=1, format=1)
+        with open(filename, 'rb') as handle:
+            data = handle.read()
+    header = b'P6\n20 10\n255\n'
+    assert data.startswith(header)
+    assert len(data) == len(header) + 20 * 10 * 3
+
+
+def testLoadPngDataUrl():
+    import base64
+    import io
+    cmd.fragment('gly')
+    buf = cmd.png(None, 40, 30, ray=1)
+    cmd.png(None, 20, 10, ray=1)
+    cmd.load_png('data:image/png;base64,' + base64.b64encode(buf).decode())
+    assert Image.open(io.BytesIO(cmd.png(None))).size == (40, 30)
+
+
 # not supported in older versions: xyz (no ref)
 @pytest.mark.parametrize("format", ['pdb', 'sdf', 'mol', 'mol2'])
 def testSaveRef(format):

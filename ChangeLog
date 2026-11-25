@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.76.3
+
+	* Core
+	  - Sculpt.cpp, MyPNG.cpp, Util.cpp, Word.cpp, Match.cpp,
+	    Property.cpp, FontType.cpp, ObjectAlignment.cpp, View.cpp,
+	    Scene.cpp and ShaderPrg.cpp: 28 allocations with malloc or
+	    calloc and 31 frees by hand are gone; the buffers of sculpting,
+	    of the PNG and PPM writers, of the word list, of the alignment
+	    matrix reader and of the font texture are std::vector or
+	    unique_ptr now. One leak went with it: MatchAlign kept one of
+	    its two tables when the other could not be allocated. No
+	    behavior change. Step 8c.
+
+2026-11-25 pymolish-studio
+
 	* 4.76.2
 
 	* Core

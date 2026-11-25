@@ -710,8 +710,17 @@ def test_sculpt_deactivate():
 
 
 def test_sculpt_iterate():
-    cmd.sculpt_iterate
-    pytest.skip("TODO")
+    cmd.fab('AFG', 'm1')
+    cmd.create('m1', 'm1', 1, 2)
+    n_ca = ('m1 & resi 2 & name N', 'm1 & resi 2 & name CA')
+    d0 = cmd.get_distance(*n_ca, state=1)
+    # match_state: the minimum distances come from state 2
+    cmd.sculpt_activate('m1', state=1, match_state=2)
+    cmd.translate([0.6, 0.0, 0.0], n_ca[1], state=1, camera=0)
+    assert abs(cmd.get_distance(*n_ca, state=1) - d0) > 0.1
+    cmd.sculpt_iterate('m1', state=1, cycles=100)
+    assert cmd.get_distance(*n_ca, state=1) == pytest.approx(d0, abs=0.05)
+    cmd.sculpt_deactivate('m1')
 
 
 def test_sculpt_purge():

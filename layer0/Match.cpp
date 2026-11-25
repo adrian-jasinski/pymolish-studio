@@ -18,6 +18,8 @@ Z* -------------------------------------------------------------------
 
 #include"os_predef.h"
 #include"os_limits.h"
+#include <memory>
+
 #include"os_std.h"
 
 #include"Base.h"
@@ -270,7 +272,7 @@ int MatchMatrixFromFile(CMatch * I, const char *fname, int quiet)
   std::string buffer;
   const char *p;
   char cc[255];
-  char *code = nullptr;
+  std::vector<char> code;
   unsigned int x, y;
   int a;
   int n_entry;
@@ -309,7 +311,7 @@ int MatchMatrixFromFile(CMatch * I, const char *fname, int quiet)
     if(!n_entry)
       ok = false;
     else {
-      code = (char*) pymol::calloc<int>(n_entry);
+      code.resize(n_entry);
 
       /* read codes */
 
@@ -359,7 +361,6 @@ int MatchMatrixFromFile(CMatch * I, const char *fname, int quiet)
         " Match: read scoring matrix.\n" ENDFB(G);
     }
   }
-  FreeP(code);
   return (ok);
 }
 
@@ -370,11 +371,9 @@ int MatchAlign(CMatch * I, float gap_penalty, float ext_penalty,
   int a, b, f, g;
   int nf, ng;
   int sf, sg;
-  float **score;
   float **da, **db;
   int na = I->na, nb = I->nb;
   unsigned int dim[2];
-  int2 **point;
   float mxv;
   int mxa, mxb;
   float tst = 0.0;
@@ -395,8 +394,10 @@ int MatchAlign(CMatch * I, float gap_penalty, float ext_penalty,
   dim[0] = nf;
   dim[1] = ng;
   VLAFreeP(I->pair);
-  score = (float **) UtilArrayCalloc(dim, 2, sizeof(float));
-  point = (int2 **) UtilArrayCalloc(dim, 2, sizeof(int2));
+  std::unique_ptr<float*[], pymol::default_free> score(
+      (float**) UtilArrayCalloc(dim, 2, sizeof(float)));
+  std::unique_ptr<int2*[], pymol::default_free> point(
+      (int2**) UtilArrayCalloc(dim, 2, sizeof(int2)));
   if(score && point) {
 
     /* initialize the scoring matrix */
@@ -597,8 +598,6 @@ int MatchAlign(CMatch * I, float gap_penalty, float ext_penalty,
     I->score = mxv;
     I->n_pair = cnt;
     VLASize(I->pair, int, (p - I->pair));
-    FreeP(score);
-    FreeP(point);
   }
   return (ok);
 }

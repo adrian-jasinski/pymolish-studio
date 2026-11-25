@@ -436,10 +436,9 @@ int UtilSemiSortFloatIndex(int n,float *array,int *x, int forward)
 
 int UtilSemiSortFloatIndexWithNBins(int n, int nbins, float *array, int *destx, int forward)
 {
-  int *start1 = pymol::calloc<int>(n + nbins);
-  int ret = UtilSemiSortFloatIndexWithNBinsImpl(start1, n, nbins, array, destx, forward);
-  mfree(start1);
-  return ret;
+  std::vector<int> start1(n + nbins);
+  return UtilSemiSortFloatIndexWithNBinsImpl(
+      start1.data(), n, nbins, array, destx, forward);
 }
 
 int UtilSemiSortFloatIndexWithNBinsImpl(int *start1, int n, int nbins, float *array, int *destx, int forward)
@@ -534,17 +533,14 @@ void UtilSortInPlace(PyMOLGlobals *G,void *array,int nItem,
 					 UtilOrderFn *fOrdered)
 
 {
-  char *tmp;
-  int *index;
   int ia;
   int a;
   if(nItem>0)
 	 {
-	   tmp = pymol::malloc<char>((itemSize*nItem));
-	   index = pymol::malloc<int>(nItem+1);
-	   ErrChkPtr(G,tmp);
-	   ErrChkPtr(G,index);
-	   UtilSortIndex(nItem,array,index,fOrdered);
+	   std::vector<char> tmp_buf(itemSize * nItem);
+	   char* tmp = tmp_buf.data();
+	   std::vector<int> index(nItem + 1);
+	   UtilSortIndex(nItem,array,index.data(),fOrdered);
 	   for(a=0;a<nItem;a++) index[a]++; /* ^tricky index adjustment to avoid flag array */
 	   for(a=0;a<nItem;a++)
 		 {
@@ -572,7 +568,5 @@ void UtilSortInPlace(PyMOLGlobals *G,void *array,int nItem,
 				 }
 			 }
 		 }
-	   mfree(tmp);
-	   mfree(index);
 	 }
 }

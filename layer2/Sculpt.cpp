@@ -386,10 +386,6 @@ void SculptMeasureObject(CSculpt * I, ObjectMolecule * obj, int state, int match
   float *v0, *v1, *v2, *v3, d, dummy;
   CoordSet *cs;
   int n0, n1, n2, n3;
-  int *planar = nullptr;
-  int *linear = nullptr;
-  int *single = nullptr;
-  int *crdidx = nullptr;
   int nex = 1;
   int *j, *k, xhash;
   int ex_type;
@@ -432,10 +428,8 @@ void SculptMeasureObject(CSculpt * I, ObjectMolecule * obj, int state, int match
       const int* const neighbor = obj->getNeighborArray();
       int n_atom = obj->NAtom;
 
-      planar = pymol::malloc<int>(n_atom);
-      linear = pymol::malloc<int>(n_atom);
-      single = pymol::malloc<int>(n_atom);
-      crdidx = pymol::malloc<int>(n_atom);
+      std::vector<int> planar(n_atom), linear(n_atom), single(n_atom);
+      std::vector<int> crdidx(n_atom);
       ai = obj_atomInfo;
 
       for(a = 0; a < n_atom; a++) {
@@ -690,8 +684,8 @@ void SculptMeasureObject(CSculpt * I, ObjectMolecule * obj, int state, int match
           float maxim_max =
             SettingGet_f(G, cs->Setting.get(), obj->Setting.get(), cSetting_sculpt_max_max);
 
-          int *site = pymol::calloc<int>(n_atom);
-          float *weight = pymol::calloc<float>(n_atom);
+          std::vector<int> site(n_atom);
+          std::vector<float> weight(n_atom);
           /* first, find candidate atoms with sufficient connectivity */
           CountCall cnt;
 
@@ -845,8 +839,6 @@ void SculptMeasureObject(CSculpt * I, ObjectMolecule * obj, int state, int match
               }
             }
           }
-          FreeP(weight);
-          FreeP(site);
         }
       }
       /* now pick up those 1-3 interations */
@@ -1380,10 +1372,6 @@ void SculptMeasureObject(CSculpt * I, ObjectMolecule * obj, int state, int match
           }
         }
       }
-      FreeP(planar);
-      FreeP(linear);
-      FreeP(single);
-      FreeP(crdidx);
     }
   }
 
@@ -1613,11 +1601,8 @@ float SculptIterateObject(CSculpt * I, ObjectMolecule * obj,
   CShaker *shk;
   int a0, a1, a2, a3, b0, b3;
   int aa;
-  float *disp = nullptr;
   float *v, *v0, *v1, *v2, *v3;
   float diff[3], len;
-  int *atm2idx = nullptr;
-  int *cnt = nullptr;
   int *i;
   int hash;
   int nb_next;
@@ -1641,8 +1626,7 @@ float SculptIterateObject(CSculpt * I, ObjectMolecule * obj,
   float tors_tole;
   int active_flag = false;
   float hb_overlap, hb_overlap_base;
-  int *active, n_active;
-  int *exclude;
+  int n_active;
   const AtomInfoType *ai0, *ai1;
   double task_time;
   float vdw_magnify, vdw_magnified = 1.0F;
@@ -1672,11 +1656,10 @@ float SculptIterateObject(CSculpt * I, ObjectMolecule * obj,
 
     int n_cycle = n_cycle_arg ? n_cycle_arg : -1;
 
-    disp = pymol::malloc<float>(3 * obj->NAtom);
-    atm2idx = pymol::malloc<int>(obj->NAtom);
-    cnt = pymol::malloc<int>(obj->NAtom);
-    active = pymol::malloc<int>(obj->NAtom);
-    exclude = pymol::calloc<int>(obj->NAtom);
+    std::vector<float> disp_buf(3 * obj->NAtom);
+    float* disp = disp_buf.data();
+    std::vector<int> atm2idx(obj->NAtom), cnt(obj->NAtom);
+    std::vector<int> active(obj->NAtom), exclude(obj->NAtom);
     shk = I->Shaker.get();
 
     PRINTFD(G, FB_Sculpt)
@@ -1780,7 +1763,7 @@ float SculptIterateObject(CSculpt * I, ObjectMolecule * obj,
       nb_skip_count = 0;
 
       if(center) {
-        int *a_ptr = active;
+        int *a_ptr = active.data();
         int a;
         for(aa = 0; aa < n_active; aa++) {
           a = *(a_ptr++);
@@ -1804,7 +1787,7 @@ float SculptIterateObject(CSculpt * I, ObjectMolecule * obj,
         /* initialize displacements to zero */
 
         v = disp;
-        i = cnt;
+        i = cnt.data();
         for(aa = 0; aa < n_active; aa++) {
           int a = active[aa];
           v = disp + a * 3;
@@ -2294,7 +2277,7 @@ float SculptIterateObject(CSculpt * I, ObjectMolecule * obj,
           int cnt_a,a;
           float _1 = 1.0F;
           float inv_cnt;
-          int *a_ptr = active;
+          int *a_ptr = active.data();
           float *lookup_inverse = I->inverse;
           for(aa = 0; aa < n_active; aa++) {
             if((cnt_a = cnt[(a = *(a_ptr++))])) {
@@ -2332,7 +2315,7 @@ float SculptIterateObject(CSculpt * I, ObjectMolecule * obj,
           SceneDirty(G);
         }
         if(n_cycle <= 0) {
-          int *a_ptr = active;
+          int *a_ptr = active.data();
           if(center)
             for(aa = 0; aa < n_active; aa++) {
               int a = *(a_ptr++);
@@ -2359,11 +2342,6 @@ float SculptIterateObject(CSculpt * I, ObjectMolecule * obj,
       if(total_count)
         total_strain = (1000 * total_strain) / total_count;
     }
-    FreeP(exclude);
-    FreeP(active);
-    FreeP(cnt);
-    FreeP(disp);
-    FreeP(atm2idx);
     if(cgo) {
       CGOStop(cgo);
       {

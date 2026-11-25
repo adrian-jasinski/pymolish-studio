@@ -75,9 +75,8 @@ static unsigned char base64_decoding_table[] = {
   36,  37,  38,  39,  40,  41,  42,  43,
   44,  45,  46,  47,  48,  49,  50,  51};
 
-static unsigned char *base64_decode(const char *data,
+static std::vector<unsigned char> base64_decode(const char *data,
 				    size_t input_length=0) {
-  unsigned char *decoded_data = nullptr;
   unsigned int triple;
   unsigned int i = 0, j = 0, k;
   char c;
@@ -85,7 +84,7 @@ static unsigned char *base64_decode(const char *data,
   if (input_length < 1)
     input_length = strlen(data);
 
-  ok_assert(1, decoded_data = pymol::malloc<unsigned char>(input_length / 4 * 3));
+  std::vector<unsigned char> decoded_data(input_length / 4 * 3);
 
   while (i < input_length) {
     triple = 0;
@@ -97,17 +96,14 @@ static unsigned char *base64_decode(const char *data,
       triple += base64_decoding_table[c - 43] << (--k) * 6;
     }
 
-    ok_assert(1, k == 0);
+    if (k != 0)
+      return {};
 
     for (k = 3; k;)
       decoded_data[j++] = (triple >> (--k) * 8) & 0xFF;
   }
 
   return decoded_data;
-
-ok_except1:
-  mfree(decoded_data);
-  return nullptr;
 }
 
 typedef struct {
@@ -189,10 +185,9 @@ int MyPNGWrite(pymol::zstring_view file_name_view, const pymol::Image& img,
       int bytes_per_pixel = 4;
       png_uint_32 k;
       png_byte *image = (png_byte *) data_ptr;
-      png_bytep *row_pointers;
+      // made before setjmp and not resized after it
+      std::vector<png_bytep> row_pointers(height);
       int fd = 0;
-
-      row_pointers = pymol::malloc<png_bytep>(height);
 
       /* open the file, allowing use of an encoded file descriptor, with
          approach adapted from TJO: chr(1) followed by ascii-format integer */
@@ -300,7 +295,7 @@ int MyPNGWrite(pymol::zstring_view file_name_view, const pymol::Image& img,
       for(k = 0; k < height; k++)
         row_pointers[(height - k) - 1] = image + k * width * bytes_per_pixel;
 
-      png_write_image(png_ptr, row_pointers);
+      png_write_image(png_ptr, row_pointers.data());
 
       /* It is REQUIRED to call this to finish writing the rest of the file */
       png_write_end(png_ptr, info_ptr);
@@ -314,7 +309,6 @@ int MyPNGWrite(pymol::zstring_view file_name_view, const pymol::Image& img,
         fclose(fp);
       }
 
-      mfree(row_pointers);
       /* that's it */
 
       return ok;
@@ -327,15 +321,15 @@ int MyPNGWrite(pymol::zstring_view file_name_view, const pymol::Image& img,
   case cMyPNG_FormatPPM:
     {
       FILE *fil = pymol_fopen(file_name, "wb");
-      unsigned char *buffer = pymol::malloc<unsigned char>(3 * width * height);
+      std::vector<unsigned char> buffer(3 * width * height);
 
-      if(fil && buffer) {
+      if(fil) {
         fprintf(fil, "P6\n");
         fprintf(fil, "%d %d\n", width, height);
         fprintf(fil, "255\n");
         {
           unsigned int a, b;
-          unsigned char *q = buffer;
+          unsigned char *q = buffer.data();
           const unsigned char *p;
           p = data_ptr + width * 4 * (height - 1);
           for(b = 0; b < height; b++) {
@@ -347,13 +341,12 @@ int MyPNGWrite(pymol::zstring_view file_name_view, const pymol::Image& img,
             }
             p -= width * 8;
           }
-          fwrite(buffer, width, height * 3, fil);
+          fwrite(buffer.data(), width, height * 3, fil);
         }
       }
       if(fil) {
         fclose(fil);
       }
-      FreeP(buffer);
     }
     return 1;
     break;
@@ -385,13 +378,15 @@ std::unique_ptr<pymol::Image> MyPNGRead(const char *file_name)
   int ok = true;
   double file_gamma;
   uchar2p data = {NULL, nullptr};
+  std::vector<unsigned char> decoded; // filled before setjmp only
 
   if(!file_name)
     return nullptr;
 
   if(!strncmp(file_name, "data:image/png;base64,", 22)) {
     const char *base64str = file_name + 22;
-    data.h = data.c = base64_decode(base64str);
+    decoded = base64_decode(base64str);
+    data.h = data.c = decoded.data();
     memcpy(buf, data.c, 8);
     data.c += 8;
 
@@ -522,9 +517,6 @@ std::unique_ptr<pymol::Image> MyPNGRead(const char *file_name)
   }
   if(png_file)
     fclose(png_file);
-  if(data.h)
-    mfree(data.h);
-
   return img;
 #else
   return nullptr;

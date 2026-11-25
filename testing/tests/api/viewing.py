@@ -383,6 +383,33 @@ def testLabel(func):
     assertTrueIterate('label == ""')
 
 
+def testAsyncBuildsRay():
+    # geometry of several objects is updated in threads
+    testing.ambient_only()
+    for name in ('m1', 'm2', 'm3'):
+        cmd.fab('AAAA', name, ss=1)
+    cmd.set('async_builds')
+    cmd.set('max_threads', 4)
+    cmd.show_as('cartoon')
+    cmd.color('yellow')
+    cmd.orient()
+    img = testing.get_imagearray(width=100, height=100, ray=1)
+    testing.assert_image_has_color('yellow', img)
+
+
+def testLabelMultiLineRay():
+    testing.ambient_only()
+    cmd.viewport(200, 150)
+    cmd.pseudoatom('m1', label='first\nsecond\nthird')
+    cmd.hide('everything')
+    cmd.show('labels')
+    cmd.set('label_color', 'yellow')
+    cmd.set('label_size', 20)
+    cmd.zoom(buffer=5)
+    img = testing.get_imagearray(width=200, height=150, ray=1)
+    testing.assert_image_has_color('yellow', img)
+
+
 def testLabelUnicode():
     if sys.version_info[0] < 3:
         uchr = unichr

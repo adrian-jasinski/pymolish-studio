@@ -715,7 +715,6 @@ int PropertyFromPyList(PyMOLGlobals* G, PyObject* list)
       if (PyList_Check(val)) {
         int sizei = PyList_Size(val);
         if (sizei == 3) {
-          char* prop_name;
           int prop_typeInt;
           CPythonVal* propval;
           int prop_name_len;
@@ -724,7 +723,8 @@ int PropertyFromPyList(PyMOLGlobals* G, PyObject* list)
             prop_id = PropertyGetNewUniqueID(G);
           pVal = CPythonVal_PyList_GetItem(G, val, 0);
           prop_name_len = PyString_AsSomeString(pVal).length() + 1;
-          prop_name = pymol::malloc<char>(prop_name_len);
+          std::vector<char> prop_name_buf(prop_name_len);
+          char* prop_name = prop_name_buf.data();
           CPythonVal_PConvPyStrToStr(pVal, prop_name, prop_name_len);
           CPythonVal_Free(pVal);
           CPythonVal_PConvPyIntToInt_From_List(G, val, 1, &prop_typeInt);
@@ -748,16 +748,14 @@ int PropertyFromPyList(PyMOLGlobals* G, PyObject* list)
             PropertySet(G, prop_id, prop_name, prop_value);
           } break;
           case PropertyType::String: {
-            char* prop_value;
             int prop_value_len = PyString_AsSomeString(propval).length() + 1;
-            prop_value = pymol::malloc<char>(prop_value_len);
-            CPythonVal_PConvPyStrToStr(propval, prop_value, prop_value_len);
-            PropertySet(G, prop_id, prop_name, prop_value);
-            FreeP(prop_value);
+            std::vector<char> prop_value(prop_value_len);
+            CPythonVal_PConvPyStrToStr(
+                propval, prop_value.data(), prop_value_len);
+            PropertySet(G, prop_id, prop_name, prop_value.data());
           } break;
           }
           CPythonVal_Free(propval);
-          FreeP(prop_name);
         }
       }
       CPythonVal_Free(val);
