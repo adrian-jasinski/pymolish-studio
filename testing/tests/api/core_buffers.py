@@ -92,3 +92,13 @@ def test_async_builds_states():
     cmd.orient()
     img = testing.get_imagearray(width=100, height=100, ray=1)
     testing.assert_image_has_color("yellow", img)
+
+
+def test_sphere_normals_of_a_subset():
+    # sphere_mode 7 read past its coordinate buffer until 4.76.14 when the
+    # spheres were shown for a part of the object
+    cmd.load(testing.datafile("1oky.pdb.gz"), "m1")
+    cmd.hide("everything")
+    cmd.set("sphere_mode", 7)
+    cmd.show("spheres", "m1 & index 2000-2010")
+    assert cmd.get_povray()[1].count("sphere{") == 11

@@ -539,11 +539,15 @@ Rep *RepSphereNew(CoordSet * cs, int state)
     std::vector<int> active(2 * n_dot);
 
 	ok &= MapSetupExpress(map);
+    // v_tmp and the map hold the shown atoms only: count them again
+    int sphere = 0;
     for(a = 0; ok && a < cs->NIndex; a++) {
       a1 = cs->IdxToAtm[a];
       if(marked[a1]) {
       ati1 = obj->AtomInfo + a1;
-        RepSphereSetNormalForSphere(I, map, v_tmp, &v_tmp[a * 3], cut_mult, a, active.data(), dot, n_dot);
+        RepSphereSetNormalForSphere(I, map, v_tmp, &v_tmp[sphere * 3],
+            cut_mult, sphere, active.data(), dot, n_dot);
+        sphere++;
         RepSphereAddAtomVisInfoToStoredVC(I, obj, cs, state, a1, ati1, a,
             sphere_scale, sphere_color, transp, &variable_alpha, sphere_add,
             sphere_mode);

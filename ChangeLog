@@ -4,6 +4,16 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.76.14
+
+	* Core
+	  - Fix: with sphere_mode 6, 7 or 8 and spheres shown for a part
+	    of an object, the normals of the spheres were computed from
+	    the wrong atoms and the code read past its coordinate buffer
+	    (a crash was possible). Present in 4.76.0 as well.
+
+2026-11-25 pymolish-studio
+
 	* 4.76.13
 
 	* Core
