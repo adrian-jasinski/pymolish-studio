@@ -4,6 +4,15 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.79.1
+
+	* Build
+	  - Fix: a build with glTF export (json=True, as in CI and the
+	    release bundles) did not compile since 4.76.2: one line of
+	    layer1/GLTF.cpp called .resize() on a plain char pointer.
+
+2026-11-25 pymolish-studio
+
 	* 4.79.0
 
 	* Chat and agent connector
