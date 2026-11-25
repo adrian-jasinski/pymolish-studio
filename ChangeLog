@@ -4,6 +4,22 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.77.1
+
+	* Core
+	  - Fix: safe_eval, which reads lists of numbers and names given as
+	    text (a color for set_color, a vector for translate, origin,
+	    set_view, pseudoatom and others), ran any Python: through an
+	    attribute of a value every loaded module could be reached.
+	    The Chat tab passed text of the model to it with set_color,
+	    without a question and with "Trusted Python" off. It now
+	    takes numbers, text, names, lists, tuples, dictionaries, sets
+	    and the signs + - /, and refuses the rest with an error.
+	    Changed for scripts: indexing ("[1,2][0]") and "*" in such a
+	    text are errors now. Present in 4.76.0 as well.
+
+2026-11-25 pymolish-studio
+
 	* 4.77.0
 
 	* Chat and agent connector

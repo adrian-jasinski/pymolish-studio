@@ -4,6 +4,7 @@
 from pymol.shortcut import Shortcut
 from .parsing import QuietException
 from .constants_palette import palette_dict
+import ast
 import re
 
 class _loadable:
@@ -97,6 +98,13 @@ class SafeEvalNS(object):
     def __getitem__(self, name):
         return name
 
+# what a list of names and numbers is made of; "*" is left out, it can ask
+# for a text of any size
+_safe_eval_nodes = (
+    ast.Expression, ast.Tuple, ast.List, ast.Dict, ast.Set, ast.Constant,
+    ast.Name, ast.Load, ast.UnaryOp, ast.UAdd, ast.USub,
+    ast.BinOp, ast.Add, ast.Sub, ast.Div)
+
 def safe_eval(st):
     '''Safe version of "eval" which evaluates names to strings.
 
@@ -104,11 +112,16 @@ def safe_eval(st):
     >>> safe_eval('foo, 123, 4 + 5, "A B C", {}, "{}"')
     ('foo', 123, 9, 'A B C', {}, '{}')
 
-    # no harmful code possible
+    # no harmful code possible: calls, attributes and indexing are refused
+    # (through an attribute every loaded module can be reached)
     >>> safe_eval('__import__("os").unlink("foo.txt")')
-    TypeError: 'str' object is not callable
+    ValueError: not a plain value: Call
     '''
-    return eval(st, {}, SafeEvalNS())
+    tree = ast.parse(st.strip(), mode='eval')
+    for node in ast.walk(tree):
+        if not isinstance(node, _safe_eval_nodes):
+            raise ValueError('not a plain value: ' + type(node).__name__)
+    return eval(compile(tree, '<safe_eval>', 'eval'), {}, SafeEvalNS())
 
 safe_list_eval = safe_eval
 
