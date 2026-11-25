@@ -160,7 +160,7 @@ def test_uniprot_downloads(executor, monkeypatch):
         call = {"command": command, "arguments": arguments}
         return executor.call(call_id, "execute", call)
 
-    for name in agent.DOWNLOADS | {"list_uniprot_structures"}:
+    for name in "fetch fetch_by_uniprot fetch_uniprot_ligands fetch_fold list_uniprot_structures".split():
         assert agent.help_command(name)["policy"] == "reviewed"
     # the list asks nothing, keeps no snapshot and shows the table
     listed = run("1", "list_uniprot_structures", accession="P00533")
@@ -172,12 +172,29 @@ def test_uniprot_downloads(executor, monkeypatch):
     assert loaded["result"]["value"] == ["P00533_1TUP", "P00533_2OCJ"]
     assert len(asked) == 1 and not background
     # all entries: in the background, and without a question once switched off
-    executor.downloads = True
+    executor.unasked = True
     started = run("4", "fetch_by_uniprot", accession="P00533", group="egfr")
     assert "background" in started["result"]["value"] and len(asked) == 1
     assert background[0][:4] == (fetching.fetch_by_uniprot, "P00533", 0, "egfr")
-    # the switch is for downloads only
-    assert run("5", "delete", name="none")["ok"] and len(asked) == 2
+
+
+def test_run_without_asking(executor):
+    asked = []
+    executor.confirm = lambda proposal: asked.append(proposal) or False
+    executor.unasked = True
+
+    def python(call_id):
+        return executor.call(call_id, "python", {"code": "cmd.delete('all')"})
+
+    # Python stays off without "Trusted Python"
+    assert not python("1")["ok"] and cmd.get_names() == ["ala"]
+    call = {"command": "set_name", "arguments": {"old_name": "ala", "new_name": "gly"}}
+    assert executor.call("2", "execute", call)["ok"] and cmd.get_names() == ["gly"]
+    executor.trusted = True
+    assert python("3")["ok"] and not cmd.get_names() and not asked
+    # switched off again: the question is back
+    executor.unasked = False
+    assert not python("4")["ok"] and len(asked) == 1
 
 
 def test_more_reviewed_commands(executor):

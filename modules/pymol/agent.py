@@ -24,8 +24,6 @@ VISUAL |= set("distance angle dihedral pi_interactions toggle origin reset move 
 CONFIRM = set("delete remove set_name create copy align super cealign dss load save load_table save_table fetch sequence_align load_smiles fix_structure minimize fetch_by_uniprot fetch_uniprot_ligands fetch_fold".split())
 # changes of the structure, new molecules, files
 CONFIRM |= set("h_add h_fill h_fix remove_picked bond unbond valence fuse attach replace invert torsion set_dihedral set_geometry cycle_valence fix_chemistry rename sort rebond set_symmetry symmetry_copy translate rotate transform_selection transform_object matrix_copy matrix_reset set_object_ttt extract fragment fab fnab symexp split_chains split_states split_types extract_chain join_states copy_group morph map_new map_double map_halve map_trim fit intra_fit usalign update smooth mse2met delete_states read_pdbstr read_molstr read_sdfstr clean assign_stereo set_property set_atom_property png multisave multifilesave export_objects load_traj load_files".split())
-# the user can switch the question off for these (Executor.downloads)
-DOWNLOADS = set("fetch fetch_by_uniprot fetch_uniprot_ligands fetch_fold".split())
 REVIEWED = {name: getattr(api, name) for name in QUERIES | VISUAL | CONFIRM}
 PRESETS = {name: getattr(preset, name) for name in "default classified technical ball_and_stick b_factor_putty pretty_solv pub_solv glass balls_in_glass cylinders wire spring illustration ligands ligand_sites ligand_sites_hq ligand_sites_trans ligand_sites_trans_hq ligand_sites_mesh ligand_sites_dots interface interaction antibody pretty pretty_no_solv publication pub_no_solv publication_green simple simple_no_solv ligand_cartoon cartoon_style cartoon_transparency depth_fog show_solvent".split()}
 REVIEWED.update({"preset." + name: fn for name, fn in PRESETS.items()})
@@ -62,7 +60,7 @@ def capabilities(_self=cmd):
         "version": _self.get_version()[0],
         "commands": len(_functions(_self)),
         "optional": {name: bool(shutil.which("mafft") or shutil.which("mafft.bat")) if name == "MAFFT" else importlib.util.find_spec(name) is not None for name in {p for packages in OPTIONAL.values() for p in packages} | {"openai", "anthropic"}},
-        "execution": "Reviewed API calls; file/network/destructive actions require confirmation (downloads not, while the user has ticked 'Download without asking' in the Chat tab). A UniProt download of more than ten entries runs in the background. Python is separately trusted and confirmed. Discovery is not permission.",
+        "execution": "Reviewed API calls; file/network/destructive actions and Python require confirmation, unless the user has ticked 'Run without asking' in the Chat tab. A UniProt download of more than ten entries runs in the background. Python is separately trusted. Discovery is not permission.",
     }
 
 
@@ -213,7 +211,7 @@ class Executor:
         self.cancel = threading.Event()
         self.trusted = False
         self.images = False
-        self.downloads = False  # True: DOWNLOADS run without the question
+        self.unasked = False  # True: nothing asks ("Run without asking")
         self.snapshot = None
         self.results = {}
 
@@ -248,8 +246,7 @@ class Executor:
         proposal = {"command": command, "arguments": arguments,
                     "effect": "File/network or destructive operation; external effects cannot be undone."}
         self._check()
-        asked = confirmation and not (self.downloads and command in DOWNLOADS)
-        if asked and not self.confirm(proposal):
+        if confirmation and not self.unasked and not self.confirm(proposal):
             raise CmdException("The user declined this action")
         self._check()
         if command not in QUERIES:
@@ -288,7 +285,7 @@ class Executor:
                         value = self.execute(**arguments)
                     elif operation == "python":
                         code = arguments.get("code", "")
-                        if not self.trusted or not self.confirm({"python": code, "effect": "Arbitrary Python has full filesystem and network access; it is not sandboxed."}):
+                        if not self.trusted or not self.unasked and not self.confirm({"python": code, "effect": "Arbitrary Python has full filesystem and network access; it is not sandboxed."}):
                             raise CmdException("Trusted Python is off or the user declined")
                         self._check()
                         self._keep()

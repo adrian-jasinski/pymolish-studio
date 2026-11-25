@@ -40,7 +40,7 @@ ROUTES = {
 
 TOOL = {
     "name": "pymol",
-    "description": "Discover installed commands/settings, inspect the molecular session, and execute reviewed operations. Use help before unfamiliar commands. discover: query/offset/limit; help: name; settings: query/offset/limit; state: {}; atoms: selection/limit; look: {}; execute: command/arguments; python: code (separately trusted and confirmed).",
+    "description": "Discover installed commands/settings, inspect the molecular session, and execute reviewed operations. Use help before unfamiliar commands. discover: query/offset/limit; help: name; settings: query/offset/limit; state: {}; atoms: selection/limit; look: {}; execute: command/arguments; python: code (separately trusted).",
     "parameters": {"type": "object", "properties": {
         "operation": {"type": "string", "enum": ["discover", "help", "settings", "state", "atoms", "look", "execute", "python"]},
         "arguments": {"type": "object", "additionalProperties": True},

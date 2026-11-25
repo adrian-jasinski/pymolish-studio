@@ -82,10 +82,11 @@ class ChatPanel(QtWidgets.QWidget):
         self.trusted.setToolTip(
             "Allow proposed Python after your confirmation; it is not sandboxed"
         )
-        self.downloads = QtWidgets.QCheckBox("Download without asking")
-        self.downloads.setToolTip(
-            "Let the model download structures without a question for each"
-            " request; off again at the next start"
+        self.unasked = QtWidgets.QCheckBox("Run without asking")
+        self.unasked.setToolTip(
+            "Let the model and connected agents delete, change the structure,"
+            " read and write files, download and, with Trusted Python, run"
+            " Python without a question; off again at the next start"
         )
         self.prompt = QtWidgets.QLineEdit(
             placeholderText="Ask about or change the session"
@@ -104,7 +105,7 @@ class ChatPanel(QtWidgets.QWidget):
         for widget in (self.login, self.stay):
             access.addWidget(widget)
         access.addWidget(self.account, 1)
-        access.addWidget(self.downloads)
+        access.addWidget(self.unasked)
         entry = QtWidgets.QHBoxLayout()
         for widget in (self.prompt, self.send, self.stop, self.undo):
             entry.addWidget(widget)
@@ -117,9 +118,7 @@ class ChatPanel(QtWidgets.QWidget):
 
         self.images.toggled.connect(lambda on: setattr(self.connector, "images", on))
         self.trusted.toggled.connect(lambda on: setattr(self.connector, "trusted", on))
-        self.downloads.toggled.connect(
-            lambda on: setattr(self.connector, "downloads", on)
-        )
+        self.unasked.toggled.connect(lambda on: setattr(self.connector, "unasked", on))
         self.send.clicked.connect(self.start)
         self.prompt.returnPressed.connect(self.start)
         self.stop.clicked.connect(self.executor.cancel.set)
@@ -412,7 +411,7 @@ class ChatPanel(QtWidgets.QWidget):
             return
         self.executor.images = self.images.isChecked()
         self.executor.trusted = self.trusted.isChecked()
-        self.executor.downloads = self.downloads.isChecked()
+        self.executor.unasked = self.unasked.isChecked()
         self.executor.begin_turn()
         self.append("you", text)
         self.prompt.clear()

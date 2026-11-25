@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.79.0
+
+	* Chat and agent connector
+	  - New switch "Run without asking" in the Chat tab, off at every
+	    start. While it is on, nothing asks "Allow this action?": the
+	    model of the Chat tab and the agents on the connector delete,
+	    change the structure, read and write files and download
+	    without a question, and with "Trusted Python" ticked they run
+	    Python without a question too. Python is not sandboxed: text
+	    the model reads can then run code on this computer. Every
+	    call is still written to the Chat tab and the log, and Undo
+	    of the turn holds as before.
+	  - The switch "Download without asking" (4.77.0) is gone; "Run
+	    without asking" covers the downloads.
+
 	* 4.78.0
 
 	* Chat and agent connector

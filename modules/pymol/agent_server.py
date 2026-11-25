@@ -188,8 +188,9 @@ def agent_server(action="status", port=PORT, quiet=0, *, _self=cmd):
         work in this session through MCP: it finds the installed commands and
         settings, reads the session and runs reviewed operations, the same ones
         as the Chat tab, and its switches "Share viewport", "Trusted Python"
-        and "Download without asking" hold here too. Actions that delete, read or write files or use the
-        network ask first in the window. Requires the Qt interface.
+        and "Run without asking" hold here too. Actions that delete, read or
+        write files or use the network, and Python, ask first in the window
+        unless "Run without asking" is ticked. Requires the Qt interface.
 
         Nothing listens until "agent_server on". The server answers on
         127.0.0.1 only, to requests that carry the token. The token is the
