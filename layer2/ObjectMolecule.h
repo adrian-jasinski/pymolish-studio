@@ -481,7 +481,6 @@ int ObjectMoleculeGetCheckHBond(AtomInfoType **h_real,
                                 ObjectMolecule * acc_obj,
                                 int acc_atom, int acc_state, HBondCriteria * hbc);
 void ObjectMoleculeInitHBondCriteria(PyMOLGlobals * G, HBondCriteria * hbc);
-int ObjectMoleculeConvertIDsToIndices(ObjectMolecule * I, int *id, int n_id);
 
 #define cObjectMoleculeDummyOrigin 1
 #define cObjectMoleculeDummyCenter 2

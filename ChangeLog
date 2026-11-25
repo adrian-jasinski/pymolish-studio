@@ -4,6 +4,14 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.76.7
+
+	* Core
+	  - ObjectMoleculeConvertIDsToIndices is deleted: nothing called
+	    it.
+
+2026-11-25 pymolish-studio
+
 	* 4.76.6
 
 	* Core
