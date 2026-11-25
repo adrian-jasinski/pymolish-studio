@@ -36,6 +36,8 @@ Z* -------------------------------------------------------------------
 #include "ShaderMgr.h"
 #include "Feedback.h"
 
+#include <memory>
+
 struct RepMesh : Rep {
   using Rep::Rep;
 
@@ -49,14 +51,14 @@ struct RepMesh : Rep {
   pymol::vla<int> N;
   int NTot;
   pymol::vla<float> V;
-  float* VC;
+  std::vector<float> VC;
   int NDot;
-  float *Dot;
+  std::unique_ptr<float[]> Dot; //!< solvent dots, while the mesh is built
   float Radius, Width;
   int oneColorFlag;
   int oneColor;
-  int *LastVisib;
-  int *LastColor;
+  std::vector<int> LastVisib;
+  std::vector<int> LastColor;
   float max_vdw;
   cIsomeshMode mesh_type;
   CGO *shaderCGO;
@@ -68,9 +70,6 @@ RepMesh::~RepMesh()
 {
   auto I = this;
   CGOFree(I->shaderCGO);
-  FreeP(I->VC);
-  FreeP(I->LastColor);
-  FreeP(I->LastVisib);
 }
 
 static
@@ -81,7 +80,7 @@ static int RepMeshCGOGenerate(RepMesh * I, RenderInfo * info)
 {
   PyMOLGlobals *G = I->G;
   float *v = I->V.data();
-  float *vc = I->VC;
+  float *vc = I->VC.data();
   int *n = I->N.data();
   int ok = true;
   short use_shader;
@@ -325,7 +324,7 @@ static void RepMeshRenderRay(const RepMesh* I, CRay* ray, float line_width)
   ray->color3fv(ColorGet(G, I->obj->Color));
 
   auto* v = I->V.data();
-  auto* vc = I->VC;
+  auto* vc = I->VC.data();
   switch (I->mesh_type) {
   case cIsomeshMode::isomesh:
     while (ok && *n) {
@@ -381,7 +380,7 @@ static void RepMeshRenderImmediate(
 {
   auto G = I->G;
   float* v = I->V.data();
-  float* vc = I->VC;
+  float* vc = I->VC.data();
   int* n = I->N.data();
   if (I->shaderCGO) {
     CGOFree(I->shaderCGO);
@@ -588,12 +587,10 @@ Rep* RepMesh::recolor()
   cullByFlag = (mesh_mode == cRepMesh_by_flags);
   inclH = !(mesh_mode == cRepMesh_heavy_atoms);
 
-  if(!I->LastVisib)
-    I->LastVisib = pymol::malloc<int>(cs->NIndex);
-  if(!I->LastColor)
-    I->LastColor = pymol::malloc<int>(cs->NIndex);
-  lv = I->LastVisib;
-  lc = I->LastColor;
+  I->LastVisib.resize(cs->NIndex);
+  I->LastColor.resize(cs->NIndex);
+  lv = I->LastVisib.data();
+  lc = I->LastColor.data();
   for(a = 0; a < cs->NIndex; a++) {
     ai2 = cs->getAtomInfo(a);
     *(lv++) = GET_BIT(ai2->visRep, cRepMesh);
@@ -616,9 +613,8 @@ Rep* RepMesh::recolor()
       I->oneColorFlag = true;
     }
     first_color = -1;
-    if(!I->VC)
-      I->VC = pymol::malloc<float>(3 * I->NTot);
-    vc = I->VC;
+    I->VC.resize(3 * I->NTot);
+    vc = I->VC.data();
     /* now, assign colors to each point */
     map = new MapType(G, I->max_vdw + probe_radius, cs->Coord, cs->NIndex, nullptr);
     if(map) {
@@ -776,11 +772,7 @@ Rep *RepMeshNew(CoordSet * cs, int state)
   I->N = nullptr;
   I->NTot = 0;
   I->V = nullptr;
-  I->VC = nullptr;
   I->NDot = 0;
-  I->Dot = nullptr;
-  I->LastVisib = nullptr;
-  I->LastColor = nullptr;
   I->mesh_type = mesh_type;
   I->Radius = SettingGet_f(G, cs->Setting.get(), obj->Setting.get(), cSetting_mesh_radius);
   I->shaderCGO = 0;
@@ -952,7 +944,7 @@ Rep *RepMeshNew(CoordSet * cs, int state)
     if(ok && !solv_acc)
       ok &= RepMeshGetSolventDots(I, cs, minE, maxE, probe_radius);
     if(ok) {
-      smap = new MapType(G, probe_radius, I->Dot, I->NDot, nullptr);
+      smap = new MapType(G, probe_radius, I->Dot.get(), I->NDot, nullptr);
       map = new MapType(G, I->max_vdw + probe_radius, cs->Coord, cs->NIndex, nullptr);
     }
     if(ok && map && smap) {
@@ -1007,7 +999,7 @@ Rep *RepMeshNew(CoordSet * cs, int state)
                 if(d) {
                   cur = smap->EList[d++];
                   while(cur >= 0) {
-                    vLen = diffsq3f(point, I->Dot + (cur * 3));
+                    vLen = diffsq3f(point, I->Dot.get() + (cur * 3));
                     if(vLen < probe_radius2) {  /* within a water radius */
                       inSolvFlag = true;
                       break;
@@ -1046,7 +1038,7 @@ Rep *RepMeshNew(CoordSet * cs, int state)
     }
     MapFree(smap);
     MapFree(map);
-    FreeP(I->Dot);
+    I->Dot.reset();
     OrthoBusyFast(G, 2, 3);
     if(ok) {
       ok &= IsosurfVolume(G, nullptr, nullptr, field, 1.0, I->N, I->V, nullptr, mesh_type, mesh_skip,
@@ -1191,7 +1183,7 @@ int RepMeshGetSolventDots(RepMesh * I, CoordSet * cs, float *min, float *max,
   int ok = true;
   float *v, *v0, vdw;
   MapType *map;
-  int inFlag, *p, *dot_flag;
+  int inFlag, *p;
   SphereRec *sp = G->Sphere->Sphere[0];
   int cavity_cull;
   float probe_radius_plus;
@@ -1213,8 +1205,8 @@ int RepMeshGetSolventDots(RepMesh * I, CoordSet * cs, float *min, float *max,
   cullByFlag = (mesh_mode == cRepMesh_by_flags);
   inclH = !(mesh_mode == cRepMesh_heavy_atoms);
 
-  I->Dot = pymol::malloc<float>(cs->NIndex * 3 * sp->nDot);
-  ErrChkPtr(G, I->Dot);
+  // an upper bound, used in part: not std::vector, which would fill it
+  I->Dot.reset(new float[cs->NIndex * 3 * sp->nDot]);
 
   probe_radius_plus = probe_radius * 1.5F;
 
@@ -1223,7 +1215,7 @@ int RepMeshGetSolventDots(RepMesh * I, CoordSet * cs, float *min, float *max,
   if(map) {
     MapSetupExpress(map);
     maxCnt = 0;
-    v = I->Dot;
+    v = I->Dot.get();
     for(a = 0; a < cs->NIndex; a++) {
 
       ai1 = obj->AtomInfo + cs->IdxToAtm[a];
@@ -1291,21 +1283,18 @@ int RepMeshGetSolventDots(RepMesh * I, CoordSet * cs, float *min, float *max,
   }
 
   if(ok && (cavity_cull > 0)) {
-    dot_flag = pymol::malloc<int>(I->NDot);
-    ErrChkPtr(G, dot_flag);
-    for(a = 0; a < I->NDot; a++) {
-      dot_flag[a] = 0;
-    }
-    dot_flag[maxDot] = 1;       /* this guarantees that we have a valid dot */
+    std::vector<int> dot_flag(I->NDot);
+    if(I->NDot)
+      dot_flag[maxDot] = 1;     /* this guarantees that we have a valid dot */
 
-    map = new MapType(G, probe_radius_plus, I->Dot, I->NDot, nullptr);
+    map = new MapType(G, probe_radius_plus, I->Dot.get(), I->NDot, nullptr);
     if(map) {
       MapSetupExpress(map);
 
       flag = true;
       while(flag) {
-        p = dot_flag;
-        v = I->Dot;
+        p = dot_flag.data();
+        v = I->Dot.get();
 
         flag = false;
         for(a = 0; a < I->NDot; a++) {
@@ -1317,7 +1306,7 @@ int RepMeshGetSolventDots(RepMesh * I, CoordSet * cs, float *min, float *max,
               j = map->EList[i++];
               while(j >= 0) {
                 if(j != a) {
-                  if(within3f(I->Dot + (3 * j), v, probe_radius_plus)) {
+                  if(within3f(I->Dot.get() + (3 * j), v, probe_radius_plus)) {
                     if(dot_flag[j]) {
                       *p = true;
                       flag = true;
@@ -1345,9 +1334,9 @@ int RepMeshGetSolventDots(RepMesh * I, CoordSet * cs, float *min, float *max,
       }
       MapFree(map);
     }
-    v0 = I->Dot;
-    v = I->Dot;
-    p = dot_flag;
+    v0 = I->Dot.get();
+    v = I->Dot.get();
+    p = dot_flag.data();
     c = I->NDot;
     I->NDot = 0;
     for(a = 0; a < c; a++) {
@@ -1360,10 +1349,9 @@ int RepMeshGetSolventDots(RepMesh * I, CoordSet * cs, float *min, float *max,
         v += 3;
       }
     }
-    FreeP(dot_flag);
   }
   if(!ok) {
-    FreeP(I->Dot);
+    I->Dot.reset();
     I->NDot = 0;
   }
   return ok;

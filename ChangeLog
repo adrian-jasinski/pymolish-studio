@@ -4,6 +4,27 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.76.8
+
+	* Core
+	  - ObjectVolume.cpp: createPreintegrationTexture is deleted:
+	    nothing called it.
+EOF2
+	  - Ray.cpp, Basis.cpp, RepSurface.cpp, Triangle.cpp, Sphere.cpp,
+	    Isosurf.cpp, Tetsurf.cpp, RepMesh.cpp, RepDot.cpp,
+	    ObjectMap.cpp and ObjectVolume.cpp: 60 allocations with
+	    malloc or calloc and 66 frees by hand are gone; the buffers
+	    of the ray tracer, the surface and mesh builders, the
+	    triangulation and the map readers are std::vector or
+	    unique_ptr now. No behavior change: geometry and ray
+	    pictures (one thread) are identical to 4.76.0. Step 8c.
+	  - Fix: every surface leaked two arrays of one entry per atom
+	    when it was recolored the first time.
+	  - Fix: a mesh of a selection whose atoms are all flagged
+	    "ignore" wrote into an empty buffer.
+
+2026-11-25 pymolish-studio
+
 	* 4.76.7
 
 	* Core

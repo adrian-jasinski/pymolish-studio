@@ -263,10 +263,10 @@ static void SphereDumpAll(CSphere *I)
 
 void SphereInit(PyMOLGlobals * G)
 {
-  CSphere *I = (G->Sphere = pymol::calloc<CSphere>(1));
+  CSphere *I = (G->Sphere = new CSphere());
 
 #ifdef FAST_SPHERE_INIT
-  I->Array = pymol::malloc<SphereRec>(Sphere_NSpheres);
+  I->Array.resize(Sphere_NSpheres);
 
   {
     int i;
@@ -318,18 +318,15 @@ static void SpherePurge(SphereRec * I)
 
 void SphereFree(PyMOLGlobals * G)
 {
-  CSphere *I = G->Sphere;
-
 #ifndef FAST_SPHERE_INIT
+  CSphere *I = G->Sphere;
   SpherePurge(I->Sphere[0]);
   SpherePurge(I->Sphere[1]);
   SpherePurge(I->Sphere[2]);
   SpherePurge(I->Sphere[3]);
   SpherePurge(I->Sphere[4]);
-#else
-  FreeP(I->Array);
 #endif
-  FreeP(I);
+  DeleteP(G->Sphere);
 }
 
 

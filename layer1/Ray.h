@@ -29,7 +29,8 @@ Z* -------------------------------------------------------------------
 #include"Image.h"
 #include"RenderContext.h"
 
-#define cRayMaxBasis 10
+/* must be at least one greater than the max number of lights */
+#define MAX_BASIS 12
 
 typedef struct _CRayAntiThreadInfo CRayAntiThreadInfo;
 typedef struct _CRayHashThreadInfo CRayHashThreadInfo;
@@ -139,7 +140,7 @@ struct _CRay {
   PyMOLGlobals *G;
   CPrimitive *Primitive;
   int NPrimitive;
-  CBasis *Basis;
+  CBasis Basis[MAX_BASIS];
   int NBasis;
   std::vector<int> Vert2Prim;
   float CurColor[3], IntColor[3];

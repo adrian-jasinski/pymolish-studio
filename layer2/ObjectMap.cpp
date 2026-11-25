@@ -17,6 +17,7 @@ Z* -------------------------------------------------------------------
 
 #include <stdint.h>
 #include <algorithm>
+#include <memory>
 
 #include"os_python.h"
 #include"os_numpy.h"
@@ -371,6 +372,7 @@ int ObjectMapInterpolate(ObjectMap* I, int state, const float* array,
   int ok = false;
   float txf_buffer[3];
   float *txf = txf_buffer;
+  std::vector<float> txf_vec;
 
   ObjectMapState *ms = ObjectMapGetState(I, state);
 
@@ -380,7 +382,8 @@ int ObjectMapInterpolate(ObjectMap* I, int state, const float* array,
     if(matrix) {
       /* we have to back-transform points */
       if(n > 1) {
-        txf = pymol::malloc<float>(3 * n);
+        txf_vec.resize(3 * n);
+        txf = txf_vec.data();
       }
 
       const float *src = array;
@@ -395,9 +398,6 @@ int ObjectMapInterpolate(ObjectMap* I, int state, const float* array,
     ok = ObjectMapStateInterpolate(ms, array, result, flag, n);
     ok = true;
   }
-
-  if(txf != txf_buffer)
-    FreeP(txf);
 
   return (ok);
 }
@@ -4664,6 +4664,7 @@ ObjectMap *ObjectMapLoadCCP4(PyMOLGlobals * G, ObjectMap * obj, const char *fnam
 {
   ObjectMap *I = nullptr;
   char *buffer;
+  std::unique_ptr<char, pymol::default_free> buffer_own;
   long size;
 
   if(!is_string) {
@@ -4671,7 +4672,8 @@ ObjectMap *ObjectMapLoadCCP4(PyMOLGlobals * G, ObjectMap * obj, const char *fnam
       PRINTFB(G, FB_ObjectMap, FB_Actions)
         " ObjectMapLoadCCP4File: Loading from '%s'.\n", fname ENDFB(G);
 
-    buffer = FileGetContents(fname, &size);
+    buffer_own.reset(FileGetContents(fname, &size));
+    buffer = buffer_own.get();
 
     if(!buffer)
       ErrMessage(G, "ObjectMapLoadCCP4File", "Unable to open file!");
@@ -4682,9 +4684,6 @@ ObjectMap *ObjectMapLoadCCP4(PyMOLGlobals * G, ObjectMap * obj, const char *fnam
 
   if (buffer) {
     I = ObjectMapReadCCP4Str(G, obj, buffer, size, state, quiet, format);
-
-    if(!is_string)
-      mfree(buffer);
 
     if(!quiet) {
       if(state < 0)
@@ -4814,13 +4813,15 @@ ObjectMap *ObjectMapLoadPHI(PyMOLGlobals * G, ObjectMap * obj, const char *fname
   ObjectMap *I = nullptr;
   long size;
   char *buffer;
+  std::unique_ptr<char, pymol::default_free> buffer_own;
 
   if(!is_string) {
     if (!quiet)
       PRINTFB(G, FB_ObjectMap, FB_Actions)
         " ObjectMapLoadPHIFile: Loading from '%s'.\n", fname ENDFB(G);
 
-    buffer = FileGetContents(fname, &size);
+    buffer_own.reset(FileGetContents(fname, &size));
+    buffer = buffer_own.get();
 
     if(!buffer)
       ErrMessage(G, "ObjectMapLoadPHIFile", "Unable to open file!");
@@ -4831,9 +4832,6 @@ ObjectMap *ObjectMapLoadPHI(PyMOLGlobals * G, ObjectMap * obj, const char *fname
 
   if(buffer) {
     I = ObjectMapReadPHIStr(G, obj, buffer, size, state, quiet);
-
-    if(!is_string)
-      mfree(buffer);
 
   }
   return (I);
@@ -5197,9 +5195,9 @@ ObjectMap *ObjectMapLoadDXFile(PyMOLGlobals * G, ObjectMap * obj, const char *fn
 {
   ObjectMap *I = nullptr;
   long size;
-  char *buffer;
-
-  buffer = FileGetContents(fname, &size);
+  std::unique_ptr<char, pymol::default_free> buffer_own(
+      FileGetContents(fname, &size));
+  char* buffer = buffer_own.get();
 
   if(!buffer) {
     ErrMessage(G, "ObjectMapLoadDXFile", "Unable to open file!");
@@ -5211,8 +5209,6 @@ ObjectMap *ObjectMapLoadDXFile(PyMOLGlobals * G, ObjectMap * obj, const char *fn
     }
 
     I = ObjectMapReadDXStr(G, obj, buffer, size, state, quiet);
-
-    mfree(buffer);
   }
   return (I);
 
@@ -5417,9 +5413,9 @@ ObjectMap *ObjectMapLoadACNTFile(PyMOLGlobals * G, ObjectMap * obj, const char *
 {
   ObjectMap *I = nullptr;
   long size;
-  char *buffer;
-  
-  buffer = FileGetContents(fname, &size);
+  std::unique_ptr<char, pymol::default_free> buffer_own(
+      FileGetContents(fname, &size));
+  char* buffer = buffer_own.get();
 
   if(!buffer) {
     ErrMessage(G, "ObjectMapLoadACNTFile", "Unable to open file!");
@@ -5431,8 +5427,6 @@ ObjectMap *ObjectMapLoadACNTFile(PyMOLGlobals * G, ObjectMap * obj, const char *
     }
 
     I = ObjectMapReadACNTStr(G, obj, buffer, size, state, quiet);
-
-    mfree(buffer);
   }
   return (I);
 
@@ -5445,9 +5439,9 @@ ObjectMap *ObjectMapLoadFLDFile(PyMOLGlobals * G, ObjectMap * obj, const char *f
 {
   ObjectMap *I = nullptr;
   long size;
-  char *buffer;
-
-  buffer = FileGetContents(fname, &size);
+  std::unique_ptr<char, pymol::default_free> buffer_own(
+      FileGetContents(fname, &size));
+  char* buffer = buffer_own.get();
 
   if(!buffer) {
     ErrMessage(G, "ObjectMapLoadFLDFile", "Unable to open file!");
@@ -5457,8 +5451,6 @@ ObjectMap *ObjectMapLoadFLDFile(PyMOLGlobals * G, ObjectMap * obj, const char *f
     }
 
     I = ObjectMapReadFLDStr(G, obj, buffer, size, state, quiet);
-
-    mfree(buffer);
   }
   return (I);
 
@@ -5471,9 +5463,9 @@ ObjectMap *ObjectMapLoadBRIXFile(PyMOLGlobals * G, ObjectMap * obj, const char *
 {
   ObjectMap *I = nullptr;
   long size;
-  char *buffer;
-
-  buffer = FileGetContents(fname, &size);
+  std::unique_ptr<char, pymol::default_free> buffer_own(
+      FileGetContents(fname, &size));
+  char* buffer = buffer_own.get();
 
   if(!buffer) {
     ErrMessage(G, "ObjectMapLoadBRIXFile", "Unable to open file!");
@@ -5483,8 +5475,6 @@ ObjectMap *ObjectMapLoadBRIXFile(PyMOLGlobals * G, ObjectMap * obj, const char *
     }
 
     I = ObjectMapReadBRIXStr(G, obj, buffer, size, state, quiet);
-
-    mfree(buffer);
   }
   return (I);
 
@@ -5497,9 +5487,9 @@ ObjectMap *ObjectMapLoadGRDFile(PyMOLGlobals * G, ObjectMap * obj, const char *f
 {
   ObjectMap *I = nullptr;
   long size;
-  char *buffer;
-
-  buffer = FileGetContents(fname, &size);
+  std::unique_ptr<char, pymol::default_free> buffer_own(
+      FileGetContents(fname, &size));
+  char* buffer = buffer_own.get();
 
   if(!buffer) {
     ErrMessage(G, "ObjectMapLoadGRDFile", "Unable to open file!");
@@ -5509,8 +5499,6 @@ ObjectMap *ObjectMapLoadGRDFile(PyMOLGlobals * G, ObjectMap * obj, const char *f
     }
 
     I = ObjectMapReadGRDStr(G, obj, buffer, size, state, quiet);
-
-    mfree(buffer);
   }
   return (I);
 
@@ -5524,9 +5512,11 @@ ObjectMap *ObjectMapLoadXPLOR(PyMOLGlobals * G, ObjectMap * obj, const char *fna
   ObjectMap *I = nullptr;
   long size;
   char *buffer;
+  std::unique_ptr<char, pymol::default_free> buffer_own;
 
   if(is_file) {
-    buffer = FileGetContents(fname, &size);
+    buffer_own.reset(FileGetContents(fname, &size));
+    buffer = buffer_own.get();
 
     if(!buffer)
       ErrMessage(G, "ObjectMapLoadXPLOR", "Unable to open file!");
@@ -5545,8 +5535,6 @@ ObjectMap *ObjectMapLoadXPLOR(PyMOLGlobals * G, ObjectMap * obj, const char *fna
 
     I = ObjectMapReadXPLORStr(G, obj, buffer, state, quiet);
 
-    if(is_file)
-      mfree(buffer);
     if(!quiet) {
       if(Feedback(G, FB_ObjectMap, FB_Details)) {
         if(state < 0)

@@ -575,18 +575,18 @@ static void ObjectVolumeDrawSlice(
 
 /**
  * Converting Ramp to `count * 4` sized interpolated RGBA color
- * array. Returns allocated memory.
+ * array. Returns an empty array on failure.
  * Assigns data minimum and range covered by ramp to `ramp_min` and
  * `ramp_range`.
  */
-static float* ObjectVolumeStateGetColors(PyMOLGlobals* G,
+static std::vector<float> ObjectVolumeStateGetColors(PyMOLGlobals* G,
     ObjectVolumeState* ovs, int count, float* ramp_min, float* ramp_range)
 {
   int i, j, k;
   int lowerId, upperId = 0;
   float mixc, mixcincr, r_min, range;
   float stdev = ovs->min_max_mean_stdev[3];
-  float* colors;
+  std::vector<float> colors;
 
   ok_assert(1, ovs->RampSize() > 1);
 
@@ -598,8 +598,7 @@ static float* ObjectVolumeStateGetColors(PyMOLGlobals* G,
   r_min -= stdev * 0.5;
   range += stdev;
 
-  colors = pymol::calloc<float>(4 * count);
-  ok_assert(1, colors);
+  colors.resize(4 * count);
 
   for (i = 0; i < ovs->RampSize(); i++) {
     lowerId = upperId;
@@ -626,7 +625,7 @@ static float* ObjectVolumeStateGetColors(PyMOLGlobals* G,
 ok_except1:
   PRINTFB(G, FB_ObjectVolume, FB_Blather)
   "ObjectVolumeStateGetColors failed\n" ENDFB(G);
-  return nullptr;
+  return {};
 }
 
 /**
@@ -805,25 +804,24 @@ void ObjectVolume::render(RenderInfo* info)
     if (vs->RecolorFlag) {
       const int volume_nColors = 512;
 
-      float* colors = ObjectVolumeStateGetColors(
+      auto colors = ObjectVolumeStateGetColors(
           G, vs, volume_nColors, &vs->ramp_min, &vs->ramp_range);
-      if (!colors)
+      if (colors.empty())
         continue;
 
       // volume_layers default is 256, adjust alpha to maintain integrated
       // opacity with different layer numbers
-      ColorsAdjustAlpha(colors, volume_nColors, 256. / volume_layers);
+      ColorsAdjustAlpha(colors.data(), volume_nColors, 256. / volume_layers);
 
       if (vs->textures[1]) {
         G->ShaderMgr->freeGPUBuffer(vs->textures[1]);
       }
 
       vs->textures[1] =
-          createColorTexture(G, colors, volume_nColors);
+          createColorTexture(G, colors.data(), volume_nColors);
 
       tex::env(tex::env_name::ENV_MODE, tex::env_param::REPLACE);
 
-      mfree(colors);
       vs->RecolorFlag = false;
     }
 

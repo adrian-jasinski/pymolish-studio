@@ -55,10 +55,6 @@ Z* -------------------------------------------------------------------
 */
 
 
-/* note: the following value must be at least one greater than the max
-   number of lights */
-#define MAX_BASIS 12
-
 typedef float float3[3];
 typedef float float4[4];
 
@@ -2349,9 +2345,9 @@ void RayRenderIDTF(CRay * I, char **node_vla, char **rsrc_vla)
          mesh->face_shading_list appropriately for each face */
 
       {
-        IdtfMaterial *material = pymol::calloc<IdtfMaterial>(1);
-        if(material &&
-           (material->color_list = VLAlloc(float, 4)) &&
+        IdtfMaterial material_rec{};
+        IdtfMaterial* material = &material_rec;
+        if((material->color_list = VLAlloc(float, 4)) &&
            (material->color_hash = VectorHash_New())) {
 
           const float one_third = (1 / 3.0F);
@@ -2399,7 +2395,6 @@ void RayRenderIDTF(CRay * I, char **node_vla, char **rsrc_vla)
           VLAFreeP(material->color_list);
           VectorHash_Free(material->color_hash);
         }
-        FreeP(material);
       }
 
       {
@@ -5504,6 +5499,7 @@ void RayRender(CRay * I, unsigned int *image, double timing,
 {
   int a, x, y;
   unsigned int *image_copy = nullptr;
+  std::vector<unsigned int> image_buf; // the oversampled image
   unsigned int back_mask, fore_mask = 0, trace_word = 0;
   unsigned int background;
   size_t buffer_size;
@@ -5593,8 +5589,8 @@ void RayRender(CRay * I, unsigned int *image, double timing,
     height = (height + 2) * mag;
     image_copy = image;
     buffer_size = width * height;
-    image = pymol::malloc<unsigned int>(buffer_size);
-    ErrChkPtr(I->G, image);
+    image_buf.resize(buffer_size);
+    image = image_buf.data();
   } else {
     buffer_size = width * height;
   }
@@ -5850,7 +5846,7 @@ void RayRender(CRay * I, unsigned int *image, double timing,
     OrthoBusyFast(I->G, 4, 20);
     if(shadows && (n_thread > 1)) {     /* parallel execution */
 
-      CRayHashThreadInfo *thread_info = pymol::calloc<CRayHashThreadInfo>(I->NBasis);
+      std::vector<CRayHashThreadInfo> thread_info(I->NBasis);
 
       /* rendering map */
       int* vert2prim_ptr = I->Vert2Prim.empty() ? nullptr : I->Vert2Prim.data();
@@ -5903,9 +5899,7 @@ void RayRender(CRay * I, unsigned int *image, double timing,
 
       /* NOTE that we're not limiting the number of threads in this phase
          under the assumption that it will usually just be a few threads */
-      RayHashSpawn(thread_info, n_thread, I->NBasis - 1);
-
-      FreeP(thread_info);
+      RayHashSpawn(thread_info.data(), n_thread, I->NBasis - 1);
     } else
     if (ok){ 
       int* vert2prim_ptr = I->Vert2Prim.empty() ? nullptr : I->Vert2Prim.data();
@@ -5957,7 +5951,7 @@ void RayRender(CRay * I, unsigned int *image, double timing,
 
     if (ok){
       /* now spawn threads as needed */
-      CRayThreadInfo *rt = pymol::calloc<CRayThreadInfo>(n_thread);
+      std::vector<CRayThreadInfo> rt(n_thread);
 
       int x_start = 0, y_start = 0;
       int x_stop = 0, y_stop = 0;
@@ -6082,41 +6076,33 @@ void RayRender(CRay * I, unsigned int *image, double timing,
       }
 
       if(n_thread > 1)
-        RayTraceSpawn(rt, n_thread);
+        RayTraceSpawn(rt.data(), n_thread);
       else
-        RayTraceThread(rt);
+        RayTraceThread(rt.data());
 
       if(oversample_cutoff) {   /* perform edge oversampling, if requested */
-        unsigned int *edging;
-
-        edging = pymol::malloc<unsigned int>(buffer_size);
-
-        memcpy(edging, image, buffer_size * sizeof(unsigned int));
+        std::vector<unsigned int> edging(image, image + buffer_size);
 
         for(a = 0; a < n_thread; a++) {
-          rt[a].edging = edging;
+          rt[a].edging = edging.data();
         }
 
         if(n_thread > 1)
-          RayTraceSpawn(rt, n_thread);
+          RayTraceSpawn(rt.data(), n_thread);
         else
-          RayTraceThread(rt);
-
-        FreeP(edging);
+          RayTraceThread(rt.data());
       }
-      FreeP(rt);
     }
   }
 
   if(ok && depth && ray_trace_mode) {
-    float *delta = pymol::malloc<float>(3 * width * height);
+    std::vector<float> delta(3 * width * height);
     int x, y;
-    ErrChkPtr(I->G, delta);
     if (ok) {
       int xc, yc;
       float d, dzdx, dzdy, *p, *q, dd;
       p = depth;
-      q = delta;
+      q = delta.data();
       for(y = 0; y < height; y++)
         for(x = 0; x < width; x++) {
           dzdx = 0.0F;
@@ -6248,7 +6234,7 @@ void RayRender(CRay * I, unsigned int *image, double timing,
         }
         {
           unsigned int *q = image;
-          float *p = delta;
+          float *p = delta.data();
           int width3 = width * 3;
 
           float slope_f = SettingGetGlobal_f(I->G, cSetting_ray_trace_slope_factor);
@@ -6467,12 +6453,11 @@ void RayRender(CRay * I, unsigned int *image, double timing,
         }
       }
     }
-    FreeP(delta);
   }
 
   if(ok && antialias > 1) {
     /* now spawn threads as needed */
-    CRayAntiThreadInfo *rt = pymol::calloc<CRayAntiThreadInfo>(n_thread);
+    std::vector<CRayAntiThreadInfo> rt(n_thread);
 
     for(a = 0; a < n_thread; a++) {
       rt[a].width = width;
@@ -6486,11 +6471,9 @@ void RayRender(CRay * I, unsigned int *image, double timing,
     }
 
     if(n_thread > 1)
-      RayAntiSpawn(rt, n_thread);
+      RayAntiSpawn(rt.data(), n_thread);
     else
-      RayAntiThread(rt);
-    FreeP(rt);
-    FreeP(image);
+      RayAntiThread(rt.data());
     image = image_copy;
   }
 
@@ -7479,7 +7462,6 @@ CRay *RayNew(PyMOLGlobals * G, int antialias)
   PRINTFB(I->G, FB_Ray, FB_Blather)
     " RayNew: BigEndian = %d\n", I->BigEndian ENDFB(I->G);
 
-  I->Basis = pymol::malloc<CBasis>(12);
   BasisInit(I->G, I->Basis);
   BasisInit(I->G, I->Basis + 1);
   I->NBasis = 2;
@@ -7622,7 +7604,6 @@ void RayFree(CRay * I)
 {
   RayRelease(I);
   CharacterSetRetention(I->G, false);
-  FreeP(I->Basis);
   DeleteP(I);
 }
 
