@@ -4,6 +4,23 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.76.1
+
+	* Core
+	  - Selector.cpp, ObjectMolecule.cpp, ObjectMolecule2.cpp and
+	    PlugIOManager.cpp: 55 allocations with malloc, calloc or
+	    strdup and 54 frees by hand are gone; the buffers are
+	    std::vector now, among them the scratch
+	    arrays of dss, distance, the editor's fragment selections,
+	    the Gaussian map, valence guessing, the AMBER trajectory and
+	    topology readers, the secondary structure table of the PDB
+	    reader and the atom and volume buffers of the VMD plugins.
+	    The names of SDF properties are std::string. The bond path
+	    record owns its two arrays, so ObjectMoleculePurgeBondPath
+	    is gone. No behavior change. Step 8c.
+
+2026-11-25 pymolish-studio
+
 	* 4.76.0
 
 	* An experiment, to be judged: "set surface_type, 7" builds the

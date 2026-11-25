@@ -443,14 +443,12 @@ int *ObjectMoleculeGetPrioritizedOtherIndexList(ObjectMolecule * I, CoordSet * c
   int a, b;
   int b1, b2, a1, a2, a3;
   OtherRec *o;
-  OtherRec *other = pymol::calloc<OtherRec>(cs->NIndex);
+  std::vector<OtherRec> other(cs->NIndex);
   int *result = nullptr;
   int offset;
   int n_alloc = 0;
   const BondType *bd;
   int ok = true;
-
-  CHECKOK(ok, other);
 
   bd = I->Bond;
   for(a = 0; ok && a < I->NBond; a++) {
@@ -459,15 +457,15 @@ int *ObjectMoleculeGetPrioritizedOtherIndexList(ObjectMolecule * I, CoordSet * c
     a1 = cs->atmToIdx(b1);
     a2 = cs->atmToIdx(b2);
     if((a1 >= 0) && (a2 >= 0)) {
-      n_alloc += populate_other(other + a1, a2, I->AtomInfo + b2, bd, I);
-      n_alloc += populate_other(other + a2, a1, I->AtomInfo + b1, bd, I);
+      n_alloc += populate_other(other.data() + a1, a2, I->AtomInfo + b2, bd, I);
+      n_alloc += populate_other(other.data() + a2, a1, I->AtomInfo + b1, bd, I);
     }
     bd++;
     ok &= !I->G->Interrupt;
   }
   if (ok){
     n_alloc = 3 * (n_alloc + cs->NIndex);
-    o = other;
+    o = other.data();
     result = pymol::malloc<int>(n_alloc);
     CHECKOK(ok, result);
   }
@@ -485,7 +483,7 @@ int *ObjectMoleculeGetPrioritizedOtherIndexList(ObjectMolecule * I, CoordSet * c
     a2 = cs->atmToIdx(b2);
     if((a1 >= 0) && (a2 >= 0)) {
       if(result[a1] < 0) {
-        o = other + a1;
+        o = other.data() + a1;
         result[a1] = offset;
         for(b = 0; b < o->n_cyclic_arom; b++) {
           a3 = o->cyclic_arom[b];
@@ -515,7 +513,7 @@ int *ObjectMoleculeGetPrioritizedOtherIndexList(ObjectMolecule * I, CoordSet * c
       }
 
       if(result[a2] < 0) {
-        o = other + a2;
+        o = other.data() + a2;
         result[a2] = offset;
         for(b = 0; b < o->n_cyclic_arom; b++) {
           a3 = o->cyclic_arom[b];
@@ -548,7 +546,6 @@ int *ObjectMoleculeGetPrioritizedOtherIndexList(ObjectMolecule * I, CoordSet * c
     bd++;
     ok &= !I->G->Interrupt;
   }
-  FreeP(other);
   return result;
 }
 
@@ -1460,7 +1457,8 @@ int ObjectMoleculeConvertIDsToIndices(ObjectMolecule * I, int *id, int n_id)
 {
   /* return true if all IDs are unique, false if otherwise */
 
-  int min_id, max_id, range, *lookup = nullptr;
+  int min_id, max_id, range;
+  std::vector<int> lookup;
   int unique = true;
 
   /* this routine only works if IDs cover a reasonable range --
@@ -1490,7 +1488,7 @@ int ObjectMoleculeConvertIDsToIndices(ObjectMolecule * I, int *id, int n_id)
       int a, offset;
 
       range = max_id - min_id + 1;
-      lookup = pymol::calloc<int>(range);
+      lookup.resize(range);
       for(a = 0; a < I->NAtom; a++) {
         offset = I->AtomInfo[a].id - min_id;
         if(!lookup[offset])
@@ -1520,7 +1518,6 @@ int ObjectMoleculeConvertIDsToIndices(ObjectMolecule * I, int *id, int n_id)
     }
   }
 
-  FreeP(lookup);
   return unique;
 
 }
@@ -1688,32 +1685,10 @@ static void ObjectMoleculePDBStr2CoordSetPASS1(PyMOLGlobals * G, int *ok,
  * Datastructure for efficient array-based secondary structure lookup.
  */
 struct SSHash {
-  int n_ss;         // number of ss_list items
-  int* ss[256];     // one array for each chain identifier
-  SSEntry *ss_list; // VLA
+  int n_ss = 1;                 // number of ss_list items
+  std::vector<int> ss[256];     // one array for each chain identifier
+  pymol::vla<SSEntry> ss_list = pymol::vla<SSEntry>(50);
 };
-
-static void sshash_free(SSHash *hash) {
-  int a;
-  if(!hash)
-    return;
-  for(a = 0; a <= 255; a++)
-    FreeP(hash->ss[a]);
-  VLAFreeP(hash->ss_list);
-  FreeP(hash);
-}
-
-static SSHash * sshash_new() {
-  SSHash *hash = pymol::calloc<SSHash>(1);
-  ok_assert(1, hash);
-  hash->n_ss = 1;
-  hash->ss_list = VLAlloc(SSEntry, 50);
-  ok_assert(1, hash->ss_list);
-  return hash;
-ok_except1:
-  sshash_free(hash);
-  return nullptr;
-}
 
 /**
  * Insert a secondary structure record into the hash table.
@@ -1736,8 +1711,8 @@ static int sshash_register_rec(SSHash * hash,
   // 2) chains are not the same (undefined in PDB spec?)
   for (a = 0, chain = ss_chain1; a < 2; a++, chain = ss_chain2) {
     // allocate new array for chain if necc.
-    if(!hash->ss[chain]) {
-      ok_assert(1, hash->ss[chain] = pymol::calloc<int>(cResvMask + 1));
+    if(hash->ss[chain].empty()) {
+      hash->ss[chain].resize(cResvMask + 1);
     }
 
     sst = nullptr;
@@ -1751,8 +1726,7 @@ static int sshash_register_rec(SSHash * hash,
       }
 
       if(!sst) {
-        VLACheck(hash->ss_list, SSEntry, hash->n_ss);
-        ok_assert(1, hash->ss_list);
+        hash->ss_list.check(hash->n_ss);
         ssi = (hash->n_ss)++;
         sst = hash->ss_list + ssi;
         sst->resv1 = ss_resv1;
@@ -1771,8 +1745,6 @@ static int sshash_register_rec(SSHash * hash,
     }
   }
   return ss_found;
-ok_except1:
-  return false;
 }
 
 /**
@@ -1783,7 +1755,7 @@ static void sshash_lookup(SSHash *hash, AtomInfoType *ai, unsigned char ss_chain
   SSEntry *sst = nullptr;
 
   index = ai->resv & cResvMask;
-  if(hash->ss[ss_chain1]) {
+  if(!hash->ss[ss_chain1].empty()) {
     ssi = hash->ss[ss_chain1][index];
     while(ssi) {
       sst = hash->ss_list + ssi;
@@ -1894,7 +1866,6 @@ CoordSet *ObjectMoleculePDBStr2CoordSet(PyMOLGlobals * G,
   int atomCount;
   int bondFlag = false;
   BondType *bond = nullptr, *ii1, *ii2;
-  int *idx;
   int nBond = 0;
   int b1, b2, nReal, maxAt;
   std::unique_ptr<CSymmetry> symmetry;
@@ -1908,7 +1879,7 @@ CoordSet *ObjectMoleculePDBStr2CoordSet(PyMOLGlobals * G,
   int ss_resv1 = 0, ss_resv2 = 0;
   char ss_inscode1 = '\0', ss_inscode2 = '\0';
   unsigned char ss_chain1 = 0, ss_chain2 = 0;
-  SSHash *ss_hash = nullptr;
+  std::unique_ptr<SSHash> ss_hash;
   char cc[MAXLINELEN], tags[MAXLINELEN];
   int ignore_pdb_segi = 0;
   int ss_valid, ss_found = false;
@@ -2009,7 +1980,7 @@ CoordSet *ObjectMoleculePDBStr2CoordSet(PyMOLGlobals * G,
     " ObjectMoleculeReadPDB: Found %i atoms...\n", nAtom ENDFB(G);
 
   if(ok && ssFlag) {
-    ss_hash = sshash_new();
+    ss_hash = std::make_unique<SSHash>();
   }
 
   a = 0;                        /* WATCHOUT */
@@ -2322,7 +2293,7 @@ CoordSet *ObjectMoleculePDBStr2CoordSet(PyMOLGlobals * G,
     /* Secondary structure records */
 
     if(ok && SSCode) {
-      ss_found = sshash_register_rec(ss_hash,
+      ss_found = sshash_register_rec(ss_hash.get(),
           ss_chain1, ss_resv1, ss_inscode1,
           ss_chain2, ss_resv2, ss_inscode2, SSCode);
     }
@@ -2449,7 +2420,7 @@ CoordSet *ObjectMoleculePDBStr2CoordSet(PyMOLGlobals * G,
       p = nskip(p, 1);
 
       if(ssFlag) {              /* get secondary structure information (if avail) */
-        sshash_lookup(ss_hash, ai, ss_chain1);
+        sshash_lookup(ss_hash.get(), ai, ss_chain1);
       } else {
         ai->cartoon = cCartoon_tube;
       }
@@ -2637,8 +2608,7 @@ pqr_done:
           maxAt = atInfo[a].id;
       /* build index */
       maxAt++;
-      idx = pymol::malloc<int>(maxAt + 1);
-      CHECKOK(ok, idx);
+      std::vector<int> idx(maxAt + 1);
       if (ok){
 	for(a = 0; a < maxAt; a++) {
 	  idx[a] = -1;
@@ -2694,7 +2664,6 @@ pqr_done:
         }
       }
       nBond = nReal;
-      FreeP(idx);
     }
   }
   if(ss_found && !quiet) {
@@ -2750,8 +2719,7 @@ pqr_done:
       VLAFreeP(bond);
     }
   }
-  sshash_free(ss_hash);
-  
+
   if (ok){
     if(!seen_model)
       *model_number = 1;
@@ -3279,10 +3247,10 @@ static PyObject *ObjectMoleculeAtomAsPyList(ObjectMolecule * I)
       totalstlen += lexlen + 1;
     }
     int strinfolen = totalstlen + sizeof(int) * (lexIDs.size() + 1);
-    void *strinfo = pymol::malloc<unsigned char>(strinfolen);
-    int *strval = (int*)strinfo;
+    std::vector<unsigned char> strinfo(strinfolen);
+    int *strval = (int*)strinfo.data();
     *(strval++) = lexIDs.size(); // first write number of strings into binary data string
-    char *strpl = (char*)((char*)strinfo + (1 + lexIDs.size()) * sizeof(int));
+    char *strpl = (char*)((char*)strinfo.data() + (1 + lexIDs.size()) * sizeof(int));
     /* write map of lex ids and strings into binary data string as an array of ids
        and null-terminated strings */
     for (const auto& lexID : lexIDs) {
@@ -3321,14 +3289,13 @@ static PyObject *ObjectMoleculeAtomAsPyList(ObjectMolecule * I)
     result = PyList_New(result_size);
     PyList_SetItem(result, 0, PyInt_FromLong(version));
     PyList_SetItem(result, 1, PyBytes_FromStringAndSize(reinterpret_cast<const char*>(blob), blobsize));
-    PyList_SetItem(result, 2, PyBytes_FromStringAndSize(reinterpret_cast<const char*>(strinfo), strinfolen));
+    PyList_SetItem(result, 2, PyBytes_FromStringAndSize(reinterpret_cast<const char*>(strinfo.data()), strinfolen));
 
     if (result_size > 3) {
       PyList_SetItem(result, 3, PConvAutoNone(prop_list));
     }
 
     VLAFreeP(blob);
-    FreeP(strinfo);
     return result;
   }
   result = PyList_New(I->NAtom);
@@ -3544,7 +3511,6 @@ PyObject *ObjectMoleculeAsPyList(ObjectMolecule * I)
   if(I->DiscreteFlag
       && (pse_export_version || !SettingGetGlobal_b(I->G, cSetting_pse_binary_dump))
       && pse_export_version < 1.7699) {
-    int *dcs;
     int a;
     CoordSet *cs;
 
@@ -3557,7 +3523,7 @@ PyObject *ObjectMoleculeAsPyList(ObjectMolecule * I)
       }
     }
 
-    dcs = pymol::malloc<int>(I->NAtom);
+    std::vector<int> dcs(I->NAtom);
 
     for(a = 0; a < I->NAtom; a++) {
       cs = I->DiscreteCSet[a];
@@ -3568,8 +3534,7 @@ PyObject *ObjectMoleculeAsPyList(ObjectMolecule * I)
     }
 
     PyList_SetItem(result, 14, PConvIntArrayToPyList(I->DiscreteAtmToIdx, I->NAtom));
-    PyList_SetItem(result, 15, PConvIntArrayToPyList(dcs, I->NAtom));
-    FreeP(dcs);
+    PyList_SetItem(result, 15, PConvIntArrayToPyList(dcs.data(), I->NAtom));
   } else {
     PyList_SetItem(result, 14, PConvAutoNone(nullptr));
     PyList_SetItem(result, 15, PConvAutoNone(nullptr));

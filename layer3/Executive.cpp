@@ -6210,8 +6210,6 @@ int ExecutiveDebug(PyMOLGlobals* G, const char* name)
     for (a = 0; a < bp.n_atom; a++) {
       printf("%d %d %d\n", a, bp.list[a], bp.dist[bp.list[a]]);
     }
-
-    ObjectMoleculePurgeBondPath(obj, &bp);
   }
   return (1);
 }

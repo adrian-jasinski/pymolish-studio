@@ -48,8 +48,8 @@ enum cLoadType_t : int;
  * ObjectMolecule's Bond Path (BP) Record
  */
 struct ObjectMoleculeBPRec {
-  int *dist;
-  int *list;
+  std::vector<int> dist;
+  std::vector<int> list;
   int n_atom;
 };
 
@@ -452,7 +452,6 @@ void ObjectMoleculeSculptClear(ObjectMolecule * I);
 int ObjectMoleculeGetBondPaths(ObjectMolecule * I, int atom, int max,
                                ObjectMoleculeBPRec * bp);
 int ObjectMoleculeInitBondPath(ObjectMolecule * I, ObjectMoleculeBPRec * bp);
-int ObjectMoleculePurgeBondPath(ObjectMolecule * I, ObjectMoleculeBPRec * bp);
 int ***ObjectMoleculeGetBondPrint(ObjectMolecule * I, int max_bond, int max_type,
                                   int *dim);
 
