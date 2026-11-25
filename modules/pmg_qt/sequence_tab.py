@@ -3,11 +3,14 @@ the core (layer1/Seq.cpp, layer3/Seeker.cpp), drawn by Qt. The core keeps
 the rows and handles the mouse, so an event here does what it does on the
 rows in the viewport: a click adds a residue to the selection or takes it
 out, a drag or a Shift+click takes a range, the middle button centers, the
-right one opens the menu, a double click beside the rows selects nothing."""
+right one opens the menu, a double click beside the rows selects nothing.
+Over the rows: what Display > Sequence Mode sets, as three lists, and a
+button for the alignment window."""
 
 import bisect
 
 import pymol
+from pymol._gui import SEQUENCE_OPTIONS
 from pymol.Qt import QtCore, QtGui, QtWidgets
 from pymol.Qt.utils import getMonospaceFont
 
@@ -31,6 +34,48 @@ def columns(flags, c):
         keep = [i for i, (s, e) in enumerate(zip(lists[1], lists[2])) if e > s]
         lists = [[values[i] for i in keep] for values in lists]
     return lists
+
+
+class Options(QtWidgets.QWidget):
+    """The row over the sequence: the mode, the labels and the gaps as lists
+    (the settings of Display > Sequence Mode, which they follow), and the
+    alignment window. setting_callbacks is the table of the window: setting
+    index -> callables it runs with the new value."""
+
+    def __init__(self, cmd, setting_callbacks, open_alignment, parent=None):
+        super().__init__(parent)
+        row = QtWidgets.QHBoxLayout(self)
+        row.setContentsMargins(4, 2, 4, 2)
+        self.lists = {}
+        for setting, title, choices in SEQUENCE_OPTIONS:
+            box = QtWidgets.QComboBox()
+            for label, value in choices:
+                box.addItem(label, value)
+            box.setAccessibleName("Sequence " + title.lower())
+            box.setToolTip("%s of the sequence, here and in the viewport" % title)
+            box.activated.connect(
+                lambda _, box=box, setting=setting: cmd.set(
+                    setting, box.currentData(), quiet=0, log=1
+                )
+            )
+
+            def follow(value, box=box):
+                box.setCurrentIndex(box.findData(int(value)))
+
+            setting_callbacks[cmd.setting._get_index(setting)].append(follow)
+            follow(cmd.get_setting_int(setting))
+            label = QtWidgets.QLabel(title)
+            label.setBuddy(box)
+            row.addWidget(label)
+            row.addWidget(box)
+            self.lists[setting] = box
+        row.addStretch(1)
+        self.align = QtWidgets.QPushButton("Multiple sequence alignment…")
+        self.align.setToolTip(
+            "Open the alignment window: loaded chains, FASTA files, local MAFFT"
+        )
+        self.align.clicked.connect(lambda: open_alignment())
+        row.addWidget(self.align)
 
 
 # ponytail: not drawn here, unlike in the viewport: the dimming of the

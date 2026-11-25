@@ -4,6 +4,19 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.74.0
+
+	* The Sequence tab has a row of its own over the sequence: the lists
+	  Mode (residue codes, residue names, chain identifiers, atom names,
+	  states), Labels and Gaps, and the button "Multiple sequence
+	  alignment…", which opens the alignment window. The lists are the
+	  settings seq_view_format, seq_view_label_mode and
+	  seq_view_gap_mode: they change the tab and the sequence in the
+	  viewport alike, and they follow Display > Sequence Mode and the
+	  "set" command. Tried in the real window: "Residue Names" picked in
+	  the list changed the rows and the mark in the Display menu, and
+	  the button opened the alignment window.
+
 	* 4.73.0
 
 	* The mouse mode button under the object list shows the mouse icon

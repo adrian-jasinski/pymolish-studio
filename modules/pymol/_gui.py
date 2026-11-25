@@ -6,6 +6,30 @@ import sys
 import os
 import webbrowser
 
+# Display > Sequence Mode and the lists of the Sequence tab: setting, name of
+# the list, (label, value)
+SEQUENCE_OPTIONS = (
+    ('seq_view_format', 'Mode', (
+        ('Residue Codes', 0),
+        ('Residue Names', 1),
+        ('Chain Identifiers', 3),
+        ('Atom Names', 2),
+        ('States', 4),
+    )),
+    ('seq_view_label_mode', 'Labels', (
+        ('All Residue Numbers', 2),
+        ('Top Sequence Only', 1),
+        ('Object Names Only', 0),
+        ('No Labels', 3),
+    )),
+    ('seq_view_gap_mode', 'Gaps', (
+        ('No Gaps', 0),
+        ('All Gaps', 1),
+        ('Single Gap', 2),
+    )),
+)
+
+
 class PyMOLDesktopGUI(object):
     '''Superclass for PyMOL Desktop Applications'''
 
@@ -290,34 +314,12 @@ class PyMOLDesktopGUI(object):
             ('menu', 'Display', [
                 ('check', 'Sequence in Viewport', 'seq_view', 1),
                 ('menu', 'Sequence Mode', [
-                    ('radio', lab, 'seq_view_format', val)
-                    for lab, val in [
-                        ('Residue Codes', 0),
-                        ('Residue Names', 1),
-                        ('Chain Identifiers', 3),
-                        ('Atom Names', 2),
-                        ('States', 4),
+                    row
+                    for setting, _, choices in SEQUENCE_OPTIONS
+                    for row in [('separator',)] + [
+                        ('radio', lab, setting, val) for lab, val in choices
                     ]
-                ] + [
-                    ('separator',),
-                ] + [
-                    ('radio', lab, 'seq_view_label_mode', val)
-                    for lab, val in [
-                        ('All Residue Numbers', 2),
-                        ('Top Sequence Only', 1),
-                        ('Object Names Only', 0),
-                        ('No Labels', 3),
-                    ]
-                ] + [
-                    ('separator',),
-                ] + [
-                    ('radio', lab, 'seq_view_gap_mode', val)
-                    for lab, val in [
-                        ('No Gaps', 0),
-                        ('All Gaps', 1),
-                        ('Single Gap', 2),
-                    ]
-                ]),
+                ][1:]),
                 ('separator',),
                 ('check', 'Stereo', 'stereo', 1),
                 ('menu', 'Stereo Mode', [

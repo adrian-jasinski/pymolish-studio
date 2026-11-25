@@ -108,3 +108,64 @@ def test_tab():
     cmd.delete("m")
     tab.refresh()
     assert tab.rows == []
+
+
+def test_options_row():
+    """37f: the lists over the sequence are the settings of Display >
+    Sequence Mode, and a button opens the alignment window."""
+    from collections import defaultdict
+
+    from pmg_qt.sequence_tab import Options, SequenceTab
+    from pymol._gui import SEQUENCE_OPTIONS, PyMOLDesktopGUI
+    from pymol.Qt import QtWidgets
+
+    callbacks, opened = defaultdict(list), []
+    cmd.fab("ACDEFGHIKL", "m")
+    row = Options(cmd, callbacks, lambda: opened.append(1))
+    tab = SequenceTab(cmd)
+    tab.refresh()
+    codes = tab.rows[1][0]
+
+    for setting, title, choices in SEQUENCE_OPTIONS:
+        box = row.lists[setting]
+        assert [box.itemText(i) for i in range(box.count())] == [c[0] for c in choices]
+        assert box.currentData() == cmd.get_setting_int(setting)  # as it is now
+        assert box.accessibleName() and box.toolTip()
+        for index, (label, value) in enumerate(choices):  # picked in the list
+            box.setCurrentIndex(index)
+            box.activated.emit(index)
+            assert cmd.get_setting_int(setting) == value
+        for label, value in choices:  # set by a command or the Display menu
+            cmd.set(setting, value)
+            for callback in callbacks[cmd.setting._get_index(setting)]:
+                callback(cmd.get_setting_tuple(setting)[1][0])
+            assert box.currentText() == label
+        cmd.set(setting, choices[0][1])
+
+    # the names of the residues: other rows, and a click still finds them
+    box = row.lists["seq_view_format"]
+    box.setCurrentIndex(box.findText("Residue Names"))
+    box.activated.emit(box.currentIndex())
+    tab.refresh()
+    text, _, offsets, starts, stops = tab.rows[1][:5]
+    assert text != codes and "CYS" in text
+    names = {text[s:e].strip(): o for o, s, e in zip(offsets, starts, stops)}
+    click(names["ASP"])
+    assert selected() == [3]
+    cmd.set("seq_view_format", 0)
+
+    row.align.click()
+    assert opened == [1] and isinstance(row.align, QtWidgets.QPushButton)
+
+    # the Display menu is built from the same lists
+    from unittest import mock
+
+    data = PyMOLDesktopGUI.get_menudata(mock.MagicMock(), cmd)  # any window
+    menus = {label: rows for _, label, rows in data}
+    display = {row[1]: row for row in menus["Display"] if len(row) > 2}
+    mode = display["Sequence Mode"][2]
+    rows = [(r[1], r[2], r[3]) if r[0] == "radio" else None for r in mode]
+    expected = []
+    for setting, _, choices in SEQUENCE_OPTIONS:
+        expected += [None] + [(label, setting, value) for label, value in choices]
+    assert rows == expected[1:] and len(rows) == 14

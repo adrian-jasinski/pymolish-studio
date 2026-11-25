@@ -269,9 +269,16 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         from .sequence_panel import SequencePanel
         self.sequence_panel = SequencePanel(cmd, self)
 
-        from .sequence_tab import SequenceTab
+        from .sequence_tab import Options, SequenceTab
         self.sequence_tab = SequenceTab(cmd, self)
-        self.command_tabs.addTab(self.sequence_tab, "Sequence")
+        self.sequence_page = QtWidgets.QWidget()
+        page = QtWidgets.QVBoxLayout(self.sequence_page)
+        page.setContentsMargins(0, 0, 0, 0)
+        page.setSpacing(0)
+        page.addWidget(
+            Options(cmd, self.setting_callbacks, self.sequence_panel.open))
+        page.addWidget(self.sequence_tab, 1)
+        self.command_tabs.addTab(self.sequence_page, "Sequence")
 
         from .chat_panel import ChatPanel
         self.chat_panel = ChatPanel(cmd, self)
@@ -811,7 +818,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
     def open_sequence(self):
         self.ext_window.show()
-        self.command_tabs.setCurrentWidget(self.sequence_tab)
+        self.command_tabs.setCurrentWidget(self.sequence_page)
         self.sequence_tab.setFocus()
 
     def open_chat(self, prompt=""):
