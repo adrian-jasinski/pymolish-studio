@@ -44,6 +44,29 @@ def test_headless_plugin_load():
         shutil.rmtree(tmp)
 
 
+def test_the_old_pymolish_plugin_does_not_replace_native_commands(capsys):
+    """Its fetch_by_uniprot has no async_, which File > Get by UniProt
+    passes (37a)."""
+    tmp = tempfile.mkdtemp()
+    native = cmd.keyword['fetch_by_uniprot'][0]
+    try:
+        os.mkdir(os.path.join(tmp, 'pymolish'))
+        with open(os.path.join(tmp, 'pymolish', '__init__.py'), 'w') as f:
+            f.write("from pymol import cmd\n"
+                    "def __init_plugin__(app=None):\n"
+                    "    cmd.extend('fetch_by_uniprot', lambda uniprot_id: 1)\n")
+        found = plugins.findPlugins([tmp])
+        info = plugins.PluginInfo('pymolish', found['pymolish'],
+                                  'pymol.plugins.startup.pymolish')
+        assert not info.load() and not info.loaded
+        assert cmd.keyword['fetch_by_uniprot'][0] is native
+        assert 'async_' in native.__code__.co_varnames
+        assert 'part of this program' in capsys.readouterr().out
+    finally:
+        plugins.plugins.pop('pymolish', None)
+        shutil.rmtree(tmp)
+
+
 def test_addmenuitem(request):
     from unittest import mock
 

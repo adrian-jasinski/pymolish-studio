@@ -2,6 +2,23 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-25 pymolish-studio
+
+	* 4.68.1
+
+	* File > Get by UniProt and File > Get Predicted Structure failed
+	  with "fetch_by_uniprot() got an unexpected keyword argument
+	  'async_'" where the old pymolish plugin was installed as a startup
+	  plugin: it registered its own fetch_by_uniprot, fetch_fold,
+	  fetch_uniprot_ligands and load_smiles over the built-in ones, with
+	  other arguments. A startup plugin named "pymolish" is no longer
+	  loaded; a line in the log says so and names its folder. Its
+	  commands are part of this program (docs/commands.md).
+
+	  Tried in the real window with that plugin in the startup path:
+	  before, the error above; now "fetch_by_uniprot P01542, 3, async_=1"
+	  loads three entries in the background.
+
 2026-11-24 pymolish-studio
 
 	* 4.68.0

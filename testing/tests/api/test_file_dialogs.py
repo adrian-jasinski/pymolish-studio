@@ -62,3 +62,23 @@ def test_movie_export_video_is_modal(ray, mode, tmp_path):
     kwargs = parent.cmd.movie.produce.call_args.kwargs
     assert kwargs['mode'] == mode
     assert kwargs['modal'] == 1
+
+
+@pytest.mark.parametrize('action, name', [
+    (file_dialogs.file_fetch_uniprot, 'fetch_by_uniprot'),
+    (file_dialogs.file_fetch_fold, 'fetch_fold'),
+])
+def test_fetch_actions_send_what_the_registered_command_takes(action, name):
+    """The File actions run in the background: the command that holds the
+    name must know async_ (37a: an old plugin had taken the names)."""
+    import inspect
+
+    from pymol import cmd
+
+    parent = mock.Mock()
+    with mock.patch.object(file_dialogs.QtWidgets.QInputDialog, 'getText',
+                           return_value=(' P01542 ', True)):
+        action(parent)
+    sent = parent.cmd.do.call_args[0][0]
+    assert sent == name + ' P01542, async_=1'
+    assert 'async_' in inspect.signature(cmd.keyword[name][0]).parameters

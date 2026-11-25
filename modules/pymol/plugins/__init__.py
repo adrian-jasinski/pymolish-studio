@@ -316,6 +316,15 @@ class PluginInfo(object):
 
         assert not self.is_temporary
 
+        if self.name == 'pymolish':
+            # The plugin this program grew out of. Its commands are built in,
+            # and its older ones would take their names: File > Get by
+            # UniProt then failed with "unexpected keyword argument 'async_'".
+            colorprinting.warning(
+                ' Plugin "pymolish" was not loaded: its commands are part of'
+                ' this program. Remove it from ' + os.path.dirname(self.filename))
+            return False
+
         starttime = time.time()
         verbose = pref_get('verbose', False)
 
