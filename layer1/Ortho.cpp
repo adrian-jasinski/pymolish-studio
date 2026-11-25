@@ -2625,35 +2625,6 @@ void OrthoPasteIn(PyMOLGlobals* G, const char* buffer)
     I->InputFlag = true;
 }
 
-/* TODO: Removed. Check in Mobile PyMOL to see if needed - PYMOL-3148*/
-void OrthoSetBackgroundImage(
-    PyMOLGlobals* G, const char* image_data, int width, int height)
-{
-#if 0
-  COrtho *I = G->Ortho;
-  int buff_total = width * height;  
-  short should_update = 0;
-  if (I->bgData){
-    FreeP(I->bgData);
-    I->bgData = nullptr;
-    I->bgWidth = 0;
-    I->bgHeight = 0;
-    should_update = 1;
-  }
-  if (buff_total){
-    I->bgData = pymol::malloc<unsigned char>(buff_total*4);
-    I->bgWidth = width;
-    I->bgHeight = height;
-    memcpy(I->bgData, image_data, buff_total * 4);
-    should_update = 1;
-  }
-  if (should_update){
-    G->ShaderMgr->Reload_All_Shaders();
-    I->bgTextureNeedsUpdate = true;
-  }
-#endif
-}
-
 void OrthoInvalidateDoDraw(PyMOLGlobals* G)
 {
   COrtho* I = G->Ortho;

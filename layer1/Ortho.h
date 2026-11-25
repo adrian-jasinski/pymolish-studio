@@ -144,7 +144,6 @@ void OrthoBackgroundTextureNeedsUpdate(PyMOLGlobals* G);
 
 std::pair<int, int> OrthoGetBackgroundSize(const COrtho& ortho);
 
-void OrthoSetBackgroundImage(PyMOLGlobals * G, const char *image_data, int width, int height);
 
 bool OrthoBackgroundDataIsSet(const COrtho& ortho);
 std::shared_ptr<pymol::Image> OrthoBackgroundDataGet(const COrtho& ortho);
