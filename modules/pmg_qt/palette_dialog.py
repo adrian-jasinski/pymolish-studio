@@ -29,6 +29,10 @@ class PaletteDialog(QtWidgets.QDialog):
         layout.addLayout(row)
         self.list = QtWidgets.QListWidget()
         self.list.setAccessibleName("Colors, in the order they are given out")
+        # a color is dragged to its place; Up and Down do the same by keys
+        self.list.setDragDropMode(QtWidgets.QAbstractItemView.DragDropMode.InternalMove)
+        self.list.setDefaultDropAction(Qt.DropAction.MoveAction)
+        self.list.setToolTip("Drag a color to change the order")
         row.addWidget(self.list)
         buttons = QtWidgets.QVBoxLayout()
         row.addLayout(buttons)

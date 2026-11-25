@@ -4,6 +4,15 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.72.0
+
+	* In "New palette" and "Edit palette" a color is dragged to another
+	  place in the list with the mouse. The order shown is the order the
+	  objects get the colors in, and it is stored with OK; Cancel leaves
+	  the palette as it was. Up and Down do the same with the keys, as
+	  before. Tried in the real window with a real drag: the first of
+	  five colors went below the fourth.
+
 	* 4.71.0
 
 	* Each of the ten named palettes (vivid, deep, pastel, soft,

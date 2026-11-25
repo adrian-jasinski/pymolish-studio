@@ -385,6 +385,30 @@ def test_user_palette(request):
     dialog._remove()
     assert not ok.isEnabled()
 
+    # 37d: a color is dragged to another place; OK takes the order shown,
+    # and the stored palette changes only then
+    stored = ["111111", "222222", "333333", "444444"]
+    edit = PaletteDialog(None, "mine", stored, taken=palettes.BUILTIN)
+    request.addfinalizer(lambda: shiboken6.delete(edit))
+    View = type(edit.list)
+    assert edit.list.dragDropMode() == View.DragDropMode.InternalMove
+    assert edit.list.defaultDropAction() == QtCore.Qt.DropAction.MoveAction
+
+    def drop(row, before):  # what the list does with a row dropped there
+        root = QtCore.QModelIndex()
+        assert edit.list.model().moveRow(root, row, root, before)
+        return edit.value()[1]
+
+    assert drop(0, 2) == ["222222", "111111", "333333", "444444"]  # the first
+    assert drop(2, 1) == ["222222", "333333", "111111", "444444"]  # a middle one
+    assert drop(3, 0) == ["444444", "222222", "333333", "111111"]  # the last
+    assert drop(0, 4) == ["222222", "333333", "111111", "444444"]  # to the end
+    assert [edit.list.item(i).icon().isNull() for i in range(4)] == [False] * 4
+    assert stored == ["111111", "222222", "333333", "444444"]  # not until OK
+    again = PaletteDialog(None, *edit.value(), taken=palettes.BUILTIN)
+    request.addfinalizer(lambda: shiboken6.delete(again))
+    assert again.value() == ("mine", ["222222", "333333", "111111", "444444"])
+
 
 def test_palette():
     from unittest import mock
