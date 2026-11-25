@@ -284,6 +284,28 @@ def test_background(request):
     assert color("bg_rgb_bottom")[0] == pytest.approx(0xC8 / 255, abs=5e-3)
 
 
+def test_palette_preview_shows_the_first_ten(request):
+    """37c: a palette has thirty colors, its row in the menu shows ten."""
+    from unittest import mock
+    from pymol import palettes
+    from pmg_qt import action_toolbar, theme
+
+    request.addfinalizer(lambda: cmd.palette("default"))
+    with (
+        mock.patch.object(theme, "user_palettes", dict),
+        mock.patch.object(theme, "object_palette", return_value="default"),
+    ):
+        bar = action_toolbar.ActionToolbar(cmd, defaultdict(list))
+    view = bar.palettes
+    row = next(
+        view.item(i) for i in range(view.count()) if view.item(i).data(256) == "nord"
+    )
+    assert row.toolTip() == "30 colors; the first 10 are shown"
+    image = row.icon().pixmap(140, 16).toImage()
+    shown = [image.pixelColor(14 * i + 6, 8).name()[1:] for i in range(10)]
+    assert shown == palettes.PALETTES["nord"][1][:10]
+
+
 def test_user_palette(request):
     from unittest import mock
     from pymol import CmdException, palettes

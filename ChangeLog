@@ -4,6 +4,26 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.71.0
+
+	* Each of the ten named palettes (vivid, deep, pastel, soft,
+	  colorblind, nord, dracula, catppuccin, chimerax, halo) now has 30
+	  colors, so 30 objects or chains get 30 colors before the first one
+	  comes again. They had 7 to 22. The colors a palette had keep their
+	  value and their place, the new ones follow them: <name>_22 and up
+	  for vivid, <name>_08 and up for dracula, and so on. The palette
+	  menu shows the first ten of each, as before; a tooltip gives the
+	  number. "PyMOL default" and the palettes of the user are unchanged.
+
+	  The added colors were computed, not taken from the palettes'
+	  sources: in OKLCH, inside each palette's own range of lightness and
+	  chroma, each the farthest from the colors already in the palette,
+	  with a contrast of at least 3 to the background the palette is
+	  made for, ordered so that neighbors differ. With 30 colors some
+	  pairs are close, and they were not tested for color-vision
+	  deficiencies: of "colorblind" only the first seven (Okabe-Ito)
+	  are designed as one set, as before.
+
 	* 4.70.0
 
 	* Rows of the Objects list are moved with the right mouse button:

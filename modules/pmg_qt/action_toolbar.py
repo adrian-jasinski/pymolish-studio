@@ -499,6 +499,10 @@ class ActionToolbar(QtWidgets.QToolBar):
                 ]
                 item = QtWidgets.QListWidgetItem(_strip(strip), label, view)
                 item.setData(Qt.ItemDataRole.UserRole, name)
+                if len(colors) > len(strip):
+                    item.setToolTip(
+                        "%d colors; the first %d are shown" % (len(colors), len(strip))
+                    )
         view.setFixedSize(
             view.sizeHintForColumn(0) + 4,
             (view.sizeHintForRow(0) + 4) * view.count(),  # 4: the spacing
