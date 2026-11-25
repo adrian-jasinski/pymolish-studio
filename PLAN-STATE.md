@@ -2,7 +2,7 @@
 
 [Back to the roadmap](PLAN.md).
 
-**Shipped state, checked 2026-11-25: 4.79.0.** Built since 4.19.43,
+**Shipped state, checked 2026-11-25: 4.80.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
@@ -53,13 +53,15 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.77.1 | No feature: `safe_eval` (the reader of vectors and color lists given as text) no longer runs Python. |
 | 4.78.0 | The model runs 286 of the 504 commands it finds, before 88: measurements, labels, spectrum, presets, groups, maps, movie frames without a question; builder, fit, split and file commands with one. |
 | 4.79.0 | A switch "Run without asking" in the Chat tab, off at every start: while it is on, the model and the agents on the connector run every reviewed command, and Python with "Trusted Python" ticked, without the question. It replaces "Download without asking" (4.77.0). |
+| 4.80.0 | The provider "OpenAI" of the Chat tab has the button "Continue with ChatGPT" next to its field for an API key; while signed in the ChatGPT plan is used and the key field is hidden. The entry "ChatGPT" left the list of providers. The sign-in is that of 4.66.0: stand-in tests only, no real sign-in yet. |
 
 Of the ten features requested on 2026-11-20, nine have a working version.
 The tenth, the surface looks, waits for the judgment of the grid surface of 1b
 (4.76.0, question 105). Steps 19, 20,
 26, 29 and 32 are finished. Of the eleven drafts of 2026-11-23, all eleven have a working version;
 the chat (31a, 31c) shipped in 4.58.0, its external connector 31b in 4.61.0,
-the sign-in in the browser 31d in 4.66.0, the provider "Claude Code" in
+the sign-in in the browser 31d in 4.66.0 (its ChatGPT half sits in the
+provider "OpenAI" since 4.80.0), the provider "Claude Code" in
 4.68.0. Only that last one was tried with a real account (two turns on
 the user's Team plan); the other providers saw no paid request and no
 real sign-in by this program itself: the live trial is order 2.

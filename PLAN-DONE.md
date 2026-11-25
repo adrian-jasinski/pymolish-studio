@@ -62,6 +62,24 @@ option. Say so if another one is wanted:
 | 103 | The three lists of the Sequence tab have a word before each (Mode, Labels, Gaps) and no key of their own: Tab reaches them. | 4.74.0. | `Options` in `sequence_tab.py`. |
 | 104 | A−, A+ and Reset change the text by one point per click, between 6 and 40 points, and keep the difference to the start size of each tab, so every widget keeps its font and its distance to the others. | 4.75.0. | `TabFontButtons` in `pymol_qt_gui.py`; the keys `fonts/<tab>` in the settings. |
 
+Decided by the user on 2026-11-25, in the run of 4.80.0, on the request
+"add OAuth option to other chats like OpenAI like current claude code
+option". The Chat tab had the sign-in to ChatGPT since 4.66.0, as an
+entry of its own.
+
+| Question | Decision | State |
+| --- | --- | --- |
+| 112 | Option C: no new provider; the entry "OpenAI" gets the button "Continue with ChatGPT" next to its key field and the entry "ChatGPT" goes away. Recommended was A, a provider "Codex" that runs the conversation through the installed Codex and its own sign-in, as "Claude Code" does; B was A and the same for the Gemini CLI. | 4.80.0. `_plan` and `_route` in `modules/pmg_qt/chat_panel.py`. A and B are not built; they are listed under the small things in [PLAN.md](PLAN.md). |
+
+Chosen while building 4.80.0, without asking, each the smaller option.
+Say so if another one is wanted. Choice 76 (the sign-in row "for ChatGPT
+and OpenRouter only") now reads: for OpenAI and OpenRouter.
+
+| No. | Choice | Built | To change it |
+| --- | --- | --- | --- |
+| 113 | While signed in to ChatGPT the plan is used and the key field is hidden, also when `OPENAI_API_KEY` is set; "Sign out" brings the key back. The other way: a switch between plan and key. | 4.80.0. | `_route` and the line `self.key.setVisible` in `chat_panel.py`. |
+| 114 | "ChatGPT" stays the name of the route in `assistant.ROUTES`, of the keychain entry and of the setting `chat/model/ChatGPT`, so a sign-in kept before 4.80.0 and its model carry over, and the models of the plan and of the key are remembered apart. A saved choice of "ChatGPT" opens "OpenAI". | 4.80.0. | The list of the box `provider` in `chat_panel.py` leaves that one name out. |
+
 Decided by the user on 2026-11-25, in the run of 4.79.0 (the switch
 "Run without asking"). They change decision 43 (a question before file,
 network and destructive actions, and before Python) and replace the
@@ -374,6 +392,7 @@ Steps 1, 8, 15, 21, 25, 27 and 31 stay in the roadmap.
 These parts of them have shipped. The rows of steps 3, 11, 17, 18, 19, 20, 22, 26,
 23, 24, 28, 30, 32, 34, 35, 36 and 37, which are finished, are kept here as the record of
 their milestones. The rows are not in order of time: the newest, the
+ChatGPT sign-in inside "OpenAI" (4.80.0), the
 switch "Run without asking" (4.79.0), the
 commands of the chat (4.77.0 to 4.78.0), the
 grid surface (4.76.0) and the
@@ -390,6 +409,7 @@ the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
+| 31 | The ChatGPT sign-in inside "OpenAI" (a request, not a plan slice) | Done 2026-11-25 (4.80.0): [docs/plans/31-ai-agents.md](docs/plans/31-ai-agents.md). In `chat_panel.py` the list of providers leaves "ChatGPT" out; `_plan` names the sign-in of the chosen entry (for "OpenAI" the ChatGPT plan) and `_route` who gets the conversation (the plan while signed in to it, else the key). `signin.py` and the routes of `assistant.py` are unchanged. A failed sign-in no longer resets the model field. Measured without a window (Qt platform "offscreen"): the smallest width of the tab is 565 px for "OpenAI" before a sign-in, as for "Anthropic", and 731 px signed in with an e-mail address of 19 characters, the same as the former entry "ChatGPT" had; Tab reaches the key field, the button and "Stay signed in" in that order. One test more and one extended in `api/signin.py` (20 now); the suite: 1174 passed, 250 skipped. Differs from the plan: 31d named a provider per sign-in; the user chose one entry for both ways in (question 112). No real sign-in to ChatGPT was made (order 2), and no real window was opened in this run. |
 | 31 | The commands the model may run (a request, not a plan slice) | Done 2026-11-25 (4.77.0, 4.77.1, 4.78.0): [docs/plans/31-ai-agents.md](docs/plans/31-ai-agents.md). 4.77.0: the four UniProt and fold commands are reviewed; `fetch_by_uniprot` and `fetch_uniprot_ligands` above ten entries go through `cmd.async_`; the switch "Download without asking". Real window: 12 entries of P00533 with the switch on, no question, the call back in 0.01 s, the group complete after 4.2 s, longest pause of the window 0.17 s; the tab's smallest width 565 px with and without the switch. 4.77.1: `safe_eval` parses first and lets constants, names, containers and + - / through; before, an attribute walk reached `os` from `set_color` in the chat. 4.78.0: 198 of the 416 other commands added after a source scan and a reading of each one with Python logic, 286 of 504 in all; arguments that reach Python or a file are checked in `_policy` (`label`, `spectrum`, `fab`, `fragment`, `load_files`, `set_bond`, `png`, `REFUSED`). 18 tests more, all in `api/agent.py` (30 now); the two of `api/constants.py` were extended. Differs from the plan of 31: the plan asked a question for every network action; the list of entries asks none and the switch can turn the question for downloads off (choice 108). |
 | 31 | "Run without asking" (a request, not a plan slice) | Done 2026-11-25 (4.79.0): one check box in the Chat tab, off at every start, in place of "Download without asking". `Executor.unasked` skips the question for every reviewed command and, with "Trusted Python", for Python; the Chat tab sets it on its own executor and on the connector's. Real window: the box is off at the start and reached by Tab; with it off a `delete` through the connector asked once and was declined; with it on the same call ran with no question and the turn kept its Undo snapshot; with "Trusted Python" ticked too, Python ran with no question. One test more in `api/agent.py` (31 now); the suite: 1173 passed, 250 skipped. Differs from the plan of 31 and from decision 43: the plan asked a question for every file, network and destructive action and for all Python; the user can now turn that off for a run (choices 109 to 111). |
 | 1 | 1b — the grid surface, an experiment | Done 2026-11-25 (4.76.0): [docs/plans/01-performance-gpu.md](docs/plans/01-performance-gpu.md). `surface_type 7`: `SurfaceJobRunGrid` in `layer2/RepSurface.cpp` fills a grid with the distance to the atoms enlarged by the probe, takes the surface of the probe center with the marching cubes of `layer0/marching_cubes.cpp`, fills a second grid with the distance to it and cuts that one probe radius inside. The result uses the arrays of the triangulated dots, so drawing, colors and ray tracing are shared. Cells of two point separations (1 A at `surface_quality` 0). Fastest build, triangles, peak memory: 1aon 1.67 s, 924,276, 2,570 MB against 5.18 s, 905,146, 2,648 MB; 4v6x 9.41 s, 3,919,688, 10,173 MB against 34.31 s, 3,886,165, 9,983 MB. With cells of 0.5 A: 1aon 9.67 s, 3,992,212, 10,263 MB. With a probe of 3 A today's surface gets coarse and is the faster one (1aon 1.16 s and 195,556 triangles against 1.38 s and 668,588). 2 tests (`api/surface_grid.py`); the suite 1122 passed, 251 skipped. Pictures: `docs/img/grid-surface-1aon.jpg`, `grid-surface-4v6x.jpg`. Differs from the plan: no smoothness setting of its own, `solvent_radius` is that value; no ray times in the table (they drifted from 4.6 to 15.6 s for both surfaces as the laptop got warm; one cool pair gave 4.05 and 4.08 s); memory and ray time are not better, since they follow the triangles. Left out: carving, cavities, `surface_solvent`, trimming, frame times. |

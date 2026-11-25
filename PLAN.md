@@ -144,6 +144,15 @@ ticked Python runs without the question too. "Download without asking"
 (4.77.0) is gone, the new switch covers it. Choices 109 to 111 were asked
 and answered in the run.
 
+Built 2026-11-25, 4.80.0, from the request "add OAuth option to other
+chats like OpenAI like current claude code option": the provider "OpenAI"
+of the Chat tab has the button "Continue with ChatGPT" next to its field
+for an API key, and the entry "ChatGPT" left the list. It is the sign-in
+of 4.66.0, moved; no new sign-in was built. Three options were offered
+(question 112); the user chose this one, recommended was a provider
+"Codex" that works like "Claude Code". Two choices were made while
+building (113 and 114). Still no real sign-in to ChatGPT was made: order 2.
+
 See [Shipped state](PLAN-STATE.md) for the shipped versions and their summary.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
@@ -166,7 +175,7 @@ implementation task/PR, with an `X` feature or `Y` fix version under
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
 | 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Needs the pushed branch: the last CI run is older than the repair. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
-| 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; one real sign-in and one conversation each with ChatGPT and with OpenRouter (31d, shipped in 4.66.0 on stand-ins), which needs the user's accounts; for the provider "Claude Code" (4.68.0, two turns tried on WSLg with a Team plan) the same five tasks, the button "Continue with Claude Code" with a signed-out Claude Code, and one turn on Windows or macOS; and one call through the connector from Codex, whose account had no credits on 2026-11-24. | Live trial recorded for Anthropic, OpenAI and Claude Code; a sign-in and a conversation recorded for ChatGPT, OpenRouter and Claude Code, on WSL and on one other system; one Codex call through the connector. |
+| 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; one real sign-in and one conversation each with ChatGPT (since 4.80.0 the button of the provider "OpenAI") and with OpenRouter (31d, shipped in 4.66.0 on stand-ins), which needs the user's accounts; for the provider "Claude Code" (4.68.0, two turns tried on WSLg with a Team plan) the same five tasks, the button "Continue with Claude Code" with a signed-out Claude Code, and one turn on Windows or macOS; and one call through the connector from Codex, whose account had no credits on 2026-11-24. | Live trial recorded for Anthropic, OpenAI and Claude Code; a sign-in and a conversation recorded for ChatGPT, OpenRouter and Claude Code, on WSL and on one other system; one Codex call through the connector. |
 | 3 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan with the result of the grid surface experiment (4.76.0: times and pictures are there). Waits for the user's judgment of it, question 105; no new surface-look setting before that. | New detailed section grounded in the experiment. |
 | 4 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. A second pass over the texture that FXAA reads since 4.65.0 (`SceneRenderAA`, `fxaa.fs`). | Frame times and pictures on black/white. |
 | 5 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. | Real-window responsiveness, suite and sanitizer checks. |
@@ -251,7 +260,8 @@ to 4.75.0); they are in [PLAN-DONE.md](PLAN-DONE.md). So are 107 and 108
 question for downloads off), asked and answered in the run of 4.77.0,
 and 109 to 111 ("Run without asking": commands and Python, in place of
 the download switch, off at every start), asked and answered in the run
-of 4.79.0.
+of 4.79.0, and 112 (the ChatGPT sign-in inside the provider "OpenAI"),
+asked and answered in the run of 4.80.0.
 
 Seven choices were made while building 4.68.1 to 4.75.0 (98 to 104),
 each the smaller option; they are listed in PLAN-DONE.md with what it
@@ -348,7 +358,13 @@ colors for color-vision deficiencies. From 4.76.0, the grid surface:
 carving, cavity culling and cavity mode, `surface_solvent` and trimming;
 strips longer than one triangle; a grid in blocks instead of one over the
 whole box (above 67 million cells the cells grow); frame times in the
-viewport; ray times on a cool machine.
+viewport; ray times on a cool machine. From 4.80.0: a provider "Codex"
+that runs the conversation through the installed Codex and its own
+sign-in, as "Claude Code" does (option A of question 112; Codex 0.163.0
+is installed and signed in on this machine, and its shell tool can only
+be put into the read-only sandbox, not switched off), the same for the
+Gemini CLI (option B; not installed here), and a way to use the API key
+while signed in to ChatGPT (today: Sign out).
 
 The user's to do:
 
@@ -367,12 +383,12 @@ The user's to do:
 - Try the drag with the right button (4.70.0) once on Windows and on
   macOS: there the system asks for the menu when the button is released,
   on Linux when it is pressed. Both are handled; only Linux was tried.
-- Push `feature13` again. Checked 2026-11-25 after 4.79.0:
+- Push `feature13` again. Checked 2026-11-25 after 4.80.0:
   `origin/feature13` is at the plan commit of 4.76.14 (`5101e943`), so
   what was listed here before is pushed, and pull request #11 ("Feature13")
-  is open. Including this plan commit the branch is 7 commits ahead:
-  4.77.0, 4.77.1, 4.78.0, 4.79.0 and three plan commits. No push or merge
-  was performed in this run.
+  is open. Including this plan commit the branch is 10 commits ahead:
+  4.77.0, 4.77.1, 4.78.0, 4.79.0, 4.79.1, 4.80.0 and four plan commits.
+  No push or merge was performed in this run.
 - After the push, read the CI run first for step 8: 4.76.1 to 4.76.14
   changed 60 files of the core and were compiled with GCC 13 on Linux
   only. The Windows (MSVC), macOS (Apple Clang) and `sanitize-Linux` (GCC
@@ -398,8 +414,9 @@ The user's to do:
 - Try the Chat tab with your own Anthropic and OpenAI keys and a model
   ID each (`pip install 'pymolish[ai]'`): no request was ever sent by the
   Chat tab itself.
-- Sign in once with each new provider of the Chat tab (4.66.0): choose
-  ChatGPT, then "Continue with ChatGPT"; choose OpenRouter, then "Continue
+- Sign in once with each sign-in of the Chat tab (4.66.0): choose
+  OpenAI, then "Continue with ChatGPT" (since 4.80.0 the button is in that
+  entry; "ChatGPT" is no entry any more); choose OpenRouter, then "Continue
   with OpenRouter"; send one request each. No real sign-in was made: the
   code follows the two published flows, and OpenAI's server took the first
   request up to its log-in page. Three things only a real try shows:

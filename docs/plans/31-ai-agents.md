@@ -1,5 +1,27 @@
 # 31 — Chat that controls this version of pymolish
 
+**Built 2026-11-25 in 4.80.0: the ChatGPT sign-in is part of the provider
+"OpenAI".** The entry "OpenAI" of the Chat tab shows its field for an API
+key and the button "Continue with ChatGPT"; while signed in, the key
+field is hidden, requests go over the plan route and the models of the
+account are listed. The entry "ChatGPT" left the list (question 112: the
+user chose this; recommended was a provider "Codex"). Only
+`chat_panel.py` changed: `signin.py` and the routes of `assistant.py`
+are those of 4.66.0, and "ChatGPT" stays the name of the route, of the
+keychain entry and of the saved model (choices 113 and 114).
+
+Measured, without a window (Qt platform "offscreen"): the smallest width
+of the tab is 565 px for "OpenAI" before a sign-in, as for "Anthropic",
+and 731 px signed in with an e-mail address of 19 characters, as the
+former entry "ChatGPT" had. 20 tests in `api/signin.py`; the suite: 1174
+passed, 250 skipped.
+
+Left out: a real sign-in to ChatGPT (still order 2 of the roadmap) and a
+look at the row in the real window; a provider "Codex" through the
+installed Codex, and one for the Gemini CLI; the API key while signed in
+(today: Sign out). The paragraphs below describe the entry "ChatGPT" as
+it was built.
+
 **Built 2026-11-25 in 4.79.0: the switch "Run without asking".** A check
 box in the Chat tab, off at every start, that holds for the model of the
 tab and for the agents on the connector. While it is on, no reviewed
