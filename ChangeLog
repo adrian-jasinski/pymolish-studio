@@ -4,6 +4,34 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.81.0
+
+	* Surface
+	  - New row "Solid (grid)" in Setting > Surface: the grid surface
+	    of 4.76.0 (surface_type 7). "Solid" stays the default.
+	  - The grid surface follows the settings it ignored before:
+	    cavity_cull (on by default: a closed cavity under 25 A3, the
+	    room of one water, is not drawn), surface_cavity_mode 1 and 2
+	    with surface_cavity_radius and surface_cavity_cutoff ("Cavities
+	    and Pockets Only", "Culled"), and surface_solvent ("Solvent
+	    Accessible"). Carving (surface_carve_selection and
+	    surface_carve_cutoff) worked already and has a test now. It
+	    follows what the settings mean, not the dots one by one: 2rh1
+	    keeps 5 closed cavities where the dots keep 7, 4hhb 9 where
+	    they keep 8; with "Cavities and Pockets Only" it draws 71 %
+	    (2rh1) and 74 % (4hhb) of the area the dots draw, in the same
+	    places. Not followed: surface_trim_cutoff and
+	    surface_trim_factor, which repair folds a grid does not make.
+	  - A session saved with surface_type 7 and the default cavity_cull
+	    shows fewer small closed cavities than in 4.76.0 to 4.80.0;
+	    "set cavity_cull, 0" gives the old picture.
+	  - 1aon, fastest of two builds: 1.67 s with culling (914,220
+	    triangles; 1.70 s and 924,276 without), "Cavities and Pockets
+	    (Culled)" 0.80 s (the dots: 5.95 s), "Solvent Accessible"
+	    1.31 s; the surface of dots 5.46 s.
+
+2026-11-25 pymolish-studio
+
 	* 4.80.0
 
 	* Chat

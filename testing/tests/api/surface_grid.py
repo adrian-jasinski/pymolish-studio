@@ -1,7 +1,8 @@
 """
-The grid surface (surface_type 7, an experiment of plan 1b): the molecular
-surface from two distance grids and marching cubes. It must lie where the
-surface of triangulated dots lies.
+The grid surface (surface_type 7, plan 1b; "Solid (grid)" in Setting >
+Surface): the molecular surface from two distance grids and marching cubes.
+It must lie where the surface of triangulated dots lies, with the settings
+of a surface too.
 """
 
 import re
@@ -86,4 +87,61 @@ def test_follows_probe_quality_and_what_is_shown(peptide):
     # shown, so its points are other points of that surface
     assert apart(part, grid).max() < 1.0
     cmd.hide("surface")
+    assert vertices(7)[1] == 0
+
+
+def test_carving_and_the_solvent_surface_follow_the_dots(peptide):
+    whole, triangles = vertices(7)
+    cmd.select("site", "resi 3")
+    cmd.set("surface_carve_selection", "site")
+    cmd.set("surface_carve_cutoff", 5.0)
+    dots, grid = vertices(0)[0], vertices(7)
+    assert 0 < grid[1] < triangles / 2  # only what lies near residue 3
+    assert apart(grid[0], dots).max() < 1.5 and apart(dots, grid[0]).max() < 1.5
+    cmd.set("surface_carve_cutoff", 0)
+
+    cmd.set("surface_solvent", 1)  # where the center of the probe gets to
+    dots, grid = vertices(0)[0], vertices(7)[0]
+    assert apart(grid, dots).max() < 1.5 and apart(dots, grid).max() < 1.5
+    gap = apart(grid, whole)
+    assert 1.0 < gap.mean() < 1.8, gap.mean()  # a probe radius farther out
+
+
+@pytest.fixture
+def shell():
+    """A hollow ball of 70 atoms: a closed cavity of about 180 A3."""
+    turn = numpy.pi * (3 - 5**0.5)
+    for i in range(70):
+        z = 1 - 2 * (i + 0.5) / 70
+        r = (1 - z * z) ** 0.5
+        place = 5.5 * numpy.array([r * numpy.cos(i * turn), r * numpy.sin(i * turn), z])
+        cmd.pseudoatom("m", pos=place.tolist(), vdw=2.0)
+    cmd.set("surface_mode", 1)  # pseudoatoms count
+    cmd.hide("everything")
+    cmd.show("surface")
+    cmd.orient()
+
+
+def test_closed_cavities_are_culled_or_shown_alone(shell):
+    cmd.set("cavity_cull", 0)
+    both, triangles = vertices(7)  # the ball and the cavity in it
+    cmd.set("cavity_cull", 10)  # 25 A3: this cavity is larger and stays
+    assert vertices(7)[1] == triangles
+    cmd.set("cavity_cull", 100)  # 250 A3: it goes
+    ball, ball_triangles = vertices(7)
+    cavity_triangles = triangles - ball_triangles
+    assert 0.05 * triangles < cavity_triangles < 0.3 * triangles
+    assert numpy.all(apart(ball, both) == 0)  # the ball itself is untouched
+
+    cmd.set("cavity_cull", 0)
+    cmd.set("surface_cavity_cutoff", -2)
+    cmd.set("surface_cavity_mode", 1)  # cavities and pockets only
+    cavity, found = vertices(7)
+    assert found == cavity_triangles
+    assert apart(cavity, ball).min() > 3  # the other side of a wall of 4 A
+    dots = vertices(0)[0]
+    assert apart(cavity, dots).max() < 1.5 and apart(dots, cavity).max() < 1.5
+    cmd.set("surface_cavity_mode", 2)  # the same, culled
+    assert vertices(7)[1] == found
+    cmd.set("cavity_cull", 100)
     assert vertices(7)[1] == 0

@@ -3841,6 +3841,113 @@ static void GridFieldMinDistance(GridField& field, const float* centers,
   }
 }
 
+/// The value at a place inside the grid, between its cells.
+static float GridFieldAt(const GridField& field, const float* place)
+{
+  size_t at[3];
+  float part[3];
+  for (int i = 0; i < 3; ++i) {
+    float cell = std::clamp(
+        (place[i] - field.origin[i]) / field.h, 0.f, field.n[i] - 1.001f);
+    at[i] = static_cast<size_t>(cell);
+    part[i] = cell - at[i];
+  }
+  float value = 0.f;
+  for (int corner = 0; corner < 8; ++corner) {
+    float weight = 1.f;
+    size_t cell[3];
+    for (int i = 0; i < 3; ++i) {
+      bool far = corner >> i & 1;
+      cell[i] = at[i] + far;
+      weight *= far ? part[i] : 1.f - part[i];
+    }
+    value += weight * field.get(cell[0], cell[1], cell[2]);
+  }
+  return value;
+}
+
+/**
+ * Closes the small holes of a field: the cells below zero that cell 0 does
+ * not reach through cells below zero, in groups of up to `limit` cells, are
+ * set above zero. No outermost cell of the grid may belong to a hole.
+ */
+static void GridFieldFillHoles(GridField& field, size_t limit)
+{
+  auto const cells = field.data.size();
+  const size_t step[3] = {1, field.n[0], field.n[0] * field.n[1]};
+  std::vector<char> seen(cells);
+  std::vector<size_t> open, group;
+  // all cells joined to `first`; the first `limit` + 1 of them into group
+  auto flood = [&](size_t first) {
+    group.clear();
+    open.assign(1, first);
+    seen[first] = true;
+    while (!open.empty()) {
+      size_t c = open.back();
+      open.pop_back();
+      if (group.size() <= limit)
+        group.push_back(c);
+      // a step off the end of a row lands on the outermost cells of the
+      // next one, and those are no hole
+      for (size_t s : step)
+        for (size_t n : {c - s, c + s})
+          if (n < cells && !seen[n] && field.data[n] < 0.f) {
+            seen[n] = true;
+            open.push_back(n);
+          }
+    }
+  };
+  flood(0);
+  for (size_t c = 0; c < cells; ++c) {
+    if (seen[c] || !(field.data[c] < 0.f))
+      continue;
+    flood(c);
+    if (group.size() <= limit)
+      for (size_t filled : group)
+        field.data[filled] = FLT_EPSILON;
+  }
+}
+
+/**
+ * For surface_cavity_mode: which places of the probe center lie in a pocket
+ * or a cavity, farther than `cutoff` from every place where the center of a
+ * probe of `radius` fits. As the surface of dots decides it, but on a grid
+ * of cells that are coarse (2 A at the default radius of 7 A).
+ *
+ * @param places xyz of n places
+ * @return per place: is it in a pocket
+ */
+static std::vector<char> GridPockets(const float* centers, const float* radii,
+    size_t n_centers, const float* lo, const float* hi, float max_vdw,
+    float radius, float cutoff, const float* places, size_t n)
+{
+  GridField large; // the distance to the atoms enlarged by the large probe
+  large.h = std::max(1.f, radius / 3.5f);
+  size_t cells = 1;
+  for (int i = 0; i < 3; ++i) {
+    float margin = max_vdw + radius + 3 * large.h;
+    large.origin[i] = lo[i] - margin;
+    large.n[i] =
+        static_cast<size_t>((hi[i] - lo[i] + 2 * margin) / large.h) + 2;
+    cells *= large.n[i];
+  }
+  large.data.assign(cells, large.h);
+  GridFieldMinDistance(large, centers, n_centers, radii, radius, large.h);
+  auto fits = mc::march(large, 0.f, false);
+
+  // the distance to the places where the large probe's center fits
+  GridField& open = large;
+  open.data.assign(cells, cutoff + open.h);
+  if (fits.vertexCount)
+    GridFieldMinDistance(open, &fits.vertices[0].x, fits.vertexCount, nullptr,
+        0.f, cutoff + open.h);
+  std::vector<char> pocket(n);
+#pragma omp parallel for
+  for (ptrdiff_t p = 0; p < static_cast<ptrdiff_t>(n); ++p)
+    pocket[p] = GridFieldAt(open, places + 3 * p) > cutoff;
+  return pocket;
+}
+
 /**
  * The solvent excluded surface from two distance grids and marching cubes
  * (surface_type 7), after the method ChimeraX describes: the surface the
@@ -3848,16 +3955,26 @@ static void GridFieldMinDistance(GridField& field, const float* centers,
  * by the probe, is zero; the molecular surface is what lies one probe
  * radius inside of that. Every step is a loop over grid planes.
  *
- * ponytail: an experiment (docs/plans/01-performance-gpu.md). Unlike the
- * surface of triangulated dots it has no carving (surface_carve_*), no
- * cavity culling or cavity mode, no surface_solvent and no trimming, and it
- * gives the drawing code strips of one triangle each. The grid covers the
- * whole box: above GRID_CELLS the cells get larger. If the surface stays:
- * those settings, longer strips, and a grid in blocks.
+ * Carving is done by the caller, as for every type. cavity_cull,
+ * surface_cavity_mode and surface_solvent are followed here, by what they
+ * mean and not dot for dot: see CULL_VOLUME and GridPockets. With a cavity
+ * mode the surface is that of the probe in the places GridPockets keeps,
+ * as far as it lies at the atoms: the walls of a pocket and a rim.
+ *
+ * ponytail: unlike the surface of triangulated dots it has no trimming
+ * (surface_trim_*: the grid has no folds to trim), and it gives the
+ * drawing code strips of one triangle each. The grid covers the whole box:
+ * above GRID_CELLS the cells get larger. Upgrades when a profile asks for
+ * them (docs/plans/01-performance-gpu.md): longer strips, a grid in blocks.
  */
 static int SurfaceJobRunGrid(PyMOLGlobals* G, SurfaceJob* I)
 {
   const size_t GRID_CELLS = size_t(1) << 26; // two grids of 256 MB
+  // cavity_cull counts dots; here a closed cavity goes when it is smaller
+  // than this, in cubic Angstrom per count. With the default of 10 that is
+  // 25: the cavity of one water (12 to 16) goes, that of two stays, which
+  // came closest to what the dots leave of 2rh1 and 4hhb.
+  const float CULL_VOLUME = 2.5f;
   auto const n_atom = I->atomInfo.size();
   const int* present = I->presentVla.empty() ? nullptr : I->presentVla.data();
 
@@ -3917,53 +4034,114 @@ static int SurfaceJobRunGrid(PyMOLGlobals* G, SurfaceJob* I)
   if (G->Interrupt)
     return false;
   OrthoBusyFast(G, 1, 5);
-  // the places of the probe center: the vertices of that surface
-  auto reach = mc::march(sas, 0.f, false);
-  if (G->Interrupt)
-    return false;
-  OrthoBusyFast(G, 2, 5);
-
-  // 2: inside it, the distance to those places, less the probe radius:
-  // positive in the molecule, zero on its surface. Outside it the first
-  // distance goes on, so the field has no step at the probe's surface.
-  GridField ses;
-  std::copy_n(sas.n, 3, ses.n);
-  std::copy_n(sas.origin, 3, ses.origin);
-  ses.h = sas.h;
-  ses.data.assign(cells, probe + band);
-  GridFieldMinDistance(ses, &reach.vertices[0].x, reach.vertexCount, nullptr,
-      0.f, probe + band);
-  reach = {};
+  mc::Mesh mesh;
+  std::vector<char> shown;
+  float cavity_radius = I->cavityRadius, cavity_cutoff = I->cavityCutoff;
+  if (cavity_radius < 0.f) // in probe radii, as SolventDotNew reads them
+    cavity_radius *= -probe;
+  if (cavity_cutoff < 0.f)
+    cavity_cutoff = cavity_radius - cavity_cutoff * probe;
+  auto pockets = [&](const mc::Point* places, size_t n) {
+    return GridPockets(centers.data(), radii.data(), radii.size(), lo, hi,
+        max_vdw, cavity_radius, cavity_cutoff, &places[0].x, n);
+  };
+  if (I->surfaceSolvent) {
+    // the surface of the probe center itself: above zero inside, as below
 #pragma omp parallel for
-  for (int k = 0; k < static_cast<int>(ses.n[2]); ++k) {
-    auto const plane = ses.n[0] * ses.n[1];
-    float* out = ses.data.data() + k * plane;
-    const float* outside = sas.data.data() + k * plane;
-    for (size_t c = 0; c < plane; ++c)
-      out[c] = outside[c] < 0.f ? out[c] - probe : -(outside[c] + probe);
+    for (ptrdiff_t c = 0; c < static_cast<ptrdiff_t>(cells); ++c)
+      sas.data[c] = -sas.data[c];
+    mesh = mc::march(sas, 0.f, true);
+    if (I->cavityMode && mesh.vertexCount)
+      shown = pockets(mesh.vertices.get(), mesh.vertexCount);
+  } else {
+    // the places of the probe center: the vertices of that surface
+    auto reach = mc::march(sas, 0.f, false);
+    if (I->cavityMode && reach.vertexCount) { // only those in a pocket
+      auto pocket = pockets(reach.vertices.get(), reach.vertexCount);
+      size_t kept = 0;
+      for (size_t v = 0; v < reach.vertexCount; ++v)
+        if (pocket[v])
+          reach.vertices[kept++] = reach.vertices[v];
+      reach.vertexCount = kept;
+    }
+    if (G->Interrupt)
+      return false;
+    OrthoBusyFast(G, 2, 5);
+
+    // 2: inside it, the distance to those places, less the probe radius:
+    // positive in the molecule, zero on its surface. Outside it the first
+    // distance goes on, so the field has no step at the probe's surface.
+    GridField ses;
+    std::copy_n(sas.n, 3, ses.n);
+    std::copy_n(sas.origin, 3, ses.origin);
+    ses.h = sas.h;
+    ses.data.assign(cells, probe + band);
+    if (reach.vertexCount)
+      GridFieldMinDistance(ses, &reach.vertices[0].x, reach.vertexCount,
+          nullptr, 0.f, probe + band);
+    reach = {};
+    const bool whole = !I->cavityMode; // else the probe's own surface
+#pragma omp parallel for
+    for (int k = 0; k < static_cast<int>(ses.n[2]); ++k) {
+      auto const plane = ses.n[0] * ses.n[1];
+      float* out = ses.data.data() + k * plane;
+      const float* outside = sas.data.data() + k * plane;
+      for (size_t c = 0; c < plane; ++c)
+        out[c] = outside[c] < 0.f || !whole ? out[c] - probe
+                                            : -(outside[c] + probe);
+    }
+    if (I->cavityMode != 1 && I->cavityCull > 0 &&
+        I->probeRadius > 0.75f) // as SolventDotNew asks
+      GridFieldFillHoles(ses, static_cast<size_t>(I->cavityCull * CULL_VOLUME /
+                                                  (ses.h * ses.h * ses.h)));
+    if (G->Interrupt)
+      return false;
+    OrthoBusyFast(G, 3, 5);
+    mesh = mc::march(ses, 0.f, true);
+    if (I->cavityMode) { // not where the probe faces the open
+      shown.resize(mesh.vertexCount);
+#pragma omp parallel for
+      for (ptrdiff_t v = 0; v < static_cast<ptrdiff_t>(mesh.vertexCount); ++v)
+        shown[v] = GridFieldAt(sas, &mesh.vertices[v].x) < 0.f;
+    }
   }
-  sas.data = {};
-  if (G->Interrupt)
-    return false;
-  OrthoBusyFast(G, 3, 5);
-  auto mesh = mc::march(ses, 0.f, true);
   if (G->Interrupt || !mesh.vertexCount || mesh.faceCount > INT_MAX / 4)
     return !G->Interrupt;
 
-  I->N = static_cast<int>(mesh.vertexCount);
-  I->NT = static_cast<int>(mesh.faceCount);
-  I->V.assign(&mesh.vertices[0].x, &mesh.vertices[0].x + 3 * I->N);
-  I->VN.assign(&mesh.normals[0].x, &mesh.normals[0].x + 3 * I->N);
-  I->T.resize(3 * I->NT);
-  I->S.resize(4 * static_cast<size_t>(I->NT) + 1);
-  for (int t = 0; t < I->NT; ++t) {
-    I->S[4 * t] = 1; // a strip of one triangle
+  shown.resize(mesh.vertexCount, true);
+  std::vector<int> index(mesh.vertexCount, -1);
+  I->V.clear();
+  I->VN.clear();
+  if (!I->cavityMode) { // else most of it goes
+    I->V.reserve(3 * mesh.vertexCount);
+    I->VN.reserve(3 * mesh.vertexCount);
+    I->T.reserve(3 * mesh.faceCount);
+    I->S.reserve(4 * mesh.faceCount + 1);
+  }
+  for (size_t v = 0; v < mesh.vertexCount; ++v) {
+    if (!shown[v])
+      continue;
+    index[v] = I->N++;
+    I->V.insert(I->V.end(), &mesh.vertices[v].x, &mesh.vertices[v].x + 3);
+    I->VN.insert(I->VN.end(), &mesh.normals[v].x, &mesh.normals[v].x + 3);
+  }
+  if (!I->N) { // never empty
+    I->V.resize(1);
+    I->VN.resize(1);
+  }
+  for (size_t t = 0; t < mesh.faceCount; ++t) {
     // the other way round than marching cubes gives them: the viewport
     // takes the front of a triangle from the order of its corners
-    for (int i = 0; i < 3; ++i)
-      I->T[3 * t + i] = I->S[4 * t + 1 + i] =
-          static_cast<int>(mesh.faces[3 * t + 2 - i]);
+    const int corners[3] = {index[mesh.faces[3 * t + 2]],
+        index[mesh.faces[3 * t + 1]], index[mesh.faces[3 * t]]};
+    if (corners[0] < 0 || corners[1] < 0 || corners[2] < 0)
+      continue;
+    I->T.insert(I->T.end(), corners, corners + 3);
+    I->S.push_back(1); // a strip of one triangle
+    I->S.insert(I->S.end(), corners, corners + 3);
   }
+  I->S.push_back(0);
+  I->NT = static_cast<int>(I->T.size() / 3);
   PRINTFB(G, FB_RepSurface, FB_Blather)
   " RepSurface: %i surface points, %i triangles.\n", I->N, I->NT ENDFB(G);
   return true;
