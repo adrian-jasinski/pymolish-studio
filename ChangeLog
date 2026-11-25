@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.76.11
+
+	* Core
+	  - Sphere.cpp: the sphere generator under "#ifndef
+	    FAST_SPHERE_INIT" is deleted, 554 lines. The macro is defined
+	    at the top of the same file, so the code was never compiled;
+	    the preprocessed text of the file is the same before and
+	    after.
+
+2026-11-25 pymolish-studio
+
 	* 4.76.10
 
 	* Core
