@@ -62,6 +62,24 @@ def test_settings_and_state():
         ("color", {"color": "red", "_self": None}),  # private argument
         ("set", {"name": "fetch_path", "value": "/tmp"}),  # file setting
         ("load", {"filename": "evil.pse"}),  # unpickling a session
+        # expressions inside reviewed commands
+        ("label", {"selection": "all", "expression": "__import__('os').getcwd()"}),
+        ("label", {"selection": "all", "expression": "resn.__class__"}),
+        ("spectrum", {"expression": "b or exit()"}),
+        ("get_fastastr", {"key": "exit()"}),
+        ("assign_stereo", {"prop": "b = exit(); stereo"}),
+        ("fab", {"input": "AA", "chain": '"""+exit()+"""'}),
+        ("fragment", {"name": "../../x"}),  # a pickle is read from that path
+        ("load_files", {"directory": ".", "format": "pse"}),
+        ("set_bond", {"name": "fetch_path", "value": "/tmp", "selection1": "all"}),
+        ("png", {"filename": ""}),  # the image itself would be the result
+        ("get_area", {"load_b": 1}),  # a query that would write B-factors
+        # run other commands or Python by name
+        ("preset.from_menu", {"name": "exec"}),
+        ("extra_fit", {"method": "do"}),
+        ("copy_to", {"name": "x", "selection": "all", "rename": "exit()"}),
+        ("mdo", {"frame": 1, "command": "quit"}),
+        ("system", {"command": "true"}),
     ],
 )
 def test_policy_refuses(executor, command, arguments):
@@ -160,3 +178,35 @@ def test_uniprot_downloads(executor, monkeypatch):
     assert background[0][:4] == (fetching.fetch_by_uniprot, "P00533", 0, "egfr")
     # the switch is for downloads only
     assert run("5", "delete", name="none")["ok"] and len(asked) == 2
+
+
+def test_more_reviewed_commands(executor):
+    asked = []
+    executor.confirm = lambda proposal: asked.append(proposal["command"]) or True
+
+    def run(command, **arguments):
+        call = {"command": command, "arguments": arguments}
+        result = executor.call(str(len(executor.results)), "execute", call)
+        assert result["ok"], result
+        return result["result"]["value"]
+
+    # queries and changes of the view ask nothing
+    assert run("get_chains", selection="all") == [""]
+    assert run("get_fastastr", selection="all").splitlines()[1] == "A"
+    run("label", selection="name CA", expression="'%s-%s' % (resn, resi)")
+    labels = []
+    cmd.iterate("name CA", "labels.append(label)", space={"labels": labels})
+    assert labels == ["ALA-2"]
+    run("label", selection="all", expression="")
+    run("distance", name="d", selection1="name N", selection2="name O")
+    run("spectrum", expression="b", palette="blue_red", selection="all")
+    run("util.cbag", selection="all")
+    run("preset.pretty", selection="all")
+    run("set_bond", name="stick_radius", value=0.3, selection1="all")
+    assert "d" in cmd.get_names() and not asked
+    # changes of the structure and new molecules ask
+    run("fab", input="AG", name="pep", chain="B")
+    run("fragment", name="gly", object="frag")
+    run("h_add", selection="frag")
+    assert asked == ["fab", "fragment", "h_add"]
+    assert cmd.get_chains("pep") == ["B"] and cmd.count_atoms("frag and hydro")
