@@ -10,6 +10,14 @@ the blob are **not built now**. The grid surface of
 [1b](01-performance-gpu.md) is tried first, with a smoothness value; with
 its times and pictures this part of the plan is written again. No preset
 that only sets surface settings and no new setting is added before that.
+
+**2026-11-25: the grid surface was tried in 4.76.0** (`surface_type 7`; the
+table is in [1b](01-performance-gpu.md)). What it means here: with a probe
+of 3 A it is a rounded surface with fine triangles (1aon: 668,588
+triangles in 1.38 s; today's surface has 195,556 coarse ones at that
+probe), so "clay" could be this surface instead of a Gaussian map in a
+second object. This plan is written again once the user has judged the
+experiment: question 105 in [PLAN.md](../../PLAN.md).
 Question 32: the color themes are built, as a group of their own.
 
 **25a-1 done 2026-11-20 in 4.34.0:** the command `stage` and three light

@@ -38,6 +38,11 @@ a Claude account through the installed Claude Code; its row is the first of
 "Finished milestones of open steps", under step 31. The open orders keep
 their numbers; the trial of 31 (order 2) now also covers this provider.
 
+**Built 2026-11-25, 4.76.0:** the grid surface experiment of 1b; its row
+is the first of "Finished milestones of open steps". Whether it stays is
+question 105 in [PLAN.md](PLAN.md). The open orders moved up by one: 25b 3,
+15b 4, the surface worker 5, 21g 6.
+
 **Built 2026-11-25, 4.68.1 to 4.75.0:** all of step 37 (37a to 37g) and
 23b; their eight rows are the first of "Finished milestones of open
 steps". Steps 23 and 37 moved to "Finished steps". The open orders were
@@ -123,7 +128,7 @@ recommendation and still waited for a word:
 | 37 | The contact area of "protein-protein interaction" is orange. | Step 30, 4.36.0 to 4.40.0. |
 | 38 | "remove crystallization additives" is one row, sugars and NAD(P) included. | Step 30, 4.36.0 to 4.40.0. |
 | 39 | No preset leaves the preset menu. | Step 30, 4.36.0 to 4.40.0. |
-| 40 | Undo of a preset takes back everything done after it, until 21g builds one stack. | 4.40.0; 21g open, order 7. |
+| 40 | Undo of a preset takes back everything done after it, until 21g builds one stack. | 4.40.0; 21g open, order 6. |
 | 41 | Shared tools, then the chat, then the connector. | 4.58.0 and 4.61.0. |
 | 43 | Reviewed operations; a concrete confirmation for destructive, file and network actions; a separate trusted Python mode. | 4.58.0; the connector uses the same executor (4.61.0). |
 | 44 | A Chat tab in the command area. | 4.58.0. |
@@ -263,10 +268,10 @@ where the decision shipped, "open" with its order where it has not.
 
 | # | Decision | Where it goes |
 | --- | --- | --- |
-| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 6. |
+| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 5. |
 | 3 | The icon and the logo were generated with ChatGPT; the user owns them. They get "a license that is good for trade marks". | Done in 4.19.43: `data/pymol/icons/LICENSE`, a notice outside the two code licenses (unchanged copies travel with the program and may refer to it; a changed version needs its own). `docs/licenses.md`, plan 9. |
 | 4 | The release builds stay on GitHub Actions for now. | 5c is shelved; nothing was built for it. Plan 5. |
-| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 5; the FXAA pass it follows shipped in 4.65.0. |
+| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 4; the FXAA pass it follows shipped in 4.65.0. |
 | 6 | The ChimeraX object colors become a palette. | 15c. Done in 4.22.0. |
 | 7 | All five effects of 15e. | Done in 4.62.0: two presets, the fog row, shade in the soft look; the fifth, color steps in the viewport, was already there (choice 71). |
 | 13 | "Decide by yourself." Decided as recommended: the shot list goes into the session file; the 58 Program rows of the Movie menu go; the keyframe strip of the core stays for now. | Step 19. Done in 4.63.0. The rows counted in the menu were 116 (49, 43 and 24), not 58. |
@@ -274,7 +279,7 @@ where the decision shipped, "open" with its order where it has not.
 | 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Done in 4.63.1 (sphere modes), 4.64.0 (background picture) and 4.65.0 (FXAA, off by default: choice 73). |
 | 18 | As recommended: idle OpenMP threads sleep at once. | 1b. Done in 4.23.1. |
 | 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 7. |
-| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Open, order 3; moved up by the answer to question 25. |
+| 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Built as an experiment in 4.76.0 (`surface_type 7`); the judgment is question 105. Moved up by the answer to question 25. |
 
 14 was answered by "release 17" (4.19.42).
 
@@ -289,7 +294,7 @@ applicable, the 2026-11-23 follow-up.
 | 22 | As recommended: the rename wizard stays as the fallback without a window. | [Plan 23](docs/plans/23-rename-in-panel.md). Done in 4.24.0. |
 | 23 | The 2D ligand drawing is our own code, rdkit allowed; interactive: selecting a residue in 2D selects it in 3D. | [Plan 24](docs/plans/24-ligand-2d.md); the selection goes both ways. Done in 4.32.0 (command) and 4.33.0 (panel). |
 | 24 | Shadows ray traced only at first. | [Plan 25](docs/plans/25-studio-effects.md), 25a. Done in 4.34.0. |
-| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up (order 3 now); the surface looks and the blob are planned again with its result; no surface look and no new setting before that. Open. |
+| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up and was built in 4.76.0; the surface looks and the blob are planned again with its result; no surface look and no new setting before that. Open. |
 | 26 | As recommended: one row, icons. The same day: Builder and Scenes show only the icon, the name on mouse-over; "Draw/Ray" becomes "Draw". | Builder, Scenes and Draw done in 4.20.0; the rest in 4.30.0. |
 | 27 | The paint roller. (The answer ends "rest", cut off.) | Done in 4.20.0 with "Bg". |
 | 28 | As recommended: live scale through Qt's private function, the "next start" message as fallback. | [Plan 27](docs/plans/27-ui-scale.md). Done in 4.31.0 on Linux; 27d investigates the new freeze report before platform verification in 27c, open at order 1. |
@@ -340,6 +345,7 @@ Steps 1, 8, 15, 21, 25, 27 and 31 stay in the roadmap.
 These parts of them have shipped. The rows of steps 3, 11, 17, 18, 19, 20, 22, 26,
 23, 24, 28, 30, 32, 34, 35, 36 and 37, which are finished, are kept here as the record of
 their milestones. The rows are not in order of time: the newest, the
+grid surface (4.76.0) and the
 eight rows of 2026-11-25 (4.68.1 to 4.75.0, the last built first), the
 provider "Claude Code" (4.68.0), the
 Sequence tab (4.67.0), 31d
@@ -353,6 +359,7 @@ the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
+| 1 | 1b — the grid surface, an experiment | Done 2026-11-25 (4.76.0): [docs/plans/01-performance-gpu.md](docs/plans/01-performance-gpu.md). `surface_type 7`: `SurfaceJobRunGrid` in `layer2/RepSurface.cpp` fills a grid with the distance to the atoms enlarged by the probe, takes the surface of the probe center with the marching cubes of `layer0/marching_cubes.cpp`, fills a second grid with the distance to it and cuts that one probe radius inside. The result uses the arrays of the triangulated dots, so drawing, colors and ray tracing are shared. Cells of two point separations (1 A at `surface_quality` 0). Fastest build, triangles, peak memory: 1aon 1.67 s, 924,276, 2,570 MB against 5.18 s, 905,146, 2,648 MB; 4v6x 9.41 s, 3,919,688, 10,173 MB against 34.31 s, 3,886,165, 9,983 MB. With cells of 0.5 A: 1aon 9.67 s, 3,992,212, 10,263 MB. With a probe of 3 A today's surface gets coarse and is the faster one (1aon 1.16 s and 195,556 triangles against 1.38 s and 668,588). 2 tests (`api/surface_grid.py`); the suite 1122 passed, 251 skipped. Pictures: `docs/img/grid-surface-1aon.jpg`, `grid-surface-4v6x.jpg`. Differs from the plan: no smoothness setting of its own, `solvent_radius` is that value; no ray times in the table (they drifted from 4.6 to 15.6 s for both surfaces as the laptop got warm; one cool pair gave 4.05 and 4.08 s); memory and ray time are not better, since they follow the triangles. Left out: carving, cavities, `surface_solvent`, trimming, frame times. |
 | 37 | 37g — text size beside the tabs | Done 2026-11-25 (4.75.0): [docs/plans/37-gui-followups.md](docs/plans/37-gui-followups.md). `TabFontButtons` in `pymol_qt_gui.py`, the corner widget of the command tabs: A−, A+ and Reset move the text of the tab that is shown by one point; the difference to the start size is kept per tab in the settings. The Sequence tab recalculates its scroll ranges on a font change. 1 test in `api/sequence_tab.py`. Real window with a settings folder of its own: 12, 11 and 8 points after the clicks and at the second start, where a tab starts with 9. Suite: 1120 passed, 251 skipped. |
 | 37 | 37f — lists and the alignment button in the Sequence tab | Done 2026-11-25 (4.74.0). `Options` in `sequence_tab.py`: three lists that set and follow `seq_view_format`, `seq_view_label_mode` and `seq_view_gap_mode` through the window's setting callbacks, and a button for the alignment window; the choices are one table, `SEQUENCE_OPTIONS` in `pymol/_gui.py`, from which Display > Sequence Mode is built as well. 1 test. Real window: "Residue Names" in the list changed the rows and the mark in the Display menu; the button opened the window. Differs from the recommendation: a row of lists, not one menu (the user's choice 97). |
 | 37 | 37e — compact mouse mode button | Done 2026-11-25 (4.73.0). Icon and the name of the mode without its count of buttons, the whole name in the tooltip; size policy Maximum, a stretch after the five buttons. Real window on WSLg: 83 px for "Viewing" and 78 px for "Editing" (139 px for "3-Button Viewing" before), the same at 100, 150 and 200 %; narrowest panel 234 px before and after. 1 test that runs in a real window only. |

@@ -97,11 +97,16 @@ and left this file; the specification of step 37 is now
 [docs/plans/37-gui-followups.md](docs/plans/37-gui-followups.md). 37b and
 37f follow the user's answers of that day where they differ from what was
 recommended (the Delete key without a button; a row of lists). Seven
-choices were made while building (98 to 104). Not started in that run:
-the grid surface, the outline, the surface worker and general undo, each a
-slice of its own in the core.
+choices were made while building (98 to 104).
 
-**Shipped state, checked 2026-11-25: 4.75.0.** Built since 4.19.43,
+Built in the same run, 4.76.0: the grid surface experiment of 1b,
+`surface_type 7`, with its times, triangle counts, memory and pictures for
+1aon and 4v6x. It is an experiment to be judged (question 105), not a
+default. Not started in that run: the outline, the surface worker and
+general undo, each a slice of its own in the core; 25b waits for that
+judgment.
+
+**Shipped state, checked 2026-11-25: 4.76.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
@@ -146,9 +151,11 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.73.0 | The mouse mode button shows the icon and the short name ("Viewing") and is as wide as that (37e). |
 | 4.74.0 | The Sequence tab has the lists Mode, Labels and Gaps and a button for the alignment window (37f). |
 | 4.75.0 | A−, A+ and Reset beside the tabs Command, Sequence and Chat: a text size per tab, kept (37g). |
+| 4.76.0 | An experiment: `set surface_type, 7` builds the molecular surface on a grid with marching cubes (1b). 1aon 1.67 s against 5.18 s, 4v6x 9.41 s against 34.31 s, at the same count of triangles. Not a default, no menu row. |
 
 Of the ten features requested on 2026-11-20, nine have a working version.
-The tenth, the surface looks, waits for the grid surface of 1b. Steps 19, 20,
+The tenth, the surface looks, waits for the judgment of the grid surface of 1b
+(4.76.0, question 105). Steps 19, 20,
 26, 29 and 32 are finished. Of the eleven drafts of 2026-11-23, all eleven have a working version;
 the chat (31a, 31c) shipped in 4.58.0, its external connector 31b in 4.61.0,
 the sign-in in the browser 31d in 4.66.0, the provider "Claude Code" in
@@ -177,16 +184,15 @@ implementation task/PR, with an `X` feature or `Y` fix version under
 | --- | --- | --- | --- |
 | 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Needs the pushed branch: the last CI run is older than the repair. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
 | 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; one real sign-in and one conversation each with ChatGPT and with OpenRouter (31d, shipped in 4.66.0 on stand-ins), which needs the user's accounts; for the provider "Claude Code" (4.68.0, two turns tried on WSLg with a Team plan) the same five tasks, the button "Continue with Claude Code" with a signed-out Claude Code, and one turn on Windows or macOS; and one call through the connector from Codex, whose account had no credits on 2026-11-24. | Live trial recorded for Anthropic, OpenAI and Claude Code; a sign-in and a conversation recorded for ChatGPT, OpenRouter and Claude Code, on WSL and on one other system; one Codex call through the connector. |
-| 3 | **1b** — [Grid surface experiment](docs/plans/01-performance-gpu.md) | Signed distance grid/marching cubes as a second surface type and a smoothness value. Compare 1aon and 4v6x at two values; user judges the experiment. | Actual times and pictures against today's surface. |
-| 4 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan using the grid-surface result from order 3; no new surface-look setting before that. | New detailed section grounded in the experiment. |
-| 5 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. A second pass over the texture that FXAA reads since 4.65.0 (`SceneRenderAA`, `fxaa.fs`). | Frame times and pictures on black/white. |
-| 6 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. | Real-window responsiveness, suite and sanitizer checks. |
-| 7 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
+| 3 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan with the result of the grid surface experiment (4.76.0: times and pictures are there). Waits for the user's judgment of it, question 105; no new surface-look setting before that. | New detailed section grounded in the experiment. |
+| 4 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. A second pass over the texture that FXAA reads since 4.65.0 (`SceneRenderAA`, `fxaa.fs`). | Frame times and pictures on black/white. |
+| 5 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. | Real-window responsiveness, suite and sanitizer checks. |
+| 6 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 | any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays; files go in profile order so cleanup and step 1 meet. Open: 8c (started: seven buffers of `Executive.cpp` in 4.19.39; next `Selector.cpp`, `ObjectMolecule.cpp`, `Ray.cpp`, `RepSurface.cpp`), 8d to 8g, the about 80 string calls through a pointer of 8b. Many PRs, no date. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
 
-The earlier surface dependency is preserved: grid experiment before surface
-looks. FXAA shipped in 4.65.0, so the outline can follow it. MAFFT stays
+The earlier surface dependency is preserved: the grid experiment (tried in
+4.76.0) and its judgment come before the surface looks. FXAA shipped in 4.65.0, so the outline can follow it. MAFFT stays
 separately installed and the provider SDKs are the lazy extra `ai`. 5c stays
 shelved; builds stay on GitHub Actions.
 
@@ -247,8 +253,18 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-No question waits. Choices 91–97 were answered on 2026-11-25 and built
-the same day (4.69.0 to 4.75.0); they are in [PLAN-DONE.md](PLAN-DONE.md).
+One question waits, the judgment of the grid surface (4.76.0). Its
+numbers are in the `ChangeLog` and in
+[docs/plans/01-performance-gpu.md](docs/plans/01-performance-gpu.md), its
+pictures are `docs/img/grid-surface-1aon.jpg` and
+`docs/img/grid-surface-4v6x.jpg`; try it with `set surface_type, 7`.
+
+| Question | A — recommended | B | C | Dependent work |
+| --- | --- | --- | --- | --- |
+| 105 — Does the grid surface stay, and for what? | It stays as a choice beside today's surface, which remains the default: a row "Solid (grid)" in Setting > Surface, and the settings it lacks (carving, cavities) are added. Decide about a default once the surface worker (order 5) is built, since a build then no longer blocks the window. | It becomes the default above a size, for example 100,000 atoms, where today's surface takes longest (4v6x: 34 s against 9 s). Colors meet in more jagged borders there. | It is taken out again: the three-fold shorter build is not worth a second kind of surface. | 25b (order 3): with A or B the rounded "clay" surface is this surface with a probe of about 3 A, which keeps fine triangles where today's surface gets coarse; with C it stays the Gaussian map. |
+
+Choices 91–97 were answered on 2026-11-25 and built the same day (4.69.0
+to 4.75.0); they are in [PLAN-DONE.md](PLAN-DONE.md).
 
 Seven choices were made while building 4.68.1 to 4.75.0 (98 to 104),
 each the smaller option; they are listed in PLAN-DONE.md with what it
@@ -341,7 +357,11 @@ Objects list at once; Esc to give up a drag of a row (release it where no
 mark is shown), and scrolling the list while a row is dragged past its
 edge; keys for A−, A+ and Reset (Tab reaches them); less padding inside
 the mouse mode button than its neighbors have; a check of the thirty
-colors for color-vision deficiencies.
+colors for color-vision deficiencies. From 4.76.0, the grid surface:
+carving, cavity culling and cavity mode, `surface_solvent` and trimming;
+strips longer than one triangle; a grid in blocks instead of one over the
+whole box (above 67 million cells the cells grow); frame times in the
+viewport; ray times on a cool machine.
 
 The user's to do:
 
@@ -359,8 +379,8 @@ The user's to do:
   on Linux when it is pressed. Both are handled; only Linux was tried.
 - Push `feature13` and open its pull request. Local tracking refs checked
   2026-11-25 after 4.75.0: `origin/feature13` is at the plan commit of
-  4.66.0; including this plan commit the branch is 16 commits ahead
-  (4.67.0 to 4.75.0 with their plan commits, the decisions 91 to 97 and a
+  4.66.0; including this plan commit the branch is 19 commits ahead
+  (4.67.0 to 4.76.0 with their plan commits, the decisions 91 to 97 and a
   repair of the tests) and contains `feature12` (itself 9 commits ahead
   of its tracking ref). At the last remote check `feature13` had no pull
   request; the last one was #10 (`feature11`, merged 2026-11-20). The
