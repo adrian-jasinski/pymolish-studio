@@ -62,6 +62,13 @@ option. Say so if another one is wanted:
 | 103 | The three lists of the Sequence tab have a word before each (Mode, Labels, Gaps) and no key of their own: Tab reaches them. | 4.74.0. | `Options` in `sequence_tab.py`. |
 | 104 | A−, A+ and Reset change the text by one point per click, between 6 and 40 points, and keep the difference to the start size of each tab, so every widget keeps its font and its distance to the others. | 4.75.0. | `TabFontButtons` in `pymol_qt_gui.py`; the keys `fonts/<tab>` in the settings. |
 
+Decided by the user on 2026-11-25, after the run of step 8 (4.76.1 to
+4.76.14).
+
+| Question | Decision | State |
+| --- | --- | --- |
+| 106 | Option C, "finish here": step 8 ends with what is built. The VLA macros, raw `new` / `delete`, the `ok_assert` chains and `ov/` stay as they are. Recommended was A (go on with what ends in a deletion). | Step 8 closed at 4.76.14; nothing to build. To reopen: the counts and the reasons per file are in [docs/plans/08-cpp-modernization.md](docs/plans/08-cpp-modernization.md). |
+
 Decided by the user on 2026-11-25, choices 91–97 from the GUI request of
 2026-11-24, and built the same day.
 
@@ -183,6 +190,7 @@ on 2026-11-24 (table above):
 
 | Step | Detailed plan | Recommendation |
 | --- | --- | --- |
+| 8 | [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | Closed 2026-11-25 at 4.76.14 by the user's answer to question 106, "finish here"; not finished as planned. Done: the sanitizer job (8a), bounded strings (8b, 408 of 475 calls), Catch2 under the sanitizers (8h), the dead `#ifdef` branches (8i), the `malloc` half of 8c (230 of 297 allocation sites), the mechanical part of 8d (215 of 829 macro calls). Not done and no longer planned: raw `new` / `delete` (181 / 109, with 64 `DeleteP`), 611 VLA macro calls on raw pointers, the error chains of 8e (`ok_assert` 197, `goto` 24, `CHECKOK` 198), 8f, `ov/` (8g, 72 users, never measured), 60 string calls through a pointer. The macro layer of `MemoryDebug.h` and the directory `ov/` stay. Never checked for 4.76.1 to 4.76.14: MSVC, Apple Clang, GCC 11, `compare.py`, a window. |
 | 37 | [GUI follow-ups of 2026-11-24](docs/plans/37-gui-followups.md) | Requested 2026-11-24, answered and built 2026-11-25, 4.68.1 to 4.75.0, seven slices: the old plugin no longer takes the names of the fetch commands (37a); Delete in the Objects list (37b); thirty colors a palette, ten in the preview (37c); colors dragged in the palette dialog (37d); a compact mouse mode button (37e); Mode, Labels and Gaps lists and the alignment button in the Sequence tab (37f); A−, A+ and Reset beside the tabs (37g). |
 | 23 | [Rename and move rows in the Objects panel](docs/plans/23-rename-in-panel.md) | Requested 2026-11-20. 23a, 4.24.0: F2 or "rename" edits the name on the row. 23b, 4.70.0: a row is moved by a drag with the right button or with Alt and the arrow keys, between rows, into a group and out of it; the order and the groups are the core's and are kept in a session. |
 | 19 | [Movie timeline](docs/plans/19-movie-timeline.md) | The Timeline panel in 4.18.0 (shot list, strip, record, tours, effects, easing, export with an estimate); in 4.63.0 the shot list in the session, dragging on the strip under a ruler of seconds, and Movie > Program without Camera Loop, Scene Loop and State Loop (116 rows). The keyframe strip of the core stays (question 7). Not built: undo of timeline edits, lanes for object motions, a shot "state sweep", rendering through the Export presets was never run (needs ffmpeg or ImageMagick). |

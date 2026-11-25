@@ -119,8 +119,9 @@ errors of commands (`load_png` with a bad data URL, `valence` with a
 source, a surface with `ambient_occlusion_mode` 3, spheres of a part of
 an object with `sphere_mode` 6 to 8). Nothing a user sees
 changed otherwise, so there is no new `X`. What is left of the step, with
-counts, is in its row below and in its plan; where the step should end is
-question 106.
+counts, is in its plan. Where the step should end was question 106; the
+user answered it the same day: finish here. Step 8 is closed and left this
+file for [PLAN-DONE.md](PLAN-DONE.md).
 
 **Shipped state, checked 2026-11-25: 4.76.14.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
@@ -206,7 +207,6 @@ implementation task/PR, with an `X` feature or `Y` fix version under
 | 5 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. | Real-window responsiveness, suite and sanitizer checks. |
 | 6 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
-| any time | **8** — [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | No rewrite. One idiom per PR behind sanitizers and tests; vendored C stays. Done to 4.76.14: 8a, 8b mostly, 8h, 8i, the `malloc` half of 8c (67 allocation sites left, each with its reason in the plan), the mechanical part of 8d. Open, counted at 4.76.13: raw `new` 181, `delete` 109 and `DeleteP` 64 (8c, not started; 27 of them are local `MapType`); 611 VLA macro calls on raw pointers (8d; the members of `ObjectMoleculeOpRec` first, they reach four files); `ok_assert` 197, `goto` 24, `CHECKOK` 198 (8e); 60 string calls through a pointer (8b); 72 users of `ov/` (8g, not measured); 8f. Question 106 asks where the step ends. Not checked for 4.76.1 to 4.76.14: MSVC, Apple Clang and GCC 11 (the first CI run of the pushed branch), `compare.py`, a window. | Each slice passes the suite, the sanitizer job, `compare.py` and a PSE round trip. |
 
 The earlier surface dependency is preserved: the grid experiment (tried in
 4.76.0) and its judgment come before the surface looks. FXAA shipped in 4.65.0, so the outline can follow it. MAFFT stays
@@ -270,8 +270,8 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-Two questions wait. The first is the judgment of the grid surface
-(4.76.0). Its numbers are in the `ChangeLog` and in
+One question waits, the judgment of the grid surface (4.76.0). Its
+numbers are in the `ChangeLog` and in
 [docs/plans/01-performance-gpu.md](docs/plans/01-performance-gpu.md), its
 pictures are `docs/img/grid-surface-1aon.jpg` and
 `docs/img/grid-surface-4v6x.jpg`; try it with `set surface_type, 7`.
@@ -279,7 +279,6 @@ pictures are `docs/img/grid-surface-1aon.jpg` and
 | Question | A — recommended | B | C | Dependent work |
 | --- | --- | --- | --- | --- |
 | 105 — Does the grid surface stay, and for what? | It stays as a choice beside today's surface, which remains the default: a row "Solid (grid)" in Setting > Surface, and the settings it lacks (carving, cavities) are added. Decide about a default once the surface worker (order 5) is built, since a build then no longer blocks the window. | It becomes the default above a size, for example 100,000 atoms, where today's surface takes longest (4v6x: 34 s against 9 s). Colors meet in more jagged borders there. | It is taken out again: the three-fold shorter build is not worth a second kind of surface. | 25b (order 3): with A or B the rounded "clay" surface is this surface with a probe of about 3 A, which keeps fine triangles where today's surface gets coarse; with C it stays the Gaussian map. |
-| 106 — Where does step 8 (modern C++ in the core) end? After 4.76.13 the open counts are: 611 VLA macro calls, about 350 raw `new` / `delete`, about 420 `ok_assert` / `CHECKOK` / `goto`, 72 users of `ov/`. | Finish what ends in a deletion, then close the step: 8d until the VLA macro layer can be deleted (the largest part, several runs like the one of 2026-11-25), the local `MapType` objects of 8c, and a measurement for 8g (`ov/` against `std::unordered_map` on a quiet machine, the directory goes only if nothing gets slower). 8e and 8f are not swept: an error chain or a macro is changed only in a function that is open for another reason. | Everything as planned, 8e and 8f included: about 420 more sites of error handling, each a hand change in code the suite covers by half; many more runs, and the largest risk of a silent change in an error path. | Stop here: the memory-safety part (8a, 8b, the buffers of 8c) is done; the VLA macros stay as they are, working and tested. Nothing more is deleted. | The order of step 8 in the table above; whether `ov/` and the macro layer of `MemoryDebug.h` ever go. |
 
 Choices 91–97 were answered on 2026-11-25 and built the same day (4.69.0
 to 4.75.0); they are in [PLAN-DONE.md](PLAN-DONE.md).
@@ -400,7 +399,7 @@ The user's to do:
   on Linux when it is pressed. Both are handled; only Linux was tried.
 - Push `feature13` and open its pull request. Local tracking refs checked
   2026-11-25 after 4.76.14: `origin/feature13` is at the plan commit of
-  4.66.0; including this plan commit the branch is 37 commits ahead
+  4.66.0; including this plan commit the branch is 38 commits ahead
   (4.67.0 to 4.76.14 with their plan commits, the decisions 91 to 97 and
   two repairs of the tests) and contains `feature12` (itself 9 commits
   ahead of its tracking ref). At the last remote check `feature13` had no pull
@@ -413,7 +412,6 @@ The user's to do:
 - Your `.venv` still holds 4.76.0: your own pymolish was running during
   the run of step 8, so it was not rebuilt. The suite of 4.76.14 passed in
   a copy (1154 passed, 250 skipped).
-- Answer question 106: where step 8 ends.
 - Then the rest of the CI run: the Windows icon, release notes,
   `chem`/`fix` extras on three systems, and for 27c the line that
   `test_scale_change_keeps_the_window_alive` prints in the Windows and

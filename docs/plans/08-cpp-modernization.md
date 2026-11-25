@@ -13,8 +13,13 @@ nothing was built, timed or changed for this plan
 > 4.76.0. Eight defects that were in 4.76.0 came out and are fixed. Left
 > out: `compare.py` (the machine was in use), any run on Windows, macOS or
 > GCC 11, any look at a window. Not started: raw `new` / `delete`, 8e, 8f,
-> 8g. Where the step should end is question 106 in
-> [PLAN.md](../../PLAN.md).
+> 8g.
+>
+> **Closed 2026-11-25 at 4.76.14.** Asked where the step should end
+> (question 106), the user answered "finish here". The rest of 8c, 8d on
+> raw pointers, 8e, 8f and 8g are no longer planned; the counts and the
+> reasons per file below are what stays in the code, and the place to
+> start from if the step is opened again.
 
 **Modernize the C-style C++ of the core one idiom and one file at a time, behind
 tests and sanitizers. No from-scratch rewrite. Vendored C stays C.**
