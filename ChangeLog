@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.76.12
+
+	* Core
+	  - The AMBER restart and topology readers hold the file text in
+	    a unique_ptr. Twelve more calls of the VLA macros on
+	    pymol::vla objects are member calls (Sculpt.cpp, Isosurf.cpp,
+	    RepMesh.cpp, ObjectAlignment.cpp). No behavior change. Steps
+	    8c and 8d.
+
+2026-11-25 pymolish-studio
+
 	* 4.76.11
 
 	* Core

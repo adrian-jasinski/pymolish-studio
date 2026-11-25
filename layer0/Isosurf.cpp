@@ -1262,7 +1262,7 @@ static int IsosurfGradients(PyMOLGlobals * G, CSetting * set1, CSetting * set2,
 
                   {
                     float *f;
-                    VLACheck(i_line, float, n_line * 3 + 2);
+                    i_line.check(n_line * 3 + 2);
                     f = i_line + (n_line * 3);
                     FieldInterpolate3f(points, locus, fract, f);
                     n_line++;
@@ -1331,7 +1331,7 @@ static int IsosurfGradients(PyMOLGlobals * G, CSetting * set1, CSetting * set2,
                 n_line = i_num[n_seg];
               }
             } else if(n_line != i_num[n_seg]) { /* or retain count of new line segment */
-              VLACheck(i_num, int, n_seg + 1);
+              i_num.check(n_seg + 1);
               i_num[n_seg] = n_line - i_num[n_seg];
               n_seg++;
               i_num[n_seg] = n_line;

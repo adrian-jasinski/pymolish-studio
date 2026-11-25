@@ -1046,7 +1046,7 @@ Rep *RepMeshNew(CoordSet * cs, int state)
     }
     DeleteP(field);
     if(ok && (I->N.data() && I->V.data() && (carve_flag || clear_flag || trim_flag))) {
-      int cur_size = VLAGetSize(I->N);
+      int cur_size = I->N.size();
       if (mesh_type == cIsomeshMode::isomesh && cur_size) {
         int *n = I->N.data();
         int *new_n = VLACalloc(int, cur_size);

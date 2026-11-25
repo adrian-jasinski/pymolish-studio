@@ -1202,7 +1202,7 @@ ObjectAlignment *ObjectAlignmentDefine(PyMOLGlobals * G,
         oas->alignVLA = align_vla;
       }
     } else {
-      VLAFreeP(oas->alignVLA);
+      oas->alignVLA.freeP();
     }
   }
   if(I) {

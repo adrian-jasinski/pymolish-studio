@@ -1292,7 +1292,8 @@ ObjectMolecule *ObjectMoleculeLoadRSTFile(PyMOLGlobals * G, ObjectMolecule * I,
    *           http://ambermd.org/formats.html
    */
   int ok = true;
-  char *buffer, *p;
+  std::unique_ptr<char, pymol::default_free> buffer;
+  char *p;
   char cc[MAXLINELEN];
   float f0, f1, f2, *fp;
   int a, b, c;
@@ -1323,7 +1324,8 @@ ObjectMolecule *ObjectMoleculeLoadRSTFile(PyMOLGlobals * G, ObjectMolecule * I,
     if (ok){
       PRINTFB(G, FB_ObjectMolecule, FB_Blather)
 	" ObjMolLoadRSTFile: Loading from \"%s\".\n", fname ENDFB(G);
-      p = buffer = FileGetContents(fname, nullptr);
+      buffer.reset(FileGetContents(fname, nullptr));
+      p = buffer.get();
       if(!buffer)
         ok = ErrMessage(G, __func__, "Unable to open file!");
     }
@@ -1395,7 +1397,6 @@ ObjectMolecule *ObjectMoleculeLoadRSTFile(PyMOLGlobals * G, ObjectMolecule * I,
         break;
       }
     }
-    mfree(buffer);
   }
   delete cs;
 
@@ -2405,9 +2406,8 @@ ObjectMolecule *ObjectMoleculeLoadTOPFile(PyMOLGlobals * G, ObjectMolecule * obj
                                           const char *fname, int frame, int discrete)
 {
   ObjectMolecule *I = nullptr;
-  char *buffer;
-
-  buffer = FileGetContents(fname, nullptr);
+  std::unique_ptr<char, pymol::default_free> buffer(
+      FileGetContents(fname, nullptr));
 
   if(!buffer)
     ErrMessage(G, __func__, "Unable to open file!");
@@ -2415,8 +2415,7 @@ ObjectMolecule *ObjectMoleculeLoadTOPFile(PyMOLGlobals * G, ObjectMolecule * obj
     PRINTFB(G, FB_ObjectMolecule, FB_Blather)
       " %s: Loading from %s.\n", __func__, fname ENDFB(G);
 
-    I = ObjectMoleculeReadTOPStr(G, obj, buffer, frame, discrete);
-    mfree(buffer);
+    I = ObjectMoleculeReadTOPStr(G, obj, buffer.get(), frame, discrete);
   }
 
   return (I);

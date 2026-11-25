@@ -409,8 +409,8 @@ void SculptMeasureObject(CSculpt * I, ObjectMolecule * obj, int state, int match
   if((state >= 0) && (state < obj->NCSet) && (obj->CSet[state])) {
     obj_atomInfo = obj->AtomInfo.data();
 
-    VLACheck(I->Don, int, obj->NAtom);
-    VLACheck(I->Acc, int, obj->NAtom);
+    I->Don.check(obj->NAtom);
+    I->Acc.check(obj->NAtom);
     ai = obj_atomInfo;
     for(a = 0; a < obj->NAtom; a++) {
       I->Don[a] = false;
@@ -591,7 +591,7 @@ void SculptMeasureObject(CSculpt * I, ObjectMolecule * obj, int state, int match
         ai2 = obj_atomInfo + b2;
 
         xhash = ((b2 > b1) ? ex_hash(b1, b2) : ex_hash(b2, b1));
-        VLACheck(I->EXList, int, nex + 3);
+        I->EXList.check(nex + 3);
         j = I->EXList + nex;
         *(j++) = I->EXHash[xhash];
         if(b2 > b1) {
@@ -854,7 +854,7 @@ void SculptMeasureObject(CSculpt * I, ObjectMolecule * obj, int state, int match
             b2 = neighbor[n1];
 
             xhash = ((b2 > b1) ? ex_hash(b1, b2) : ex_hash(b2, b1));
-            VLACheck(I->EXList, int, nex + 3);
+            I->EXList.check(nex + 3);
             j = I->EXList + nex;
             *(j++) = I->EXHash[xhash];
             if(b2 > b1) {
@@ -1105,7 +1105,7 @@ void SculptMeasureObject(CSculpt * I, ObjectMolecule * obj, int state, int match
                     xoffset = *k;
                   }
                   if(ex_type) {
-                    VLACheck(I->EXList, int, nex + 5);
+                    I->EXList.check(nex + 5);
                     j = I->EXList + nex;
                     *(j++) = I->EXHash[xhash];
                     *(j++) = b1;
@@ -1284,7 +1284,7 @@ void SculptMeasureObject(CSculpt * I, ObjectMolecule * obj, int state, int match
                           }
 
                           if(ex_type) {
-                            VLACheck(I->EXList, int, nex + 6);
+                            I->EXList.check(nex + 6);
                             j = I->EXList + nex;
                             *(j++) = I->EXHash[xhash];
                             *(j++) = b1;
@@ -1355,7 +1355,7 @@ void SculptMeasureObject(CSculpt * I, ObjectMolecule * obj, int state, int match
 
                     xhash = ex_hash(b0, bd);
 
-                    VLACheck(I->EXList, int, nex + 3);
+                    I->EXList.check(nex + 3);
                     j = I->EXList + nex;
                     *(j++) = I->EXHash[xhash];
                     *(j++) = b0;
@@ -2064,7 +2064,7 @@ float SculptIterateObject(CSculpt * I, ObjectMolecule * obj,
             for(aa = 0; aa < n_active; aa++) {
               b0 = active[aa];
               a0 = atm2idx[b0];
-              VLACheck(I->NBList, int, nb_next + 2);
+              I->NBList.check(nb_next + 2);
               v0 = cs_coord + 3 * a0;
               hash = nb_hash(v0);
               i = I->NBList + nb_next;
