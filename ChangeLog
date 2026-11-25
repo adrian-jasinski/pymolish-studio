@@ -4,6 +4,16 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.76.13
+
+	* Core
+	  - Fix: a surface with ambient_occlusion_mode 3 read a neighbor
+	    map that had been freed a few lines before, when the surface
+	    was recolored (a wrong variable name). Found by the sanitizer
+	    run on a new test; present in 4.76.0 as well.
+
+2026-11-25 pymolish-studio
+
 	* 4.76.12
 
 	* Core

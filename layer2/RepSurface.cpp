@@ -2578,7 +2578,7 @@ Rep* RepSurface::recolor()
           add3f(v0, v0mod, v0mod);
 
           i = *(MapLocusEStart(ambient_occlusion_map, v0));
-          if (i && !map->EList.empty()) {
+          if (i && !ambient_occlusion_map->EList.empty()) {
             j = ambient_occlusion_map->EList[i++];
             while (j >= 0) {
               subtract3f(cs->coordPtr(j), v0, d);
