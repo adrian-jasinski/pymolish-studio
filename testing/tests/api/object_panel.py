@@ -295,6 +295,176 @@ def test_delete_key(monkeypatch):
     assert panel.filter.text() == "e" and cmd.get_names() == ["keep"]
 
 
+@pytest.fixture
+def rows():
+    """A panel over o1, o2, a group g1 with m1 and m2, and a selection."""
+    from pmg_qt.object_panel import ObjectPanel, UserRole
+
+    for name in ("o1", "o2", "m1", "m2"):
+        cmd.fragment("gly", name)
+    cmd.group("g1", "m1 m2")
+    cmd.select("s1", "o1 and name CA")
+    panel = ObjectPanel(cmd)
+    panel.refresh()
+
+    def tree(parent=None):
+        parent = parent or panel.tree.invisibleRootItem()
+        found = []
+        for i in range(parent.childCount()):
+            child = parent.child(i)
+            name, inside = child.data(0, UserRole)[0], tree(child)
+            found.append({name: inside} if inside else name)
+        return found
+
+    panel.shown = tree
+    return panel
+
+
+def test_move_rows(rows, tmp_path):
+    """23b: the operation behind the drag and the Alt+arrow keys."""
+    panel = rows
+    assert panel.shown() == ["all", "o1", "o2", {"g1": ["m1", "m2"]}, "s1"]
+    assert panel.move("o2", "o1", "before")
+    assert panel.shown() == ["all", "o2", "o1", {"g1": ["m1", "m2"]}, "s1"]
+    assert panel.tree.currentItem() is panel.items["o2"]
+    assert panel.move("s1", "all", "after")  # a selection, to the top
+    assert panel.shown() == ["all", "s1", "o2", "o1", {"g1": ["m1", "m2"]}]
+    assert panel.move("o1", "g1", "into")
+    assert panel.shown() == ["all", "s1", "o2", {"g1": ["o1", "m1", "m2"]}]
+    assert panel.move("o1", "m2", "after")  # the order inside a group
+    assert panel.shown() == ["all", "s1", "o2", {"g1": ["m1", "m2", "o1"]}]
+    assert panel.move("m1", "o2", "before")  # out of the group
+    assert panel.shown() == ["all", "s1", "m1", "o2", {"g1": ["m2", "o1"]}]
+    assert panel.move("o2", "m2", "before")  # beside a member: into its group
+    assert panel.shown() == ["all", "s1", "m1", {"g1": ["o2", "m2", "o1"]}]
+
+    cmd.group("g2", "g1")
+    panel.refresh()
+    assert panel.shown() == ["all", "s1", "m1", {"g2": [{"g1": ["o2", "m2", "o1"]}]}]
+    # not: "all", onto itself, a group into itself or into what it holds
+    for move in (
+        ("all", "m1", "after"),
+        ("m1", "all", "before"),
+        ("m1", "m1", "after"),
+        ("m1", "s1", "into"),
+        ("g2", "g2", "into"),
+        ("g2", "g1", "into"),
+        ("g2", "m2", "before"),
+        ("m1", "gone", "after"),
+    ):
+        assert not panel.move(*move), move
+    assert panel.shown() == ["all", "s1", "m1", {"g2": [{"g1": ["o2", "m2", "o1"]}]}]
+    assert panel.move("g1", "s1", "before")  # a group leaves its group whole
+    assert panel.shown() == ["all", {"g1": ["o2", "m2", "o1"]}, "s1", "m1", "g2"]
+
+    # a filtered list moves the same rows; the hidden ones keep their places
+    panel.filter.setText("m")
+    assert panel.items["s1"].isHidden() and panel.move("m1", "g1", "before")
+    panel.filter.setText("")
+    assert panel.shown() == ["all", "m1", {"g1": ["o2", "m2", "o1"]}, "s1", "g2"]
+
+    # the core holds order and membership: a session brings them back
+    path = str(tmp_path / "moved.pse")
+    cmd.save(path)
+    cmd.reinitialize()
+    cmd.load(path)
+    panel.refresh()
+    assert panel.shown() == ["all", "m1", {"g1": ["o2", "m2", "o1"]}, "s1", "g2"]
+
+
+def test_move_with_the_keys(rows):
+    panel = rows
+    press = lambda name, step: (
+        panel.tree.setCurrentItem(panel.items[name]),
+        panel.move_current(step),
+    )[1]
+    assert press("o2", "up") and not press("o2", "up")  # "all" stays first
+    assert panel.shown() == ["all", "o2", "o1", {"g1": ["m1", "m2"]}, "s1"]
+    assert press("o2", "down")
+    assert not press("o2", "in")  # the row above is no group
+    assert press("s1", "in")
+    assert panel.shown() == ["all", "o1", "o2", {"g1": ["m1", "m2", "s1"]}]
+    assert press("m2", "up") and press("m2", "out") and not press("m2", "out")
+    assert panel.shown() == ["all", "o1", "o2", {"g1": ["m1", "s1"]}, "m2"]
+    assert not press("m2", "down")
+    panel.filter.setText("o")  # the row above that is shown
+    panel.tree.setCurrentItem(panel.items["o2"])
+    assert panel.move_current("up")
+    panel.filter.setText("")
+    assert panel.shown() == ["all", "o2", "o1", {"g1": ["m1", "s1"]}, "m2"]
+
+
+def test_drag_with_the_right_button(rows, monkeypatch):
+    from PySide6 import QtTest
+    from pymol.Qt import QtCore, QtGui, QtWidgets
+
+    panel, Qt, QTest = rows, QtCore.Qt, QtTest.QTest
+    panel.resize(300, 400)
+    panel.show()
+    view = panel.tree.viewport()
+    menus = []
+    monkeypatch.setattr(panel, "_context_menu", menus.append)
+
+    def row(name, at=0.5):
+        rect = panel.tree.visualItemRect(panel.items[name])
+        return QtCore.QPoint(30, rect.top() + int(rect.height() * at))
+
+    def send(kind, position, button=Qt.MouseButton.RightButton, held=None):
+        held = button if held is None else held
+        event = QtGui.QMouseEvent(
+            kind,
+            QtCore.QPointF(position),
+            QtCore.QPointF(view.mapToGlobal(position)),
+            button,
+            held,
+            Qt.KeyboardModifier.NoModifier,
+        )
+        QtWidgets.QApplication.sendEvent(view, event)
+
+    Type, none = QtCore.QEvent.Type, Qt.MouseButton.NoButton
+
+    def drag(name, to):
+        send(Type.MouseButtonPress, row(name))
+        send(Type.MouseMove, to, none, Qt.MouseButton.RightButton)
+        shown = panel._mark.isVisible(), panel._mark.geometry()
+        panel.refresh()  # the poll of the window must not move the rows now
+        send(Type.MouseButtonRelease, to, held=none)
+        assert not panel._mark.isVisible() and panel._drag is None
+        return shown
+
+    # a click without a drag opens the menu of the row, on release
+    send(Type.MouseButtonPress, row("o1"))
+    assert not menus
+    send(Type.MouseButtonRelease, row("o1"), held=none)
+    assert menus == [row("o1")] and "o1" in cmd.get_names()
+    # the menu the system asks for with the mouse is ours already
+    asked = QtGui.QContextMenuEvent(
+        QtGui.QContextMenuEvent.Reason.Mouse, row("o1"), view.mapToGlobal(row("o1"))
+    )
+    QtWidgets.QApplication.sendEvent(view, asked)
+    assert len(menus) == 1
+
+    marked, line = drag("o2", row("o1", 0.2))  # above o1: a line there
+    assert marked and line.height() == 2
+    assert line.top() == panel.tree.visualItemRect(panel.items["o2"]).top() - 1
+    assert panel.shown() == ["all", "o2", "o1", {"g1": ["m1", "m2"]}, "s1"]
+    group = panel.tree.visualItemRect(panel.items["g1"])
+    marked, frame = drag("o2", row("g1"))  # on the group: a frame around it
+    assert marked and (frame.top(), frame.height()) == (group.top(), group.height())
+    assert panel.shown() == ["all", "o1", {"g1": ["o2", "m1", "m2"]}, "s1"]
+    under = QtCore.QPoint(30, panel.tree.visualItemRect(panel.items["s1"]).bottom() + 40)
+    drag("m1", under)  # under the last row: out of the group, to the end
+    assert panel.shown() == ["all", "o1", {"g1": ["o2", "m2"]}, "s1", "m1"]
+    marked, _ = drag("g1", row("m2"))  # a group into itself: no mark, no move
+    assert not marked
+    drag("all", row("s1", 0.9))  # "all" is not moved
+    assert panel.shown() == ["all", "o1", {"g1": ["o2", "m2"]}, "s1", "m1"]
+    assert len(menus) == 1  # no menu after a drag
+    # the left button is the visibility, as before
+    QTest.mouseClick(view, Qt.MouseButton.LeftButton, pos=row("o1"))
+    assert "o1" not in cmd.get_names("public_objects", enabled_only=1)
+
+
 def test_states():
     from pmg_qt.object_panel import StatesPanel
 

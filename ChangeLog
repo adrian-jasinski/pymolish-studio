@@ -4,6 +4,32 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.70.0
+
+	* Rows of the Objects list are moved with the right mouse button:
+	  hold it on a row, drag, release. A line shows where the row would
+	  go between two rows, a frame marks the group it would go into.
+	  Dropped between rows it takes that place (and the group of the
+	  rows there, or the top level); dropped on a group it becomes a
+	  member; dropped under the last row it goes to the end of the top
+	  level. Objects, selections and whole groups move. "all" does not,
+	  and a group does not go into itself or into a group it holds: no
+	  mark is shown there and nothing happens.
+
+	  A right click without a drag opens the menu of the row as before,
+	  now when the button is released. The left button still shows and
+	  hides, F2 renames.
+
+	  With the keys, on the current row: Alt+Up and Alt+Down change
+	  places with the row above or below at the same level, Alt+Right
+	  puts the row into the group just above it, Alt+Left takes it out
+	  of its group.
+
+	  The order and the groups are those of the core ("order", "group"),
+	  so they are kept in a session. Tried in the real window with real
+	  right-button input: a drag above another row, a drag onto a
+	  group, and a click (the menu opened on release, not on press).
+
 	* 4.69.0
 
 	* The Delete key in the Objects list deletes the object or the
