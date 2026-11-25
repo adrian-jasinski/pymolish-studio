@@ -180,6 +180,13 @@ def testLoadPngDataUrl():
     assert Image.open(io.BytesIO(cmd.png(None))).size == (40, 30)
 
 
+@pytest.mark.parametrize("data", ["abc", "AAAA"])
+def testLoadPngDataUrlInvalid(data):
+    # was a crash ("abc") and a read past the decoded bytes ("AAAA")
+    with pytest.raises(pymol.CmdException):
+        cmd.load_png('data:image/png;base64,' + data)
+
+
 # not supported in older versions: xyz (no ref)
 @pytest.mark.parametrize("format", ['pdb', 'sdf', 'mol', 'mol2'])
 def testSaveRef(format):

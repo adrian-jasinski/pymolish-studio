@@ -386,6 +386,8 @@ std::unique_ptr<pymol::Image> MyPNGRead(const char *file_name)
   if(!strncmp(file_name, "data:image/png;base64,", 22)) {
     const char *base64str = file_name + 22;
     decoded = base64_decode(base64str);
+    if (decoded.size() < 8) // not base64, or no room for a PNG signature
+      return nullptr;
     data.h = data.c = decoded.data();
     memcpy(buf, data.c, 8);
     data.c += 8;

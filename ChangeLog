@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.76.5
+
+	* Core
+	  - Fix: load_png and bg_image_filename crashed (segmentation
+	    fault) on a "data:image/png;base64," text that is not base64,
+	    and read past the buffer when it decoded to fewer than 8
+	    bytes. Both now give no image, as for a file that cannot be
+	    opened.
+
+2026-11-25 pymolish-studio
+
 	* 4.76.4
 
 	* Core
