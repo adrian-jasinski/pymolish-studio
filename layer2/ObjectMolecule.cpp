@@ -509,8 +509,11 @@ static void undo_match(int *start, match_info * mi)
     int bb = match[-1];
     mi->atom_mark_a[a] = false;
     mi->atom_mark_b[b] = false;
-    mi->bond_mark_a[aa] = false;
-    mi->bond_mark_b[bb] = false;
+    // the first atom of a match has no bond: aa and bb are -1
+    if (aa >= 0)
+      mi->bond_mark_a[aa] = false;
+    if (bb >= 0)
+      mi->bond_mark_b[bb] = false;
     match -= 4;
   }
   mi->matched = start;
@@ -552,8 +555,10 @@ static int recursive_match(int a, int b, int aa, int bb, match_info * mi)
       int *before = mi->matched;
       mi->atom_mark_a[a] = true;
       mi->atom_mark_b[b] = true;
-      mi->bond_mark_a[aa] = true;
-      mi->bond_mark_b[bb] = true;
+      if (aa >= 0)
+        mi->bond_mark_a[aa] = true;
+      if (bb >= 0)
+        mi->bond_mark_b[bb] = true;
       mi->matched[0] = a;       /* atoms */
       mi->matched[1] = b;
       mi->matched[2] = aa;      /* bonds */

@@ -4,6 +4,16 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
+	* 4.76.6
+
+	* Core
+	  - Fix: valence with a source object ("valence copy, sele1,
+	    sele2, source") wrote one byte before a buffer for the first
+	    atom of every match and ended in "double free or corruption".
+	    It copies the bond orders now.
+
+2026-11-25 pymolish-studio
+
 	* 4.76.5
 
 	* Core
