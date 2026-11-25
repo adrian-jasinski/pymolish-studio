@@ -4,12 +4,17 @@ CHANGE LOG
 
 2026-11-25 pymolish-studio
 
-	* 4.76.8
+	* 4.76.9
 
 	* Core
 	  - ObjectVolume.cpp: createPreintegrationTexture is deleted:
 	    nothing called it.
-EOF2
+
+2026-11-25 pymolish-studio
+
+	* 4.76.8
+
+	* Core
 	  - Ray.cpp, Basis.cpp, RepSurface.cpp, Triangle.cpp, Sphere.cpp,
 	    Isosurf.cpp, Tetsurf.cpp, RepMesh.cpp, RepDot.cpp,
 	    ObjectMap.cpp and ObjectVolume.cpp: 60 allocations with

@@ -46,8 +46,6 @@ Z* -------------------------------------------------------------------
 #include "Vector.h"
 #include "main.h"
 
-#define clamp(x, l, h) ((x) < (l) ? (l) : (x) > (h) ? (h) : (x))
-
 static void ObjectVolumeRecomputeExtent(ObjectVolume* I);
 
 static ObjectVolumeState* ObjectVolumeGetActiveState(ObjectVolume* I)
@@ -664,66 +662,6 @@ static size_t createColorTexture(
   tex->texture_data_1D(count, colors);
   texname = tex->get_hash_id();
   return texname;
-}
-
-static size_t createPreintegrationTexture(
-    PyMOLGlobals* G, const float* Table, const int count)
-{
-  float factor, tmp1[4];
-  Vector4f* sat = pymol::malloc<Vector4f>(count + 1);
-  int i, sb, sf, lookupindex = 0;
-  GLfloat* lookupImg = pymol::malloc<GLfloat>(count * count * 4);
-
-  memset(sat[0], 0, sizeof(sat[0]));
-
-  // summed area table
-  for (i = 0; i < count; i++) {
-    tmp1[3] = Table[i * 4 + 3];
-    scale3f(Table + i * 4, tmp1[3], tmp1);
-    add4f(tmp1, sat[i], sat[i + 1]);
-  }
-
-  // make quadratic lookup table
-  for (sb = 0; sb < count; sb++) {
-    for (sf = 0; sf < count; sf++) {
-      GLfloat col[4];
-      int smin, smax;
-
-      if (sb < sf) {
-        smin = sb;
-        smax = sf;
-      } else {
-        smin = sf;
-        smax = sb;
-      }
-
-      if (sat[smax + 1][3] != sat[smin][3]) {
-        factor = 1.f / (sat[smax + 1][3] - sat[smin][3]);
-
-        for (i = 0; i < 3; i++)
-          col[i] = (sat[smax + 1][i] - sat[smin][i]) * factor;
-
-        col[3] = 1. / (factor * (smax + 1 - smin));
-
-      } else {
-        for (i = 0; i < 4; i++)
-          col[i] = 0.f;
-      }
-      for (i = 0; i < 4; i++)
-        lookupImg[lookupindex++] = clamp(col[i], 0., 1.);
-    }
-  }
-
-  // upload texture
-  auto tex = G->ShaderMgr->newGPUBuffer<TextureGL>(tex::format::RGBA,
-      tex::data_type::FLOAT, tex::filter::NEAREST, tex::filter::NEAREST,
-      tex::wrap::CLAMP_TO_EDGE, tex::wrap::CLAMP_TO_EDGE);
-  tex->texture_data_2D(count, count, lookupImg);
-
-  mfree(sat);
-  mfree(lookupImg);
-
-  return tex->get_hash_id();
 }
 
 void ObjectVolume::render(RenderInfo* info)
