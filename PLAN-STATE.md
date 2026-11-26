@@ -7,8 +7,10 @@ that day from the planning update of the morning (15m to 15p, 32c, 34d and
 the surface worker of 1b): 4.83.0 to 4.89.0; an eighth, 4.90.0, from a
 request of the same day (the alignment window shows the secondary
 structure only as the drawn track). Questions 121 to 125 are
-answered and built; 128 and 129 are open in [PLAN.md](PLAN.md), with 126
-and 127 of the documentation plan (step 38, planning only). Built since
+answered and built; 128 and 129 are open in [PLAN.md](PLAN.md). The
+documentation (step 38a to 38d, answers 126 A and 127 A) was written and
+captured on 2026-11-26 at 4.90.0: it changed no program code and has no
+version. Built since
 4.19.43, with the tests and GUI checks recorded in
 [PLAN-DONE.md](PLAN-DONE.md):
 

@@ -1,6 +1,25 @@
 # 38 — Clear, current documentation with real demonstrations
 
-[Roadmap](../../PLAN.md) · Requested 2026-11-26 · **planned, not built**.
+[Roadmap](../../PLAN.md) · Requested 2026-11-26 · **38a to 38d written and
+captured 2026-11-26 at 4.90.0** (`c7967883`); no program version, no
+ChangeLog entry. What is left is at the end of the
+[coverage checklist](#coverage-checklist-2026-11-26-4900).
+
+**Built 2026-11-26, at 4.90.0.** Choices 126 and 127 were answered A and A
+by the user at the start of the run (repository Markdown; MP4 behind a
+poster). Measured in that run: 350 registered commands, 31 of them not in
+the registry of upstream PyMOL 3.2.0a, 18 without help text, 763 settings,
+7 of them new; 207 links with an anchor, all of which resolve; 14 pictures
+of the window (29 to 567 KB), 3 sheets of rendered pictures (111 to 128
+KB), 4 clips (19 to 31 s, 401 to 996 KB) with posters. Written: a docs
+home, nine task guides, a reference, a troubleshooting page, the media
+recipes with their scripts; rewritten: README, Getting started, the
+overview "What is different", Commands. Left out: clips or pictures of the
+Builder, of a measurement and of the two surface types; a finished turn of
+the Chat tab (waits for the trial of step 31); any check on Windows or
+macOS; a reader who does not know the window (the fallback of this plan
+was used: the first-picture path walked in a clean profile). The original
+plan follows unchanged, and the checklist is at its end.
 
 Initial review: committed version **4.84.0**, revision `6a76b605`, the
 user docs, command registration, GUI code, tests and ChangeLog. Menu grouping
@@ -251,7 +270,9 @@ not the entire gallery at each release.
 | 126 | Documentation destination | **A, recommended:** repository Markdown with a docs home and task/name indexes; works with the existing project and adds no docs stack. **B:** a separate documentation website with full-text search, built from the same Markdown; select hosting/build/search tooling in a follow-up before adding dependencies. |
 | 127 | Short-demo presentation | **A, recommended:** videos opened from static screenshot posters, GIF only for a small action where useful. **B:** small inline GIF-style loops in guides, with static/written equivalents and controllable videos; more animation and media to maintain. |
 
-Both questions were asked during planning. Unanswered recommendations are
+Both were answered on 2026-11-26, at the start of the run that built the
+step: **126 A** and **127 A**. Before that: both questions were asked during
+planning. Unanswered recommendations are
 not decisions. The content inventory and writing structure work with either
 destination; site implementation and final encodings follow the answers.
 
@@ -259,3 +280,126 @@ Skipped: implementing the docs or recording media in this planning task;
 automatic API-site generation, a new search service, paid-account trials and
 a promotional video. No existing data, images, license text or application
 behavior is removed by this plan.
+
+## Coverage checklist, 2026-11-26, 4.90.0
+
+Sources: the registry `cmd.keyword` of the installed 4.90.0 and of upstream
+PyMOL 3.2.0a, both headless; the menus, toolbar, panels, tooltips and
+shortcuts read out of the running window, started with `-k` and an empty
+configuration folder; the code and tests named in the coverage table
+above; the ChangeLog. "Run" means a command line was run headless on
+4.90.0; "window" means the step was done in the real window by a capture
+script (`docs/media/capture/`); "code" means the statement was taken from
+the Qt code and the dump of the window and was not exercised.
+
+### Commands
+
+| Group | Count | Where it is | Checked |
+| --- | --- | --- | --- |
+| All registered names | 350 headless; `plugin_load` and `plugin_pref_save` more once the plugin system has started | One row each in `docs/commands.md`, "All commands by name" | `license_docs.py::test_every_command_is_indexed` fails when a name has no entry |
+| Added by the fork (not in upstream 3.2.0a) | 31 | Full entries by task in `docs/commands.md`; worked examples in the guides | run |
+| Worked where upstream raises an error (`save x.stl`, `assign_stereo`, `pi_interactions`, `focal_blur`, `morph`) | 5 | `docs/commands.md`, Editing and analysis, Saving | run, except `focal_blur` |
+| Inherited, used in a guide | about 150 (an estimate) | Index row with the guide; examples in the guide | run where the guide prints them |
+| Inherited, less used | the rest | Index row with one line; `help <name>` | names only |
+| Python words (`for`, `if`, `print` ...) and internal names (`_alt` ...) | 19 | One sentence under the index | names only |
+
+Gaps recorded, not repaired: no help text for `capture`, `reference`,
+`splash`, `movie.load`, `movie.nutate`, `movie.pause`, `movie.rock`,
+`movie.roll`, `movie.screw`, `movie.sweep`, `movie.zoom`, `util.mrock`,
+`util.mroll` and the five internal names; `help` has no topic for settings
+(`help settings`: "unknown topic"); `help selections` lacks `organic`,
+`polymer` and `solvent`; `help distance` lacks modes 9 and 10; `help save`
+names `cmd.get_capabilities()`, which is `pymol.get_capabilities()`, and
+says an unknown extension writes PDB (it raises); `help fetch` says a fetch
+in the window is asynchronous by default (it is not); `help ligand_2d`
+says contacts are listed "without a file name" (they are listed either
+way); the docstrings of the presets `glass`, `wire` and `spring` say
+"ligand sticks" (they draw ball and stick). Upstream 3.2.0a has four names
+this program does not: `help_setting`, `callout`, `desaturate`, `load_mtz`
+(removed stubs; in Reference, "Compatibility").
+
+### The window
+
+| Part | Where it is | Checked |
+| --- | --- | --- |
+| Menu bar: File | Structures (Open, Open Folder, Get PDB, Get by UniProt, Get Predicted Structure), Saving (Save Session, Export Molecule/Objects/Map/Alignment/Image/Movie), Reference (Log File, Run Script, Working Directory, Edit pymolrc, Reinitialize, New PyMOL Window) | Get PDB, Save and reload of a session: window; the rest: run or code |
+| Edit | Appearance (Undo, Redo) | window (Undo in the clip) |
+| Build | Editing and analysis (From SMILES, Fragment, Residue, Sculpting, the pk1 rows) | `load_smiles` and the commands behind the rows: run; the Builder itself: code |
+| Movie | Scenes and movies (Timeline, Program, Frame Rate, the switches) | Timeline: window; the old rows: code |
+| Display | Sequences (Sequence in Viewport, Sequence Mode), Ligands (Zoom > Next/Previous Ligand), Reference and Troubleshooting (Clip, Quality, Panels, Dark Theme), Saving (Background), not described row by row: Stereo, Color Space, Grid and the single switches | Next Ligand: window; the rest: code |
+| Setting | Reference (Edit All, Keyboard Shortcuts, how settings work), Appearance (Surface, Transparency, Rendering), Structures (file loading, Auto-Show) | code; `set`/`get`/`unset`: run |
+| Scene | Scenes and movies | panel: window; menu rows and F keys: code |
+| Mouse | Reference (the table of the mode at start, the other modes named) | table from `controlling.py`; a click, a click on empty space and the L button: window |
+| Wizard | Editing and analysis (one table) | code |
+| Plugin | `docs/plugins.md` (not changed) | not checked again |
+| Help | Reference, "Find help" (the links lead to pages of PyMOL) | code |
+| Toolbar | Getting started (every button), then the guide of each: Structures (Open, Residues, P/L/S/⋯/All/none), Appearance (Undo, Redo, Presets, Palette, Background), Editing and analysis (Builder), Scenes and movies (Scenes, Movie), Ligands (2D), Sequences (Sequence alignment), Properties (Table), Saving (Draw), Troubleshooting (size), Getting started (Zoom, Orient, Rock, More) | Presets, Undo, Scenes, Movie, 2D, Sequence alignment, Table, Draw, L and select-nothing: window; Palette and Background rows: run and code |
+| Objects panel: rows, A/S/H/L/C, keys, drag | Structures; Appearance (S, H, C); Editing and analysis (A > clean, find, align, hydrogens; L) | a click on A of a group, the dim row of a switched-off object: window; the menus: read out of the window; keys and drag: code |
+| Buttons under the list (Viewing, SEQ, Chat, Wizard, Cmd) | Getting started, Reference, Sequences, Assistant | code |
+| States strip | Scenes and movies | seen in the window with a movie; buttons: code |
+| Tabs Command, Sequence, Chat; A−, A+, Reset | Getting started, Commands, Sequences, Assistant | Sequence tab with a drag, Chat tab opened: window |
+| Panels: Scenes, Timeline, Ligand 2D, Table, Sequence alignment | their guides | window: Add and recall of scenes; Tour, Add, a drag of a block end, Play, Export menu; a click on a residue and Show in 3D; a sort and a star; Add chains, Align, color, a drag over cells, Fit, Undo. Everything else in them: code |
+| Dialogs: Get PDB, Draw panel, Save PNG | Getting started, Saving | window (opened and read); the other dialogs: code |
+
+### Settings, keys, formats
+
+| Part | Count | Where it is | Checked |
+| --- | --- | --- | --- |
+| Settings | 763 | Reference: how to set, read and find them; no list of all | `set`, `get`, `unset`: run |
+| Settings new in the fork | 7 | Reference, with the guide of each | defaults read from the program |
+| Settings gone since upstream | 23 | Reference (named or by prefix) | a line that sets one: run, prints an error and the script goes on |
+| Default keys | 129 bindings | Reference: the ones for viewing; Build menu named for the rest; Setting > Keyboard Shortcuts | table from `keyboard.get_default_keys()` |
+| Mouse modes | the mode at start | Reference | table from `controlling.py` |
+| File formats | | Saving, "File formats that are read and written" | round trips run for sessions, PDB, mmCIF, SDF, MOL, PNG, STL, USD, VRML, POV, CCP4, `.aln`, FASTA; glTF and BinaryCIF from code (the local build has neither) |
+| Start-up options | | Reference: seven of them | `-c`, `-k`, `-q`, `-d`, `-y` used in this run |
+
+### Found in the program, not repaired here
+
+A documentation step changes no program code. Each of these is a fix of
+its own (a `Y` version) if wanted:
+
+- `stage` after `reinitialize` with a floor on leaves the view 2 Å deep:
+  the picture is empty until `stage off` (in Troubleshooting).
+- A crash at exit ("double free or corruption", exit 134) after
+  `scene a, store; scene b, store; scene b, clear; scene a`, headless.
+- A segmentation fault at exit (139) of one long headless script that did
+  session round trips and then exports; each half alone exits 0. Not
+  made smaller.
+- Display > Panels > Ligand 2D shows the panel without drawing; Refresh
+  draws (in Ligands).
+- Toolbar More > "Clear movie" runs `mclear`, which clears the image
+  cache, not the movie.
+- A (all) > "delete selections" builds a lazy `map(...)`; run directly,
+  the same code deletes nothing.
+- Build > Fragment > Methane shows Ctrl-Shift-M, the key that runs
+  `ligand_next`.
+- The Draw panel's Ray sets `opaque_background` from its own box, ticked
+  at the start, over Background > "Ray trace with this background".
+- Undo of the Chat tab and of the alignment window is plain `undo`: after
+  a later preset it takes that back, and the log says "back to before the
+  last preset".
+- The result of a fit says "aligned atoms" for the residue count of
+  `cealign`; Fit structures with nothing selected fails when the table
+  has a FASTA row; Import FASTA offers `*.aln`, which is refused.
+- "antibody and antigen" does not recognize the Fab complex 1ahw until its
+  chains are named H and L.
+- `set_name old, existing` replaces the existing object without a word;
+  `set_property x, 1, ala gly` finds no object (the help promises a list);
+  `get_property` prints "not found" for the value 0; `save x.fasta` writes
+  `?` for an unknown residue and `load` then fails; `color_cpk` prints a
+  double space; File > Get by UniProt... has no limit; the Save PNG dialog
+  says "New in PyMOL 2.0"; File > Open Recent lists the user's files also
+  with `-k`; Help > Topics > Timeline Python API opens a page of the PyMOL
+  wiki, not of `pymol.shots`.
+
+### What is left of step 38
+
+- See how the pages of the repository on GitHub play the four MP4 files
+  from their posters; that needs the branch to be pushed. Each poster has
+  a plain link to the file as the fallback.
+- A picture of a finished Chat turn and a Chat clip, after a recorded
+  conversation with a real provider (step 31, order 2).
+- The statements marked "code" above were not done by hand in the window.
+- Nothing was looked at on Windows or macOS.
+- No reader who does not know the window followed the first-picture guide.
+

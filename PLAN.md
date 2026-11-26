@@ -202,8 +202,17 @@ audit, plain task guides, clear front pages and deeper reference, and real
 screenshots plus short demonstrations. Initial source snapshot: 4.84.0
 (`6a76b605`); menu grouping landed in 4.85.0 during planning. Refresh the
 baseline when writing/recording. Planning only: no user docs
-rewritten, media captured or program version changed. Destination and demo
-format are choices 126–127 below.
+rewritten, media captured or program version changed.
+
+**Documentation written, 2026-11-26, at 4.90.0:** the user answered 126 A
+(Markdown in this repository) and 127 A (MP4 behind a poster), and 38a to
+38d were done the same day: a docs home (`docs/README.md`), nine task
+guides, a reference, a troubleshooting page, a command index of all 350
+registered commands, 14 pictures of the real window, 3 sheets of rendered
+pictures and 4 clips with posters, and the recipes with their scripts in
+`docs/media/`. No program version and no ChangeLog entry. The checklist,
+what was only read from the code, and the faults found in the program on
+the way are in [plan 38](docs/plans/38-documentation.md).
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -227,12 +236,12 @@ implementation task/PR, with an `X` feature or `Y` fix version under
 | 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Needs the pushed branch: the last CI run is older than the repair. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
 | 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). On 2026-11-26 the user reported that the Chat tab works with Claude Code and with ChatGPT, signed in and with "Run without asking": that is the real sign-in and a conversation for those two (the sign-in of 4.66.0 and 4.80.0 had only seen stand-ins). Nothing was recorded of it here (which tasks, commands, errors, time, tokens, which system). Left: the same for OpenRouter (31d); the Chat tab with an API key of Anthropic and of OpenAI; the five recorded tasks (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature); the button "Continue with Claude Code" with a signed-out Claude Code; one turn on Windows or macOS; one call through the connector from Codex, whose account had no credits on 2026-11-24. | The five tasks recorded for one provider with a key and for Claude Code; a sign-in and a conversation recorded for OpenRouter; one other system; one Codex call through the connector. |
 | 3 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
-| 4 | **38a–d** — [Current documentation and real demos](docs/plans/38-documentation.md) | Audit current functions; correct stale docs; write a docs home, short task guides and deeper reference; capture the real window and focused screenshots, plus short appearance/ligand/sequence/movie demos. Choices 126–127 cover destination and format. | Coverage checklist complete; examples/menu paths checked; front-page routes, links and media work; version and capture recipes recorded. |
+| 4 | **38 rest** — [Current documentation and real demos](docs/plans/38-documentation.md) | 38a to 38d were written and captured on 2026-11-26 at 4.90.0. Left: see how GitHub plays the four MP4 clips from their posters (needs the pushed branch; each has a plain link as the fallback); a picture and a clip of a finished Chat turn, after the trial of order 2; the GUI statements the checklist marks "code" were not done by hand; nothing was looked at on Windows or macOS; no reader who does not know the window. | The clips play, or their links are the documented way; the Chat picture is in `docs/assistant.md`. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 
-Step 38's inventory and text can start independently of the earlier orders;
-the menus and the footer its screenshots wait for are built (4.85.0, 4.86.0).
-Its slices are docs-only and get no program version or ChangeLog entry.
+Step 38 was written without waiting for the earlier orders. Its slices are
+docs-only and got no program version or ChangeLog entry; its rest (order 4)
+needs the pushed branch and the trial of order 2.
 
 Orders 3 to 9 of the planning update of 2026-11-26 were built the same
 day (4.83.0 to 4.89.0) and left the table; general undo moved from order 10
@@ -298,14 +307,13 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-Open: two choices of the documentation plan (126, 127), and two questions
-from the run of 4.83.0 to 4.89.0 (128, 129). Both features of the latter
-work as they are; the answers decide what is added or changed:
+Open: two questions from the run of 4.83.0 to 4.89.0 (128, 129). Both
+features work as they are; the answers decide what is added or changed.
+126 and 127 of the documentation plan were answered on 2026-11-26, A and A,
+and built (step 38):
 
 | No. | Choice | Options and recommendation |
 | --- | --- | --- |
-| 126 | Documentation destination ([38](docs/plans/38-documentation.md), order 4) | **A, recommended:** Markdown in this repository, a docs home and task/command indexes. **B:** a separate documentation website with full-text search, using the same source; choose its tooling before adding dependencies. |
-| 127 | Short demonstrations ([38](docs/plans/38-documentation.md), order 4) | **A, recommended:** short videos opened from static screenshot posters; GIF only where useful. **B:** small inline GIF-style loops in guides, with static/written equivalents and controllable videos. |
 | 128 | What becomes of the glow experiment ([15p](docs/plans/15-presets.md), `set glow, 1`, 4.88.0; pictures in `docs/img/glow-experiment.jpg`) | **A, recommended:** keep the setting and add one row "glow" / "no glow" to the light menu, as fog has, for the viewport only. **B:** leave it as a setting without a menu row (today). **C:** also in ray-traced pictures and in images of another size: a blur over the finished image, new work in the ray path; a slice of its own. **D:** take it out again. Measured: about 2.5 ms a frame at 1436 x 702 on the integrated GPU; one driver tried. |
 | 129 | Whether "Solid (grid)" becomes the default surface, now that the worker is built (answer 105 A said: decide again then; [plan 1](docs/plans/01-performance-gpu.md)) | **A, recommended:** "Solid" stays the default. The freeze was the reason to look at the grid, and the worker took it away (1aon: the window blocked 1.2 s instead of 5 s); pictures and sessions stay as they are. **B:** the grid for surfaces of 5000 atoms or more, today's surface below. **C:** the grid always. With the grid a surface of 1aon is on screen after 1.8 s instead of 5.5 s; it is smoother, has no trimming, and its cavity modes draw 71 to 74 % of the area of the dots. |
 
@@ -476,9 +484,14 @@ cartoons and maps in the background.
 
 The user's to do:
 
-- Choose the documentation destination and demo format, 126–127 above.
-  [Plan 38](docs/plans/38-documentation.md) specifies front pages, deeper
-  guides, current-function coverage and the screenshot/clip list.
+- Read the new documentation, starting at `docs/README.md`, and say what
+  reads wrong. Nine of its guides were written by helper sessions from the
+  code and checked by running their commands; what was only read from the
+  code is listed in [plan 38](docs/plans/38-documentation.md).
+- After the branch is pushed: open `docs/appearance.md` on GitHub and click
+  the poster of the clip, to see whether the MP4 plays there.
+- Decide which of the faults found while writing (the list in plan 38,
+  "Found in the program") are to be repaired; none was touched.
 - Answer questions 128 and 129 above.
 - Look at the changes of 2026-11-26 in your own window: Presets (the
   groups, the four new rows under "atoms and bonds" and "surface",
@@ -580,9 +593,8 @@ The user's to do:
   question 128 is answered: every plan made from it is built. It was left
   in place; it is your folder.
 
-The README screenshot (`docs/img/window.png`) shows the window of 4.19.
-Replacing it is now part of step 38d, with the other documentation captures;
-it is not a task for the user.
+The README screenshot (`docs/img/window.png`) is the window of 4.90.0
+since step 38d (2026-11-26).
 
 ## Shared completion criteria
 
