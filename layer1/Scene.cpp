@@ -21,6 +21,7 @@ Z* -------------------------------------------------------------------
 #include"os_numpy.h"
 
 #include"Util.h"
+#include "RepSurface.h"
 #include "pymol/utility.h"
 
 #include"Word.h"
@@ -1577,6 +1578,8 @@ pymol::Result<> SceneMakeSizedImage(PyMOLGlobals* G, Extent2D extent,
 {
   CScene *I = G->Scene;
 
+  RepSurfaceFinishBuilds(G, true); // a picture has all of the scene
+
   float sceneAspectRatio = SceneGetAspectRatio(G);
 
   // Calculate from implicit extents if needed
@@ -2153,6 +2156,8 @@ int SceneMakeMovieImage(PyMOLGlobals * G,
   // PYMOL-3209 objects inside hidden groups become visible
   ExecutiveUpdateSceneMembers(G);
 
+  RepSurfaceFinishBuilds(G, true); // a frame of a movie has all of the scene
+
   mode = SceneValidateImageMode(G, mode, width || height);
 
   I->DirtyFlag = false;
@@ -2256,6 +2261,10 @@ void SceneIdle(PyMOLGlobals * G)
   double renderTime;
   double minTime;
   int frameFlag = false;
+
+  if (RepSurfaceFinishBuilds(G, false)) {
+    SceneInvalidate(G); // a surface built in the background is ready
+  }
 
   if(I->PossibleSingleClick == 2) {
     double now = UtilGetSeconds(G);
@@ -4193,9 +4202,29 @@ static void SceneStencilCheck(PyMOLGlobals *G)
 }
 
 /*========================================================================*/
+void SceneUpdateForWindow(PyMOLGlobals* G)
+{
+  CScene* I = G->Scene;
+  RepSurfaceFinishBuilds(G, false); // what is ready (SceneIdle may not run)
+  I->BackgroundBuilds = true;
+  SceneUpdate(G, false);
+  I->BackgroundBuilds = false;
+}
+
+bool SceneBuildsInBackground(PyMOLGlobals* G)
+{
+  return G->HaveGUI && G->Scene->BackgroundBuilds &&
+         SettingGet<bool>(G, cSetting_async_surface);
+}
+
 void SceneUpdate(PyMOLGlobals * G, int force)
 {
   CScene *I = G->Scene;
+
+  if (!I->BackgroundBuilds) {
+    // whoever asks needs all of the scene: wait for what is being built
+    RepSurfaceFinishBuilds(G, true);
+  }
 
   int cur_state = SettingGetGlobal_i(G, cSetting_state) - 1;
   int defer_builds_mode = SettingGetGlobal_i(G, cSetting_defer_builds_mode);

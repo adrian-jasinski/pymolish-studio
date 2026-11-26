@@ -4,6 +4,34 @@ CHANGE LOG
 
 2026-11-26 pymolish-studio
 
+	* 4.89.0
+
+	* Surface
+	  - A large surface no longer freezes the window (1b). A surface
+	    of 5000 atoms or more that the window asks for is built on a
+	    thread of its own: the view turns, menus open and commands run
+	    while it is built, and the surface appears when it is ready.
+	    The log says " Surface: building the surface of ... in the
+	    background" and " ... is ready (4.5 s)".
+	  - Whatever needs the whole scene waits for it, as before: a
+	    ray-traced picture, png, draw, a frame of a movie, an export,
+	    the thumbnail of a scene. A script therefore gets the same
+	    pictures. Without a window (pymolish -c) nothing changed.
+	  - New setting async_surface (on); "set async_surface, 0" builds
+	    in the window's own thread again.
+	  - Measured in the real window on 1aon (58,674 atoms surfaced):
+	    the window was blocked for 4.9 and 5.5 s before; now for 1.2 s
+	    at most, at the end, when the vertices are colored and drawn
+	    for the first time; the surface is on screen after 5.4 and
+	    5.7 s, as before. "Solid (grid)": blocked 0.9 s (1.7 s
+	    before), on screen after 1.8 s.
+	  - Limits: a build that is no longer wanted (the object deleted,
+	    a setting changed again) runs to its end before its thread is
+	    free; only surfaces, not meshes or cartoons; with cache_mode
+	    on, a surface is built as before.
+
+2026-11-26 pymolish-studio
+
 	* 4.88.0
 
 	* Viewport

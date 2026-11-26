@@ -547,8 +547,17 @@ void OrthoBusySlow(PyMOLGlobals* G, int progress, int total)
 }
 
 /*========================================================================*/
+static thread_local bool s_busy_muted = false;
+
+void OrthoBusyMuteThread()
+{
+  s_busy_muted = true;
+}
+
 void OrthoBusyFast(PyMOLGlobals* G, int progress, int total)
 {
+  if (s_busy_muted)
+    return;
   COrtho* I = G->Ortho;
   double time_yet = (-I->BusyLastUpdate) + UtilGetSeconds(G);
   short finished = progress == total;

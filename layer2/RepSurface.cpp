@@ -45,7 +45,10 @@ Z* -------------------------------------------------------------------
 
 #include <algorithm>
 #include <cmath>
+#include <future>
 #include <memory>
+#include <mutex>
+#include <thread>
 #include <vector>
 
 #ifdef NT
@@ -105,9 +108,13 @@ struct RepSurface : Rep {
   bool dot_as_spheres = false;
 
   int surface_mode = cRepSurface_by_flags;
+
+  //! set while the surface is built on a thread of its own; N is 0 then
+  std::shared_ptr<struct SurfaceBuild> building;
 };
 
 static void RepSurfaceSmoothEdges(RepSurface* I);
+static void SurfaceBuildForget(RepSurface* I);
 
 static void setShaderCGO(RepSurface* I, CGO* cgo)
 {
@@ -127,6 +134,7 @@ static void setPickingCGO(RepSurface* I, CGO* cgo)
 
 RepSurface::~RepSurface()
 {
+  SurfaceBuildForget(this);
   setPickingCGO(this, nullptr);
   setShaderCGO(this, nullptr);
 }
@@ -1588,7 +1596,7 @@ void RepSurface::render(RenderInfo* info)
   }
 
   if ((I->Type != SurfaceType::DotDefault) && (!s)) {
-    return;
+    return; // also while it is being built in the background
   }
 
   auto alpha = SettingGet_f(
@@ -3086,6 +3094,38 @@ struct SurfaceJob {
   std::vector<int> S{};
   int NT{};
 };
+
+/**
+ * A surface that is built on a thread of its own while the window stays in
+ * use. RepSurfaceNew starts it; RepSurfaceFinishBuilds takes the result, on
+ * the main thread. The thread shares it with the representation and
+ * outlives one that is deleted meanwhile: the result is dropped then.
+ *
+ * ponytail: a build nobody waits for any more runs to its end (only
+ * G->Interrupt stops it). A flag of its own in the loops that test
+ * G->Interrupt, when surfaces rebuilt in a row get in each other's way.
+ */
+struct SurfaceBuild {
+  SurfaceJob job;
+  std::future<int> done; //!< what SurfaceJobRun returned
+  double started{};
+  bool smoothEdges{};
+};
+
+//! the representations with a build running (async_builds makes them on
+//! several threads: hence the lock)
+static std::vector<RepSurface*> s_builds;
+static std::mutex s_builds_mutex;
+
+static void SurfaceBuildForget(RepSurface* I)
+{
+  if (I->building) {
+    std::lock_guard<std::mutex> lock(s_builds_mutex);
+    s_builds.erase(std::remove(s_builds.begin(), s_builds.end(), I),
+        s_builds.end());
+    I->building.reset();
+  }
+}
 
 static void SurfaceJobPurgeResult(PyMOLGlobals* G, SurfaceJob* I)
 {
@@ -4917,9 +4957,8 @@ Rep* RepSurfaceNew(CoordSet* cs, int state)
       }
 
       if (ok) {
-        auto surf_jobU = std::make_unique<SurfaceJob>();
-        auto surf_job = surf_jobU.get();
-        CHECKOK(ok, surf_job);
+        auto build = std::make_shared<SurfaceBuild>();
+        auto surf_job = &build->job;
         ok &= RepSurfacePrepareSurfaceJob(G, surf_job, I, cs, obj, atom_info,
             carve_vla, n_present, present_vla, optimize, sphere_idx,
             solv_sph_idx, surface_type, circumscribe, probe_radius, point_sep,
@@ -4937,8 +4976,30 @@ Rep* RepSurfaceNew(CoordSet* cs, int state)
           RepSurfaceConvertSurfaceJobToPyObject(
               G, surf_job, cs, obj, &entry, &input, &output, &found);
           if (ok && !found) {
-
-            ok &= SurfaceJobRun(G, surf_job);
+            // A large surface, wanted for the window and nothing else: on
+            // a thread of its own, and the window stays in use.
+            if (cache_mode <= 0 && n_present >= cSurfaceBuildMinAtoms &&
+                SceneBuildsInBackground(G)) {
+              build->smoothEdges = smooth_edges;
+              build->started = UtilGetSeconds(G);
+              std::promise<int> result;
+              build->done = result.get_future();
+              std::thread([G, build, result = std::move(result)]() mutable {
+                OrthoBusyMuteThread(); // no Python on this thread
+                result.set_value(SurfaceJobRun(G, &build->job));
+              }).detach();
+              I->building = build;
+              {
+                std::lock_guard<std::mutex> lock(s_builds_mutex);
+                s_builds.push_back(I);
+              }
+              PRINTFB(G, FB_RepSurface, FB_Actions)
+              " Surface: building the surface of \"%s\" in the background "
+              "(%d atoms).\n",
+                  obj->Name, n_present ENDFB(G);
+            } else {
+              ok &= SurfaceJobRun(G, surf_job);
+            }
 
             if (cache_mode > 1) {
               int blocked = PAutoBlock(G);
@@ -4962,7 +5023,7 @@ Rep* RepSurfaceNew(CoordSet* cs, int state)
           }
         }
         /* surf_job must be valid at this point */
-        if (ok) {
+        if (ok && !I->building) {
           I->N = std::move(surf_job->N);
           I->V = std::move(surf_job->V);
           I->VN = std::move(surf_job->VN);
@@ -4974,9 +5035,9 @@ Rep* RepSurfaceNew(CoordSet* cs, int state)
 
       ok &= !G->Interrupt;
       if (ok)
-        I->recolor();
+        I->recolor(); // while it is being built: of no vertices
 
-      if (ok && smooth_edges)
+      if (ok && smooth_edges && !I->building)
         RepSurfaceSmoothEdges(I);
     }
     if (carve_map)
@@ -4990,6 +5051,46 @@ Rep* RepSurfaceNew(CoordSet* cs, int state)
     I = nullptr;
   }
   return (Rep*) I;
+}
+
+bool RepSurfaceFinishBuilds(PyMOLGlobals* G, bool wait)
+{
+  std::vector<RepSurface*> ready;
+  {
+    std::lock_guard<std::mutex> lock(s_builds_mutex);
+    for (auto* rep : s_builds) {
+      if (rep->G == G &&
+          (wait || rep->building->done.wait_for(std::chrono::seconds(0)) ==
+                       std::future_status::ready)) {
+        ready.push_back(rep);
+      }
+    }
+  }
+  for (auto* I : ready) {
+    auto build = I->building; // (get() waits for a build that still runs)
+    SurfaceBuildForget(I);
+    auto& job = build->job;
+    if (!build->done.get() || G->Interrupt) {
+      PRINTFB(G, FB_RepSurface, FB_Warnings)
+      " Surface-Warning: the surface of \"%s\" was not built.\n",
+          I->obj->Name ENDFB(G);
+      continue;
+    }
+    I->N = job.N;
+    I->V = std::move(job.V);
+    I->VN = std::move(job.VN);
+    I->NT = job.NT;
+    I->T = std::move(job.T);
+    I->S = std::move(job.S);
+    I->ColorInvalidated = true;
+    I->recolor();
+    if (build->smoothEdges)
+      RepSurfaceSmoothEdges(I);
+    PRINTFB(G, FB_RepSurface, FB_Actions)
+    " Surface: the surface of \"%s\" is ready (%.1f s).\n", I->obj->Name,
+        UtilGetSeconds(G) - build->started ENDFB(G);
+  }
+  return !ready.empty();
 }
 
 void RepSurfaceSmoothEdges(RepSurface* I)

@@ -11212,9 +11212,13 @@ void ExecutiveDrawNow(PyMOLGlobals* G, ExecutiveDrawInfo execDrawInfo)
     }
 
     ExecutiveUpdateSceneMembers(G);
-    SceneUpdate(G, false);
-    if (WizardUpdate(G))
+    // for the window: a large surface is built in the background
+    auto update = execDrawInfo.offscreen ? [](PyMOLGlobals* G) {
       SceneUpdate(G, false);
+    } : SceneUpdateForWindow;
+    update(G);
+    if (WizardUpdate(G))
+      update(G);
     if (stereo) {
       switch (stereo_mode) {
       case cStereo_geowall: {
