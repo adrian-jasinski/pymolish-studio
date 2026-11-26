@@ -1,10 +1,17 @@
 # 15 — Presets and looks
 
+**Built 2026-11-26, 4.91.0: the glow menu (answer 128 A).** Presets >
+light ends with "no fog"/"fog" and "no glow"/"glow"; the row calls
+`preset.glow(on)` and keeps one Undo snapshot; scenes keep `glow` like
+`depth_cue`. Checked headless: Undo, Redo, scene recall, session save and
+load; in the window, the 4.88.0 halo test through `preset.glow` (integrated
+AMD GPU, WSLg). Nothing new measured: no frame times, no picture. Left
+out, as decided: ray-traced pictures, sized images, stereo. Step 15 is
+finished.
+
 **Decision 2026-11-26, question 128: A, recommended.** Keep the glow
 setting and add "glow" / "no glow" to the light menu, for the viewport
-only. The [menu follow-up](#question-128-a-glow-menu-follow-up) is planned,
-not built (roadmap order 3). This decision changes no code or version;
-the measurements below are from the 4.88.0 experiment.
+only. The measurements below are from the 4.88.0 experiment.
 
 **Built 2026-11-26, 4.83.0 to 4.88.0: 15m, 15n, 15o, 15b and 15p.** The
 section "Request 2026-11-26" below is the plan as it was written that
@@ -16,7 +23,7 @@ morning; questions 123 to 125 were answered with their recommended options.
 | 15n (with [34d](34-ball-and-stick.md)) | 4.84.0 | Presets > transparency: cartoon, spheres, surface, ball and stick; opaque, 25, 50, 75 %; whole objects. | A row clears the value on the atoms of the object and sets it on the object; a preset now unsets all four on its objects. |
 | 15o | 4.85.0 | The groups cartoon, atoms and bonds, surface, binding; transparency, solvent; "Scene appearance" with light, theme (colors and background) and floor. | 69 leaves, one Undo snapshot each. Arrow keys tried in the toolbar menu, three levels. Labels stay in small letters. |
 | 15b | 4.87.0 | The outline in the viewport: `fxaa.fs` draws a line where the picture lies behind its neighbors, from two copies of the depth; follows `ray_trace_mode`, switch `viewport_outline`. | [viewport-outline.jpg](../img/viewport-outline.jpg). At 1436 x 702 on the integrated GPU (Mesa d3d12): 1oky spheres 2.8 to 5.7 ms a frame, 1aon spheres 5.2 to 8.2 ms, 1aon cartoon 11.1 to 13.1 ms. Not in stereo or in images of another size; grid mode: the line inside a see-through surface only in the last cell; no other driver tried. |
-| 15p | 4.88.0 | `set glow, 1`: a halo around what is drawn (`glow.fs`, composed in `fxaa.fs`). A setting only. | [glow-experiment.jpg](../img/glow-experiment.jpg), with the bright-edge baseline (spring under "x-ray"). 4hhb spheres 4.2 to 6.7 ms a frame, 1aon spheres 6.0 to 8.5 ms, 1aon cartoon 4.6 to 9.1 ms. Memory computed, not measured: 8.1 MB for the picture offscreen, 8.1 MB for two copies of its depth, 1.0 MB for the halo. No halo in ray-traced pictures, in images of another size, in stereo. The background is no source of the glow (the mask is the depth); labels are no source but are covered by it. **Answer 128 A keeps this scope and adds a menu entry; the [follow-up](#question-128-a-glow-menu-follow-up) is open.** |
+| 15p | 4.88.0 | `set glow, 1`: a halo around what is drawn (`glow.fs`, composed in `fxaa.fs`). A setting only. | [glow-experiment.jpg](../img/glow-experiment.jpg), with the bright-edge baseline (spring under "x-ray"). 4hhb spheres 4.2 to 6.7 ms a frame, 1aon spheres 6.0 to 8.5 ms, 1aon cartoon 4.6 to 9.1 ms. Memory computed, not measured: 8.1 MB for the picture offscreen, 8.1 MB for two copies of its depth, 1.0 MB for the halo. No halo in ray-traced pictures, in images of another size, in stereo. The background is no source of the glow (the mask is the depth); labels are no source but are covered by it. **Answer 128 A keeps this scope and adds a menu entry; the [follow-up](#question-128-a-glow-menu-follow-up) shipped in 4.91.0.** |
 
 Not as planned: the labels were not capitalized; "illustrated atoms" got no
 recipe values of its own (it is space filling plus an existing light); the
@@ -204,7 +211,7 @@ an intentional halo may cover pixels around the molecule.
 
 ### Question 128 A: glow menu follow-up
 
-Approved 2026-11-26; open, roadmap order 3. Add one toggling row to
+Approved 2026-11-26; built in 4.91.0. Add one toggling row to
 Presets > light, beside fog: "glow" when off, "no glow" when on. Reuse
 the existing `glow` setting and the light menu's snapshot/Undo path in
 `modules/pymol/menu.py` and `modules/pymol/preset.py`; no new renderer,

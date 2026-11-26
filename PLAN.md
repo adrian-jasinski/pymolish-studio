@@ -1,11 +1,12 @@
 # pymolish-studio — current roadmap
 
-Updated 2026-11-26 at **4.90.0**. Questions **128 A** and **129 A** are
-recorded: add a viewport-only glow menu entry; keep Solid as the default
-surface. The Windows installer request adds **5d**, order 6. Question
+Updated 2026-11-26 at **4.91.0**. The glow menu of answer **128 A**
+shipped in 4.91.0: "glow" / "no glow" beside fog in Presets > light, for
+the viewport only; step 15 is finished. Answer **129 A** keeps Solid as the
+default surface. The Windows installer request adds **5d**, order 5. Question
 **137 A** is recorded: a per-user Inno Setup `.exe` plus the portable ZIP,
 **unsigned for now**; signing (question 138) is deferred until the user
-asks for it. This update changes plans only.
+asks for it.
 
 Keep Qt Widgets with PySide6. Follow [AGENTS.md](AGENTS.md): smaller,
 faster, simpler, prettier.
@@ -28,16 +29,15 @@ in `AGENTS.md`; documentation alone takes no version.
 | --- | --- | --- | --- |
 | 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | Push the branch, read the scale-test output in CI, and try a scale change by hand on each system. WSLg already uses the next-start fallback. | Both systems restore the live window within the target of two seconds, or are added to `theme.live_scale_blocker`. |
 | 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | Claude Code and ChatGPT work according to the user's 2026-11-26 report. Complete the [remaining provider, task and connector trials](docs/plans/roadmap-checks.md#completion-requirements-for-the-open-trials). | Five tasks recorded for one API-key provider and Claude Code; OpenRouter sign-in and conversation; one other system; one Codex connector call. |
-| 3 | **15p follow-up** — [Glow in the light menu](docs/plans/15-presets.md#question-128-a-glow-menu-follow-up) | Apply answer 128 A: add "glow" / "no glow" beside fog in Presets > light, using the existing setting. Viewport only. | Both actions work by keyboard and Undo; scene/session checks pass; the viewport-only limit is documented. |
-| 4 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend preset snapshots to add/remove/edit commands, retain the coordinate ring, finish toolbar labels and tests. Then remove the incentive error/mark and `-n`. | Existing undo/jira cases pass before removing the marks in `jira/PYMOL-1276.py` and `jira/PYMOL-1697.py`. |
-| 5 | **38 rest** — [Documentation and demos](docs/plans/38-documentation.md) | Verify MP4 playback from GitHub posters after pushing; add a finished Chat turn picture/clip after order 2; complete the checklist's manual, platform and new-reader checks. | Clips play or fallback links are documented; the Chat picture is in `docs/assistant.md`; outstanding checks are recorded. |
-| 6 | **5d** — [Windows installer and code signing](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing) | Answer 137 A: package the existing Windows bundle as an unsigned per-user Inno Setup `.exe` with installation, upgrade and uninstall, beside the ZIP, and publish it with checksums. Signing waits for question 138. | The downloaded installer installs, launches, upgrades and uninstalls on clean Windows with protections on; checksums verify. The expected "unknown publisher" SmartScreen prompt is recorded, not hidden. |
+| 3 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend preset snapshots to add/remove/edit commands, retain the coordinate ring, finish toolbar labels and tests. Then remove the incentive error/mark and `-n`. | Existing undo/jira cases pass before removing the marks in `jira/PYMOL-1276.py` and `jira/PYMOL-1697.py`. |
+| 4 | **38 rest** — [Documentation and demos](docs/plans/38-documentation.md) | Verify MP4 playback from GitHub posters after pushing; add a finished Chat turn picture/clip after order 2; complete the checklist's manual, platform and new-reader checks. | Clips play or fallback links are documented; the Chat picture is in `docs/assistant.md`; outstanding checks are recorded. |
+| 5 | **5d** — [Windows installer and code signing](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing) | Answer 137 A: package the existing Windows bundle as an unsigned per-user Inno Setup `.exe` with installation, upgrade and uninstall, beside the ZIP, and publish it with checksums. Signing waits for question 138. | The downloaded installer installs, launches, upgrades and uninstalls on clean Windows with protections on; checksums verify. The expected "unknown publisher" SmartScreen prompt is recorded, not hidden. |
 | any time | **1b** — [Measured performance work](docs/plans/01-performance-gpu.md) | Profile surface triangulation and sticks/lines drawn as triangles on a quiet machine; driver comparisons also need Windows/macOS. | Each change has before/after measurements. |
 
-The glow follow-up is the next local task. General undo and the remaining
-documentation move from orders 3 and 4 to 4 and 5. Step 15 stays open until
-the menu entry ships. Answer 129 needs no code change: Solid stays the
-default and Solid (grid) remains optional.
+General undo is the next local task. With the glow menu shipped (4.91.0),
+general undo, the remaining documentation and the Windows installer move
+from orders 4, 5 and 6 to 3, 4 and 5. Answer 129 needs no code change:
+Solid stays the default and Solid (grid) remains optional.
 
 The Windows request reopens step 5 after its completed bundle work; 5c
 stays shelved. An installer alone cannot establish Windows trust: until
@@ -55,8 +55,10 @@ Details are in [5d](docs/plans/05-builds-binaries.md#choices-before-implementati
 
 The following checks remain:
 
-- `feature15` is pushed; CI run 45834660395 on `25238548` passed every
-  job (Linux, sanitizer, Windows and macOS). PR #12 (`feature14`) does not
+- `feature15` is pushed up to `10f87ea9`; CI run 45834660395 on
+  `25238548` passed every job (Linux, sanitizer, Windows and macOS). The
+  glow menu (4.91.0) and its plan update are committed locally, not
+  pushed. PR #12 (`feature14`) does not
   contain that fix yet and stays red until it does. Try UI scale,
   right-button dragging and FXAA on Windows and macOS by hand.
 - Complete the account and task trials for order 2; record commands,
@@ -65,7 +67,8 @@ The following checks remain:
   the push, and choose which faults listed in [plan 38](docs/plans/38-documentation.md)
   should become repair tasks.
 - Review the recent presets, footer, surface and glow changes in your own
-  window. The [detailed checklist](docs/plans/roadmap-checks.md) keeps the
+  window, including Presets > light > glow on your GPU (tried only on the
+  integrated AMD GPU under WSLg). The [detailed checklist](docs/plans/roadmap-checks.md) keeps the
   individual checks, CPK comparison and optional reference-picture cleanup.
 
 ## Working rules
