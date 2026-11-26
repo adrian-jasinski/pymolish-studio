@@ -866,7 +866,10 @@ def presets(self_cmd, sele):
                   [ 0, '', '' ],
                   [ 1, 'no fog' if self_cmd.get_setting_int('depth_cue') else 'fog',
                     'preset.depth_fog(%d,_self=cmd)'
-                    % (not self_cmd.get_setting_int('depth_cue')) ]]],
+                    % (not self_cmd.get_setting_int('depth_cue')) ],
+                  [ 1, 'no glow' if self_cmd.get_setting_float('glow') else 'glow',
+                    'preset.glow(%d,_self=cmd)'
+                    % (not self_cmd.get_setting_float('glow')) ]]],
               # colors of protein and ligand, and the background: the only
               # rows that color a cartoon or a surface
               [ 1, 'theme (colors and background)', [[ 2, 'Theme:', '' ]] + [

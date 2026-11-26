@@ -281,12 +281,12 @@ def testPresets(request):
         'ligand_sites_hq', 'ligand_sites_trans', 'ligand_sites_trans_hq',
         'ligand_sites_dots', 'ligand_sites_mesh', 'interface', 'interaction',
         'antibody', 'surface'}
-    assert len(leaves) == 29 + 3 + 16 + 1 + 12 + 5 + 3  # presets, 3 more
+    assert len(leaves) == 29 + 3 + 16 + 1 + 13 + 5 + 3  # presets, 3 more
     # surface looks, transparency, solvent, light, themes, floor
     assert sub('light') == [
         'standard light', 'figure', 'soft', 'flat', 'comic', 'sketch',
         'x-ray', 'studio', 'top light', 'soft shadow',
-        'glossy (light only)', 'no fog']
+        'glossy (light only)', 'no fog', 'glow']
     assert sub('floor') == ['floor', 'floor with mirror image', 'no floor']
     lights = _to_dict(d['light'])
     from pymol import preset
@@ -304,6 +304,14 @@ def testPresets(request):
     cmd.do(fog['fog'], echo=0)
     assert cmd.get_setting_int('depth_cue')
     assert cmd.get_setting_int('ray_trace_mode') == 3  # the look stays
+    # 128 A: glow beside fog, on top of the look; the row reads what is set
+    request.addfinalizer(lambda: cmd.set('glow', 0))
+    cmd.do(fog['glow'], echo=0)
+    assert cmd.get_setting_float('glow') == 1
+    assert cmd.get_setting_int('ray_trace_mode') == 3
+    light = _to_dict(_to_dict(menu.presets(cmd, sele))['light'])
+    cmd.do(light['no glow'], echo=0)
+    assert cmd.get_setting_float('glow') == 0
     cmd.do(lights['standard light'], echo=0)
     assert cmd.get_setting_int('ray_trace_mode') == 0
     # 15n: one submenu per representation, under a caption that names the

@@ -4,6 +4,15 @@ CHANGE LOG
 
 2026-11-26 pymolish-studio
 
+	* 4.91.0
+
+	* Presets > light
+	  - A row "glow" / "no glow" beside fog switches the setting
+	    glow: a halo in the colors of what is drawn, in the viewport
+	    only. A scene keeps it, like the fog.
+
+2026-11-26 pymolish-studio
+
 	* 4.90.1
 
 	* Cross-platform fixes

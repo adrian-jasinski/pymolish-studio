@@ -156,7 +156,7 @@ Settings that only pymolish-studio has:
 | `ball_and_stick_transparency` | 0 | Makes its balls and bonds see-through, per object | [Appearance](appearance.md) |
 | `viewport_outline` | on | Draws the outline of a light such as figure or comic in the viewport, not only when ray traced | [Appearance](appearance.md) |
 | `async_surface` | on | Builds a surface of 5000 atoms or more in the background | [Appearance](appearance.md) |
-| `glow` | 0 | An experiment: a halo around what is drawn, in the viewport only | |
+| `glow` | 0 | A halo around what is drawn, in the viewport only; Presets > light > glow | |
 
 Settings that are gone, with the features they belonged to: `internal_gui`,
 `internal_gui_width`, `internal_gui_name_color_mode`, `scene_buttons`, and

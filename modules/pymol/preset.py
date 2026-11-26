@@ -711,6 +711,14 @@ def depth_fog(on, _self=cmd):
     _self.set('depth_cue', int(on))
 
 
+def glow(on, _self=cmd):
+    '''
+    The glow row of the light menu: a halo in the colors of what is drawn,
+    on top of any look. In the viewport only, not in ray-traced pictures.
+    '''
+    _self.set('glow', int(on))
+
+
 def wire(selection='*', _self=cmd):
     '''
     Cartoon as a wire mesh, and ligand sticks.

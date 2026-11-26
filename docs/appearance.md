@@ -422,8 +422,12 @@ never changes the background, representations or colors.
 | soft shadow | The same with a soft edge of the shadow; slower to ray trace | no |
 | glossy (light only) | The highlight of the glossy surface on whatever is shown | no |
 
-The last row of the menu reads no fog or fog: it switches the fading of
-what is far away. The rows with an outline switch fog off.
+The last two rows of the menu read no fog or fog, and no glow or glow.
+Fog switches the fading of what is far away; the rows with an outline
+switch fog off. Glow lays a soft halo in the colors of what is drawn
+around it, on top of any light. It is off at the start, and it shows in
+the viewport only: a ray-traced picture, an image saved at another size
+and stereo have no halo.
 
 **The outline** is a line around every shape, black on a light background
 and white on a dark one. A ray-traced picture has it, and so has the

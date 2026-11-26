@@ -111,11 +111,11 @@ def test_glow_in_the_viewport(request):
 
     red, halo, corner = count(_pixels())
     assert red > 2000 and halo < red / 20 and corner == 0
-    cmd.set("glow", 1)
+    preset.glow(1)  # the row of Presets > light
     red_glow, halo, corner = count(_pixels())
     assert red_glow == pytest.approx(red, rel=0.06)  # the atoms as they were
     assert halo > red / 2 and corner == 0  # around them, not everywhere
     cmd.set("glow", 0.5)
     assert red / 8 < count(_pixels())[1] < halo
-    cmd.set("glow", 0)
+    preset.glow(0)
     assert count(_pixels())[1] < red / 20
