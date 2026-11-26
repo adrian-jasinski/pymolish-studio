@@ -2,16 +2,13 @@
 
 [Back to the roadmap](PLAN.md).
 
-**Planning-only update, 2026-11-26:** 15m–15p cover reference-inspired
-presets, grouped transparency/menus and a measured glow experiment; 32c
-adds larger labeled footer buttons, and 34d adds independent ball-and-stick
-transparency. Steps 32 and 34 reopen for those additions. No feature shipped
-and no GUI/render/performance result was measured in this update; the
-checked program version remains 4.82.0. Questions 121/122 are answered,
-123–125 are open in [PLAN.md](PLAN.md).
-
-**Shipped state, checked 2026-11-26: 4.82.0.** Built since 4.19.43,
-with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
+**Shipped state, checked 2026-11-26: 4.89.0.** Seven versions were built
+that day from the planning update of the morning (15m to 15p, 32c, 34d and
+the surface worker of 1b): 4.83.0 to 4.89.0. Questions 121 to 125 are
+answered and built; 128 and 129 are open in [PLAN.md](PLAN.md), with 126
+and 127 of the documentation plan (step 38, planning only). Built since
+4.19.43, with the tests and GUI checks recorded in
+[PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
 | --- | --- |
@@ -64,17 +61,27 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.80.0 | The provider "OpenAI" of the Chat tab has the button "Continue with ChatGPT" next to its field for an API key; while signed in the ChatGPT plan is used and the key field is hidden. The entry "ChatGPT" left the list of providers. The sign-in is that of 4.66.0: stand-in tests only, no real sign-in yet. |
 | 4.81.0 | "Solid (grid)" in Setting > Surface: the grid surface of 4.76.0 with cavity culling (on by default, closed cavities under 25 A3), "Cavities and Pockets Only" and "(Culled)", and "Solvent Accessible". "Solid" stays the default. |
 | 4.82.0 | Presets > surface look: glossy, candy glass, frosted, clay. A row shows the protein as a surface in that material with the ligands as balls and sticks; the three round ones use the grid surface with a probe of 3 A. Ray-traced pictures on white and black; not yet looked at in the viewport. |
+| 4.83.0 | Four presets after reference pictures: space filling, illustrated atoms, licorice, bond shell; the row "illustration" is called "contour cartoon"; "glossy (light only)" in the light menu (15m). |
+| 4.84.0 | Presets > transparency: cartoon, spheres, surface and ball and stick, each opaque, 25, 50 or 75 %, for whole objects; the setting `ball_and_stick_transparency` (34d, 15n). |
+| 4.85.0 | The Presets menu in groups: cartoon, atoms and bonds, surface, binding; then transparency and solvent; light, theme and floor under "Scene appearance" (15o). |
+| 4.86.0 | The five buttons under the object list are larger and have a short text each: mouse mode, SEQ, Chat, Wizard, Cmd; two rows in a narrow panel (32c). |
+| 4.87.0 | The outline of a look in the viewport: figure, soft, flat, comic, sketch, illustrated atoms and contour cartoon; the setting `viewport_outline` (15b). |
+| 4.88.0 | An experiment: `set glow, 1` lays a halo in the colors of what is drawn around it, in the viewport. No menu row (15p, question 128). |
+| 4.89.0 | A large surface is built in the background: the window stays in use and the surface appears when it is ready; pictures and exports wait for it; the setting `async_surface` (1b). |
 
 Of the ten features requested on 2026-11-20, all ten have a working
 version: the tenth, the surface looks, shipped in 4.82.0 on the grid
 surface of 1b (4.76.0, a menu row with its cavity settings since
 4.81.0; today's surface stays the default, answer 105 A). Steps 19, 20,
-25, 26 and 29 are finished. Step 32's original scope is finished; 32c is
-new open work, as is 34d after the original ball-and-stick scope. Of the
+25, 26 and 29 are finished, and so are steps 32 and 34 with 32c (4.86.0)
+and 34d (4.84.0). Of step 15 all slices are built; its glow experiment
+waits for question 128. Of the
 eleven drafts of 2026-11-23, all eleven have a working version;
 the chat (31a, 31c) shipped in 4.58.0, its external connector 31b in 4.61.0,
 the sign-in in the browser 31d in 4.66.0 (its ChatGPT half sits in the
 provider "OpenAI" since 4.80.0), the provider "Claude Code" in
 4.68.0. Only that last one was tried with a real account (two turns on
 the user's Team plan); the other providers saw no paid request and no
-real sign-in by this program itself: the live trial is order 2.
+real sign-in by this program itself until the user reported on 2026-11-26
+that the Chat tab works with Claude Code and with ChatGPT, signed in; what
+is left of the live trial is order 2.

@@ -1,5 +1,19 @@
 # 32 — Icons in the row under the object list, and a Movie button
 
+**32c done 2026-11-26 in 4.86.0; the step is finished again.** As built:
+`Footer` in `object_panel.py`, two plain rows instead of the planned grid
+(a grid column would have made Chat as wide as the mouse mode above it);
+icons 20 px, buttons 32 px high, texts Viewing (the mouse mode), SEQ, Chat,
+Wizard, Cmd. Measured in the real window on WSLg, dark and light theme, UI
+scale 100, 150 and 200 %, the same in logical pixels at each: the buttons
+are 87, 77, 69, 81 and 68 px wide; one row needs 390 px, two rows 222 px;
+the footer is 32 px high in one row and 66 px in two; at the panel's
+default width of 300 px it is two rows and the object list is 34 px
+shorter than with one. The toolbar button beside it is 33 px high. Tab
+order and accessible names were read from the widgets in the real window.
+Left out: Windows and macOS, a live change of the UI scale, a row by
+widening the panel. Picture: [footer-rows.png](../img/footer-rows.png).
+
 **Planning update 2026-11-26 at 4.82.0: reopened for 32c.** The request
 is the row below Objects in the supplied screenshot, not the main action
 toolbar or the state controls. No GUI measurements were made today; sizes

@@ -1,5 +1,22 @@
 # 15 — Presets and looks
 
+**Built 2026-11-26, 4.83.0 to 4.88.0: 15m, 15n, 15o, 15b and 15p.** The
+section "Request 2026-11-26" below is the plan as it was written that
+morning; questions 123 to 125 were answered with their recommended options.
+
+| Slice | Version | Built | Measured, and what was left out |
+| --- | --- | --- | --- |
+| 15m | 4.83.0 | `space_filling`, `illustrated_atoms` (spheres in the light "flat"), `licorice`, `bond_shell` (lines inside a surface at transparency 0.5); the row "contour cartoon"; "glossy (light only)" in the light menu. | Sheet: [reference-recipes.jpg](../img/reference-recipes.jpg), ray traced and from the viewport, 1oky, 1aon, 1bna. Chosen from trial pictures: flat (comic too heavy, figure too dark), 0.5 (at 0.25 the lines do not show). No frame or ray times recorded. |
+| 15n (with [34d](34-ball-and-stick.md)) | 4.84.0 | Presets > transparency: cartoon, spheres, surface, ball and stick; opaque, 25, 50, 75 %; whole objects. | A row clears the value on the atoms of the object and sets it on the object; a preset now unsets all four on its objects. |
+| 15o | 4.85.0 | The groups cartoon, atoms and bonds, surface, binding; transparency, solvent; "Scene appearance" with light, theme (colors and background) and floor. | 69 leaves, one Undo snapshot each. Arrow keys tried in the toolbar menu, three levels. Labels stay in small letters. |
+| 15b | 4.87.0 | The outline in the viewport: `fxaa.fs` draws a line where the picture lies behind its neighbors, from two copies of the depth; follows `ray_trace_mode`, switch `viewport_outline`. | [viewport-outline.jpg](../img/viewport-outline.jpg). At 1436 x 702 on the integrated GPU (Mesa d3d12): 1oky spheres 2.8 to 5.7 ms a frame, 1aon spheres 5.2 to 8.2 ms, 1aon cartoon 11.1 to 13.1 ms. Not in stereo or in images of another size; grid mode: the line inside a see-through surface only in the last cell; no other driver tried. |
+| 15p | 4.88.0 | `set glow, 1`: a halo around what is drawn (`glow.fs`, composed in `fxaa.fs`). A setting only. | [glow-experiment.jpg](../img/glow-experiment.jpg), with the bright-edge baseline (spring under "x-ray"). 4hhb spheres 4.2 to 6.7 ms a frame, 1aon spheres 6.0 to 8.5 ms, 1aon cartoon 4.6 to 9.1 ms. Memory computed, not measured: 8.1 MB for the picture offscreen, 8.1 MB for two copies of its depth, 1.0 MB for the halo. No halo in ray-traced pictures, in images of another size, in stereo. The background is no source of the glow (the mask is the depth); labels are no source but are covered by it. **What to ship is question 128 in [PLAN.md](../../PLAN.md).** |
+
+Not as planned: the labels were not capitalized; "illustrated atoms" got no
+recipe values of its own (it is space filling plus an existing light); the
+outline is no pass of its own but a step of the FXAA pass; frame times were
+taken on one driver.
+
 **Planning update 2026-11-26, checked against 4.82.0 (`902f8b75`).**
 The request adds 15m–15p below; 15b stays open. All 24 PNG/JPG references
 in the local, git-ignored `plan_images/` directory were inspected. No new

@@ -1,5 +1,25 @@
 # 1 — Performance and GPU
 
+**The surface worker is built: 2026-11-26, 4.89.0.** A surface of 5000
+atoms or more that the window asks for runs `SurfaceJobRun` on a detached
+thread (`async_surface`, on); `RepSurfaceFinishBuilds` moves the result
+into the representation on the main thread, from `SceneIdle` and from every
+window frame; every other `SceneUpdate`, sized images and movie frames
+wait for running builds, so pictures, ray tracing and exports are as
+before, and so is everything without a window. Measured in the real window
+on 1aon (58,674 atoms surfaced), two runs each: the GUI thread blocked for
+1.18 and 1.24 s at most with the worker, 4.90 and 5.52 s without; the
+surface on screen after 5.42 and 5.68 s (4.90 and 5.52 s without). Grid
+surface: blocked 0.90 s (1.72 s without), on screen after 1.81 s. The
+second or so that is left is the coloring of the vertices and the first
+upload, on the GUI thread. Left out: 4v6x (its runs take 10 of 17 GB), a
+progress bar (the status is two lines in the log), stopping a build nobody
+waits for, meshes and cartoons. Found by the window test and fixed before
+the commit: the progress report of the triangulation called Python from
+the worker thread. ASan and UBSan clean, headless and in the real window.
+Whether "Solid (grid)" becomes the default is question 129 in
+[PLAN.md](../../PLAN.md).
+
 [Roadmap](../../PLAN.md) · 1a done, 1b in progress; timings are in the Status sections and the ChangeLog; comparison with upstream PyMOL 3 in [docs/benchmark.md](../benchmark.md)
 
 **Improve the operation a profile identifies.** Interactive graphics already use

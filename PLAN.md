@@ -174,8 +174,23 @@ existing rendering first. Steps 32 and 34 reopen for these additions; their
 earlier releases remain shipped. No program changes, version bump, new
 render or GUI/performance measurement in this update. The user chose larger
 icons with short labels and two rows when narrow (121), and existing recipes
-followed by a measured true-glow experiment (122). Choices 123–125 remain
-open below; recommendations are not recorded as answers.
+followed by a measured true-glow experiment (122).
+
+Built 2026-11-26, 4.83.0 to 4.89.0, from the request "implement plan
+tasks" with orders 3 to 9 of that update pasted, and "for questions 123,
+124 and 125 use recommended options": the four reference recipes and the
+label "contour cartoon" (15m, 4.83.0), the Transparency submenu with a
+transparency of its own for ball and stick (34d and 15n, 4.84.0), the
+Presets menu in groups (15o, 4.85.0), the larger buttons under the object
+list (32c, 4.86.0), the outline in the viewport (15b, 4.87.0), the glow
+experiment as a setting (15p, 4.88.0) and the surface worker (1b, 4.89.0).
+Steps 32 and 34 are finished again; of step 15 only the answer to
+question 128 is open, of step 1 the two measured items. Seven choices were
+made while building (130 to 136); two new questions came out of the work
+(128, 129). In the same message the user reported that the drag with the
+right button works, that the Chat tab works with Claude Code and with
+ChatGPT, signed in and with "Run without asking", and that the old
+pymolish plugin is removed.
 
 **Documentation plan, 2026-11-26:** step 38 adds a current-function coverage
 audit, plain task guides, clear front pages and deeper reference, and real
@@ -205,30 +220,21 @@ implementation task/PR, with an `X` feature or `Y` fix version under
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
 | 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Needs the pushed branch: the last CI run is older than the repair. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
-| 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; one real sign-in and one conversation each with ChatGPT (since 4.80.0 the button of the provider "OpenAI") and with OpenRouter (31d, shipped in 4.66.0 on stand-ins), which needs the user's accounts; for the provider "Claude Code" (4.68.0, two turns tried on WSLg with a Team plan) the same five tasks, the button "Continue with Claude Code" with a signed-out Claude Code, and one turn on Windows or macOS; and one call through the connector from Codex, whose account had no credits on 2026-11-24. | Live trial recorded for Anthropic, OpenAI and Claude Code; a sign-in and a conversation recorded for ChatGPT, OpenRouter and Claude Code, on WSL and on one other system; one Codex call through the connector. |
-| 3 | **15m** — [Reference-inspired presets](docs/plans/15-presets.md) | Compare the image families using current rendering before building the menu. Proposed new entries: Space filling, Illustrated atoms, Licorice, Bond shell; Illustration gets a descriptive label, Contour cartoon. Reuse existing surface/material looks. Question 123 chooses the entry set/name. | Viewport/ray comparison sheet; selected recipes tested for colors, background, camera, hidden objects, reset and scene/Undo behavior. State the existing viewport-outline limit. |
-| 4 | **34d + 15n** — [Transparency](docs/plans/34-ball-and-stick.md) | One Presets > Transparency menu for Cartoon, Spheres, Surface and Ball and stick, with the existing percentage choices. Add independent ball-and-stick alpha in the existing core path first; question 124 chooses scope. | All four work in viewport/ray, independently of each other; isolated balls, inheritance, reset, scene/session, Undo/Redo and disabled objects covered. |
-| 5 | **15o** — [Preset organization](docs/plans/15-presets.md) | Group cartoon variants, atoms/bonds, surfaces and binding presets after choosing the new recipes. Keep every current action; label existing Themes as changing colors/background. Question 125 chooses grouping depth. | Shared toolbar/object menu, no missing actions, keyboard navigation, correct scope and one Undo snapshot per leaf. |
-| 6 | **32c** — [Larger footer icons and short text](docs/plans/32-footer-icons-movie-button.md) | Viewing, SEQ, Chat, Wizard, Cmd with larger icons and adjacent labels; two rows when narrow (answer 121). Reuse current icons/actions. | Actual footer widths/heights at normal/narrow widths, both themes and multiple scales; no clipping/panel growth, preserved actions and keyboard order. |
-| 7 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background; include illustrated spheres and transparent envelopes from 15m. Reuse the offscreen path that FXAA reads since 4.65.0 (`SceneRenderAA`, `fxaa.fs`). | Frame times and pictures on black/white, transparent overlaps and native drivers. |
-| 8 | **15p** — [Neon/glow experiment](docs/plans/15-presets.md) | After the existing-renderer comparisons and outline, compare one optional true-glow pass with the bright-edge baseline (answer 122). Reuse offscreen rendering; no new rendering dependency. | Pictures, frame time and memory; background excluded from the glow source; transparent PNG/Draw/Ray and driver limitations documented before choosing shipping scope. |
-| 9 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. With it built, decide again whether "Solid (grid)" becomes the default (answer 105 A). | Real-window responsiveness, suite and sanitizer checks. |
-| 10 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
-| 11 | **38a–d** — [Current documentation and real demos](docs/plans/38-documentation.md) | Audit current functions; correct stale docs; write a docs home, short task guides and deeper reference; capture the real window and focused screenshots, plus short appearance/ligand/sequence/movie demos. Choices 126–127 cover destination and format. | Coverage checklist complete; examples/menu paths checked; front-page routes, links and media work; version and capture recipes recorded. |
+| 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). On 2026-11-26 the user reported that the Chat tab works with Claude Code and with ChatGPT, signed in and with "Run without asking": that is the real sign-in and a conversation for those two (the sign-in of 4.66.0 and 4.80.0 had only seen stand-ins). Nothing was recorded of it here (which tasks, commands, errors, time, tokens, which system). Left: the same for OpenRouter (31d); the Chat tab with an API key of Anthropic and of OpenAI; the five recorded tasks (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature); the button "Continue with Claude Code" with a signed-out Claude Code; one turn on Windows or macOS; one call through the connector from Codex, whose account had no credits on 2026-11-24. | The five tasks recorded for one provider with a key and for Claude Code; a sign-in and a conversation recorded for OpenRouter; one other system; one Codex call through the connector. |
+| 3 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
+| 4 | **38a–d** — [Current documentation and real demos](docs/plans/38-documentation.md) | Audit current functions; correct stale docs; write a docs home, short task guides and deeper reference; capture the real window and focused screenshots, plus short appearance/ligand/sequence/movie demos. Choices 126–127 cover destination and format. | Coverage checklist complete; examples/menu paths checked; front-page routes, links and media work; version and capture recipes recorded. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 
 Step 38's inventory and text can start independently of the earlier orders;
-only final screenshots of changing menus/footer wait for their implementation.
+the menus and the footer its screenshots wait for are built (4.85.0, 4.86.0).
 Its slices are docs-only and get no program version or ChangeLog entry.
 
-The new recipes precede menu organization; they can be compared with ray
-outlines while 15b is pending. The footer is independent of rendering work.
-The glow experiment follows both the settings-only comparisons and 15b.
-The former orders 3–5 are now 7, 9 and 10; earlier dated release notes keep
-their historical order numbers. FXAA shipped in 4.65.0, so the outline can
-reuse its path. MAFFT stays
-separately installed and the provider SDKs are the lazy extra `ai`. 5c stays
-shelved; builds stay on GitHub Actions.
+Orders 3 to 9 of the planning update of 2026-11-26 were built the same
+day (4.83.0 to 4.89.0) and left the table; general undo moved from order 10
+to 3 and the documentation (step 38) from 11 to 4. Earlier dated release
+notes keep their historical order numbers.
+MAFFT stays separately installed and the provider SDKs are the lazy extra
+`ai`. 5c stays shelved; builds stay on GitHub Actions.
 
 The toolbar, measured in the real window at 4.61.0 at 150 %, with the AI
 assistant button: 1297 px of content, a 1305 px window, nothing in the
@@ -287,21 +293,33 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-New choices from the 2026-11-26 planning request, before implementation:
+Open: two choices of the documentation plan (126, 127), and two questions
+from the run of 4.83.0 to 4.89.0 (128, 129). Both features of the latter
+work as they are; the answers decide what is added or changed:
 
 | No. | Choice | Options and recommendation |
 | --- | --- | --- |
-| 123 | New recipe set and the cartoon illustration name ([15m](docs/plans/15-presets.md), order 3) | **A, recommended:** Space filling, Illustrated atoms, Licorice and Bond shell, with comparisons against existing recipes; reuse surface/light styles for the other images. **B:** Space filling and Illustrated atoms only, the rest as manual compositions. For the existing Illustration row, **Contour cartoon** is recommended; **Outlined cartoon** is the alternative. No Proteinbase-branded name. |
-| 124 | Transparency scope ([34d](docs/plans/34-ball-and-stick.md), order 4) | **A, recommended:** whole objects, as today's cartoon control, one independent value for ball-and-stick balls and bonds; selection menus identify that scope. **B:** atom/residue scope with defined half-bond transitions, requiring more core work and a change from cartoon's current behavior. |
-| 125 | Menu grouping ([15o](docs/plans/15-presets.md), order 5) | **A, recommended:** Cartoon, Atoms and bonds, Surface, Binding, Transparency; Light, explicitly labeled Themes, and Floor below a Scene appearance separator. **B:** group Cartoon and Transparency only, keep the remaining list mostly flat. All existing actions remain available. |
-| 126 | Documentation destination ([38](docs/plans/38-documentation.md), order 11) | **A, recommended:** Markdown in this repository, a docs home and task/command indexes. **B:** a separate documentation website with full-text search, using the same source; choose its tooling before adding dependencies. |
-| 127 | Short demonstrations ([38](docs/plans/38-documentation.md), order 11) | **A, recommended:** short videos opened from static screenshot posters; GIF only where useful. **B:** small inline GIF-style loops in guides, with static/written equivalents and controllable videos. |
+| 126 | Documentation destination ([38](docs/plans/38-documentation.md), order 4) | **A, recommended:** Markdown in this repository, a docs home and task/command indexes. **B:** a separate documentation website with full-text search, using the same source; choose its tooling before adding dependencies. |
+| 127 | Short demonstrations ([38](docs/plans/38-documentation.md), order 4) | **A, recommended:** short videos opened from static screenshot posters; GIF only where useful. **B:** small inline GIF-style loops in guides, with static/written equivalents and controllable videos. |
+| 128 | What becomes of the glow experiment ([15p](docs/plans/15-presets.md), `set glow, 1`, 4.88.0; pictures in `docs/img/glow-experiment.jpg`) | **A, recommended:** keep the setting and add one row "glow" / "no glow" to the light menu, as fog has, for the viewport only. **B:** leave it as a setting without a menu row (today). **C:** also in ray-traced pictures and in images of another size: a blur over the finished image, new work in the ray path; a slice of its own. **D:** take it out again. Measured: about 2.5 ms a frame at 1436 x 702 on the integrated GPU; one driver tried. |
+| 129 | Whether "Solid (grid)" becomes the default surface, now that the worker is built (answer 105 A said: decide again then; [plan 1](docs/plans/01-performance-gpu.md)) | **A, recommended:** "Solid" stays the default. The freeze was the reason to look at the grid, and the worker took it away (1aon: the window blocked 1.2 s instead of 5 s); pictures and sessions stay as they are. **B:** the grid for surfaces of 5000 atoms or more, today's surface below. **C:** the grid always. With the grid a surface of 1aon is on screen after 1.8 s instead of 5.5 s; it is smoother, has no trimming, and its cavity modes draw 71 to 74 % of the area of the dots. |
 
-Answered during this planning run: **121**, larger icons with Viewing,
-SEQ, Chat, Wizard and Cmd beside them, two rows when narrow; **122**,
-existing rendering recipes first, then a measured true-glow experiment.
-Recorded in the detailed plans and [PLAN-DONE.md](PLAN-DONE.md) as decisions,
-not shipped features. There is no need to answer them again.
+Answered and built: **121** (4.86.0), **122** (4.83.0 and 4.88.0), and
+**123**, **124**, **125**, each with its recommended option as the user
+said on 2026-11-26 (4.83.0, 4.84.0, 4.85.0). They are in
+[PLAN-DONE.md](PLAN-DONE.md) with the seven choices made while building
+(130 to 136). Three of those are worth a look:
+
+- 134: the outline follows `ray_trace_mode`. A session or script that set
+  it to 1, 2 or 3 for ray tracing now has the outline in the viewport
+  too; `set viewport_outline, 0` gives the old viewport.
+- 131: a preset now also takes back `sphere_transparency` and
+  `transparency` that were set on an object (not on atoms, not for the
+  whole scene), as it did for the cartoon: that is how the rows of the
+  Transparency menu end.
+- 136: a surface of 5000 atoms or more that the window asks for comes a
+  moment after the frame, also for 5000 to 10,000 atoms where the wait
+  was under a second. `set async_surface, 0` gives the old order.
 
 Earlier decisions: question 105 (the grid surface stays as
 an option, today's surface the default) was answered on 2026-11-25 and
@@ -386,7 +404,7 @@ it), and glycerol and other additives sorted out of the 2D panel's list of
 ligands. From 4.43.1 to 4.51.0: sequence length as a counted column of the
 table, and a header "Stars" in place of the property's name "stars";
 quality settings of its own for `ball_and_stick`, and a bond color of its
-own (transparency is now requested as 34d, order 4); `ball_and_stick` for
+own (transparency came as 34d in 4.84.0); `ball_and_stick` for
 ligands in the presets "simple"
 and "default"; settings of single states and the secondary structure in a
 scene; Undo of a step of `ligand_next`. From 4.60.1 to 4.65.0: a token of
@@ -437,16 +455,33 @@ trial picture, a Gaussian map that is rounder than a probe of 3 A makes
 the surface; a build of clay under 1 s for 1aon (measured: 1.42 s); the
 surface looks as rows of the light menu, without showing the surface
 (option B of question 115); the cavity modes of the grid closer to the
-dots than 71 to 74 % of their area.
+dots than 71 to 74 % of their area. From 4.83.0 to 4.89.0: a size of
+its own for the lines of "bond shell" (they are `lines`, one pixel wide on
+this driver); transparency per atom or residue for ball and stick (option
+B of question 124) and transparency rows in the Setting menu; capital
+letters in the Presets menu; icons for its groups; the keyboard in the
+menus the viewport draws itself (the toolbar menu has it); a footer in one
+row by widening the panel; the outline in stereo and in images of another
+size, a setting for its width, and the line inside a see-through surface
+in every cell of grid mode; for the glow, a radius of its own, a halo over
+the molecule itself and labels kept clear of it; for the surface worker,
+stopping a build nobody waits for, a progress bar, the coloring of the
+vertices off the GUI thread (the 1.2 s that are left), and meshes,
+cartoons and maps in the background.
 
 The user's to do:
 
 - Choose the documentation destination and demo format, 126–127 above.
   [Plan 38](docs/plans/38-documentation.md) specifies front pages, deeper
   guides, current-function coverage and the screenshot/clip list.
-- Review choices 123–125 above. The image-family table and proposed menu
-  are in plan 15; the confirmed footer layout is in plan 32. These are
-  plans, not new controls in the installed application.
+- Answer questions 128 and 129 above.
+- Look at the changes of 2026-11-26 in your own window: Presets (the
+  groups, the four new rows under "atoms and bonds" and "surface",
+  transparency), the buttons under the object list, a light with an
+  outline (figure, flat, comic, sketch), `set glow, 1`, and `show surface`
+  on a large structure. All were tried in a test window on this machine;
+  at the end of the run, with your pymolish closed, your `.venv` was
+  rebuilt to 4.89.0 with the extras `dev`, `chem`, `fix` and `ai`.
 - Look at the changes of 2026-11-25 in your own window. They were built
   and tried in a copy; at the end of the run, with pymolish closed, your
   `.venv` was rebuilt to 4.76.0 with the extras `dev`, `chem`, `fix` and
@@ -457,21 +492,17 @@ The user's to do:
   path) and the action worked before the change; the error was
   reproduced only by putting `~/.pymol/startup` into the startup path. If
   it happened elsewhere, with another cause, it is not fixed.
-- Try the drag with the right button (4.70.0) once on Windows and on
-  macOS: there the system asks for the menu when the button is released,
-  on Linux when it is pressed. Both are handled; only Linux was tried.
-- Push `feature13` again. Local tracking ref checked 2026-11-26 after 4.82.0:
-  `origin/feature13` is at the plan commit of 4.76.14 (`5101e943`), so
-  what was listed here before is in that tracking ref. Pull request #11
-  ("Feature13") was previously recorded as open; remote status was not
-  rechecked in this planning run. Including this plan commit the branch is
-  15 commits ahead of the local tracking ref:
-  4.77.0, 4.77.1, 4.78.0, 4.79.0, 4.79.1, 4.80.0, 4.81.0, 4.82.0 and six
-  plan commits plus this reference-image planning commit. No fetch, push
-  or merge was performed in this run. 4.81.0
-  changed `layer2/RepSurface.cpp` and was compiled with GCC on Linux
-  only: the Windows and macOS jobs of the CI run are its first compile
-  there.
+- The drag with the right button (4.70.0): you reported on 2026-11-26
+  that it works. If that was on Linux, Windows and macOS are still to
+  try: there the system asks for the menu when the button is released.
+- Push `feature13` again. Checked 2026-11-26 after 4.89.0: the local
+  tracking ref `origin/feature13` is at the plan commit of 4.76.14
+  (`5101e943`), and the branch is 24 commits ahead of it (4.77.0 to
+  4.89.0 and the plan commits). No fetch, push or merge was made in this
+  run; pull request #11 was not looked at again. The Windows, macOS and
+  sanitizer jobs of that CI run are the first compile there of the new
+  C++ of 4.81.0, 4.84.0 and 4.87.0 to 4.89.0, and the first try of the new
+  shaders (`fxaa.fs`, `glow.fs`) on other drivers than Mesa d3d12.
 - Look at Presets > surface look in your own window (4.82.0), and at
   Setting > Surface > Solid (grid) with "Cavities and Pockets Only"
   (4.81.0). Both were checked by tests and in ray-traced pictures
@@ -503,10 +534,10 @@ The user's to do:
 - Try the Chat tab with your own Anthropic and OpenAI keys and a model
   ID each (`pip install 'pymolish[ai]'`): no request was ever sent by the
   Chat tab itself.
-- Sign in once with each sign-in of the Chat tab (4.66.0): choose
-  OpenAI, then "Continue with ChatGPT" (since 4.80.0 the button is in that
-  entry; "ChatGPT" is no entry any more); choose OpenRouter, then "Continue
-  with OpenRouter"; send one request each. No real sign-in was made: the
+- Sign in once with OpenRouter in the Chat tab (4.66.0): choose
+  OpenRouter, then "Continue with OpenRouter", and send one request. (The
+  ChatGPT sign-in, the button of "OpenAI" since 4.80.0, you reported as
+  working on 2026-11-26.) What was written before the first real try: the
   code follows the two published flows, and OpenAI's server took the first
   request up to its log-in page. Three things only a real try shows:
   whether OpenAI lets pymolish register without being asked first (its
@@ -540,12 +571,9 @@ The user's to do:
   the freeze test sent Ctrl+A, "120", Enter once, at about 10:06, to
   whatever window had the focus on the Windows desktop. The working tree
   was unchanged; an editor or a terminal that had the focus may show it.
-- Remove the pymolish plugin from `~/.pymol/startup` (still there on
-  2026-11-25). Since 4.68.1 it is no longer loaded, and the log says so
-  at every start where the startup path names that folder.
-- Delete `plan_images/` (the pictures of the request of 2026-11-20,
-  ignored by git): 25b, the last plan made from it, is built since
-  4.82.0. It was left in place; it is your folder.
+- Delete `plan_images/` (the reference pictures, ignored by git) when
+  question 128 is answered: every plan made from it is built. It was left
+  in place; it is your folder.
 
 The README screenshot (`docs/img/window.png`) shows the window of 4.19.
 Replacing it is now part of step 38d, with the other documentation captures;

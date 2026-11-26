@@ -1,5 +1,18 @@
 # 34 — An independent ball-and-stick representation
 
+**34d done 2026-11-26 in 4.84.0; the step is finished again.** As built:
+setting 801, `ball_and_stick_transparency`, at the level of an object and
+its states (answer 124 A), read in `RepCylBond.cpp` where the
+representation forced opacity, also for a ball without bonds; in the scene
+list of `MovieScene.cpp`; the rows are Presets > transparency
+([15n](15-presets.md)). Measured in the real window, 957 x 468 logical
+pixels, 1aon with all 59,192 atoms: 20.9 and 21.9 ms a frame opaque,
+19.1 ms at 50 %; a ligand of 53 atoms 0.6 to 0.7 ms either way. PyMOL
+3.2.0a loads, ray traces and saves a session with the setting and drops
+it. ASan and UBSan clean on `ball_and_stick.py`. Left out: pictures of
+clipping and of multiple bonds of their own (the stick code draws both),
+ray times, memory.
+
 **Planning update 2026-11-26 at 4.82.0: reopened for 34d.** The requested
 Transparency submenu in [15n](15-presets.md) needs core support: this
 representation currently forces opacity. The original 34a–34c remain

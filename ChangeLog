@@ -39,7 +39,7 @@ CHANGE LOG
 	    soft halo in the colors of what is drawn, around it, on any
 	    background. "set glow, 1" for the whole of it, 0.5 for half.
 	    There is no menu row and no preset uses it: what to ship is
-	    question 126 in PLAN.md. Pictures, with the same views
+	    question 128 in PLAN.md. Pictures, with the same views
 	    without it: docs/img/glow-experiment.jpg.
 	  - How: what is drawn (found in the depth, so the background and
 	    the labels are no source) is blurred at a quarter of the size
