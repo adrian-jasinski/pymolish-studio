@@ -383,6 +383,33 @@ def testLabel(func):
     assertTrueIterate('label == ""')
 
 
+def testAsyncBuildsRay():
+    # geometry of several objects is updated in threads
+    testing.ambient_only()
+    for name in ('m1', 'm2', 'm3'):
+        cmd.fab('AAAA', name, ss=1)
+    cmd.set('async_builds')
+    cmd.set('max_threads', 4)
+    cmd.show_as('cartoon')
+    cmd.color('yellow')
+    cmd.orient()
+    img = testing.get_imagearray(width=100, height=100, ray=1)
+    testing.assert_image_has_color('yellow', img)
+
+
+def testLabelMultiLineRay():
+    testing.ambient_only()
+    cmd.viewport(200, 150)
+    cmd.pseudoatom('m1', label='first\nsecond\nthird')
+    cmd.hide('everything')
+    cmd.show('labels')
+    cmd.set('label_color', 'yellow')
+    cmd.set('label_size', 20)
+    cmd.zoom(buffer=5)
+    img = testing.get_imagearray(width=200, height=150, ray=1)
+    testing.assert_image_has_color('yellow', img)
+
+
 def testLabelUnicode():
     if sys.version_info[0] < 3:
         uchr = unichr
@@ -437,6 +464,30 @@ def testCartoon():
          53.642494202, 40.266975403, 89.999656677, -20.))
     testing.ambient_only()
     testing.assert_image_equal("viewing-ref/cartoon.png", delta=1)
+
+
+def testCartoonNucleicAcidRings():
+    # rings and ladder of the nucleic acid cartoon, and the sphere normals
+    # of sphere_mode 7: no other test builds them
+    import re
+
+    def count(word):
+        return len(re.findall("^" + word, cmd.get_povray()[1], re.M))
+
+    cmd.load(testing.datafile("1bna.cif"))
+    cmd.show_as("cartoon")
+    cmd.set("cartoon_ladder_mode", 0)
+    n_backbone = count("mesh2")
+    assert n_backbone > 0
+    assert count("sphere") == 0
+    cmd.set("cartoon_ladder_mode", 1)
+    assert count("sphere") == 2 * cmd.count_atoms("name C1'")
+    cmd.set("cartoon_ring_mode", 3)
+    assert count("mesh2") > n_backbone
+
+    cmd.show_as("spheres")
+    cmd.set("sphere_mode", 7)
+    assert count("sphere") == cmd.count_atoms()
 
 
 def testCapture():

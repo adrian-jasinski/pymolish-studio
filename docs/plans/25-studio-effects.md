@@ -3,6 +3,60 @@
 [Roadmap](../../PLAN.md) · Request 2026-11-20 · Planned, not built. Eight
 trial pictures were ray traced; two sheets are below.
 
+**Answers of 2026-11-20.** Question 24: shadows are ray traced only at
+first. Question 25: "start with 1b, then plan further; do not add to
+settings yet": the surface looks (glossy, candy glass, frosted, clay) and
+the blob are **not built now**. The grid surface of
+[1b](01-performance-gpu.md) is tried first, with a smoothness value; with
+its times and pictures this part of the plan is written again. No preset
+that only sets surface settings and no new setting is added before that.
+
+**2026-11-25: the grid surface was tried in 4.76.0** (`surface_type 7`; the
+table is in [1b](01-performance-gpu.md)). What it means here: with a probe
+of 3 A it is a rounded surface with fine triangles (1aon: 668,588
+triangles in 1.38 s; today's surface has 195,556 coarse ones at that
+probe), so "clay" could be this surface instead of a Gaussian map in a
+second object. This plan is written again once the user has judged the
+experiment: question 105 in [PLAN.md](../../PLAN.md).
+Question 32: the color themes are built, as a group of their own.
+
+**25a-1 done 2026-11-20 in 4.34.0:** the command `stage` and three light
+setups.
+
+![stage](../img/stage.jpg)
+
+From the left: floor with the look "top light" (3.7 s for 560 x 420), "soft
+shadow" (26 s), "studio" (41 s), and the mirror image with "top light"
+(9 s). As built, and where it differs from the plan below:
+
+- `stage` is geometry only: modes `floor`, `mirror`, `off`. The light is not
+  its business: "shadow" and "soft" of the plan became the looks "top
+  light" and "soft shadow", next to "studio". A "soft box" look was not
+  added; the look "soft" of step 15 is that already.
+- The far edge of the floor showed as a line. Fog toward the background and
+  a rear clipping plane moved back by the depth of the scene hide it; "off"
+  puts fog, clipping and view back.
+- The floor has the background color, 6 % darker (10 % lighter on a dark
+  background). No gradient is set.
+- `zoom` and `orient` without arguments count the floor: a CGO has an
+  extent like any object. The Zoom button of the toolbar does not.
+- The soft shadow is four hard shadows close together: it reads as soft
+  from a distance, not up close. A real soft shadow is the shadow pass of
+  25a-2, which is not planned now.
+
+**25b-2 done 2026-11-20 in 4.35.0:** the five color themes.
+
+![themes](../img/themes.jpg)
+
+Clay, blue, sage, mint, night: `preset.theme(name, selection)` and five rows
+"theme ..." in the Presets menu. A theme colors the protein, the carbons of
+the ligands, and sets a two-color background; nothing else. The test that
+says "no preset but default colors the cartoon" (15l) now leaves the theme
+rows out, with the reason. Not built: the themes as five palettes and five
+backgrounds of their own in those two menus; ask if wanted. The ligand
+color of sage and mint is a dark blue-green, not the film's near white,
+which does not show on those light backgrounds.
+
 **Two things from 3D programs like Blender: a floor under the molecule that
 takes its shadow or its mirror image (25a), and surfaces that look like
 glossy plastic, tinted glass or soft clay (25b). Both become rows of the
@@ -43,7 +97,7 @@ would be something pymolish has that the others do not.
 
 ### Trial (2RH1, cartoon, 640 x 440, ray traced)
 
-![floor trials](../img/plan-floor.jpg)
+(The trial pictures are replaced by the one at the top, made with the command.)
 
 Left: a floor and one light from above, 6 s. Middle: four lights close to
 each other, so the shadow has a soft edge, 18 s. Right: a see-through floor
@@ -68,7 +122,7 @@ New `modules/pymol/stage.py`, command `stage [mode [, selection]]`, modes
 | Menu | Presets menu, a new group "stage" above the looks: floor with shadow, floor with soft shadow (slow), floor with mirror image, no floor. |
 | Session | The floor and the mirror are objects, so a session keeps them as it keeps any object. |
 
-### Options: a shadow in the viewport (question 24)
+### Options: a shadow in the viewport (question 24, answered: A)
 
 | | Option | Note |
 | --- | --- | --- |
@@ -77,6 +131,10 @@ New `modules/pymol/stage.py`, command `stage [mode [, selection]]`, modes
 | C | A real shadow pass in the viewport (depth picture from the light, compared in every shader). | The proper answer and the largest: a new render pass through `layer1/` and every fragment shader, to check on three drivers. Only after [21f](21-commercial-features.md) and [15b](15-presets.md) have added the first two passes over the picture, and only with frame times before and after. |
 
 ## 25b — Surface looks and color themes
+
+The looks and the blob below wait for 1b (see the answers at the top); the
+trial and the tables are kept as the starting point for that second round.
+The color themes do not wait.
 
 ### Trial (2RH1 without the fused lysozyme, 520 x 520, ray traced, under 1 s each)
 
@@ -130,7 +188,7 @@ background", and looks and presets keep their rule. The themes are also
 offered as palettes and backgrounds of their own (five rows in each menu),
 so the pieces can be mixed.
 
-### Options: how far to go in the shaders (question 25)
+### Options: how far to go in the shaders (question 25, answered: none yet, 1b first)
 
 | | Option | Note |
 | --- | --- | --- |
@@ -142,11 +200,11 @@ so the pieces can be mixed.
 
 | Slice | What | Check |
 | --- | --- | --- |
-| 25b-1 | Looks glossy, candy glass, frosted; with 15e's five effects. | `testing/tests/api/preset.py`: each look sets and the next one undoes its settings; a picture each on black and on white. |
-| 25b-2 | Themes: five rows, five palettes, five backgrounds. | The palette and background tests list them; pictures. |
+| 25b-1 | Waits for 1b. Looks glossy, candy glass, frosted. | `testing/tests/api/preset.py`: each look sets and the next one undoes its settings; a picture each on black and on white. |
+| 25b-2 | Themes: five rows, five palettes, five backgrounds. Built with 15e's five effects. | The palette and background tests list them; pictures. |
 | 25a-1 | `stage`: floor, shadow, soft, mirror, off; looks studio, top light, soft box. | `testing/tests/api/stage.py`: the floor lies under every visible atom; `off` leaves no object and the old view; `zoom` ignores the floor; a ray-traced picture has darker floor pixels under the molecule. Ray times in the plan. |
-| 25b-3 | Clay with the blob (option A), then the switch to a surface type if 1b's grid surface stays. | Blob built in under 1 s for 1AON; picture. |
-| 25a-2 | Viewport shadow, the option that was chosen. | Frame time before and after. |
+| 25b-3 | Waits for 1b. Clay on the blob surface, as a surface type if the grid surface stays. | Blob built in under 1 s for 1AON; picture. |
+| 25a-2 | Not planned now (question 24: ray traced only at first). A viewport shadow is asked again after 25a-1 is seen. | |
 
 ## Skipped
 

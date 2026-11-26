@@ -181,7 +181,7 @@ int ObjectAlignmentAsStrVLA(PyMOLGlobals * G, ObjectAlignment * I, int state, in
           int nRow = 0;
           ov_size nCol = 0;
           CSeqRow *row_vla = nullptr, *row;
-          char *cons_str = nullptr;
+          std::vector<char> cons_str;  /* conservation string */
           void *hidden = nullptr;
 
           ObjectMolecule *obj;
@@ -284,7 +284,7 @@ int ObjectAlignmentAsStrVLA(PyMOLGlobals * G, ObjectAlignment * I, int state, in
             }
             /* allocate storage for the sequence alignment */
 
-            cons_str = pymol::calloc<char>(nCol + 1);  /* conservation string */
+            cons_str.assign(nCol + 1, 0);
 
             {
               int a;
@@ -426,7 +426,8 @@ int ObjectAlignmentAsStrVLA(PyMOLGlobals * G, ObjectAlignment * I, int state, in
                 }
                 if(seq_len < nCol) {
                   UtilNPadVLA(&vla, &len, "", max_name_len + 1);
-                  UtilNPadVLA(&vla, &len, cons_str + seq_len, block_width);
+                  UtilNPadVLA(&vla, &len, cons_str.data() + seq_len,
+                      block_width);
                   UtilConcatVLA(&vla, &len, "\n");
                 }
                 seq_len += block_width;
@@ -450,7 +451,6 @@ int ObjectAlignmentAsStrVLA(PyMOLGlobals * G, ObjectAlignment * I, int state, in
               row->txt.freeP();
             }
           }
-          FreeP(cons_str);
           VLAFreeP(row_vla);
         }
       }
@@ -1202,7 +1202,7 @@ ObjectAlignment *ObjectAlignmentDefine(PyMOLGlobals * G,
         oas->alignVLA = align_vla;
       }
     } else {
-      VLAFreeP(oas->alignVLA);
+      oas->alignVLA.freeP();
     }
   }
   if(I) {

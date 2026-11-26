@@ -275,7 +275,7 @@ int PlugIOManagerLoadTraj(PyMOLGlobals * G, ObjectMolecule * obj,
 
 		  /* make sure we have room for 'frame' CoordSet*'s in obj->CSet */
 		  /* TODO: TEST this function */
-                  VLACheck(obj->CSet, CoordSet*, frame); /* was CoordSet* */
+                  obj->CSet.check(frame); /* was CoordSet* */
 		  /* bump the object's state count */
                   if(obj->NCSet <= frame) obj->NCSet = frame + 1;
 		  /* if there's data in this state's coordset, emtpy it */
@@ -348,7 +348,7 @@ ObjectMap *PlugIOManagerLoadVol(PyMOLGlobals * G, ObjectMap * obj,
   int setsinfile = 0;
   int natoms;
   void *file_handle = nullptr;
-  float *datablock = nullptr;
+  std::vector<float> datablock;
 
   ok_assert(1, I);
   plugin = find_plugin(I, plugin_type);
@@ -392,9 +392,9 @@ ObjectMap *PlugIOManagerLoadVol(PyMOLGlobals * G, ObjectMap * obj,
             continue;
           }
 
-          ok_assert(1, datablock = pymol::malloc<float>(size));
+          datablock.resize(size);
 
-          if(plugin->read_volumetric_data(file_handle, i, datablock, nullptr) != MOLFILE_SUCCESS) {
+          if(plugin->read_volumetric_data(file_handle, i, datablock.data(), nullptr) != MOLFILE_SUCCESS) {
             PRINTFB(G, FB_ObjectMolecule, FB_Errors)
               " PlugIOManager: read_volumetric_data failed\n" ENDFB(G);
             ok_raise(1);
@@ -525,7 +525,7 @@ ObjectMap *PlugIOManagerLoadVol(PyMOLGlobals * G, ObjectMap * obj,
             // copy data
             {
               int a, b, c;
-              float *data_ptr = datablock;
+              float *data_ptr = datablock.data();
 
               /* VMD plugins appear to use fast-x med-y slow-z ordering: "&datablock[z*xysize + y*xsize + x]" */
 
@@ -543,7 +543,6 @@ ObjectMap *PlugIOManagerLoadVol(PyMOLGlobals * G, ObjectMap * obj,
             }
 
           }
-          FreeP(datablock);
   }
   if(obj) {
     ObjectMapUpdateExtents(obj);
@@ -582,7 +581,7 @@ ObjectMolecule *PlugIOManagerLoadMol(PyMOLGlobals * G, ObjectMolecule *origObj,
   void *file_handle = nullptr;
   molfile_plugin_t * plugin = nullptr;
   molfile_timestep_t timestep;
-  molfile_atom_t * atoms = nullptr;
+  std::vector<molfile_atom_t> atoms;
   ObjectMolecule *I = nullptr;
   CoordSet * cs = nullptr;
   int *bondtype, nbondtypes;
@@ -611,8 +610,8 @@ ObjectMolecule *PlugIOManagerLoadMol(PyMOLGlobals * G, ObjectMolecule *origObj,
   }
 
   // read atoms
-  atoms = pymol::calloc<molfile_atom_t>(natoms);
-  if (plugin->read_structure(file_handle, &optflags, atoms) != MOLFILE_SUCCESS) {
+  atoms.resize(natoms);
+  if (plugin->read_structure(file_handle, &optflags, atoms.data()) != MOLFILE_SUCCESS) {
     PRINTFB(G, FB_ObjectMolecule, FB_Errors)
       " ObjectMolecule: plugin '%s' failed to read atoms.\n", plugin_type ENDFB(G);
     ok_raise(1);
@@ -621,13 +620,13 @@ ObjectMolecule *PlugIOManagerLoadMol(PyMOLGlobals * G, ObjectMolecule *origObj,
   // Create ObjectMolecule
   ok_assert(1, I = new ObjectMolecule(G, false));
   I->Color = AtomInfoUpdateAutoColor(G);
-  VLASize(I->AtomInfo, AtomInfoType, natoms);
+  I->AtomInfo.resize(natoms);
   I->NAtom = natoms;
 
   // copy atom info
   for (int i = 0; i < natoms; i++) {
     AtomInfoType *ai = I->AtomInfo + i;
-    molfile_atom_t *a = atoms + i;
+    molfile_atom_t *a = atoms.data() + i;
 
     if (!literal_names) {
       UtilCleanStr(a->segid);
@@ -685,7 +684,7 @@ ObjectMolecule *PlugIOManagerLoadMol(PyMOLGlobals * G, ObjectMolecule *origObj,
     cs->Symmetry.reset(SymmetryNewFromTimestep(G, &timestep));
 
     // append to object
-    VLACheck(I->CSet, CoordSet*, I->NCSet);
+    I->CSet.check(I->NCSet);
     I->CSet[I->NCSet++] = cs;
   }
 
@@ -739,8 +738,6 @@ ok_except1:
   if (plugin && file_handle)
     plugin->close_file_read(file_handle);
 
-  if(atoms)
-    mfree(atoms);
 
   return I;
 }

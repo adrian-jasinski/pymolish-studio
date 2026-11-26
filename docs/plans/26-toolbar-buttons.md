@@ -1,7 +1,19 @@
 # 26 — Action toolbar: Bg, Open, quick select, and room for all of it
 
-[Roadmap](../../PLAN.md) · Request 2026-11-20 · Planned, not built. The
-widths below were measured in the real window at 150 %.
+[Roadmap](../../PLAN.md) · Request 2026-11-20 · **Done 2026-11-20: 26a in
+4.20.0, 26b in 4.21.0, 26c and 26d in 4.30.0.** The widths below were
+measured in the real window at 150 %.
+2026-11-24, 4.59.0: Bg and Draw show only their icon, Zoom and Rock open
+menus (Rock: spins about X, Y, Z and a random axis), a Sequence alignment
+button; spacing 10 px; 1254 px measured at 150 % (1236 before).
+
+The bar as built, left to right: Open, Residues, the chips P L S ... All and
+"nothing", Undo, Redo, Zoom, Orient, Rock, Presets, Palette, Bg, then
+Builder, Scenes, Table, Draw, the scale, More. It is 1154 px wide at 150 %
+(the estimate was 1140 to 1210) and the default window opens that wide.
+Residues, Presets, Bg, Draw and the scale keep a text. Differences from the
+plan: "Bg" keeps its two letters (the request asked for them), the chips are
+29 to 38 px wide. The 2D button of step 24 came in 4.33.0: 1195 px.
 
 **Three additions to the action toolbar: "Background" becomes "Bg" with a
 better icon (26a), an Open button stands before Residues (26b), and a row of
@@ -21,7 +33,7 @@ are Lucide drawings in `data/pmg_qt/icons/lucide/`, named in `icons.py`.
 
 ![candidates](../img/plan-bg-icons.png)
 
-**Which icon** (question 27):
+**Which icon** (question 27, answered 2026-11-20: A, the paint roller. Built in 4.20.0):
 
 | | Option | Note |
 | --- | --- | --- |
@@ -109,11 +121,12 @@ scale; a 1920 px screen is 1280):
 | + six quick-select buttons as ordinary text buttons | 1309 (as 26 px chips: about 1240) |
 | + 2D and Table, icon only | about 1320 |
 | Builder, Scenes and Draw/Ray icon only | about 1140 to 1210 |
+| **4.20.0, measured:** "Bg", Builder and Scenes as icons, "Draw" | **904** |
 
 The first three rows and the text-button row are measured; the rows with
 chips are worked out from them, since the chips do not exist yet.
 
-**Options** (question 26):
+**Options** (question 26, answered 2026-11-20: A, with one change asked the same day: Builder and Scenes show only their icon, the name on mouse-over; "Draw/Ray" keeps a text, shortened to "Draw". Those two changes are built in 4.20.0 with 26a):
 
 | | Option | Note |
 | --- | --- | --- |

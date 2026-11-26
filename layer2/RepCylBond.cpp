@@ -41,8 +41,10 @@ struct RepCylBond : Rep {
 
   ~RepCylBond() override;
 
-  cRep_t type() const override { return cRepCyl; }
+  cRep_t type() const override { return m_rep; }
   void render(RenderInfo* info) override;
+
+  cRep_t m_rep = cRepCyl; ///< cRepCyl, or cRepBallAndStick
 
   CGO* primitiveCGO = nullptr;
   CGO* renderCGO = nullptr;
@@ -515,9 +517,28 @@ static int RepValence(RepCylBond *I, CGO *cgo, bool s1, bool s2, bool isRamped,
   return ok;
 }
 
-Rep *RepCylBondNew(CoordSet * cs, int state)
+/**
+ * Sticks, or with rep == cRepBallAndStick the same bonds with a ball on
+ * every atom. Ball-and-stick has its own visibility bit and reads its own
+ * settings (ball_and_stick_scale, _bond_radius, _color); stick_radius,
+ * stick_color, stick_ball*, stick_transparency, stick_h_scale and valence
+ * do not reach it. Its bonds always show their order, each half in the
+ * color of its atom's ball.
+ *
+ * ponytail: the quality settings of sticks (stick_quality, stick_use_shader,
+ * stick_as_cylinders, stick_round_nub, half_bonds, valence_zero_*,
+ * hide_long_bonds, the side chain helpers) are shared, and ball-and-stick
+ * is never transparent. Settings of its own when someone needs them.
+ */
+static Rep* RepCylBondNewImpl(CoordSet* cs, int state, cRep_t rep)
 {
   PyMOLGlobals *G = cs->G;
+  const bool balls = rep == cRepBallAndStick;
+  const int vis_bit = 1 << rep;
+  const int radius_setting =
+      balls ? cSetting_ball_and_stick_bond_radius : cSetting_stick_radius;
+  float ball_scale = 0.0F;
+  int ball_color = cColorDefault;
   ObjectMolecule *obj;
   int a1, a2; // can be -1 for missing atoms
   int a;
@@ -539,8 +560,6 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
   int cartoon_side_chain_helper = 0;
   int ribbon_side_chain_helper = 1;
   int na_mode;
-  bool *marked = nullptr;
-  float *capdrawn = nullptr;
   float scale_r = 1.0F;
   float transp, h_scale;
   float prev_transp = -1;
@@ -555,26 +574,27 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
   visFlag = false;
   b = obj->Bond;
   ai1 = obj->AtomInfo;
-  if(obj->RepVisCache & cRepCylBit)
+  if(obj->RepVisCache & vis_bit)
     for(a = 0; a < obj->NBond; a++) {
       b1 = b->index[0];
       b2 = b->index[1];
-      if((cRepCylBit & ai1[b1].visRep & ai1[b2].visRep)) {
+      if((vis_bit & ai1[b1].visRep & ai1[b2].visRep)) {
 	visFlag = true;
 	break;
       }
       b++;
     }
+  if (balls && !visFlag && (obj->RepVisCache & vis_bit)) {
+    // an atom without bonds (an ion) is a ball
+    for (int idx = 0; idx < cs->NIndex && !visFlag; ++idx)
+      visFlag = ai1[cs->IdxToAtm[idx]].visRep & vis_bit;
+  }
   if(!visFlag) {
     return (nullptr);              /* skip if no sticks are visible */
   }
 
-  capdrawn = pymol::calloc<float>(obj->NAtom); // max radius of caps
-  marked = pymol::calloc<bool>(obj->NAtom);
-  CHECKOK(ok, marked);
-  if (!ok){
-    return nullptr;
-  }
+  std::vector<float> capdrawn(obj->NAtom); // max radius of caps
+  auto marked = std::make_unique<bool[]>(obj->NAtom);
 
   valence = SettingGet_b(G, cs->Setting.get(), obj->Setting.get(), cSetting_valence);
   valence_flag = (valence != 0.0F);
@@ -600,12 +620,12 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
     if((a1 >= 0) && (a2 >= 0)) {
       AtomInfoType *ati1 = obj->AtomInfo + b1;
       AtomInfoType *ati2 = obj->AtomInfo + b2;
-      s1 = GET_BIT(ati1->visRep, cRepCyl);
-      s2 = GET_BIT(ati2->visRep, cRepCyl);
+      s1 = GET_BIT(ati1->visRep, rep);
+      s2 = GET_BIT(ati2->visRep, rep);
 
       if (s1 && s2){
         if (!valence_found)
-          valence_found = BondSettingGetWD(G, b, cSetting_valence, valence_flag);
+          valence_found = balls || BondSettingGetWD(G, b, cSetting_valence, valence_flag);
         
         if (!ord){
           all_zero_order_bond_atoms.insert(b1);
@@ -616,19 +636,40 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
     b++;
     ok &= !G->Interrupt;
   }
-  radius = SettingGet_f(G, cs->Setting.get(), obj->Setting.get(), cSetting_stick_radius);
+  radius = SettingGet_f(G, cs->Setting.get(), obj->Setting.get(), radius_setting);
+  if (balls) {
+    // not the stick's: sizes and colors of its own, no transparency
+    valence_flag = true;
+    stick_color = cColorDefault;
+    transp = 0.0F;
+    ball_scale = SettingGet_f(G, cs->Setting.get(), obj->Setting.get(),
+        cSetting_ball_and_stick_scale);
+    ball_color = SettingGet_color(G, cs->Setting.get(), obj->Setting.get(),
+        cSetting_ball_and_stick_color);
+  }
+  // the color of an atom's ball: its ball_and_stick_color, else its own
+  // color; "atomic" is the color of its element, whatever the atom has
+  auto ball_color_of = [&](const AtomInfoType* ati) {
+    int color = AtomSettingGetWD(G, ati, cSetting_ball_and_stick_color, ball_color);
+    if (color == cColorObject)
+      return obj->Color;
+    if (color == cColorAtomic)
+      return AtomInfoGetColor(G, ati);
+    return (color < 0 && !ColorCheckRamped(G, color)) ? ati->color : color;
+  };
   half_bonds = SettingGet_b(G, cs->Setting.get(), obj->Setting.get(), cSetting_half_bonds);
   na_mode =
     SettingGet_i(G, cs->Setting.get(), obj->Setting.get(), cSetting_cartoon_nucleic_acid_mode);
   int na_mode_ribbon =
     SettingGet_i(G, cs->Setting.get(), obj->Setting.get(), cSetting_ribbon_nucleic_acid_mode);
-  h_scale = SettingGet_f(G, cs->Setting.get(), obj->Setting.get(), cSetting_stick_h_scale);
+  h_scale = balls ? 1.0F : SettingGet_f(G, cs->Setting.get(), obj->Setting.get(), cSetting_stick_h_scale);
   auto valence_zero_scale =
     SettingGet_f(G, cs->Setting.get(), obj->Setting.get(), cSetting_valence_zero_scale);
   auto valence_zero_mode =
     SettingGet_i(G, cs->Setting.get(), obj->Setting.get(), cSetting_valence_zero_mode);
 
   auto I = new RepCylBond(cs, state);
+  I->m_rep = rep;
 
   I->primitiveCGO = CGONew(G);
   if(ok && obj->NBond) {
@@ -638,7 +679,7 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
       && SettingGetGlobal_b(G, cSetting_render_as_cylinders) && SettingGetGlobal_b(G, cSetting_stick_use_shader);
 
     if(cartoon_side_chain_helper || ribbon_side_chain_helper) {
-      SideChainHelperMarkNonCartoonBonded(marked, obj, cs,
+      SideChainHelperMarkNonCartoonBonded(marked.get(), obj, cs,
           cartoon_side_chain_helper,
           ribbon_side_chain_helper);
     }
@@ -646,7 +687,7 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
     if(valence_found) {         /* build list of up to 2 connected atoms for each atom */
       other = ObjectMoleculeGetPrioritizedOtherIndexList(obj, cs);
       CHECKOK(ok, other);
-      if (ok){
+      if (ok && !balls){
         fixed_radius = SettingGet_b(G, cs->Setting.get(), obj->Setting.get(), cSetting_stick_fixed_radius);
         scale_r = SettingGet_f(G, cs->Setting.get(), obj->Setting.get(), cSetting_stick_valence_scale);
       }
@@ -673,8 +714,13 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
         AtomInfoType *ati2 = obj->AtomInfo + b2;
         float bd_radius_full;
 
-        auto bd_stick_color = BondSettingGetWD(G, b, cSetting_stick_color, stick_color);
+        auto bd_stick_color = balls ? stick_color : BondSettingGetWD(G, b, cSetting_stick_color, stick_color);
         auto bd_radius = BondSettingGetWD(G, b, cSetting_stick_radius, radius);
+        if (balls) {
+          // the thinner of what its two atoms ask for
+          bd_radius = std::min(AtomSettingGetWD(G, ati1, radius_setting, radius),
+              AtomSettingGetWD(G, ati2, radius_setting, radius));
+        }
 
         // version <=1.8.2 used negative stick_radius to turn on
         // stick_h_scale, which had a default of 0.4 (now: 1.0)
@@ -706,8 +752,14 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
           c1 = (c2 = bd_stick_color);
         }
 
-        s1 = GET_BIT(ati1->visRep, cRepCyl);
-        s2 = GET_BIT(ati2->visRep, cRepCyl);
+        if (balls) {
+          // each half of the bond in the color of its atom's ball
+          c1 = ball_color_of(ati1);
+          c2 = ball_color_of(ati2);
+        }
+
+        s1 = GET_BIT(ati1->visRep, rep);
+        s2 = GET_BIT(ati2->visRep, rep);
 
         if (!(s1 || s2)) {
           continue;
@@ -757,7 +809,7 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
               AtomSettingGetWD(G, ati2,
                   cSetting_cartoon_side_chain_helper, cartoon_side_chain_helper);
             if (sc_helper &&
-                SideChainHelperFilterBond(G, marked, ati1, ati2, b1, b2, na_mode, &c1, &c2))
+                SideChainHelperFilterBond(G, marked.get(), ati1, ati2, b1, b2, na_mode, &c1, &c2))
               s1 = s2 = 0;
           }
 
@@ -768,7 +820,7 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
               AtomSettingGetWD(G, ati2,
                   cSetting_ribbon_side_chain_helper, ribbon_side_chain_helper);
             if (sc_helper &&
-                SideChainHelperFilterBond(G, marked, ati1, ati2, b1, b2, na_mode_ribbon, &c1, &c2))
+                SideChainHelperFilterBond(G, marked.get(), ati1, ati2, b1, b2, na_mode_ribbon, &c1, &c2))
               s1 = s2 = 0;
           }
         }
@@ -776,16 +828,19 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
           /* This means that if stick_ball gets changed, the RepCylBond needs to be completely invalidated */
 
         auto stick_ball_impl = [&](AtomInfoType * ati1, int b1, int c1, float const* vv1) {
-          int stick_ball_1 = AtomSettingGetWD(G, ati1, cSetting_stick_ball, stick_ball);
+          int stick_ball_1 = balls || AtomSettingGetWD(G, ati1, cSetting_stick_ball, stick_ball);
           if(stick_ball_1) {
             float vdw = stick_ball_ratio * ((ati1->protons == cAN_H) ? bd_radius : bd_radius_full);
             float vdw1 = (vdw >= 0) ? vdw : -ati1->vdw * vdw;
+            if (balls)
+              vdw1 = ati1->vdw * AtomSettingGetWD(G, ati1, cSetting_ball_and_stick_scale, ball_scale);
 
-            // only draw cap if larger than any previously drawn (PYMOL-2527)
-            if (vdw1 < capdrawn[b1])
+            // only draw cap if larger than any previously drawn (PYMOL-2527);
+            // a ball once, however many bonds its atom has
+            if (balls ? capdrawn[b1] > 0.0F : vdw1 < capdrawn[b1])
               return;
 
-            int sbc1 = (stick_ball_color == cColorDefault) ? c1 : stick_ball_color;
+            int sbc1 = (balls || stick_ball_color == cColorDefault) ? c1 : stick_ball_color;
             float rgb1[3];
             if(sbc1 == cColorAtomic)
               sbc1 = ati1->color;
@@ -799,7 +854,7 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
 
         if(s1 || s2) {
           auto const bd_transp =
-              BondSettingGetWD(G, b, cSetting_stick_transparency, transp);
+              balls ? transp : BondSettingGetWD(G, b, cSetting_stick_transparency, transp);
 
           if (prev_transp != bd_transp) {
             prev_transp = bd_transp;
@@ -833,7 +888,7 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
             all_zero_order_bond_atoms.erase(b2);
 
             bool bd_valence_flag = (ord > 1) && (ord < 5) &&
-              BondSettingGetWD(G, b, cSetting_valence, valence_flag);
+              (balls || BondSettingGetWD(G, b, cSetting_valence, valence_flag));
 
             if(bd_valence_flag) {
               Pickable pickdata[] = { { b1, ati1->masked ? cPickableNoPick : a },
@@ -894,9 +949,28 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
       ok &= RepCylinder(I->primitiveCGO, true, true, false, v1, v2, true, true, radius);
     }
   }
+  if (ok && balls) {
+    // atoms that got no ball from a bond: no bonds, or bonds that are not shown
+    for (int idx = 0; idx < cs->NIndex; ++idx) {
+      int atm = cs->IdxToAtm[idx];
+      const AtomInfoType* ati = obj->AtomInfo + atm;
+      if (!(ati->visRep & vis_bit) || capdrawn[atm] > 0.0F)
+        continue;
+      int color = ball_color_of(ati);
+      float rgb[3];
+      const float* v = cs->coordPtr(idx);
+      ColorGetCheckRamped(G, color, v, rgb, state);
+      if (prev_transp != 0.0F) {
+        prev_transp = 0.0F;
+        CGOAlpha(I->primitiveCGO, 1.0F);
+      }
+      CGOColorv(I->primitiveCGO, rgb);
+      CGOPickColor(I->primitiveCGO, atm, ati->masked ? cPickableNoPick : cPickableAtom);
+      CGOSphere(I->primitiveCGO, v,
+          ati->vdw * AtomSettingGetWD(G, ati, cSetting_ball_and_stick_scale, ball_scale));
+    }
+  }
   FreeP(other);
-  FreeP(marked);
-  FreeP(capdrawn);
 
   CGOStop(I->primitiveCGO);
   if (!ok){
@@ -905,6 +979,16 @@ Rep *RepCylBondNew(CoordSet * cs, int state)
   }
 
   return (Rep *) I;
+}
+
+Rep* RepCylBondNew(CoordSet* cs, int state)
+{
+  return RepCylBondNewImpl(cs, state, cRepCyl);
+}
+
+Rep* RepBallAndStickNew(CoordSet* cs, int state)
+{
+  return RepCylBondNewImpl(cs, state, cRepBallAndStick);
 }
 
 static void RepCylinderImmediate(const float *v1arg, const float *v2arg, int nEdge,

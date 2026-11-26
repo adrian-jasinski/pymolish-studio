@@ -21,6 +21,20 @@ sele_ms_shared = '(n. CA|n. N&r. PRO)'
 # returns true when it shows the menu, so the viewport does not draw it.
 popup = None
 
+# A GUI that edits a name where it is written sets this to a callable taking
+# the name of an object or selection; it returns true when it took the rename.
+rename_hook = None
+
+
+def rename(name):
+    """The "rename" row of an object or selection: the name is edited in
+    place where a window offers that, else typed into the viewport (the
+    renaming wizard: pymolish -x, an embedded viewport)."""
+    if not (rename_hook and rename_hook(name)):
+        import pymol
+
+        pymol.cmd.wizard("renaming", name)
+
 # text colors for delete and remove items
 del_col = r'\933'
 rem_col = r'\933'
@@ -148,13 +162,11 @@ def obj_motion(self_cmd, obj, frame="0"):
 
 def rep_action(self_cmd, sele, action) :
     return [
-        [ 1, 'wire'       , 'cmd.'+action+'("wire"      ,"'+sele+'")' ],
         [ 1, '  lines'    , 'cmd.'+action+'("lines"     ,"'+sele+'")' ],
         [ 1, '  nonbonded', 'cmd.'+action+'("nonbonded" ,"'+sele+'")' ],
         [ 0, ''           , ''                               ],
         [ 1, 'licorice'   , 'cmd.'+action+'("licorice"  ,"'+sele+'")' ],
-        [ 1, '  sticks'   , 'cmd.'+action+'("sticks"    ,"'+sele+'")' ],
-        [ 1, '  nb_spheres','cmd.'+action+'("nb_spheres","'+sele+'")' ],
+        [ 1, 'ball and stick', 'cmd.'+action+'("ball_and_stick","'+sele+'")' ],
         [ 0, ''           , ''                               ],
         [ 1, 'ribbon'     , 'cmd.'+action+'("ribbon"    ,"'+sele+'")' ],
         [ 1, 'cartoon'    , 'cmd.'+action+'("cartoon"   ,"'+sele+'")' ],
@@ -198,7 +210,7 @@ def show_hydro(self_cmd, sele):
     def show(hydro):
         return ';'.join(
             'cmd.show("%s","(%s) & %s & bound_to rep %s")' % (rep, sele, hydro, rep)
-            for rep in ('lines', 'sticks', 'spheres'))
+            for rep in ('lines', 'sticks', 'spheres', 'ball_and_stick'))
     return [[ 2, 'Show:', '' ],
             [ 1, 'all', show('hydro') ],
             [ 1, 'polar', show('hydro & !(elem C extend 1)') ],
@@ -213,6 +225,8 @@ def mol_show(self_cmd, sele):
     for row in reps:
         if row[1] == 'cartoon':
             row[2:] = [styles, styles[0][2]]
+        elif row[1] == 'ball and stick':  # a click shows it, the hover menu styles it
+            row[2:] = [ball_and_stick(self_cmd, sele), row[2]]
     return (
         [[ 2, 'Show:'      , ''                               ]]
         + reps +
@@ -238,6 +252,24 @@ def hide_hydro(self_cmd, sele):
               [ 1, 'all' , 'cmd.hide("('+sele+' and hydro)")'   ],
               [ 1, 'nonpolar' , 'cmd.hide("('+sele+' and hydro and (elem C extend 1))")' ],
               ] )
+
+def ball_and_stick(self_cmd, sele):
+    # sizes of the representation of its own: no sphere or stick setting
+    # is touched; a click on the row shows it, C colors it
+    def setting(name, value):
+        return 'cmd.set("%s", %s, %s, quiet=0)' % (name, value, repr(sele))
+    return [
+        [ 2, 'Ball and stick:', '' ],
+        [ 1, 'ball size', [[ 2, 'Ball size:', '' ]] + [
+            [ 1, label, setting('ball_and_stick_scale', value) ]
+            for label, value in (('small 0.20', 0.2), ('standard 0.25', 0.25),
+                                 ('0.31', 0.31), ('0.40', 0.4),
+                                 ('large 0.50', 0.5))] ],
+        [ 1, 'bond thickness', [[ 2, 'Bonds:', '' ]] + [
+            [ 1, label, setting('ball_and_stick_bond_radius', value) ]
+            for label, value in (('thin 0.08', 0.08), ('standard 0.12', 0.12),
+                                 ('thick 0.18', 0.18))] ],
+    ]
 
 def mol_hide(self_cmd, sele):
     return (
@@ -415,6 +447,8 @@ def by_elem(self_cmd, sele):
     return [
         [ 2, 'Atoms'     ,''                               ],
         [1,' \\777H\\229N\\922O\\950S...','util.cnc("'+sele+'",_self=cmd)'],
+        # the colors of the atoms, by element; whole residues
+        [1,'CPK \\888C\\777H\\559N\\900O\\983S...','cmd.color_cpk("'+sele+'")'],
 
 [1,'\\292C\\777H\\229N\\922O\\950S...','util.cba(33,"'+sele+'",_self=cmd)'],# tv_green
 [1,'\\099C\\777H\\229N\\922O\\950S...','util.cba(5,"'+sele+'",_self=cmd)'],# cyan
@@ -451,8 +485,12 @@ def by_rep_sub(self_cmd, rep, setting, sele):
     expr = 'cmd.set("%s", "{0}", %s, quiet=0)' % (setting, repr(sele))
     r = [[ 2, rep.capitalize(), '' ]]
     r += all_colors_generic(self_cmd, expr)
+    r += [[ 0 , '', '' ]]
+    if setting == 'ball_and_stick_color':
+        # the balls only: the atoms keep their colors for everything else
+        r += [[ 1, 'by element', expr.format('atomic') ],
+              [ 1, 'CPK (balls only)', 'cmd.color_cpk(%s, "ball_and_stick")' % repr(sele) ]]
     r += [
-        [ 0 , '', '' ],
         [ 1 , 'unset', 'cmd.unset("%s", %s, quiet=0)' % (setting, repr(sele)) ],
     ]
     return r
@@ -517,6 +555,7 @@ rep_setting_lists = [
         ('', ''),
         ('dots', 'dot_color'),
         ('spheres', 'sphere_color'),
+        ('ball and stick', 'ball_and_stick_color'),
         ('', ''),
         ('mesh', 'mesh_color'),
         ('surface', 'surface_color'),
@@ -762,9 +801,18 @@ def cartoon_transparency(self_cmd, sele):
           'preset.cartoon_transparency(%s,"%s",_self=cmd)' % (t, sele) ]
         for t in (0, 0.25, 0.5, 0.75) ]
 
+def _undoable(rows):
+    # every row of the preset menu is one step of "undo"
+    for row in rows:
+        if row[0] == 1 and isinstance(row[2], str):
+            row[2] = 'pymol.snapshots.keep(_self=cmd);' + row[2]
+        elif row[0] == 1:
+            _undoable(row[2])
+    return rows
+
 def presets(self_cmd, sele):
-    from . import preset
-    return [[ 2, 'Preset:'       ,''                        ],
+    from . import preset, snapshots
+    return _undoable([[ 2, 'Preset:'       ,''                        ],
               _preset('default', 'default', sele),
               _preset('classified', 'classified', sele),
               [ 0, '', '' ],
@@ -776,8 +824,10 @@ def presets(self_cmd, sele):
               _preset('pretty', 'pretty_solv', sele),
               _preset('publication', 'pub_solv', sele),
               _preset('glass', 'glass', sele),
+              _preset('balls in glass', 'balls_in_glass', sele),
               _preset('cartoon wire', 'wire', sele),
               _preset('cartoon spring', 'spring', sele),
+              _preset('cartoon cylinders', 'cylinders', sele),
               _preset('illustration', 'illustration', sele),
               [ 0, '', '' ],
               _preset('ligands', 'ligands', sele),
@@ -790,10 +840,26 @@ def presets(self_cmd, sele):
               [ 1, 'hide solvent' if preset.solvent else 'show solvent',
                 'preset.show_solvent(%d,"%s",_self=cmd)' % (not preset.solvent, sele) ],
               [ 0, '', '' ],
+              # colors of protein and ligand, and the background: the only
+              # rows that color a cartoon or a surface
+              [ 1, 'theme', [[ 2, 'Theme:', '' ]] + [
+                  [ 1, name, 'preset.theme("%s","%s",_self=cmd)' % (name, sele) ]
+                  for name in preset.THEMES ]],
               # light and outline of the whole scene, whatever the menu is on
-            ] + [
-              [ 1, 'standard light' if name == 'default' else name,
-                'preset.look("%s",_self=cmd)' % name ] for name in preset.LOOKS ]
+              [ 1, 'light', [[ 2, 'Light:', '' ]] + [
+                  [ 1, 'standard light' if name == 'default' else name,
+                    'preset.look("%s",_self=cmd)' % name ] for name in preset.LOOKS ] + [
+                  [ 0, '', '' ],
+                  [ 1, 'no fog' if self_cmd.get_setting_int('depth_cue') else 'fog',
+                    'preset.depth_fog(%d,_self=cmd)'
+                    % (not self_cmd.get_setting_int('depth_cue')) ]]],
+              # a floor under what is shown: its shadow when ray traced
+              [ 1, 'floor', [
+                  [ 2, 'Floor:', '' ],
+                  [ 1, 'floor', 'cmd.stage("floor", quiet=0)' ],
+                  [ 1, 'floor with mirror image', 'cmd.stage("mirror", quiet=0)' ],
+                  [ 1, 'no floor', 'cmd.stage("off")' ]]],
+            ])
 
 def hydrogens(self_cmd, sele):
    return [[ 2, 'Hydrogens:'       ,''                        ],
@@ -804,11 +870,15 @@ def hydrogens(self_cmd, sele):
            ]
 
 def clean(self_cmd, sele):
+    from pymol import grouping
     return [[ 2, 'Clean:', '' ],
             [ 1, rem_col + 'remove waters', 'cmd.remove("solvent and ('+sele+')")' ],
             [ 1, rem_col + 'remove ions', 'cmd.remove("inorganic and ('+sele+')")' ],
             [ 1, rem_col + 'remove waters and ions', 'cmd.remove("(solvent or inorganic) and ('+sele+')")' ],
             [ 1, rem_col + 'remove ligands', 'cmd.remove("organic and ('+sele+')")' ],
+            # PEG, glycerol, buffers, detergents ...; it says how many atoms went
+            [ 1, rem_col + 'remove crystallization additives',
+              'cmd.remove("('+grouping.ADDITIVES+') and ('+sele+')",quiet=0)' ],
             [ 0, '', '' ],
             [ 1, 'optimize ligand geometry', 'cmd.clean("'+sele+'",async_=1)' ],
             [ 1, 'fix structure...', 'pymol.gui.get_qtwindow().fix_structure_dialog("'+sele+'")' ],
@@ -1219,7 +1289,7 @@ def sele_action(self_cmd, sele, picked=0):
     # picked: the "actions" submenu of a right click on a selected atom,
     # whose parent menu already has drag and clean
     return [[ 2, 'Action:'       ,''                        ],
-              [ 1, 'rename selection', 'cmd.wizard("renaming","'+sele+'")'          ],
+              [ 1, 'rename selection', 'menu.rename("'+sele+'")'          ],
               [ 1, 'duplicate selection'      ,'cmd.select(None,"'+sele+'")'          ],
               [ 1, del_col + 'delete selection', 'cmd.delete("'+sele+'")'          ],
               [ 0, ''               ,''                             ],
@@ -1287,7 +1357,7 @@ def mol_action(self_cmd, sele, group=0):
     from pymol import grouping
     kind = 'group' if group else 'object'
     return [[ 2, 'Action:'     , ''                       ],
-            [ 1, 'rename ' + kind, 'cmd.wizard("renaming","'+sele+'")'          ],
+            [ 1, 'rename ' + kind, 'menu.rename("'+sele+'")'          ],
             [ 1, 'duplicate group', 'cmd.copy_group("'+sele+'")' ] if group else
             [ 1, 'duplicate object', 'cmd.copy(cmd.get_unused_name("'+sele+'_cpy",0),"'+sele+'",zoom=0)' ],
             [ 1, del_col + 'delete ' + kind, 'cmd.delete("'+sele+'")'    ],
@@ -1324,7 +1394,7 @@ def slice_action(self_cmd, sele):
               [ 1, 'dynamic grid on' , 'cmd.set("slice_dynamic_grid",1,"'+sele+'")'    ],
               [ 1, 'dynamic grid off', 'cmd.set("slice_dynamic_grid",0,"'+sele+'")'    ],
               [ 0, ''             , ''                       ],
-              [ 1, 'rename'       , 'cmd.wizard("renaming","'+sele+'")'          ],
+              [ 1, 'rename'       , 'menu.rename("'+sele+'")'          ],
               [ 1, 'group' , lambda: move_to_group(self_cmd, sele) ],
               [ 0, ''             , ''                       ],
               [ 1, del_col + 'delete', 'cmd.delete("'+sele+'")'    ],
@@ -1335,7 +1405,7 @@ def simple_action(self_cmd, sele):
             [ 1, 'drag'       , 'cmd.drag("'+sele+'")'          ],
             [ 1, 'reset'       , 'cmd.reset(object="'+sele+'")'          ],
             [ 0, ''             , ''                       ],
-            [ 1, 'rename'       , 'cmd.wizard("renaming","'+sele+'")'          ],
+            [ 1, 'rename'       , 'menu.rename("'+sele+'")'          ],
             [ 1, 'group' , lambda: move_to_group(self_cmd, sele) ],
             [ 0, ''             , ''                       ],
             [ 1, del_col + 'delete', 'cmd.delete("'+sele+'")'    ],
@@ -1418,7 +1488,7 @@ def map_action(self_cmd, sele):
             [ 0, ''             , ''                       ],
             [ 1, 'matrix_copy'  , mat_tran(self_cmd, sele, 1) ],
             [ 0, ''             , '' ],
-            [ 1, 'rename'       , 'cmd.wizard("renaming","'+sele+'")'          ],
+            [ 1, 'rename'       , 'menu.rename("'+sele+'")'          ],
             [ 1, 'group' , lambda: move_to_group(self_cmd, sele) ],
             [ 0, ''             , ''                       ],
             [ 1, del_col + 'delete', 'cmd.delete("'+sele+'")'    ],
@@ -1450,7 +1520,7 @@ def surface_action(self_cmd, sele):
             [ 1, 'drag' , 'cmd.drag("'+sele+'")' ],
             [ 1, 'reset'       , 'cmd.reset(object="'+sele+'")'          ],
             [ 0, ''             , ''                       ],
-            [ 1, 'rename'       , 'cmd.wizard("renaming","'+sele+'")'          ],
+            [ 1, 'rename'       , 'menu.rename("'+sele+'")'          ],
             [ 1, 'group' , lambda: move_to_group(self_cmd, sele) ],
             [ 0, ''             , ''                       ],
             [ 1, del_col + 'delete', 'cmd.delete("'+sele+'")'    ],
@@ -1463,7 +1533,7 @@ def mesh_action(self_cmd, sele):
             [ 1, 'drag' , 'cmd.drag("'+sele+'")' ],
             [ 1, 'reset'       , 'cmd.reset(object="'+sele+'")'          ],
             [ 0, ''             , ''                       ],
-            [ 1, 'rename'       , 'cmd.wizard("renaming","'+sele+'")'          ],
+            [ 1, 'rename'       , 'menu.rename("'+sele+'")'          ],
             [ 1, 'group' , lambda: move_to_group(self_cmd, sele) ],
             [ 0, ''             , ''                       ],
             [ 1, del_col + 'delete', 'cmd.delete("'+sele+'")'    ],
@@ -1617,11 +1687,6 @@ def enable_disable(self_cmd, enable):
         result.insert(2, [1, 'selections', 'deselect'])
     return result
 
-def scene_buttons(self_cmd):
-    return [[ 2, 'Buttons', '' ],
-            [ 1, 'on', 'cmd.set("scene_buttons")'],
-            [ 1, 'off', 'cmd.set("scene_buttons", 0)']]
-
 def scene_main(self_cmd):
     list = self_cmd.get_scene_list()
     recall_list = [ [2, 'Scenes' , ''] ]
@@ -1634,9 +1699,7 @@ def scene_main(self_cmd):
         [ 1, 'append' , 'cmd.scene("new","append",quiet=0)' ],
         [ 1, 'update' , 'cmd.scene("auto","update",quiet=0)' ],
         [ 0, ''             , ''                      ],
-        [ 1, 'recall' , recall_list ],
-        [ 0, ''             , ''                      ],
-        [ 1, 'buttons', scene_buttons(self_cmd)] ]
+        [ 1, 'recall' , recall_list ] ]
 
 def main_pseudoatom_sub(self_cmd,pos, screenpos):
     return [
@@ -1812,12 +1875,3 @@ def seq_option(self_cmd, sele, title, object=0):
             ])
     return result
 
-def scene_menu(self_cmd, name):
-    safe_name = name.replace('"','\\"') # just in case
-    return [[ 2, 'Scene '+name    , '' ],
-            [ 1, 'rename', 'cmd.wizard("renaming","'+name+'",mode="scene")'          ],
-            [ 0, ''             , ''                      ],
-            [ 1, 'update', 'cmd.scene("'+safe_name+'","update")'],
-            [ 0, ''             , ''                      ],
-            [ 1, del_col + 'delete', 'cmd.scene("'+safe_name+'","delete")'],
-            ]

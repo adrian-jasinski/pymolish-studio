@@ -56,7 +56,7 @@ void ShakerAddDistCon(CShaker * I, int atom0, int atom1, float target, int type,
 {
   ShakerDistCon *sdc;
 
-  VLACheck(I->DistCon, ShakerDistCon, I->NDistCon);
+  I->DistCon.check(I->NDistCon);
   sdc = I->DistCon + I->NDistCon;
   sdc->at0 = atom0;
   sdc->at1 = atom1;
@@ -295,7 +295,7 @@ void ShakerAddPyraCon(CShaker * I, int atom0, int atom1, int atom2, int atom3,
 {
   ShakerPyraCon *spc;
 
-  VLACheck(I->PyraCon, ShakerPyraCon, I->NPyraCon);
+  I->PyraCon.check(I->NPyraCon);
   spc = I->PyraCon + I->NPyraCon;
   spc->at0 = atom0;
   spc->at1 = atom1;
@@ -310,7 +310,7 @@ void ShakerAddTorsCon(CShaker * I, int atom0, int atom1, int atom2, int atom3, i
 {
   ShakerTorsCon *stc;
 
-  VLACheck(I->TorsCon, ShakerTorsCon, I->NTorsCon);
+  I->TorsCon.check(I->NTorsCon);
   stc = I->TorsCon + I->NTorsCon;
   stc->at0 = atom0;
   stc->at1 = atom1;
@@ -326,7 +326,7 @@ void ShakerAddPlanCon(CShaker * I, int atom0, int atom1, int atom2, int atom3,
 {
   ShakerPlanCon *spc;
 
-  VLACheck(I->PlanCon, ShakerPlanCon, I->NPlanCon);
+  I->PlanCon.check(I->NPlanCon);
   spc = I->PlanCon + I->NPlanCon;
   spc->at0 = atom0;
   spc->at1 = atom1;
@@ -341,7 +341,7 @@ void ShakerAddLineCon(CShaker * I, int atom0, int atom1, int atom2)
 {
   ShakerLineCon *slc;
 
-  VLACheck(I->LineCon, ShakerLineCon, I->NLineCon);
+  I->LineCon.check(I->NLineCon);
   slc = I->LineCon + I->NLineCon;
   slc->at0 = atom0;
   slc->at1 = atom1;

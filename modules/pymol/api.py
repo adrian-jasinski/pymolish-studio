@@ -481,7 +481,12 @@ from .properties import \
 # Modules which contain programs used explicity as "module.xxx"
 
 from . import palettes
-from .palettes import palette
+from .palettes import palette, color_cpk
+from .tables import load_table, save_table
+from .ligand2d import ligand_2d
+from .ligand_nav import ligand_next
+from .sequence import sequence_align
+from .stage import stage
 
 from . import batch
 from .batch import export_objects, load_files
@@ -516,3 +521,7 @@ from .grouping import \
 from . import util
 from . import movie
 from . import gui
+
+# last: agent.py captures the API functions above at import time
+from .assistant import ask
+from .agent_server import agent_server

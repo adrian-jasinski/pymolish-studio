@@ -64,13 +64,11 @@ def testTransparencyMode3():
         assert img[...,:3].any()
 
 
-@testing.requires('incentive')
-@testing.requires('no_edu')
 @testing.requires('gui')
 def testAA():
     '''
         Make a black/white image and check if gray pixels are found with
-        antialias_shader=1/2
+        antialias_shader=1 (FXAA; 2, SMAA, is not built: the setting stops at 1)
         '''
     cmd.viewport(100, 100)
 
@@ -87,12 +85,12 @@ def testAA():
     img = testing.get_imagearray()
     assertNumColorsEqual(img, 2)
 
-    for aa in (1, 2):
-        cmd.set('antialias_shader', aa)
+    cmd.set('antialias_shader', 2)
+    assert cmd.get_setting_int('antialias_shader') == 1
 
-        # smoothed edges, we expect more than two color values
-        img = testing.get_imagearray()
-        assert len(numpy.unique(img[...,:3])) > 2
+    # smoothed edges, we expect more than two color values
+    img = testing.get_imagearray()
+    assert len(numpy.unique(img[...,:3])) > 2
 
 
 @pytest.mark.parametrize("trilines", [0, 1])

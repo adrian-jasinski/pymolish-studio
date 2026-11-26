@@ -23,7 +23,7 @@ Objects panel on the right.
 
 | Area | Where | What it is for |
 | --- | --- | --- |
-| Toolbar | top | Undo, Zoom, Orient, ready-made looks (Presets), the Builder, Scenes, and Draw/Ray for pictures. The percent button changes the size of text and controls. |
+| Toolbar | top | Open (a file, a folder, a recent file, an entry by its code), Undo, Zoom, Orient, ready-made looks (Presets), the Builder and Scenes (icons; the name shows under the mouse), and Draw for pictures. The percent button changes the size of text and controls, at once: any value from 50 to 300 %. |
 | Viewport | middle | The molecule. Everything you do with the mouse happens here. |
 | Objects panel | right | One row per molecule. Click a row to hide or show it; double-click to zoom on it. |
 | Scenes panel | left, after a click on Scenes | One row per saved scene with a small picture. Add stores the current view; double-click a row to return to it. |
@@ -72,7 +72,7 @@ a command; the Tab key completes names.
 
 | To keep | Do | Command |
 | --- | --- | --- |
-| Everything, to continue later | File > Save Session | `save work.pse` |
+| Everything, to continue later | File > Save Session | `save work.psex` (small; `save work.pse` for PyMOL) |
 | A picture | File > Export Image As > PNG | `png picture.png, dpi=300, ray=1` |
 | The molecule itself | File > Export Molecule | `save model.pdb` |
 

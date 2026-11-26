@@ -95,11 +95,11 @@ static const char* FontTypeRenderOpenGLImpl(const RenderInfo* info, CFontType* I
     copy2f(TextGetLabelBuffer(G), text_buffer);
     sampling = info->sampling;
     if(st && (*st)) {
-      float *line_widths = nullptr;
+      std::vector<float> line_widths; // filled only for several lines
       float screenWorldOffset[3] = { 0.0F, 0.0F, 0.0F };
       float tot_height;
       if (nlines>1){
-	line_widths = pymol::calloc<float>(nlines);
+	line_widths.resize(nlines);
       }
       if(size < _0) {
         size = (int) (0.5F - size / v_scale);
@@ -148,7 +148,7 @@ static const char* FontTypeRenderOpenGLImpl(const RenderInfo* info, CFontType* I
               last_c = c;
             }
           }
-	  if (line_widths)
+	  if (!line_widths.empty())
 	    line_widths[linenum] = line_width;
 	  text_width = max2(text_width, line_width) ;
 	  tot_text_width = text_width + 2.f * text_buffer[0];
@@ -243,7 +243,7 @@ static const char* FontTypeRenderOpenGLImpl(const RenderInfo* info, CFontType* I
       CharacterRenderOpenGLPrime(G, info);
       kern_flag = false;
       TextGetPos(G)[1] += (int)pymol_roundf(size * (text_spacing * (nlines-1) + descender));
-      if (line_widths){
+      if (!line_widths.empty()){
 	TextGetPos(G)[0] += text_just * (text_width - line_widths[0])/2.f;
       }
       TextGetPos(G)[0] += text_buffer[0];
@@ -258,7 +258,7 @@ static const char* FontTypeRenderOpenGLImpl(const RenderInfo* info, CFontType* I
 	  }
 	  linenum++;
 	  TextGetPos(G)[1] += (int)pymol_roundf(size * (text_spacing * (nlines - 1 - linenum) + descender));
-	  if (line_widths)
+	  if (!line_widths.empty())
 	    TextGetPos(G)[0] += text_just * (text_width - line_widths[linenum])/2.f + text_buffer[0];
 	  kern_flag = false;
 	  continue;
@@ -288,7 +288,6 @@ static const char* FontTypeRenderOpenGLImpl(const RenderInfo* info, CFontType* I
       if(!pushed) {
         ScenePopRasterMatrix(G);
       }
-      FreeP(line_widths);
     }
     if (!cont)
       return st;
@@ -337,10 +336,10 @@ const char* CFontType::RenderRay(CRay* ray, const char* st, float size,
   copy2f(TextGetLabelBuffer(G), text_buffer);
   if(st && (*st)) {
     float origpos[3];
-    float *line_widths = nullptr;
+    std::vector<float> line_widths; // filled only for several lines
     float tot_height;
     if (nlines>1){
-      line_widths = pymol::calloc<float>(nlines);
+      line_widths.resize(nlines);
     }
     if(size < _0) {
       size = (int) (0.5F - size / v_scale);
@@ -433,7 +432,7 @@ const char* CFontType::RenderRay(CRay* ray, const char* st, float size,
       }
       text_width = max2(text_width, line_width);
       tot_text_width = text_width + 2.f * text_buffer[0] * sampling;
-      if (line_widths)
+      if (!line_widths.empty())
 	line_widths[linenum] = line_width;
       TextSetWidth(G, tot_text_width/(float)sampling);
       tot_height = size * (nlines + (nlines-1) * (text_spacing-1.f)) + 2.f * text_buffer[1];
@@ -459,7 +458,7 @@ const char* CFontType::RenderRay(CRay* ray, const char* st, float size,
         y_indent -= 2 * (rpos[1] - _1) / v_scale;
       }
       v = TextGetPos(I->G);
-      if (line_widths){
+      if (!line_widths.empty()){
 	x_indent -= text_just * (text_width - line_widths[0])/2.f;
       }
       {
@@ -483,7 +482,7 @@ const char* CFontType::RenderRay(CRay* ray, const char* st, float size,
 	linenum++;
 	scale3f(yn, pymol_roundf(text_spacing * size * linenum * sampling), y_adj); // need to round to pixel in y
 	subtract3f(TextGetPos(G), y_adj, TextGetPos(G));
-	if (line_widths){
+	if (!line_widths.empty()){
 	  scale3f(xn, text_just * (line_widths[0] - line_widths[linenum])/2.f, x_adj);
 	  add3f(TextGetPos(G), x_adj, TextGetPos(G));
 	}
@@ -518,7 +517,6 @@ const char* CFontType::RenderRay(CRay* ray, const char* st, float size,
         }
       }
     }
-    FreeP(line_widths);
   }
   return st;
 }

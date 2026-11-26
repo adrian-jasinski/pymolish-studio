@@ -80,6 +80,7 @@ Rep* Rep::update()
     switch (rep) {
     case cRepLine:
     case cRepCyl:
+    case cRepBallAndStick:
     case cRepRibbon:
     case cRepNonbonded:
       // TODO Is this needed? How about other pickable reps, like:

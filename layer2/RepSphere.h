@@ -17,6 +17,8 @@ Z* -------------------------------------------------------------------
 #ifndef _H_RepSphere
 #define _H_RepSphere
 
+#include <vector>
+
 #include"Rep.h"
 
 struct PyMOLGlobals;
@@ -33,8 +35,8 @@ struct RepSphere : Rep {
   void render(RenderInfo* info) override;
   bool sameVis() const override;
 
-  bool* LastVisib = nullptr;
-  int* LastColor = nullptr;
+  std::vector<char> LastVisib;
+  std::vector<int> LastColor;
   CGO* renderCGO = nullptr;
   CGO* primitiveCGO = nullptr;
   CGO* spheroidCGO = nullptr;

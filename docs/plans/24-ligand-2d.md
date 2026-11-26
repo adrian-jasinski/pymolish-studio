@@ -1,7 +1,73 @@
 # 24 — Ligand in 2D with its contacts
 
-[Roadmap](../../PLAN.md) · Request 2026-11-20 · Planned, not built. A
-62-line prototype ran; its picture is below.
+[Roadmap](../../PLAN.md) · Request 2026-11-20 · **24a done 2026-11-20 in
+4.32.0:** the command `ligand_2d` with finder, layout and picture. The panel
+(24b) shipped in 4.33.0; contour and halos (24c) remain open.
+
+**24c done 2026-11-23 in 4.56.0; the step is finished.** As built: the
+pocket's outline (120 directions around the ligand's center, halfway
+between the ligand and the circles, one color per piece from the nearest
+residue, open where none is within 1.2 circles), grey halos (three rings)
+on ligand atoms whose open surface the protein leaves more than 0.3 of
+(Shrake and Rupley in numpy, 64 points, water 1.4 A), metal contacts
+within 3.0 A (metals are no hydrogen bond partners any more), the panel's
+"Show in 3D" (distance objects per kind in the group `ligand_2d`, mode 4,
+in the picture's colors, deleted when the panel closes; objects put in the
+group by hand stay), tooltips with each contact's distance and the
+nearest atoms, Tab around the ring with a focus ring, Enter selects.
+Measured on 1OKY: analysis 0.27 to 0.53 s, the picture 11 to 31 ms;
+staurosporine has 3 of 35 atoms open. Tried in the real window (Tab,
+Enter, close and reopen, Display > Panels, the dark theme). Left out: a
+blended outline, a smaller circle for a metal, the light theme by eye.
+
+**2026-11-23, draft 1: 24d below repairs panel resizing and picture fitting
+before 24c. Planned at 4.43.0 and built the same day in 4.43.2: see the note below.**
+The earlier statement that the picture scales describes the intended path,
+not proof that all dock/window sizes work. Step 30's picture styling stays.
+
+**24d done 2026-11-23 in 4.43.2.** Measured first in the real window on
+2RH1: the picture always fitted its label, at every size of the panel. The
+picture itself was cut: `layout` puts the ring of residues around the mean
+of the ligand's atoms, rdkit centers the box around the ligand, and for
+carazolol the two are far enough apart that three circles ran over the
+right edge. `draw` now draws the molecule once to see where the mean lands
+and again with it in the middle of the square above the legend; the saved
+SVG and PNG are fixed with it. The panel's ceiling of 125 % is gone. Tried
+on 2RH1 docked from 259 to 600 px wide and floating from 300 x 300 to
+800 x 1000: every circle whole. Left out: dragging the floating panel's
+edge with the mouse, scales other than 150 %. The picture above is from
+before the fix.
+
+![2RH1, carazolol](../img/ligand-2d.png)
+
+As built: `modules/pymol/ligand2d.py`, 330 lines, no Qt. The picture is
+drawn by rdkit itself (shapes, text and lines in pixel coordinates), so the
+command writes SVG and PNG without a window. Found in 2RH1: Asp113 salt
+bridge, hydrogen bonds to Ser203, Asn312 and Tyr316, ring stacking with
+Phe193 and Phe290, 17 residues, 0.2 s. In 1OKY (the test): the two hinge
+hydrogen bonds of staurosporine, Ser160 and Ala162, and Glu166 at its amine.
+Differences from the plan: lines have no arrow heads and do not tell
+backbone from side chain; the ring grows instead of a second ring; charged
+groups of the ligand are found by pattern (amines, amidines, acids), since
+deposited ligands carry no charges; ring stacking is by distance of ring
+centers only, without the angle; the largest ligand is the default, so
+glycerol and buffer come last. The prototype's picture is replaced.
+
+**24b done 2026-11-20 in 4.33.0:** the panel and the toolbar button.
+
+![the panel](../img/ligand-panel.png)
+
+`modules/pmg_qt/ligand_panel.py`, 190 lines. Tried in the real window on
+2RH1: the button is off before a structure is loaded and on after; the
+panel opens with carazolol; a real mouse click on Asp113 selects its 8
+atoms and shows sticks; a selection made in the viewport rings Asn312 and
+Asp113 at the next poll. Differences from the plan: the panel is docked on
+the left, 420 px wide, not floating (2D and 3D side by side; it can be
+floated like any panel); the picture is scaled to the panel; the default
+ligand is the one with the most protein atoms within 4 A, not the largest
+(in 2RH1 the largest is a cholesterol on the surface). Not built: the
+distance in a tooltip, "Show in 3D" dashes, Tab through the residues: they
+move to 24c with the contour, the halos and the metal contacts.
 
 **A flat drawing of the ligand with the residues around it and the contacts
 between them, in the style of Maestro's ligand interaction diagram. A button
@@ -29,7 +95,7 @@ flat coordinates from rdkit, residues within 4 Å, hydrogen bonds from
 they touch, SVG rendered by Qt. 0.06 s. Three hydrogen bonds found (Ser203,
 Asn312, Tyr316), 17 residues.
 
-![prototype](../img/plan-ligand-2d.png)
+(The prototype's picture is replaced by the one at the top.)
 
 What it shows: the approach works with what is installed, and the hard part
 is not finding contacts but the layout (residues overlap; Asp113's salt
@@ -119,14 +185,15 @@ always on white unless "transparent" is chosen.
 | Click on a residue | `select sele, <that residue>` and the residue is shown as sticks; Ctrl+click adds. Double click zooms on it. |
 | Click on a ligand atom | Selects the atom. |
 | Hover | The contact's distance in a tooltip. |
-| From 3D to 2D | "Show in 3D" check box: the drawn contacts appear as dashes in the viewport (`distance` objects in a group `ligand_2d`), removed when the panel closes. |
+| Selection, both ways | A residue or ligand atom selected in the drawing is selected in 3D (the two rows above). The other way too: residues that are in `sele` are drawn with a blue ring, so a click in the viewport or on a quick-select chip shows in the drawing. Read from `sele` in the window's 0.5 s poll while the panel is shown. |
+| Contacts in 3D | "Show in 3D" check box: the drawn contacts appear as dashes in the viewport (`distance` objects in a group `ligand_2d`), removed when the panel closes. |
 | Update | A Refresh button, and by itself when the ligand choice changes. Not on every frame or state change. |
 | Export | Save as SVG or PNG (the command's `filename`), Copy to the clipboard. |
 | Keyboard | Tab walks the residues, Enter selects the current one; the buttons are ordinary buttons. |
 
 ## Options
 
-**How it is drawn** (question 23):
+**How it is drawn** (question 23, answered 2026-11-20: A, "our own code, it could use rdkit; try to make it interactive, e.g. selecting a residue in 2D selects it in 3D as well"). The interactive part is the panel of 24b; the answer makes the selection go both ways, see below.
 
 | | Option | Note |
 | --- | --- | --- |
@@ -141,6 +208,41 @@ always on white unless "transparent" is chosen.
 | 24a | `ligand_2d`: finder and layout, SVG and PNG from the command line (no panel). Hydrogen bonds, salt bridges, stacking, near residues. | `testing/tests/api/ligand2d.py` (needs rdkit): on 2RH1 the contact list has Ser203, Asn312, Tyr316 as hydrogen bonds and Asp113 as a salt bridge; no two residue shapes overlap; the SVG parses. Pictures of 2RH1, 1OKY, 3IIS in the plan. |
 | 24b | The panel and the toolbar button: clicks, hover, ligand list, export, theme. | Simulated click selects the residue; the button is disabled without a ligand; real window at 150 %, dark and light. |
 | 24c | Pocket contour, solvent halos, metal contacts, "Show in 3D". | Picture next to the reference; the dashes go when the panel closes. |
+| 24d (before 24c) | Resizable dock/floating window; fit the complete picture and legend to its content area. | Repeated shrink/grow and scale changes, correct hit testing, no cropping or layout growth loop. |
+
+## 24d — resize and fit the picture (request 2026-11-23)
+
+`modules/pmg_qt/ligand_panel.py` already has a `QDockWidget`, a resizable
+`_Picture` label with `Ignored` size policy and a 240 × 240 minimum, and
+`_render` scales the SVG using the label dimensions with a 1.25 ceiling.
+These are code facts, not measurements of the reported failure. Inspect the
+header's minimum size, dock constraints and SVG bounds as well as the label.
+
+1. Reproduce with the user's crowded ligand/pocket and a small fixture,
+   docked and floating. Record widget/content/SVG bounds and device-pixel
+   ratio while shrinking and growing; check the legend is inside SVG bounds.
+2. Fix the constraint or transform at its source. Fit the entire drawing
+   into the available content rectangle, preserving aspect ratio and
+   centering. The minimum size must come from usable controls, not a stale
+   pixmap. Handle zero-size/hidden widgets without division by zero or an
+   allocation loop. Resize rerenders the cached SVG; it must not rerun
+   contact analysis on every mouse movement.
+3. Draw sharp at the current pixel ratio. Painting and residue/atom hit
+   testing must share the actual scaled size and offset, including rounding.
+   The growth cap may remain only if the image still uses the space as
+   intended; remove it if it prevents fitting the requested panel behavior.
+4. Keep mouse resize handles and dock splitters usable and all header
+   controls reachable. Use the existing dock geometry persistence. Fit is
+   automatic; explicit zoom/pan is an optional later choice if fitting a very
+   crowded pocket makes its labels unreadable.
+
+Checks in `testing/tests/api/ligand_panel.py`: shrink/grow several times,
+non-square and crowded SVGs, whole legend visible, hit coordinates after
+resize, hidden/empty panel, dark/light and fractional scaling. Real window:
+drag both dock splitter and floating edges at 100/120/150/200 %, with the
+main window also resized. Those are proposed test inputs, not completed
+measurements. SVG/PNG export stays at its requested output size. A fix
+gets a `Y` version; no new dependency or separate image viewer.
 
 ## Skipped
 

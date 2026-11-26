@@ -56,10 +56,29 @@ def test_data(subtests):
             "nord",
             "dracula",
             "catppuccin",
+            "chimerax",
+            "halo",
         ]
+    # 37c: thirty each. What a palette began with keeps its value and place:
+    # (how many it had, its first color, the last of those)
+    began = {
+        "vivid": (21, "00e676", "aeea00"),
+        "deep": (15, "1565c0", "8d6e63"),
+        "pastel": (12, "8fe3ef", "b0bfd0"),
+        "soft": (22, "6192c3", "9a49b6"),
+        "colorblind": (18, "e69f00", "882255"),
+        "nord": (8, "88c0d0", "5e81ac"),
+        "dracula": (7, "8be9fd", "ff5555"),
+        "catppuccin": (11, "89b4fa", "f5e0dc"),
+        "chimerax": (10, "d2b48c", "800080"),
+        "halo": (12, "00f4d6", "ff8a00"),
+    }
+    assert palettes.BUILTIN == tuple(began)
     for name, (background, colors) in palettes.PALETTES.items():
         with subtests.test(name):
-            assert 1 <= len(colors) <= 30
+            count, first, last = began[name]
+            assert len(colors) == 30
+            assert (colors[0], colors[count - 1]) == (first, last)
             assert len(set(colors)) == len(colors)
             values = [rgb(c) for c in colors]
             for a, b in zip(values, values[1:] + values[:1]):
@@ -118,6 +137,16 @@ def test_chains():
     cmd.util.cbc("elem C")
     assert cmd.count_atoms("chain B & elem C & color cyan") == 4
     assert cmd.count_atoms("chain B & elem N & color vivid_02") == 2
+
+
+def test_the_cycle_uses_all_thirty():
+    cmd.palette("nord")  # it began with eight
+    for i in range(31):
+        cmd.fragment("gly", "p%02d" % i)
+    names = ["nord_%02d" % (i % 30 + 1) for i in range(31)]
+    assert carbon_colors() == [cmd.get_color_index(name) for name in names]
+    assert len(set(carbon_colors())) == 30
+    assert palettes.cycle() == names[:30]
 
 
 def test_wraps_and_unknown():

@@ -93,7 +93,7 @@ static int IsosurfGradients(PyMOLGlobals * G, CSetting * set1, CSetting * set2,
 
 static void _IsosurfFree(CIsosurf * I)
 {
-  FreeP(I);
+  delete I;
 }
 
 void IsosurfFree(PyMOLGlobals * G)
@@ -395,7 +395,7 @@ static void IsosurfCode(CIsosurf * II, const char *bits1, const char *bits2)
 static CIsosurf *IsosurfNew(PyMOLGlobals * G)
 {
   int c;
-  CIsosurf *I = pymol::calloc<CIsosurf>(1);
+  CIsosurf *I = new CIsosurf();
   I->G = G;
   I->VertexCodes = nullptr;
   I->ActiveEdges = nullptr;
@@ -1059,16 +1059,19 @@ static int IsosurfGradients(PyMOLGlobals * G, CSetting * set1, CSetting * set2,
     range_dim[2] = (range[5] - range[2]);
 
     range_size = range_dim[0] * range_dim[1] * range_dim[2];
-    if (ok)
-      flag = pymol::calloc<int>(range_size);
-    CHECKOK(ok, flag);
+    std::vector<int> flag_buf, order_buf;
+    if (range_size < 0) {
+      ok = false; // as when calloc of a negative size failed
+    } else if (ok) {
+      flag_buf.resize(range_size);
+      order_buf.resize(3 * range_size);
+    }
+    flag = flag_buf.data();
+    order = order_buf.data();
     flag_stride[0] = 1;
     flag_stride[1] = range_dim[0];
     flag_stride[2] = range_dim[0] * range_dim[1];
 
-    if (ok)
-      order = pymol::calloc<int>(3 * range_size);
-    CHECKOK(ok, order);
     if(order && flag && (range_dim[0] > 1) && (range_dim[1] > 1) && (range_dim[2] > 1)) {
 
       {
@@ -1259,7 +1262,7 @@ static int IsosurfGradients(PyMOLGlobals * G, CSetting * set1, CSetting * set2,
 
                   {
                     float *f;
-                    VLACheck(i_line, float, n_line * 3 + 2);
+                    i_line.check(n_line * 3 + 2);
                     f = i_line + (n_line * 3);
                     FieldInterpolate3f(points, locus, fract, f);
                     n_line++;
@@ -1328,7 +1331,7 @@ static int IsosurfGradients(PyMOLGlobals * G, CSetting * set1, CSetting * set2,
                 n_line = i_num[n_seg];
               }
             } else if(n_line != i_num[n_seg]) { /* or retain count of new line segment */
-              VLACheck(i_num, int, n_seg + 1);
+              i_num.check(n_seg + 1);
               i_num[n_seg] = n_line - i_num[n_seg];
               n_seg++;
               i_num[n_seg] = n_line;
@@ -1432,8 +1435,6 @@ static int IsosurfGradients(PyMOLGlobals * G, CSetting * set1, CSetting * set2,
     }
     /* purge memory */
     VLAFreeP(active_cell);
-    FreeP(order);
-    FreeP(flag);
   }
 
   /* restore modified local copies */

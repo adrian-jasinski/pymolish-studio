@@ -368,6 +368,24 @@ NOTES
                             # std and ray CGO
                             state.append(state[0])
 
+    def session_save_bg_image(session, *, _self=cmd):
+        '''
+        The background picture goes into the session itself, as a "data:"
+        text in the setting that held its file name, so the session shows it
+        where the file is not. The core reads both (MyPNGRead).
+        '''
+        import base64
+        index = _self.setting._get_index('bg_image_filename')
+        for record in session.get('settings') or ():
+            if record[0] == index and record[2] and not record[2].startswith('data:'):
+                try:
+                    with open(record[2], 'rb') as handle:
+                        record[2] = ('data:image/png;base64,'
+                                     + base64.b64encode(handle.read()).decode())
+                except OSError:
+                    pass  # the file is gone: the name stays, as before
+        return 1
+
     def get_session(names='', partial=0, quiet=1, compress=-1, cache=-1,
                     binary=-1, version=-1,
                     *, _self=cmd):
@@ -846,11 +864,14 @@ NOTES
 
     The file format is automatically chosen if the extesion is one of
     the supported output formats: pdb, pqr, mol, sdf, pkl, pkla, mmd, out,
-    dat, mmod, cif, pov, png, pse, psw, aln, fasta, obj, mtl, wrl, usda,
+    dat, mmod, cif, pov, png, pse, psw, psex, aln, fasta, obj, mtl, wrl, usda,
     usdz, idtf, glb, gltf, or mol2.
 
     glb and gltf export require PyMOL to be compiled with native glTF
     support (--json=true), see cmd.get_capabilities().
+
+    psex is the session of pymolish-studio: what a pse holds, packed to
+    a fraction of the size. PyMOL reads pse, not psex.
 
     If the file format is not recognized, then a PDB file is written
     by default.
@@ -884,7 +905,7 @@ SEE ALSO
             format = format_guessed
 
         # PyMOL session
-        if format in ('pse', 'psw',):
+        if format in ('pse', 'psw', 'psex'):
             _self.set("session_file",
                     # always use unix-like path separators
                     filename.replace("\\", "/"), quiet=1)
@@ -1013,6 +1034,22 @@ SEE ALSO
         session = _self.get_session(selection, partial, quiet)
         return cPickle.dumps(session, 1)
 
+    # A .psex file: this mark (four letters, the format number, three spare
+    # bytes), then the lzma stream of the session pickle. Another packing
+    # later is another format number.
+    PSEX_MARK = b"PSEX\x01\x00\x00\x00"
+
+    def get_psexstr(selection, partial, quiet, _self):
+        '''The session of get_psestr, packed: atoms and coordinates as bytes
+        (pse_binary_dump), a pickle that stores bytes as they are, lzma at
+        its fastest level. 14 to 18 times smaller than a .pse and quicker to
+        write (docs/plans/28-session-format.md).'''
+        import lzma
+        if '(' in selection: # ignore selections
+            selection = ''
+        session = _self.get_session(selection, partial, quiet, binary=1)
+        return PSEX_MARK + lzma.compress(cPickle.dumps(session, 4), preset=1)
+
     def _get_mtl_obj(format, _self):
         # TODO mtl not implemented, always returns empty string
         if format == 'mtl':
@@ -1100,6 +1137,7 @@ SEE ALSO
 
         'pse': get_psestr,
         'psw': get_psestr,
+        'psex': get_psexstr,
 
         'fasta': get_fastastr,
         'aln': get_alnstr,

@@ -57,7 +57,6 @@ Z* -------------------------------------------------------------------
 #include"PyMOLOptions.h"
 #include"PyMOL.h"
 #include"PConv.h"
-#include"ScrollBar.h"
 #include "ShaderMgr.h"
 #include "Feedback.h"
 #include "GFXManager.h"
@@ -2659,204 +2658,6 @@ static void draw_button(int x2, int y2, int z, int w, int h, float *light, float
   }
 }
 
-/**
- * Update the G->Scene->SceneVLA names array which is used for scene buttons
- *
- * @param list List of scene names
- */
-void SceneSetNames(PyMOLGlobals * G, const std::vector<std::string> &list)
-{
-  CScene *I = G->Scene;
-  I->SceneVec.clear();
-  I->SceneVec.reserve(list.size());
-
-  for (const auto& name : list) {
-    I->SceneVec.emplace_back(name, false);
-  }
-
-  OrthoDirty(G);
-}
-
-
-/*========================================================================*/
-static void SceneDrawButtons(Block * block, int draw_for_real , CGO *orthoCGO)
-{
-  PyMOLGlobals *G = block->m_G;
-  CScene *I = G->Scene;
-  int x, y, xx, x2;
-  float enabledColor[3] = { 0.5F, 0.5F, 0.5F };
-  float pressedColor[3] = { 0.7F, 0.7F, 0.7F };
-  float disabledColor[3] = { 0.25F, 0.25F, 0.25F };
-  float lightEdge[3] = { 0.6F, 0.6F, 0.6F };
-  float darkEdge[3] = { 0.35F, 0.35F, 0.35F };
-  int charWidth = DIP2PIXEL(8);
-  int n_ent;
-  int n_disp;
-  int skip = 0;
-  int row = -1;
-  int lineHeight = DIP2PIXEL(SettingGetGlobal_i(G, cSetting_internal_gui_control_size));
-  int text_lift = (lineHeight / 2) - DIP2PIXEL(5);
-  int op_cnt = 1;
-
-  if(((G->HaveGUI && G->ValidContext) || (!draw_for_real)) &&
-     ((block->rect.right - block->rect.left) > 6) && (!I->SceneVec.empty())) {
-    int max_char;
-    int nChar;
-    I->ButtonsShown = true;
-
-    /* do we have enough structures to warrant a scroll bar? */
-    n_ent = I->SceneVec.size();
-
-    n_disp =
-      (((I->rect.top - I->rect.bottom) - (SceneTopMargin)) / lineHeight) -
-      1;
-    if(n_disp < 1)
-      n_disp = 1;
-
-    {
-      for (auto& elem : I->SceneVec)
-        elem.drawn = false;
-    }
-    if(n_ent > n_disp) {
-      int bar_maxed = I->m_ScrollBar.isMaxed();
-      if(!I->ScrollBarActive) {
-        I->m_ScrollBar.setLimits(n_ent, n_disp);
-        if(bar_maxed) {
-          I->m_ScrollBar.maxOut();
-          I->NSkip = static_cast<int>(I->m_ScrollBar.getValue());
-        } else {
-          I->m_ScrollBar.setValue(0);
-          I->NSkip = 0;
-        }
-      } else {
-        I->m_ScrollBar.setLimits(n_ent, n_disp);
-        if(bar_maxed)
-          I->m_ScrollBar.maxOut();
-        I->NSkip = static_cast<int>(I->m_ScrollBar.getValue());
-      }
-      I->ScrollBarActive = 1;
-
-    } else {
-      I->ScrollBarActive = 0;
-      I->NSkip = 0;
-    }
-
-    max_char = (((I->rect.right - I->rect.left) -
-                 (SceneTextLeftMargin + SceneRightMargin + 4)) -
-                (op_cnt * SceneToggleWidth));
-    if(I->ScrollBarActive) {
-      max_char -= (SceneScrollBarMargin + SceneScrollBarWidth);
-    }
-    max_char /= charWidth;
-
-    if(I->ScrollBarActive) {
-      I->m_ScrollBar.setBox(I->rect.top - SceneScrollBarMargin,
-                            I->rect.left + SceneScrollBarMargin,
-                            I->rect.bottom + 2,
-                            I->rect.left + SceneScrollBarMargin + SceneScrollBarWidth);
-      if(draw_for_real)
-        I->m_ScrollBar.draw(orthoCGO);
-    }
-
-    skip = I->NSkip;
-    x = I->rect.left + SceneTextLeftMargin;
-
-    /*    y = ((I->rect.top-lineHeight)-SceneTopMargin)-lineHeight; */
-
-    {
-      int n_vis = n_disp;
-      if(n_ent < n_vis)
-        n_vis = n_ent;
-      y = (I->rect.bottom + SceneBottomMargin) + (n_vis - 1) * lineHeight;
-    }
-
-    /*    xx = I->rect.right-SceneRightMargin-SceneToggleWidth*(cRepCnt+op_cnt); */
-    xx = I->rect.right - SceneRightMargin - SceneToggleWidth * (op_cnt);
-
-    if(I->ScrollBarActive) {
-      x += SceneScrollBarWidth + SceneScrollBarMargin;
-    }
-    {
-      int i;
-
-      for(i = 0; i < n_ent; i++) {
-        if(skip) {
-          skip--;
-        } else {
-          row++;
-          x2 = xx;
-          nChar = max_char;
-
-          if((x - SceneToggleMargin) - (xx - SceneToggleMargin) > -10) {
-            x2 = x + 10;
-          }
-          {
-            float toggleColor[3] = { 0.5F, 0.5F, 1.0F };
-
-            if(draw_for_real) {
-              glColor3fv(toggleColor);
-
-              TextSetColor(G, I->TextColor);
-              TextSetPos2i(G, x + DIP2PIXEL(2), y + text_lift);
-            }
-            {
-              const char *cur_name = SettingGetGlobal_s(G, cSetting_scene_current_name);
-              auto elem = &I->SceneVec[i];
-              int item = I->NSkip + row;
-              auto c = elem->name.c_str();
-              int len = static_cast<int>(elem->name.size());
-
-              x2 = xx;
-              if(len > max_char)
-                len = max_char;
-              x2 = x + len * charWidth + DIP2PIXEL(6);
-
-              /* store rectangles for finding clicks */
-
-              elem->drawn = true;
-
-              elem->rect = pymol::Rect<int>(x, x2, y, y + lineHeight);
-
-              if(I->ButtonMargin < x2)
-                I->ButtonMargin = x2;
-
-              if(draw_for_real) {
-
-                if((item == I->Pressed) && (item == I->Over)) {
-                  draw_button(x, y, 0, (x2 - x) - 1, (lineHeight - 1), lightEdge,
-                              darkEdge, pressedColor, orthoCGO);
-                } else if(cur_name && elem->name == cur_name) {
-                  draw_button(x, y, 0, (x2 - x) - 1, (lineHeight - 1), lightEdge,
-                              darkEdge, enabledColor, orthoCGO);
-                } else {
-                  draw_button(x, y, 0, (x2 - x) - 1, (lineHeight - 1), lightEdge,
-                              darkEdge, disabledColor, orthoCGO);
-                }
-
-                TextSetColor(G, I->TextColor);
-
-                if(c) {
-                  while(*c) {
-                    if((nChar--) > 0)
-                      TextDrawChar(G, *(c++), orthoCGO);
-                    else
-                      break;
-                  }
-                }
-              }
-            }
-          }
-          y -= lineHeight;
-          if(y < (I->rect.bottom))
-            break;
-        }
-      }
-    }
-    I->HowFarDown = y;
-    I->ButtonsValid = true;
-  }
-}
-
 // TODO: Replace with ShaderMgr::drawPixelsTo
 static void RendererWritePixelsTo(
     PyMOLGlobals* G, const Rect2D& rect, unsigned char* buffer)
@@ -3239,16 +3040,7 @@ void CScene::draw(CGO* orthoCGO) /* returns true if scene was drawn (using a cac
   int drawn = false; 
 
   if(G->HaveGUI && G->ValidContext) {
-
-    I->ButtonsShown = false;
-
     drawn = SceneDrawImageOverlay(G, 0, orthoCGO);
-
-    if(SettingGetGlobal_b(G, cSetting_scene_buttons)) {
-      SceneDrawButtons(this, true, orthoCGO);
-    } else {
-      I->ButtonMargin = 0;
-    }
   }
   if(drawn)
     OrthoDrawWizardPrompt(G, orthoCGO); /* ugly hack necessitated because wizard
@@ -3989,7 +3781,6 @@ int SceneReinitialize(PyMOLGlobals * G)
   SceneCountFrames(G);
   SceneSetFrame(G, 0, 0);
   SceneInvalidate(G);
-  G->Scene->SceneVec.clear();
   return (ok);
 }
 
@@ -4021,11 +3812,6 @@ int SceneInit(PyMOLGlobals * G)
 
     SceneRestartFrameTimer(G);
     SceneRestartPerfTimer(G);
-
-    /* scene list */
-
-    I->Pressed = -1;
-    I->Over = -1;
 
     return 1;
   } else
@@ -4325,7 +4111,7 @@ void SceneCopy(PyMOLGlobals * G, GLFramebufferConfig config, int force, int enti
   CScene *I = G->Scene;
 
   if(force || (!(I->StereoMode ||
-                 SettingGetGlobal_b(G, cSetting_stereo_double_pump_mono) || I->ButtonsShown))) {
+                 SettingGetGlobal_b(G, cSetting_stereo_double_pump_mono)))) {
     /* no copies while in stereo mode */
     if(force || ((!I->DirtyFlag) && (!I->CopyType))) {
       Rect2D rect;
@@ -4488,15 +4274,12 @@ void SceneUpdate(PyMOLGlobals * G, int force)
           int cnt = I->NonGadgetObjs.size();
 
           if(cnt) {
-            CObjectUpdateThreadInfo *thread_info = pymol::malloc<CObjectUpdateThreadInfo>(cnt);
-            if(thread_info) {
-              cnt = 0;
-              for (auto& NonGadgetObj : I->NonGadgetObjs) {
-                thread_info[cnt++].obj = NonGadgetObj;
-              }
-              SceneObjectUpdateSpawn(G, thread_info, n_thread, cnt);
-              FreeP(thread_info);
+            std::vector<CObjectUpdateThreadInfo> thread_info(cnt);
+            cnt = 0;
+            for (auto& NonGadgetObj : I->NonGadgetObjs) {
+              thread_info[cnt++].obj = NonGadgetObj;
             }
+            SceneObjectUpdateSpawn(G, thread_info.data(), n_thread, cnt);
           }
         } else
           /* single-threaded update */
@@ -5365,11 +5148,6 @@ std::shared_ptr<pymol::Image> SceneGetSharedImage(PyMOLGlobals* G)
 void CScene::setSceneView(const SceneView& view) {
   m_view.setView(view);
   SceneInvalidate(m_G);
-}
-SceneElem::SceneElem(std::string name_, bool drawn_)
-  : name(std::move(name_))
-  , drawn(drawn_)
-{
 }
 
 void SceneSetViewport(PyMOLGlobals* G, const Rect2D& rect)

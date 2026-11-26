@@ -306,8 +306,10 @@ USAGE
             _self.unlock(r,_self)
         if _self._raising(r,_self): raise pymol.CmdException
         if not int(what):  # everything: the named colors are gone
-            from . import palettes
+            from . import palettes, session_extra, snapshots
             palettes.apply(_self)
+            snapshots.clear()  # and so is what "undo" could go back to
+            session_extra.entries.clear()
         return r
 
     def sync(timeout=1.0,poll=0.05,_self=cmd):

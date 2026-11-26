@@ -41,8 +41,11 @@ Z* -------------------------------------------------------------------
 #include "Util.h"
 #include "Vector.h"
 #include "main.h"
+#include "marching_cubes.h"
 
 #include <algorithm>
+#include <cmath>
+#include <memory>
 #include <vector>
 
 #ifdef NT
@@ -56,7 +59,8 @@ enum class SurfaceType {
   SolidDeterministic = 3,
   SolidWeightings = 4,
   SolidScribed = 5,
-  SolidEmpirical = 6
+  SolidEmpirical = 6,
+  SolidGrid = 7 //!< built on a distance grid; drawn as Solid
 };
 
 struct RepSurface : Rep {
@@ -87,8 +91,8 @@ struct RepSurface : Rep {
   bool oneColorFlag = false;
   int oneColor;
   bool allVisibleFlag = false;
-  char* LastVisib = nullptr;
-  int* LastColor = nullptr;
+  std::vector<char> LastVisib;
+  std::vector<int> LastColor;
   bool ColorInvalidated = false;
   SurfaceType Type;
   float max_vdw;
@@ -585,29 +589,20 @@ static int RepSurfaceCGOGenerate(RepSurface* I, RenderInfo* info)
 
       if (t_mode) {
 
-        float **t_buf = nullptr, **tb;
-        float *z_value = nullptr, *zv;
-        int* ix = nullptr;
+        // per frame: not std::vector, which would zero-fill
+        std::unique_ptr<float*[]> t_buf_own(
+            new float*[I->NT * (I->oneColorFlag ? 6 : 12)]);
+        std::unique_ptr<float[]> z_value_own(new float[I->NT]);
+        std::unique_ptr<int[]> ix_own(new int[I->NT]);
+        float **t_buf = t_buf_own.get(), **tb;
+        float *z_value = z_value_own.get(), *zv;
+        int* ix = ix_own.get();
         int n_tri = 0;
         float sum[3];
         float matrix[16];
 
         glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
 
-        if (I->oneColorFlag) {
-          t_buf = pymol::malloc<float*>(I->NT * 6);
-        } else {
-          t_buf = pymol::malloc<float*>(I->NT * 12);
-        }
-        CHECKOK(ok, t_buf);
-        if (ok) {
-          z_value = pymol::malloc<float>(I->NT);
-          CHECKOK(ok, z_value);
-        }
-        if (ok) {
-          ix = pymol::malloc<int>(I->NT);
-          CHECKOK(ok, ix);
-        }
         zv = z_value;
         tb = t_buf;
         c = I->NT;
@@ -794,9 +789,6 @@ static int RepSurfaceCGOGenerate(RepSurface* I, RenderInfo* info)
           if (ok)
             ok &= CGOEnd(I->shaderCGO);
         }
-        FreeP(ix);
-        FreeP(z_value);
-        FreeP(t_buf);
       } else if (ok) {
         if (info->alpha_cgo) { /* global transparency sort */
           if (I->allVisibleFlag) {
@@ -1770,8 +1762,7 @@ void RepSurface::render(RenderInfo* info)
       float radius;
       int t0, t1, t2;
       int spacing = 10;
-      int* cache = pymol::calloc<int>(spacing * (I->N + 1));
-      CHECKOK(ok, cache);
+      std::vector<int> cache(spacing * (I->N + 1));
 
       radius = SettingGet_f(
           G, cs->Setting.get(), obj->Setting.get(), cSetting_mesh_radius);
@@ -1800,16 +1791,15 @@ void RepSurface::render(RenderInfo* info)
               col1 = vc + t1 * 3;
               col2 = vc + t2 * 3;
             }
-            if (!check_and_add(cache, spacing, t0, t1))
+            if (!check_and_add(cache.data(), spacing, t0, t1))
               ok &= ray->sausage3fv(v + t0 * 3, v + t1 * 3, radius, col0, col1);
-            if (!check_and_add(cache, spacing, t1, t2))
+            if (!check_and_add(cache.data(), spacing, t1, t2))
               ok &= ray->sausage3fv(v + t1 * 3, v + t2 * 3, radius, col1, col2);
-            if (!check_and_add(cache, spacing, t2, t0))
+            if (!check_and_add(cache.data(), spacing, t2, t0))
               ok &= ray->sausage3fv(v + t2 * 3, v + t0 * 3, radius, col2, col0);
           }
           t += 3;
         }
-        FreeP(cache);
       }
     }
     if (ok) {
@@ -1952,29 +1942,20 @@ void RepSurface::render(RenderInfo* info)
 
           if (t_mode) {
 
-            float **t_buf = nullptr, **tb;
-            float *z_value = nullptr, *zv;
-            int* ix = nullptr;
+            // per frame: not std::vector, which would zero-fill
+            std::unique_ptr<float*[]> t_buf_own(
+                new float*[I->NT * (I->oneColorFlag ? 6 : 12)]);
+            std::unique_ptr<float[]> z_value_own(new float[I->NT]);
+            std::unique_ptr<int[]> ix_own(new int[I->NT]);
+            float **t_buf = t_buf_own.get(), **tb;
+            float *z_value = z_value_own.get(), *zv;
+            int* ix = ix_own.get();
             int n_tri = 0;
             float sum[3];
             float matrix[16];
 
             glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
 
-            if (I->oneColorFlag) {
-              t_buf = pymol::malloc<float*>(I->NT * 6);
-            } else {
-              t_buf = pymol::malloc<float*>(I->NT * 12);
-            }
-            CHECKOK(ok, t_buf);
-            if (ok) {
-              z_value = pymol::malloc<float>(I->NT);
-              CHECKOK(ok, z_value);
-            }
-            if (ok) {
-              ix = pymol::malloc<int>(I->NT);
-              CHECKOK(ok, ix);
-            }
             zv = z_value;
             tb = t_buf;
             c = I->NT;
@@ -2090,11 +2071,6 @@ void RepSurface::render(RenderInfo* info)
                 glVertex3fv(*(tb++));
               }
               glEnd();
-            }
-            {
-              FreeP(ix);
-              FreeP(z_value);
-              FreeP(t_buf);
             }
           } else if (ok) {
             if (info->alpha_cgo) { /* global transparency sort */
@@ -2342,7 +2318,7 @@ bool RepSurface::sameColor() const
   if (ColorInvalidated)
     return false;
 
-  const auto* lc = LastColor;
+  const auto* lc = LastColor.data();
   for (int idx = 0; idx < cs->NIndex; idx++) {
     auto* ai = cs->getAtomInfo(idx);
     if (ai->visRep & cRepSurfaceBit) {
@@ -2380,6 +2356,7 @@ Rep* RepSurface::recolor()
   int surface_mode, ambient_occlusion_mode;
   int surface_color;
   int* present = nullptr;
+  std::vector<int> present_buf;
   int* rc;
   int ramped_flag = false;
 
@@ -2436,12 +2413,10 @@ Rep* RepSurface::recolor()
 
   cutoff = I->max_vdw + 2 * probe_radius;
 
-  if (!I->LastVisib)
-    I->LastVisib = pymol::malloc<char>(cs->NIndex);
-  if (!I->LastColor)
-    I->LastColor = pymol::malloc<int>(cs->NIndex);
-  lv = I->LastVisib;
-  lc = I->LastColor;
+  I->LastVisib.resize(cs->NIndex);
+  I->LastColor.resize(cs->NIndex);
+  lv = I->LastVisib.data();
+  lc = I->LastColor.data();
   for (a = 0; a < cs->NIndex; a++) {
     ai2 = cs->getAtomInfo(a);
     *(lv++) = GET_BIT(ai2->visRep, cRepSurface);
@@ -2497,7 +2472,8 @@ Rep* RepSurface::recolor()
     }
     first_color = -1;
 
-    present = pymol::malloc<int>(cs->NIndex);
+    present_buf.resize(cs->NIndex);
+    present = present_buf.data();
     {
       int* ap = present;
       for (a = 0; a < cs->NIndex; a++) {
@@ -2584,10 +2560,8 @@ Rep* RepSurface::recolor()
 
       if (ambient_occlusion_mode == 3) {
         /* per atom */
-        float* VAO = pymol::malloc<float>(cs->NIndex);
-        short* nVAO = pymol::malloc<short>(cs->NIndex);
-        memset(VAO, 0, sizeof(float) * cs->NIndex);
-        memset(nVAO, 0, sizeof(short) * cs->NIndex);
+        std::vector<float> VAO(cs->NIndex);
+        std::vector<short> nVAO(cs->NIndex);
 
         for (a = 0; a < I->N; a++) {
           int nbits = 0;
@@ -2604,7 +2578,7 @@ Rep* RepSurface::recolor()
           add3f(v0, v0mod, v0mod);
 
           i = *(MapLocusEStart(ambient_occlusion_map, v0));
-          if (i && !map->EList.empty()) {
+          if (i && !ambient_occlusion_map->EList.empty()) {
             j = ambient_occlusion_map->EList[i++];
             while (j >= 0) {
               subtract3f(cs->coordPtr(j), v0, d);
@@ -2667,8 +2641,6 @@ Rep* RepSurface::recolor()
             }
           }
         }
-        FreeP(VAO);
-        FreeP(nVAO);
       } else {
         float natomsL = 0;
         for (a = 0; a < I->N; a++) {
@@ -2775,12 +2747,13 @@ Rep* RepSurface::recolor()
         if (ambient_occlusion_smooth && !I->T.empty()) {
           int i, j, pt1, pt2, pt3;
           float ave;
-          float* tmpVAO = pymol::malloc<float>(I->N);
-          int *nVAO = pymol::malloc<int>(I->N), c, *t;
+          std::vector<float> tmpVAO(I->N);
+          std::vector<int> nVAO(I->N);
+          int c, *t;
 
           for (j = 0; j < ambient_occlusion_smooth; j++) {
-            memset(nVAO, 0, sizeof(int) * I->N);
-            memset(tmpVAO, 0, sizeof(float) * I->N);
+            std::fill(nVAO.begin(), nVAO.end(), 0);
+            std::fill(tmpVAO.begin(), tmpVAO.end(), 0.f);
 
             t = I->T.data();
             c = I->NT;
@@ -2811,8 +2784,6 @@ Rep* RepSurface::recolor()
               }
             }
           }
-          FreeP(tmpVAO);
-          FreeP(nVAO);
         }
       }
       MapFree(ambient_occlusion_map);
@@ -3072,7 +3043,6 @@ Rep* RepSurface::recolor()
     I->RC.clear();
   }
   I->ColorInvalidated = false;
-  FreeP(present);
 
   return this;
 }
@@ -3398,23 +3368,21 @@ static int SurfaceJobEliminateCloseDots(PyMOLGlobals* G, SurfaceJob* I)
   int ok = true;
   if (I->N) {
     int repeat_flag = true;
-    int* dot_flag = pymol::malloc<int>(I->N);
-    CHECKOK(ok, dot_flag);
+    std::vector<int> dot_flag(I->N);
     while (ok && repeat_flag) {
       repeat_flag = false;
       if (static_cast<int>(I->surfaceType) >= 3) {
         ok = SurfaceJobEliminateCloseDotsType3orMore(
-            G, I, &repeat_flag, dot_flag);
+            G, I, &repeat_flag, dot_flag.data());
       } else { /* surface types < 3 */
         ok = SurfaceJobEliminateCloseDotsTypeLessThan3(
-            G, I, &repeat_flag, dot_flag);
+            G, I, &repeat_flag, dot_flag.data());
       }
       if (ok) {
-        SurfaceJobEliminateFromVArrays(G, I, dot_flag, true);
+        SurfaceJobEliminateFromVArrays(G, I, dot_flag.data(), true);
       }
       ok &= !G->Interrupt;
     }
-    FreeP(dot_flag);
   }
   return ok;
 }
@@ -3477,8 +3445,7 @@ static int SurfaceJobEliminateTroublesomeVertices(
     int repeat_flag = true;
     float point_sep = I->pointSep;
     float neighborhood = trim_factor * point_sep;
-    int* dot_flag = pymol::malloc<int>(I->N);
-    CHECKOK(ok, dot_flag);
+    std::vector<int> dot_flag(I->N);
     if (ok &&
         I->surfaceType == SurfaceType::SolidEmpirical) { /* emprical tweaks */
       trim_factor *= 2.5;
@@ -3495,14 +3462,14 @@ static int SurfaceJobEliminateTroublesomeVertices(
       }
       repeat_flag = false;
       ok &= SurfaceJobEliminateTroublesomeVerticesMark(
-          G, I, &repeat_flag, map, dot_flag, neighborhood, trim_cutoff);
+          G, I, &repeat_flag, map, dot_flag.data(), neighborhood,
+          trim_cutoff);
       if (ok) {
-        SurfaceJobEliminateFromVArrays(G, I, dot_flag, true);
+        SurfaceJobEliminateFromVArrays(G, I, dot_flag.data(), true);
       }
       MapFree(map);
       ok &= !G->Interrupt;
     }
-    FreeP(dot_flag);
   }
   return ok;
 }
@@ -3771,8 +3738,242 @@ static void SurfaceJobSetProbeRadius(SurfaceType surface_type, float point_sep,
   *probe_rad_less2 = (*probe_rad_less) * (*probe_rad_less);
 }
 
+namespace
+{
+/// Values on a regular grid, for marching cubes.
+struct GridField : mc::Field {
+  size_t n[3]{};
+  float origin[3]{};
+  float h{}; //!< edge of a cell
+  std::vector<float> data;
+
+  size_t xDim() const override { return n[0]; }
+  size_t yDim() const override { return n[1]; }
+  size_t zDim() const override { return n[2]; }
+  float get(size_t x, size_t y, size_t z) const override
+  {
+    return data[(z * n[1] + y) * n[0] + x];
+  }
+  mc::Point get_point(size_t x, size_t y, size_t z) const override
+  {
+    return {origin[0] + h * x, origin[1] + h * y, origin[2] + h * z};
+  }
+};
+} // namespace
+
+/**
+ * Lowers every cell to its distance from the nearest sphere, where that is
+ * less than the cell holds: |cell - center| - radius, for the cells up to
+ * `reach` beyond a sphere.
+ *
+ * @param radii per center, or nullptr for points
+ * @param more added to every radius
+ */
+static void GridFieldMinDistance(GridField& field, const float* centers,
+    size_t n_centers, const float* radii, float more, float reach)
+{
+  auto const nz = static_cast<int>(field.n[2]);
+  auto const h = field.h;
+  auto const* o = field.origin;
+  auto plane_range = [&](size_t a, int& first, int& last) {
+    float r = (radii ? radii[a] : 0.f) + more + reach;
+    float z = centers[3 * a + 2] - o[2];
+    first = std::max(0, static_cast<int>(std::ceil((z - r) / h)));
+    last = std::min(nz - 1, static_cast<int>(std::floor((z + r) / h)));
+  };
+  // the centers that reach each z plane: a thread owns a plane, so no two
+  // write the same cell
+  std::vector<size_t> start(nz + 1);
+  for (size_t a = 0; a < n_centers; ++a) {
+    int first, last;
+    plane_range(a, first, last);
+    for (int k = first; k <= last; ++k)
+      ++start[k + 1];
+  }
+  for (int k = 0; k < nz; ++k)
+    start[k + 1] += start[k];
+  std::vector<unsigned> listed(start[nz]);
+  {
+    std::vector<size_t> fill(start.begin(), start.end() - 1);
+    for (size_t a = 0; a < n_centers; ++a) {
+      int first, last;
+      plane_range(a, first, last);
+      for (int k = first; k <= last; ++k)
+        listed[fill[k]++] = static_cast<unsigned>(a);
+    }
+  }
+  auto const nx = static_cast<int>(field.n[0]);
+  auto const ny = static_cast<int>(field.n[1]);
+#pragma omp parallel for schedule(dynamic)
+  for (int k = 0; k < nz; ++k) {
+    float* plane = field.data.data() + static_cast<size_t>(k) * ny * nx;
+    for (size_t b = start[k]; b < start[k + 1]; ++b) {
+      size_t a = listed[b];
+      float radius = (radii ? radii[a] : 0.f) + more;
+      float r = radius + reach;
+      float cx = centers[3 * a] - o[0];
+      float cy = centers[3 * a + 1] - o[1];
+      float dz = k * h - (centers[3 * a + 2] - o[2]);
+      float ry2 = r * r - dz * dz;
+      if (ry2 < 0.f)
+        continue;
+      float ry = std::sqrt(ry2);
+      int j0 = std::max(0, static_cast<int>(std::ceil((cy - ry) / h)));
+      int j1 = std::min(ny - 1, static_cast<int>(std::floor((cy + ry) / h)));
+      for (int j = j0; j <= j1; ++j) {
+        float dy = j * h - cy;
+        float rx2 = ry2 - dy * dy;
+        if (rx2 < 0.f)
+          continue;
+        float rx = std::sqrt(rx2);
+        int i0 = std::max(0, static_cast<int>(std::ceil((cx - rx) / h)));
+        int i1 = std::min(nx - 1, static_cast<int>(std::floor((cx + rx) / h)));
+        float* row = plane + static_cast<size_t>(j) * nx;
+        float d2 = dy * dy + dz * dz;
+        for (int i = i0; i <= i1; ++i) {
+          float dx = i * h - cx;
+          float d = std::sqrt(dx * dx + d2) - radius;
+          if (d < row[i])
+            row[i] = d;
+        }
+      }
+    }
+  }
+}
+
+/**
+ * The solvent excluded surface from two distance grids and marching cubes
+ * (surface_type 7), after the method ChimeraX describes: the surface the
+ * probe center can reach is where the distance to the atoms, each enlarged
+ * by the probe, is zero; the molecular surface is what lies one probe
+ * radius inside of that. Every step is a loop over grid planes.
+ *
+ * ponytail: an experiment (docs/plans/01-performance-gpu.md). Unlike the
+ * surface of triangulated dots it has no carving (surface_carve_*), no
+ * cavity culling or cavity mode, no surface_solvent and no trimming, and it
+ * gives the drawing code strips of one triangle each. The grid covers the
+ * whole box: above GRID_CELLS the cells get larger. If the surface stays:
+ * those settings, longer strips, and a grid in blocks.
+ */
+static int SurfaceJobRunGrid(PyMOLGlobals* G, SurfaceJob* I)
+{
+  const size_t GRID_CELLS = size_t(1) << 26; // two grids of 256 MB
+  auto const n_atom = I->atomInfo.size();
+  const int* present = I->presentVla.empty() ? nullptr : I->presentVla.data();
+
+  SurfaceJobPurgeResult(G, I);
+  I->V.resize(1);
+  I->VN.resize(1);
+
+  std::vector<float> centers, radii;
+  float lo[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
+  float hi[3] = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
+  float max_vdw = 0.f;
+  for (size_t a = 0; a < n_atom; ++a) {
+    if (present && !present[a])
+      continue;
+    const float* v = I->coord.data() + 3 * a;
+    centers.insert(centers.end(), v, v + 3);
+    radii.push_back(I->atomInfo[a].vdw);
+    max_vdw = std::max(max_vdw, radii.back());
+    for (int i = 0; i < 3; ++i) {
+      lo[i] = std::min(lo[i], v[i]);
+      hi[i] = std::max(hi[i], v[i]);
+    }
+  }
+  if (radii.empty())
+    return true;
+
+  GridField sas;
+  // The triangulated dots end up about two point separations apart (1aon:
+  // 1.8 triangles per square Angstrom at 0.5). Cells of that size give as
+  // many triangles; cells of one separation gave 4.4 times as many, and
+  // drawing, coloring and ray tracing then cost more than the build saved.
+  sas.h = 2 * I->pointSep;
+  float probe, margin;
+  for (;;) { // larger cells until the box fits
+    probe = std::max(I->probeRadius, sas.h);
+    margin = max_vdw + probe + 3 * sas.h;
+    size_t cells = 1;
+    for (int i = 0; i < 3; ++i) {
+      sas.origin[i] = lo[i] - margin;
+      sas.n[i] = static_cast<size_t>((hi[i] - lo[i] + 2 * margin) / sas.h) + 2;
+      cells *= sas.n[i];
+    }
+    if (cells <= GRID_CELLS)
+      break;
+    sas.h *= std::cbrt(static_cast<float>(cells) / GRID_CELLS) * 1.01f;
+  }
+  auto const cells = sas.n[0] * sas.n[1] * sas.n[2];
+  auto const band = 2 * sas.h; // how far from a surface the distance is kept
+  PRINTFB(G, FB_RepSurface, FB_Blather)
+  " RepSurface: grid of %zu x %zu x %zu cells of %.2f A, probe %.2f A.\n",
+      sas.n[0], sas.n[1], sas.n[2], sas.h, probe ENDFB(G);
+
+  // 1: the distance to the atoms enlarged by the probe; outside: band
+  sas.data.assign(cells, band);
+  GridFieldMinDistance(
+      sas, centers.data(), radii.size(), radii.data(), probe, band);
+  if (G->Interrupt)
+    return false;
+  OrthoBusyFast(G, 1, 5);
+  // the places of the probe center: the vertices of that surface
+  auto reach = mc::march(sas, 0.f, false);
+  if (G->Interrupt)
+    return false;
+  OrthoBusyFast(G, 2, 5);
+
+  // 2: inside it, the distance to those places, less the probe radius:
+  // positive in the molecule, zero on its surface. Outside it the first
+  // distance goes on, so the field has no step at the probe's surface.
+  GridField ses;
+  std::copy_n(sas.n, 3, ses.n);
+  std::copy_n(sas.origin, 3, ses.origin);
+  ses.h = sas.h;
+  ses.data.assign(cells, probe + band);
+  GridFieldMinDistance(ses, &reach.vertices[0].x, reach.vertexCount, nullptr,
+      0.f, probe + band);
+  reach = {};
+#pragma omp parallel for
+  for (int k = 0; k < static_cast<int>(ses.n[2]); ++k) {
+    auto const plane = ses.n[0] * ses.n[1];
+    float* out = ses.data.data() + k * plane;
+    const float* outside = sas.data.data() + k * plane;
+    for (size_t c = 0; c < plane; ++c)
+      out[c] = outside[c] < 0.f ? out[c] - probe : -(outside[c] + probe);
+  }
+  sas.data = {};
+  if (G->Interrupt)
+    return false;
+  OrthoBusyFast(G, 3, 5);
+  auto mesh = mc::march(ses, 0.f, true);
+  if (G->Interrupt || !mesh.vertexCount || mesh.faceCount > INT_MAX / 4)
+    return !G->Interrupt;
+
+  I->N = static_cast<int>(mesh.vertexCount);
+  I->NT = static_cast<int>(mesh.faceCount);
+  I->V.assign(&mesh.vertices[0].x, &mesh.vertices[0].x + 3 * I->N);
+  I->VN.assign(&mesh.normals[0].x, &mesh.normals[0].x + 3 * I->N);
+  I->T.resize(3 * I->NT);
+  I->S.resize(4 * static_cast<size_t>(I->NT) + 1);
+  for (int t = 0; t < I->NT; ++t) {
+    I->S[4 * t] = 1; // a strip of one triangle
+    // the other way round than marching cubes gives them: the viewport
+    // takes the front of a triangle from the order of its corners
+    for (int i = 0; i < 3; ++i)
+      I->T[3 * t + i] = I->S[4 * t + 1 + i] =
+          static_cast<int>(mesh.faces[3 * t + 2 - i]);
+  }
+  PRINTFB(G, FB_RepSurface, FB_Blather)
+  " RepSurface: %i surface points, %i triangles.\n", I->N, I->NT ENDFB(G);
+  return true;
+}
+
 static int SurfaceJobRun(PyMOLGlobals* G, SurfaceJob* I)
 {
+  if (I->surfaceType == SurfaceType::SolidGrid)
+    return SurfaceJobRunGrid(G, I);
+
   int ok = true;
   int MaxN;
   int n_present = I->nPresent;
@@ -3879,8 +4080,8 @@ static int SurfaceJobRun(PyMOLGlobals* G, SurfaceJob* I)
             ok &= !G->Interrupt;
             ok &= !map->EList.empty() && !solv_map->EList.empty();
             if (sol_dot->nDot && ok) {
-              Vector3f* dot = pymol::malloc<Vector3f>(sp->nDot);
-              CHECKOK(ok, dot);
+              std::unique_ptr<Vector3f[]> dot_buf(new Vector3f[sp->nDot]);
+              Vector3f* dot = dot_buf.get();
               if (ok) {
                 int b;
                 for (b = 0; b < sp->nDot; b++) {
@@ -3943,7 +4144,6 @@ static int SurfaceJobRun(PyMOLGlobals* G, SurfaceJob* I)
                   I->N += n;
                 }
               }
-              FreeP(dot);
             }
           }
           MapFree(solv_map);
@@ -3990,15 +4190,13 @@ static int SurfaceJobRun(PyMOLGlobals* G, SurfaceJob* I)
         if (ok && I->N && (surface_type == SurfaceType::Solid) &&
             (circumscribe)) {
           /* combine scribing with an atom proximity cleanup pass */
-          int* dot_flag = pymol::calloc<int>(I->N);
-          CHECKOK(ok, dot_flag);
+          std::vector<int> dot_flag(I->N);
           ok &= SurfaceJobAtomProximityCleanupPass(
-              G, I, dot_flag, present_vla, probe_radius);
+              G, I, dot_flag.data(), present_vla, probe_radius);
           /* purge unused dots */
           if (ok)
             SurfaceJobEliminateFromVArrays(
-                G, I, dot_flag, false); // not normalize?
-          FreeP(dot_flag);
+                G, I, dot_flag.data(), false); // not normalize?
         }
 
         /* now, eliminate dots that are too close to each other */
@@ -4420,7 +4618,9 @@ Rep* RepSurfaceNew(CoordSet* cs, int state)
     bool smooth_edges = SettingGet_b(G, cs->Setting.get(), obj->Setting.get(),
         cSetting_surface_smooth_edges);
 
-    I->Type = surface_type;
+    // the grid changes how the surface is built, not how it is drawn
+    I->Type = surface_type == SurfaceType::SolidGrid ? SurfaceType::Solid
+                                                    : surface_type;
 
     I->max_vdw = ObjectMoleculeGetMaxVDW(obj);
 
@@ -5184,31 +5384,28 @@ static SolventDot* SolventDotNew(PyMOLGlobals* G, float* coord,
       MapFree(map);
     }
     {
-      int* dot_flag = pymol::calloc<int>(I->nDot);
-      ErrChkPtr(G, dot_flag);
+      std::vector<int> dot_flag(I->nDot);
       {
         MapType* map =
             new MapType(G, cavity_cutoff, cavityDot, nCavityDot, nullptr);
         if (map) {
           MapSetupExpress(map);
           ok = SolventDotMarkDotsWithinCutoff(
-              G, I, map, I->dot, I->nDot, cavityDot, dot_flag, cavity_cutoff);
+              G, I, map, I->dot, I->nDot, cavityDot, dot_flag.data(),
+              cavity_cutoff);
         }
         MapFree(map);
       }
-      SolventDotSlideDotsAndInfo(G, I, dot_flag, false);
-      FreeP(dot_flag);
+      SolventDotSlideDotsAndInfo(G, I, dot_flag.data(), false);
     }
     VLAFreeP(cavityDot);
   }
 
   if (ok && (cavity_mode != 1) && (cavity_cull > 0) && (probe_radius > 0.75F) &&
       (!surface_solvent)) {
-    int* dot_flag = pymol::calloc<int>(I->nDot);
+    std::vector<int> dot_flag(I->nDot);
     float probe_radius_plus;
     probe_radius_plus = probe_radius * 1.5F;
-
-    ErrChkPtr(G, dot_flag);
 
     {
       MapType* map =
@@ -5219,17 +5416,16 @@ static SolventDot* SolventDotNew(PyMOLGlobals* G, float* coord,
         while (ok && flag) {
           flag = false;
           ok = SolventDotMarkDotsWithinProbeRadius(
-              G, I, map, cavity_cull, probe_radius_plus, dot_flag, &flag);
+              G, I, map, cavity_cull, probe_radius_plus, dot_flag.data(),
+              &flag);
         }
       }
       MapFree(map);
     }
 
     if (ok) {
-      SolventDotSlideDotsAndInfo(G, I, dot_flag, true);
+      SolventDotSlideDotsAndInfo(G, I, dot_flag.data(), true);
     }
-
-    FreeP(dot_flag);
   }
   if (!ok) {
     SolventDotFree(I);

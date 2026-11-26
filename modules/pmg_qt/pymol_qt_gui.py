@@ -21,6 +21,7 @@ from pymol.Qt.utils import (getSaveFileNameWithExt, UpdateLock, WidgetMenu,
 from .pymol_gl_widget import PyMOLGLWidget
 from . import keymapping
 from . import theme
+from .icons import menu_icon
 
 from pmg_qt import properties_dialog, file_dialogs
 
@@ -71,6 +72,11 @@ class PyMOLQtGUI(QtWidgets.QMainWindow, pymol._gui.PyMOLDesktopGUI):
             self.pymolwidget.pymol.button(*args)
 
     def closeEvent(self, event):
+        self.sequence_panel.stop()
+        if self.sequence_panel.worker and self.sequence_panel.worker.isRunning():
+            event.ignore()
+            QtCore.QTimer.singleShot(100, self.close)
+            return
         self.save_layout()
         self.cmd.quit()
 
@@ -182,10 +188,19 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.abortbutton.setStyleSheet("background: #FF0000; color: #FFFFFF")
         lineeditlayout.addWidget(self.abortbutton)
 
+        log = QtWidgets.QWidget()
+        loglayout = QtWidgets.QVBoxLayout(log)
+        loglayout.setContentsMargins(0, 0, 0, 0)
+        loglayout.addWidget(self.browser)
+        loglayout.addLayout(lineeditlayout)
+        # the Sequence and Chat tabs are added once cmd exists
+        self.command_tabs = QtWidgets.QTabWidget()
+        self.command_tabs.setDocumentMode(True)
+        self.command_tabs.addTab(log, "Command")
+
         extguilayout = QtWidgets.QVBoxLayout()
         extguilayout.setContentsMargins(2, 2, 2, 2)
-        extguilayout.addWidget(self.browser)
-        extguilayout.addLayout(lineeditlayout)
+        extguilayout.addWidget(self.command_tabs)
 
         class ExtGuiFrame(QtWidgets.QFrame):
             def mouseDoubleClickEvent(_, event):
@@ -225,6 +240,8 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         # menus the core opens (right click in the viewport, sequence
         # viewer, scene buttons) are Qt menus; object_panel imported pymol.menu
         pymol.menu.popup = lambda entries: popup_at_cursor(self, entries, cmd)
+        # their "rename" rows edit the name on the row of the panel
+        pymol.menu.rename_hook = self.object_panel.rename
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.object_panel)
         self.resizeDocks([self.object_panel], [300], Qt.Orientation.Horizontal)
 
@@ -237,6 +254,40 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.timeline_panel = TimelinePanel(cmd, self)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.timeline_panel)
         self.timeline_panel.hide()
+
+        from .ligand_panel import LigandPanel
+        self.ligand_panel = LigandPanel(cmd, self)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.ligand_panel)
+        self.ligand_panel.hide()
+        self._ligand_key = None  # the objects the 2D button was last judged for
+
+        # property table: a window of its own over the viewport
+        from .property_table import PropertyTable
+        self.property_table = PropertyTable(
+            cmd, self, self.pymolwidget, self.object_panel)
+
+        from .sequence_panel import SequencePanel
+        self.sequence_panel = SequencePanel(cmd, self)
+
+        from .sequence_tab import Options, SequenceTab
+        self.sequence_tab = SequenceTab(cmd, self)
+        self.sequence_page = QtWidgets.QWidget()
+        page = QtWidgets.QVBoxLayout(self.sequence_page)
+        page.setContentsMargins(0, 0, 0, 0)
+        page.setSpacing(0)
+        page.addWidget(
+            Options(cmd, self.setting_callbacks, self.sequence_panel.open))
+        page.addWidget(self.sequence_tab, 1)
+        self.command_tabs.addTab(self.sequence_page, "Sequence")
+
+        from .chat_panel import ChatPanel
+        self.chat_panel = ChatPanel(cmd, self)
+        self.command_tabs.addTab(self.chat_panel, "Chat")
+        self.command_tabs.setCornerWidget(TabFontButtons(self.command_tabs, {
+            "Command": (self.browser, self.lineedit),
+            "Sequence": (self.sequence_tab,),
+            "Chat": (self.chat_panel.history, self.chat_panel.prompt),
+        }))
 
         '''
         # command completion
@@ -354,43 +405,97 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
             panels=[
                 ('Builder', self.open_builder_panel),
                 ('Scenes', self.scene_panel_menu_dialog),
+                # the Timeline panel: a second click closes it
+                ('Movie', lambda: self.timeline_panel.hide()
+                    if self.timeline_panel.isVisible()
+                    else self.timeline_panel_dialog()),
+                ('2D', self.ligand_panel.open),
+                ('Sequence alignment', self.sequence_panel.open),
+                ('Table', lambda: self.property_table.setVisible(
+                    not self.property_table.isVisible())),
                 # the render dialog is built when the menu is first shown, so
                 # it starts with the current viewport and settings
-                ('Draw/Ray', WidgetMenu(self).setSetupUi(self.render_dialog)),
+                ('Draw', WidgetMenu(self).setSetupUi(self.render_dialog)),
             ],
             more=[
                 ('Get View', self.get_view),
                 ('Properties', self.open_props_dialog),
+            ],
+            # the rows of File that bring something in
+            files=[
+                ('Open file...', self.file_open),
+                ('Open folder...', self.file_open_folder),
+                ('Open Recent...', self.open_recent_menu),
+                None,
+                ('Get PDB entry...', self.file_fetch_pdb),
+                ('Get by UniProt...', self.file_fetch_uniprot),
+                ('Get predicted structure...', self.file_fetch_fold),
+                None,
+                ('Import table...', lambda: self.property_table.import_dialog()),
             ])
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.action_toolbar)
         self.action_toolbar.setVisible(bool(options.external_gui))
 
-        # toggle bar under the object list
+        # toggle bar under the object list: an icon each, and a text where
+        # it says more than the drawing (the mouse mode is a state)
         mouse = QtWidgets.QToolButton()
-        mouse.setToolTip('Mouse mode')
         mouse.setMenu(self.menudict['Mouse'])
+
+        def show_mouse_mode(name):
+            # "3-Button Viewing": the button says "Viewing", the tooltip all
+            mouse.setText(name.split(' ', 1)[-1])
+            mouse.setToolTip('Mouse mode: ' + name)
+
         self.setting_callbacks[cmd.setting._get_index('button_mode_name')].append(
-            mouse.setText)
-        mouse.setText(cmd.get('button_mode_name'))
-        wizard = QtWidgets.QToolButton()
-        wizard.setText('Wizard')
-        wizard.setMenu(self.menudict['Wizard'])
+            show_mouse_mode)
+        show_mouse_mode(cmd.get('button_mode_name'))
+        # the sequence is in a tab of the command panel; its place in the
+        # viewport (the setting seq_view) is a row of the arrow's menu
         seq = QtWidgets.QToolButton()
-        seq.setDefaultAction(SettingAction(self, cmd, 'seq_view', 'SEQ'))
-        seq.setToolTip('Sequence viewer')
+        seq.setText('SEQ')
+        seq.setToolTip('Sequence tab')
+        seq.clicked.connect(self.open_sequence)
+        seq.setMenu(QtWidgets.QMenu(seq))
+        seq.menu().addAction(
+            SettingAction(self, cmd, 'seq_view', 'Show in viewport'))
+        seq.menu().addAction('Sequence alignment…', self.sequence_panel.open)
+        # blue while the agent connector listens: show_agent_server
+        self.ai_button = ai = QtWidgets.QToolButton()
+        ai.setText('AI assistant')
+        ai.setCheckable(True)
+        ai.setMenu(self.ai_menu())
+        wizard = QtWidgets.QToolButton()
+        wizard.setText("Wizard")
+        wizard.setToolTip("Wizard")
+        wizard.setMenu(self.menudict["Wizard"])
         command = QtWidgets.QToolButton()
-        command.setText('>_')
+        command.setText('Command line')
         command.setToolTip('Command line and log')
         command.setCheckable(True)
         command.setChecked(bool(options.external_gui))
         command.clicked.connect(lambda on: self.ext_window.setVisible(on))
         self.ext_window.toggleViewAction().toggled.connect(command.setChecked)
-        for button in (mouse, wizard, seq, command):
-            button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
-            # the mouse mode name is long: it takes the spare width
-            self.object_panel.footer.addWidget(button, button is mouse)
-        mouse.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
+        Style = Qt.ToolButtonStyle
+        Popup = QtWidgets.QToolButton.ToolButtonPopupMode
+        for button in (mouse, seq, ai, wizard, command):
+            # the SEQ button itself opens the tab
+            button.setPopupMode(
+                Popup.MenuButtonPopup if button is seq else Popup.InstantPopup)
+            button.setToolButtonStyle(
+                Style.ToolButtonIconOnly if button in (ai, wizard, command)
+                else Style.ToolButtonTextBesideIcon)
+            self.object_panel.footer.addWidget(button)
+        # each button as wide as its content; the spare width stays empty
+        self.object_panel.footer.addStretch(1)
+        self._footer_icons = (
+            (mouse, 'mouse mode'), (seq, 'seq'), (ai, 'ai assistant'),
+            (wizard, 'wizard'), (command, 'command line'))
+        self._set_footer_icons()
+        # never wider than its content; in a panel too narrow for the row Qt
+        # shortens the name, down to the width of SEQ
+        mouse.setSizePolicy(QtWidgets.QSizePolicy.Policy.Maximum,
                             QtWidgets.QSizePolicy.Policy.Fixed)
+        mouse.setMinimumWidth(seq.sizeHint().width())
 
         # extra key mappings (MacPyMOL compatible)
         QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+O'), self).activated.connect(self.file_open)
@@ -412,7 +517,12 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         panels.addAction(self.object_panel.toggleViewAction())
         panels.addAction(self.scene_panel.toggleViewAction())
         panels.addAction(self.timeline_panel.toggleViewAction())
+        panels.addAction(self.property_table.toggleViewAction())
+        panels.addAction(self.ligand_panel.toggleViewAction())
+        panels.addAction('Sequence alignment…', self.sequence_panel.open)
         panels.addAction('Builder', self.open_builder_panel)
+        panels.addAction('Sequence', self.open_sequence)
+        panels.addAction('AI chat', self.open_chat)
         panels.addSeparator()
         panels.addAction('Reset Layout', self.reset_layout)
         self._default_state = self.saveState(LAYOUT_VERSION)
@@ -491,6 +601,8 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         settings = QtCore.QSettings('pymolish', 'pymolish-studio')
         settings.setValue('mainwindow/geometry', self.saveGeometry())
         settings.setValue('mainwindow/state', self.saveState(LAYOUT_VERSION))
+        if self.property_table._want:  # the size the user gave the table
+            settings.setValue('table/size', self.property_table._want)
 
     def restore_layout(self):
         settings = QtCore.QSettings('pymolish', 'pymolish-studio')
@@ -500,6 +612,9 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
             self.restoreGeometry(geometry)
         if state:
             self.restoreState(state, LAYOUT_VERSION)  # refuses older layouts
+        size = settings.value('table/size')
+        if isinstance(size, QtCore.QSize):
+            self.property_table._want = size
         # the saved position may be on a monitor that is gone
         app = QtWidgets.QApplication
         if not any(s.availableGeometry().intersects(self.frameGeometry()) for s in app.screens()):
@@ -509,6 +624,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.restoreState(self._default_state, LAYOUT_VERSION)
         self.ext_window.show()
         self.object_panel.show()
+        self.property_table.stick()
 
     def toggle_ext_window_dockable(self, neverfloat=False):
         '''
@@ -658,6 +774,65 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
         form._dialog.show()
 
+    def ai_menu(self):
+        """The AI assistant button under the object list: the chat, and the
+        connector that lets an agent on this computer work in the session
+        (pymol.agent_server)."""
+        from pymol import agent_server
+
+        menu = QtWidgets.QMenu(self)
+        menu.addAction('Chat', self.open_chat)
+        menu.addSeparator()
+        self.agent_connector = menu.addAction('Agent connector')
+        self.agent_connector.setCheckable(True)
+        self.agent_connector.setToolTip(
+            'Let Claude Code or Codex on this computer use this session')
+
+        @self.agent_connector.triggered.connect
+        def _(on):
+            try:
+                self.cmd.agent_server('on' if on else 'off')
+            except pymol.CmdException as error:  # the port is taken
+                print(error)
+                self.show_agent_server(False)
+
+        def copy(client):
+            server = agent_server._server
+            QtWidgets.QApplication.clipboard().setText(
+                agent_server.setup(server.server_port, server.token)[client])
+            print(' Copied: run it once in a terminal to connect ' + client)
+
+        self.agent_setup = [
+            menu.addAction('Copy setup line for ' + client,
+                           lambda client=client: copy(client))
+            for client in ('Claude Code', 'Codex')
+        ]
+        menu.setToolTipsVisible(True)
+        self.show_agent_server(False)
+        return menu
+
+    def show_agent_server(self, on):
+        """The connector listens or not: the menu row, and the button blue."""
+        self.agent_connector.setChecked(on)
+        for action in self.agent_setup:
+            action.setEnabled(on)
+        self.ai_button.setChecked(on)
+        self.ai_button.setToolTip(
+            'AI assistant: the agent connector is on' if on
+            else 'AI assistant')
+
+    def open_sequence(self):
+        self.ext_window.show()
+        self.command_tabs.setCurrentWidget(self.sequence_page)
+        self.sequence_tab.setFocus()
+
+    def open_chat(self, prompt=""):
+        self.ext_window.show()
+        self.command_tabs.setCurrentWidget(self.chat_panel)
+        if prompt:
+            self.chat_panel.prompt.setText(prompt)
+        self.chat_panel.prompt.setFocus()
+
     def open_builder_panel(self):
         from pmg_qt.builder import BuilderPanelDocked
 
@@ -701,7 +876,9 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
 
     @PopupOnException.decorator
     def session_save_as(self, fname=''):
+        # the first one is what a name without an extension gets
         formats = [
+            'pymolish Session, packed (*.psex)',
             'PyMOL Session File (*.pse *.pze *.pse.gz)',
             'PyMOL Show File (*.psw *.pzw *.psw.gz)',
         ]
@@ -713,7 +890,8 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
                 filter=';;'.join(formats))
         if fname:
             self.initialdir = os.path.dirname(fname)
-            self.cmd.save(fname, format='pse', quiet=0)
+            packed = fname.lower().endswith('.psex')
+            self.cmd.save(fname, format='psex' if packed else 'pse', quiet=0)
             self.recent_filenames_add(fname)
 
     def render_dialog(self, widget=None):
@@ -946,6 +1124,18 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.scene_panel.refresh()
         self.scene_panel.list.setFocus()
 
+    def _set_footer_icons(self):
+        color = self.palette().buttonText().color()
+        accent = self.palette().link().color()  # while on, as in the toolbar
+        # getattr: a palette change can come before the row is built
+        for target, label in getattr(self, '_footer_icons', ()):
+            target.setIcon(menu_icon(label, color, accent=accent))
+
+    def changeEvent(self, event):
+        if event.type() == QtCore.QEvent.Type.PaletteChange:
+            self._set_footer_icons()  # tinted: the theme and the UI scale
+        super().changeEvent(event)
+
     def timeline_panel_dialog(self):
         self.timeline_panel.show()
         self.timeline_panel.raise_()
@@ -1002,6 +1192,17 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.object_panel.poll()
         self.scene_panel.poll()
         self.timeline_panel.poll()
+        self.property_table.poll()
+        self.ligand_panel.poll()
+        self.sequence_panel.poll()
+        self.sequence_tab.poll()
+        # the 2D button is for objects with a ligand; judged again when the
+        # objects that are switched on change
+        key = tuple(self.cmd.get_names('public', enabled_only=1))
+        if key != self._ligand_key:
+            self._ligand_key = key
+            self.action_toolbar.set_ligand(bool(self.cmd.count_atoms(
+                'organic and not polymer and enabled')))
 
     def doPrompt(self):
         self.doTypedCommand(self.command_get())
@@ -1111,6 +1312,69 @@ def SettingAction(parent, cmd, name, label='', true_value=1, false_value=0,
     return action
 
 window = None
+
+
+class TabFontButtons(QtWidgets.QWidget):
+    """A-, A+ and Reset at the right of the tabs of the command panel: the
+    size of the text in the tab that is shown, remembered for each tab.
+    targets: tab title -> the widgets of that tab whose text is sized; each
+    keeps its font and its distance to the others, all move by one point."""
+
+    SMALLEST, LARGEST = 6, 40  # points
+
+    def __init__(self, tabs, targets):
+        super().__init__(tabs)
+        self.tabs, self.targets = tabs, targets
+        self.settings = QtCore.QSettings("pymolish", "pymolish-studio")
+        # what the widgets start with: Reset goes back to it
+        self.defaults = {
+            title: [QtGui.QFontInfo(w.font()).pointSizeF() for w in widgets]
+            for title, widgets in targets.items()
+        }
+        row = QtWidgets.QHBoxLayout(self)
+        row.setContentsMargins(0, 0, 2, 0)
+        row.setSpacing(2)
+        for text, tip, step in (
+                ("A\u2212", "Smaller text in this tab", -1),
+                ("A+", "Larger text in this tab", 1),
+                ("Reset", "The text size this tab starts with", 0)):
+            button = QtWidgets.QToolButton()
+            button.setText(text)
+            button.setToolTip(tip)
+            button.setAccessibleName(tip)
+            button.setAutoRaise(True)
+            button.clicked.connect(lambda _=False, step=step: self.change(step))
+            row.addWidget(button)
+        for title in targets:
+            self._apply(title, self.step(title))
+
+    def step(self, title):
+        """Points added to the text of that tab."""
+        try:
+            return int(self.settings.value("fonts/" + title, 0))
+        except (TypeError, ValueError):
+            return 0
+
+    def _apply(self, title, step):
+        for widget, size in zip(self.targets[title], self.defaults[title]):
+            font = widget.font()
+            font.setPointSizeF(size + step)
+            widget.setFont(font)
+
+    def change(self, step):
+        """One point smaller (-1) or larger (1) in the tab that is shown,
+        or back to what it starts with (0)."""
+        title = self.tabs.tabText(self.tabs.currentIndex())
+        if title not in self.targets:
+            return
+        sizes = self.defaults[title]
+        new = self.step(title) + step if step else 0
+        new = max(self.SMALLEST - min(sizes), min(self.LARGEST - max(sizes), new))
+        if new:
+            self.settings.setValue("fonts/" + title, int(new))
+        else:
+            self.settings.remove("fonts/" + title)
+        self._apply(title, new)
 
 
 class CommandLineEdit(QtWidgets.QLineEdit):

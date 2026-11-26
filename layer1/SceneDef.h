@@ -24,8 +24,6 @@ Z* -------------------------------------------------------------------
 #include"View.h"
 #include"Image.h"
 #include "Picking.h"
-#include"ScrollBar.h"
-#include"SceneElem.h"
 #include"SceneView.h"
 #include"Rect.h"
 #include "Camera.h"
@@ -136,13 +134,6 @@ class CScene : public Block {
   float FogStart{};
   float FogEnd{};
 
-  /* Scene Names */
-  int ButtonsShown{}, ButtonDrag{}, ButtonMargin{}, ButtonsValid{};
-  int Over{-1}, Pressed{-1}, PressMode{}, HowFarDown{}, NSkip{};
-  int ScrollBarActive{};
-  OrthoLineType ReorderLog{};
-  ScrollBar m_ScrollBar;
-  std::vector<SceneElem> SceneVec;
   CGO *AlphaCGO { nullptr };
 
   std::vector<int> m_slots;
@@ -174,7 +165,7 @@ class CScene : public Block {
   float vp_width_scale{};
   PickColorManager pickmgr;
 
-  CScene(PyMOLGlobals * G) : Block(G), m_ScrollBar(G, false) {}
+  CScene(PyMOLGlobals * G) : Block(G) {}
 
   virtual int click(int button, int x, int y, int mod) override;
   virtual int release(int button, int x, int y, int mod) override;

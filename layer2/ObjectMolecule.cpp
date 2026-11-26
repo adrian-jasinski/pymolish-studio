@@ -107,8 +107,8 @@ void ObjectMoleculeRemoveDuplicateBonds(PyMOLGlobals * G, ObjectMolecule * I) {
   }
 
   // get sorted indices
-  int * sorted = pymol::malloc<int>(I->NBond);
-  UtilSortIndexGlobals(G, I->NBond, I->Bond.data(), sorted,
+  std::vector<int> sorted(I->NBond);
+  UtilSortIndexGlobals(G, I->NBond, I->Bond.data(), sorted.data(),
       (UtilOrderFnGlobals *) BondTypeInOrder);
 
   // purge duplicated bonds and mark for removal
@@ -134,8 +134,6 @@ void ObjectMoleculeRemoveDuplicateBonds(PyMOLGlobals * G, ObjectMolecule * I) {
     }
   }
 
-  FreeP(sorted);
-
   // remove purged bonds from array
   int j = 0;
   for (int i = 0; i < I->NBond; ++i) {
@@ -147,7 +145,7 @@ void ObjectMoleculeRemoveDuplicateBonds(PyMOLGlobals * G, ObjectMolecule * I) {
     }
   }
   I->NBond = j;
-  VLASize(I->Bond, BondType, I->NBond);
+  I->Bond.resize(I->NBond);
 }
 
 /**
@@ -160,8 +158,8 @@ bool ObjectMoleculeSetNotDiscrete(PyMOLGlobals * G, ObjectMolecule * I) {
   if (!I->DiscreteFlag)
     return true;
 
-  VLAFreeP(I->DiscreteAtmToIdx);
-  VLAFreeP(I->DiscreteCSet);
+  I->DiscreteAtmToIdx.freeP();
+  I->DiscreteCSet.freeP();
   I->DiscreteFlag = false;
 
   for (int atm = 0; atm < I->NAtom; ++atm) {
@@ -222,8 +220,6 @@ int ObjectMoleculeSetDiscrete(PyMOLGlobals * G, ObjectMolecule * I, int discrete
 {
   int state, idx, ao, an, ao1, ao2, an1, an2;
   int maxnatom, natom = I->NAtom, nbond = I->NBond;
-  int *aostate2an = nullptr;
-  char *bondseen = nullptr;
   BondType *bond;
   CoordSet *cs;
 
@@ -241,8 +237,8 @@ int ObjectMoleculeSetDiscrete(PyMOLGlobals * G, ObjectMolecule * I, int discrete
   maxnatom = I->NAtom * I->NCSet;
 
   // mapping (for bonds): atom_old -> atom_new
-  ok_assert(1, aostate2an = pymol::malloc<int>(I->NAtom));
-  ok_assert(1, bondseen = pymol::calloc<char >(I->NBond));
+  std::vector<int> aostate2an(I->NAtom);
+  std::vector<char> bondseen(I->NBond);
 
   // discrete setup
   I->DiscreteFlag = discrete;
@@ -268,7 +264,7 @@ int ObjectMoleculeSetDiscrete(PyMOLGlobals * G, ObjectMolecule * I, int discrete
         // seen before, have to copy
         an = natom++;
 
-        VLACheck(I->AtomInfo, AtomInfoType, an);
+        I->AtomInfo.check(an);
         ok_assert(1, I->AtomInfo);
 
         AtomInfoCopy(G,
@@ -306,7 +302,7 @@ int ObjectMoleculeSetDiscrete(PyMOLGlobals * G, ObjectMolecule * I, int discrete
 
       if (bondseen[idx]) {
         // seen before, have to copy
-        VLACheck(I->Bond, BondType, nbond);
+        I->Bond.check(nbond);
         ok_assert(1, I->Bond);
 
         bond = I->Bond + (nbond++);
@@ -320,19 +316,15 @@ int ObjectMoleculeSetDiscrete(PyMOLGlobals * G, ObjectMolecule * I, int discrete
     }
   }
 
-  // not needed anymore
-  mfree(aostate2an);
-  mfree(bondseen);
-
   // update N* count fields
   I->NAtom = natom;
   I->NBond = nbond;
 
   // trim VLAs memory to actual size
   if (I->NBond)
-    VLASize(I->Bond, BondType, I->NBond);
+    I->Bond.resize(I->NBond);
   if (I->NAtom)
-    VLASize(I->AtomInfo, AtomInfoType, I->NAtom);
+    I->AtomInfo.resize(I->NAtom);
 
   I->setNDiscrete(I->NAtom);
 
@@ -517,8 +509,11 @@ static void undo_match(int *start, match_info * mi)
     int bb = match[-1];
     mi->atom_mark_a[a] = false;
     mi->atom_mark_b[b] = false;
-    mi->bond_mark_a[aa] = false;
-    mi->bond_mark_b[bb] = false;
+    // the first atom of a match has no bond: aa and bb are -1
+    if (aa >= 0)
+      mi->bond_mark_a[aa] = false;
+    if (bb >= 0)
+      mi->bond_mark_b[bb] = false;
     match -= 4;
   }
   mi->matched = start;
@@ -560,8 +555,10 @@ static int recursive_match(int a, int b, int aa, int bb, match_info * mi)
       int *before = mi->matched;
       mi->atom_mark_a[a] = true;
       mi->atom_mark_b[b] = true;
-      mi->bond_mark_a[aa] = true;
-      mi->bond_mark_b[bb] = true;
+      if (aa >= 0)
+        mi->bond_mark_a[aa] = true;
+      if (bb >= 0)
+        mi->bond_mark_b[bb] = true;
       mi->matched[0] = a;       /* atoms */
       mi->matched[1] = b;
       mi->matched[2] = aa;      /* bonds */
@@ -645,7 +642,7 @@ int ObjectMoleculeXferValences(ObjectMolecule * Ia, int sele1, int sele2,
                                int target_state, ObjectMolecule * Ib, int sele3,
                                int source_state, int quiet)
 {
-  int *matched = nullptr;
+  std::vector<int> matched;
   int match_found = false;
   PyMOLGlobals *G = Ia->G;
   if(Ia == Ib)
@@ -655,7 +652,7 @@ int ObjectMoleculeXferValences(ObjectMolecule * Ia, int sele1, int sele2,
     int max_match = Ia->NAtom + Ia->NBond;
     if(max_match < (Ib->NAtom + Ib->NBond))
       max_match = (Ib->NAtom + Ib->NBond);
-    matched = pymol::calloc<int>(max_match * 4);
+    matched.resize(max_match * 4);
   }
 
   {
@@ -682,7 +679,7 @@ int ObjectMoleculeXferValences(ObjectMolecule * Ia, int sele1, int sele2,
     mi.bi_b = bi_b;
     mi.nbr_a = Ia->getNeighborArray();
     mi.nbr_b = Ib->getNeighborArray();
-    mi.matched = matched;
+    mi.matched = matched.data();
     for(a = 0; a < Ia->NAtom; a++) {
       if(!mi.atom_mark_a[a]) {
         int a_entry = ai_a[a].selEntry;
@@ -694,7 +691,7 @@ int ObjectMoleculeXferValences(ObjectMolecule * Ia, int sele1, int sele2,
                 match_found = true;
                 /* now graft bond orders for bonds in matching atoms */
 
-                while(match > matched) {
+                while(match > matched.data()) {
                   int at_a = match[-4];
                   int at_b = match[-3];
                   int bd_a = match[-2];
@@ -729,7 +726,6 @@ int ObjectMoleculeXferValences(ObjectMolecule * Ia, int sele1, int sele2,
       }
     }
   }
-  FreeP(matched);
   return match_found;
 }
 
@@ -947,7 +943,6 @@ ObjectMolecule *ObjectMoleculeLoadTRJFile(PyMOLGlobals * G, ObjectMolecule * I,
                                           const char *sele, int image, const float *shift, int quiet)
 {
   FILE *f;
-  char *buffer;
   const char *p;
   char cc[MAXLINELEN];
   int n_read;
@@ -1002,8 +997,8 @@ ObjectMolecule *ObjectMoleculeLoadTRJFile(PyMOLGlobals * G, ObjectMolecule * I,
 
     PRINTFB(G, FB_ObjectMolecule, FB_Blather)
       " ObjMolLoadTRJFile: Loading from \"%s\".\n", fname ENDFB(G);
-    buffer = pymol::malloc<char>(BUFSIZE + 1);     /* 1 MB read buffer */
-    p = buffer;
+    std::vector<char> buffer(BUFSIZE + 1); /* 1 MB read buffer */
+    p = buffer.data();
     buffer[0] = 0;
     n_read = 0;
     to_go = 0;
@@ -1013,20 +1008,20 @@ ObjectMolecule *ObjectMoleculeLoadTRJFile(PyMOLGlobals * G, ObjectMolecule * I,
     f1 = 0.0;
     f2 = 0.0;
     while(1) {
-      to_go = n_read - (p - buffer);
+      to_go = n_read - (p - buffer.data());
       if(to_go < GETTING_LOW)
         if(!feof(f)) {
           if(to_go)
-            memcpy(buffer, p, to_go);
-          n_read = fread(buffer + to_go, 1, BUFSIZE - to_go, f);
+            memcpy(buffer.data(), p, to_go);
+          n_read = fread(buffer.data() + to_go, 1, BUFSIZE - to_go, f);
           n_read = to_go + n_read;
           buffer[n_read] = 0;
-          p = buffer;
+          p = buffer.data();
           if(skip_first_line) {
             p = nextline(p);
             skip_first_line = false;
           }
-          to_go = n_read - (p - buffer);
+          to_go = n_read - (p - buffer.data());
         }
       if(!to_go)
         break;
@@ -1235,7 +1230,7 @@ ObjectMolecule *ObjectMoleculeLoadTRJFile(PyMOLGlobals * G, ObjectMolecule * I,
                     zoom_flag = true;
                   }
 
-                  VLACheck(I->CSet, CoordSet *, frame);
+                  I->CSet.check(frame);
                   if(I->NCSet <= frame)
                     I->NCSet = frame + 1;
                   delete I->CSet[frame];
@@ -1275,7 +1270,6 @@ ObjectMolecule *ObjectMoleculeLoadTRJFile(PyMOLGlobals * G, ObjectMolecule * I,
         break;
       }
     }
-    mfree(buffer);
   }
   delete cs;
   SceneChanged(G);
@@ -1298,7 +1292,8 @@ ObjectMolecule *ObjectMoleculeLoadRSTFile(PyMOLGlobals * G, ObjectMolecule * I,
    *           http://ambermd.org/formats.html
    */
   int ok = true;
-  char *buffer, *p;
+  std::unique_ptr<char, pymol::default_free> buffer;
+  char *p;
   char cc[MAXLINELEN];
   float f0, f1, f2, *fp;
   int a, b, c;
@@ -1329,7 +1324,8 @@ ObjectMolecule *ObjectMoleculeLoadRSTFile(PyMOLGlobals * G, ObjectMolecule * I,
     if (ok){
       PRINTFB(G, FB_ObjectMolecule, FB_Blather)
 	" ObjMolLoadRSTFile: Loading from \"%s\".\n", fname ENDFB(G);
-      p = buffer = FileGetContents(fname, nullptr);
+      buffer.reset(FileGetContents(fname, nullptr));
+      p = buffer.get();
       if(!buffer)
         ok = ErrMessage(G, __func__, "Unable to open file!");
     }
@@ -1374,7 +1370,7 @@ ObjectMolecule *ObjectMoleculeLoadRSTFile(PyMOLGlobals * G, ObjectMolecule * I,
               zoom_flag = true;
             }
 
-            VLACheck(I->CSet, CoordSet *, frame);
+            I->CSet.check(frame);
 	    CHECKOK(ok, I->CSet);
 	    if (ok){
 	      if(I->NCSet <= frame)
@@ -1401,7 +1397,6 @@ ObjectMolecule *ObjectMoleculeLoadRSTFile(PyMOLGlobals * G, ObjectMolecule * I,
         break;
       }
     }
-    mfree(buffer);
   }
   delete cs;
 
@@ -1480,7 +1475,6 @@ static CoordSet *ObjectMoleculeTOPStr2CoordSet(PyMOLGlobals * G, const char *buf
   int amber7 = false;
 
   WordType title;
-  ResName *resn;
 
   char cc[MAXLINELEN];
   int ok = true;
@@ -1822,12 +1816,12 @@ static CoordSet *ObjectMoleculeTOPStr2CoordSet(PyMOLGlobals * G, const char *buf
       p = findflag(G, buffer, "RESIDUE_LABEL", "20a4");
     }
 
-    resn = pymol::malloc<ResName>(NRES);
+    std::vector<std::array<char, sizeof(ResName)>> resn(NRES);
 
     b = 0;
     for(a = 0; a < NRES; a++) {
       p = ncopy(cc, p, 4);
-      if(!sscanf(cc, "%s", resn[a]))
+      if(!sscanf(cc, "%s", resn[a].data()))
         resn[a][0] = 0;
       if((++b) == 20) {
         b = 0;
@@ -1864,7 +1858,7 @@ static CoordSet *ObjectMoleculeTOPStr2CoordSet(PyMOLGlobals * G, const char *buf
         if(last_i)
           for(aa = (last_i - 1); aa < (at_i - 1); aa++) {
             ai = atInfo + aa;
-            ai->resn = LexIdx(G, resn[a - 1]);
+            ai->resn = LexIdx(G, resn[a - 1].data());
             ai->resv = rc;
           }
         rc++;
@@ -1880,7 +1874,7 @@ static CoordSet *ObjectMoleculeTOPStr2CoordSet(PyMOLGlobals * G, const char *buf
     if(last_i)
       for(aa = (last_i - 1); aa < nAtom; aa++) {
         ai = atInfo + aa;
-        ai->resn = LexIdx(G, resn[NRES - 1]);
+        ai->resn = LexIdx(G, resn[NRES - 1].data());
         ai->resv = rc;
       }
     rc++;
@@ -1891,8 +1885,6 @@ static CoordSet *ObjectMoleculeTOPStr2CoordSet(PyMOLGlobals * G, const char *buf
       PRINTFB(G, FB_ObjectMolecule, FB_Blather)
         " TOPStr2CoordSet: read residues.\n" ENDFB(G);
     }
-
-    FreeP(resn);
 
     if(!amber7) {
       /* skip bond force constants */
@@ -2378,7 +2370,7 @@ static ObjectMolecule *ObjectMoleculeReadTOPStr(PyMOLGlobals * G, ObjectMolecule
       I->NAtom = nAtom;
     /* 
        if(frame<0) frame=I->NCSet;
-       VLACheck(I->CSet,CoordSet*,frame);
+       I->CSet.check(frame);
        if(I->NCSet<=frame) I->NCSet=frame+1;
        if(I->CSet[frame]) I->CSet[frame]->fFree(I->CSet[frame]);
        I->CSet[frame] = cset;
@@ -2414,9 +2406,8 @@ ObjectMolecule *ObjectMoleculeLoadTOPFile(PyMOLGlobals * G, ObjectMolecule * obj
                                           const char *fname, int frame, int discrete)
 {
   ObjectMolecule *I = nullptr;
-  char *buffer;
-
-  buffer = FileGetContents(fname, nullptr);
+  std::unique_ptr<char, pymol::default_free> buffer(
+      FileGetContents(fname, nullptr));
 
   if(!buffer)
     ErrMessage(G, __func__, "Unable to open file!");
@@ -2424,8 +2415,7 @@ ObjectMolecule *ObjectMoleculeLoadTOPFile(PyMOLGlobals * G, ObjectMolecule * obj
     PRINTFB(G, FB_ObjectMolecule, FB_Blather)
       " %s: Loading from %s.\n", __func__, fname ENDFB(G);
 
-    I = ObjectMoleculeReadTOPStr(G, obj, buffer, frame, discrete);
-    mfree(buffer);
+    I = ObjectMoleculeReadTOPStr(G, obj, buffer.get(), frame, discrete);
   }
 
   return (I);
@@ -2769,7 +2759,7 @@ void ObjectMoleculeRenderSele(ObjectMolecule* I, int curState, int sele,
 		  if(visRep & (cRepCylBit | cRepSphereBit | cRepSurfaceBit |
 			       cRepLabelBit | cRepNonbondedSphereBit | cRepCartoonBit |
 			       cRepRibbonBit | cRepLineBit | cRepMeshBit |
-			       cRepDotBit | cRepNonbondedBit)){
+			       cRepDotBit | cRepNonbondedBit | cRepBallAndStickBit)){
 		    flag = true;
 		  }
 		}
@@ -3844,18 +3834,17 @@ void ObjectMoleculeCreateSpheroid(ObjectMolecule * I, int average)
   CoordSet *cs;
   int a, b, c, a0;
   SphereRec *sp;
-  float *v, *v0, *s, *f, ang, min_dist, *max_sq;
+  float *v, *v0, *s, *f, ang, min_dist;
   int *i;
-  float *center = nullptr;
   float d0[3], n0[3], d1[3], d2[3];
   float p0[3], p1[3], p2[3];
   int t0, t1, t2, bt0, bt1, bt2;
-  float dp, l, *fsum = nullptr;
+  float dp, l;
   float spheroid_smooth;
   float spheroid_fill;
   float spheroid_ratio = 0.1F;  /* minimum ratio of width over length */
   float spheroid_minimum = 0.02F;       /* minimum size - to insure valid normals */
-  int row, *count = nullptr, base;
+  int row, base;
   int nRow;
   int first = 0;
   int last = 0;
@@ -3866,10 +3855,8 @@ void ObjectMoleculeCreateSpheroid(ObjectMolecule * I, int average)
 
   nRow = I->NAtom * sp->nDot;
 
-  center = pymol::malloc<float>(I->NAtom * 3);
-  count = pymol::malloc<int>(I->NAtom);
-  fsum = pymol::malloc<float>(nRow);
-  max_sq = pymol::malloc<float>(I->NAtom);
+  std::vector<float> center(I->NAtom * 3), fsum(nRow), max_sq(I->NAtom);
+  std::vector<int> count(I->NAtom);
 
   spheroid_smooth = SettingGetGlobal_f(I->G, cSetting_spheroid_smooth);
   spheroid_fill = SettingGetGlobal_f(I->G, cSetting_spheroid_fill);
@@ -3894,8 +3881,8 @@ void ObjectMoleculeCreateSpheroid(ObjectMolecule * I, int average)
 
       auto spheroid = std::vector<float>(nRow);
 
-      v = center;
-      i = count;
+      v = center.data();
+      i = count.data();
       for(a = 0; a < I->NAtom; a++) {
         *(v++) = 0.0;
         *(v++) = 0.0;
@@ -3909,16 +3896,16 @@ void ObjectMoleculeCreateSpheroid(ObjectMolecule * I, int average)
           v = cs->Coord.data();
           for(a = 0; a < cs->NIndex; a++) {
             a0 = cs->IdxToAtm[a];
-            v0 = center + 3 * a0;
+            v0 = center.data() + 3 * a0;
             add3f(v, v0, v0);
-            (*(count + a0))++;
+            (*(count.data() + a0))++;
             v += 3;
           }
         }
       }
 
-      i = count;
-      v = center;
+      i = count.data();
+      v = center.data();
       for(a = 0; a < I->NAtom; a++)
         if(*i) {
           (*(v++)) /= (*i);
@@ -3931,14 +3918,14 @@ void ObjectMoleculeCreateSpheroid(ObjectMolecule * I, int average)
 
       /* now go through and compute radial distances */
 
-      f = fsum;
+      f = fsum.data();
       s = spheroid.data();
       for(a = 0; a < nRow; a++) {
         *(f++) = 0.0;
         *(s++) = 0.0;
       }
 
-      v = max_sq;
+      v = max_sq.data();
       for(a = 0; a < I->NAtom; a++)
         *(v++) = 0.0;
 
@@ -3949,7 +3936,7 @@ void ObjectMoleculeCreateSpheroid(ObjectMolecule * I, int average)
           for(a = 0; a < cs->NIndex; a++) {
             a0 = cs->IdxToAtm[a];
             base = (a0 * sp->nDot);
-            v0 = center + (3 * a0);
+            v0 = center.data() + (3 * a0);
             subtract3f(v, v0, d0);      /* subtract from average */
             l = lengthsq3f(d0);
             if(l > max_sq[a0])
@@ -3978,7 +3965,7 @@ void ObjectMoleculeCreateSpheroid(ObjectMolecule * I, int average)
         }
       }
 
-      f = fsum;
+      f = fsum.data();
       s = spheroid.data();
       for(a = 0; a < I->NAtom; a++) {
         min_dist = (float) (spheroid_ratio * sqrt(max_sq[a]));
@@ -4003,7 +3990,7 @@ void ObjectMoleculeCreateSpheroid(ObjectMolecule * I, int average)
         v = cs->Coord.data();
         for(a = 0; a < cs->NIndex; a++) {
           a0 = cs->IdxToAtm[a];
-          v0 = center + 3 * a0;
+          v0 = center.data() + 3 * a0;
           copy3f(v0, v);
           v += 3;
         }
@@ -4073,10 +4060,6 @@ void ObjectMoleculeCreateSpheroid(ObjectMolecule * I, int average)
     current++;
   }
   I->NCSet = n_state;
-  FreeP(center);
-  FreeP(count);
-  FreeP(fsum);
-  FreeP(max_sq);
 
   I->invalidate(cRepSphere, cRepInvProp, -1);
 }
@@ -4507,7 +4490,7 @@ int ObjectMoleculeRemoveBonds(ObjectMolecule * I, int sele0, int sele1)
     }
     if(offset) {
       I->NBond += offset;
-      VLASize(I->Bond, BondType, I->NBond);
+      I->Bond.resize(I->NBond);
       I->invalidate(cRepLine, cRepInvBonds, -1);
       I->invalidate(cRepCyl, cRepInvBonds, -1);
       I->invalidate(cRepNonbonded, cRepInvBonds, -1);
@@ -4585,7 +4568,7 @@ void ObjectMoleculePurge(ObjectMolecule * I)
   }
   if(offset) {
     I->NBond += offset;
-    VLASize(I->Bond, BondType, I->NBond);
+    I->Bond.resize(I->NBond);
   }
 
   I->invalidate(cRepAll, cRepInvAtoms, -1);
@@ -4802,9 +4785,7 @@ void ObjectMoleculeGuessValences(ObjectMolecule * I, int state, int *flag1, int 
 
   const float planer_cutoff = 0.96F;
   CoordSet *cs = nullptr;
-  ObservedInfo *obs_atom = nullptr;
-  ObservedInfo *obs_bond = nullptr;
-  int *flag = nullptr;
+  std::vector<ObservedInfo> obs_atom, obs_bond;
   int warning1 = 0, warning2 = 0;
 
 /* WORKAROUND of a possible -funroll-loops inlining optimizer bug in gcc 3.3.3 */
@@ -4822,34 +4803,34 @@ void ObjectMoleculeGuessValences(ObjectMolecule * I, int state, int *flag1, int 
     cs = I->CSet[state];
   }
   if(cs) {
-    obs_atom = pymol::calloc<ObservedInfo>(I->NAtom);
-    obs_bond = pymol::calloc<ObservedInfo>(I->NBond);
+    obs_atom.resize(I->NAtom);
+    obs_bond.resize(I->NBond);
   }
-  flag = pymol::calloc<int>(I->NAtom);
-  if(flag) {
+  std::vector<int> flag(I->NAtom);
+  {
     if(!flag1) {
-      int a, *flag_a = flag;
+      int a, *flag_a = flag.data();
       const AtomInfoType *ai = I->AtomInfo.data();
       /* default behavior: only reset hetatm valences */
       for(a = 0; a < I->NAtom; a++) {
         *(flag_a++) = (ai++)->hetatm;
       }
     } else if(flag1 && flag2) {
-      int a, *flag_a = flag, *flag1_a = flag1, *flag2_a = flag2;
+      int a, *flag_a = flag.data(), *flag1_a = flag1, *flag2_a = flag2;
       for(a = 0; a < I->NAtom; a++) {
         *(flag_a++) = (*(flag1_a++) || *(flag2_a++));
       }
     } else if(flag1) {
-      int a, *flag_a = flag, *flag1_a = flag1;
+      int a, *flag_a = flag.data(), *flag1_a = flag1;
       for(a = 0; a < I->NAtom; a++) {
         *(flag_a++) = *(flag1_a++);
       }
     }
   }
   if(!flag1)
-    flag1 = flag;
+    flag1 = flag.data();
   if(!flag2)
-    flag2 = flag;
+    flag2 = flag.data();
   if(reset) {
     /* reset chemistry information and bond orders for selected atoms */
     {
@@ -4873,7 +4854,7 @@ void ObjectMoleculeGuessValences(ObjectMolecule * I, int state, int *flag1, int 
       }
     }
   }
-  if(cs && obs_bond && obs_atom && flag && flag1 && flag2) {
+  if(cs) {
     int a;
     int const* const neighbor = I->getNeighborArray();
     AtomInfoType *atomInfo = I->AtomInfo.data();
@@ -4989,7 +4970,7 @@ void ObjectMoleculeGuessValences(ObjectMolecule * I, int state, int *flag1, int 
     for(a = 0; a < I->NAtom; a++) {
       AtomInfoType *ai = atomInfo + a;
       if((!ai->chemFlag) && flag[a]) {
-        ObservedInfo *ob_at = obs_atom + a;
+        ObservedInfo *ob_at = obs_atom.data() + a;
 
         {
           switch (ai->protons) {
@@ -5543,9 +5524,6 @@ void ObjectMoleculeGuessValences(ObjectMolecule * I, int state, int *flag1, int 
 	    " %s(%d,%d): Unreasonable connectivity in heteroatom,\n  unsuccessful in guessing valences.\n", __func__, warning1, warning2
 	     ENDFB(I->G);
   }
-  FreeP(obs_bond);
-  FreeP(obs_atom);
-  FreeP(flag);
 }
 
 
@@ -7369,7 +7347,7 @@ ObjectMolecule *ObjectMoleculeLoadChemPyModel(PyMOLGlobals * G,
     }
     if(isNew)
       I->NAtom = nAtom;
-    VLACheck(I->CSet, CoordSet *, frame);
+    I->CSet.check(frame);
     if(I->NCSet <= frame)
       I->NCSet = frame + 1;
     delete I->CSet[frame];
@@ -7445,7 +7423,7 @@ ObjectMolecule *ObjectMoleculeLoadCoords(PyMOLGlobals * G, ObjectMolecule * I,
 
   // include coordinate set
   if (is_new) {
-    VLACheck(I->CSet, CoordSet *, frame);
+    I->CSet.check(frame);
     if(I->NCSet <= frame)
       I->NCSet = frame + 1;
     I->CSet[frame] = cset;
@@ -7546,7 +7524,7 @@ ObjectMolecule *ObjectMoleculeLoadCoords(PyMOLGlobals * G, ObjectMolecule * I,
 
   // include coordinate set
   if (is_new) {
-    VLACheck(I->CSet, CoordSet *, frame);
+    I->CSet.check(frame);
     if(I->NCSet <= frame)
       I->NCSet = frame + 1;
     I->CSet[frame] = cset;
@@ -7596,17 +7574,15 @@ ok_except1:
 
 /*========================================================================*/
 
-static char* sdl_mol_prop_name(const char* prop, short* isprop)
+static std::string sdl_mol_prop_name(const char* prop, short* isprop)
 {
   int i, j, len;
-  char* name = nullptr;
 
   /* for now, need to handle all special characters */
   if (strchr(prop, '/') || strchr(prop, '\\')) {
     if (isprop)
       *isprop = false;
-    name = (char*) strdup(prop);
-    return name;
+    return prop;
   }
   /* Rule 1: If <prop>, return substring between angle brackets */
   for (i = 0; i < strlen(prop); i++) {
@@ -7614,12 +7590,10 @@ static char* sdl_mol_prop_name(const char* prop, short* isprop)
       for (len = 0, j = i + 1; j < strlen(prop); j++) {
         if (prop[j] == '>') {
           len = j - i - 1; /* change to j-i+1  to keep <> */
-          name = (char*) malloc(len + 1);
-          strncpy(name, prop + i + 1, len); /* change to prop+i to keep <> */
-          name[len] = '\0';
           if (isprop)
             *isprop = true;
-          return name;
+          /* change to prop+i to keep <> */
+          return std::string(prop + i + 1, len);
         }
       }
     }
@@ -7631,12 +7605,9 @@ static char* sdl_mol_prop_name(const char* prop, short* isprop)
       for (len = 0, j = i + 3; j < strlen(prop); j++) {
         if (!isdigit(prop[j])) {
           len = j - i;
-          name = (char*) malloc(len + 1);
-          strncpy(name, prop + i, len);
-          name[len] = '\0';
           if (isprop)
             *isprop = true;
-          return name;
+          return std::string(prop + i, len);
         }
       }
     }
@@ -7647,11 +7618,9 @@ static char* sdl_mol_prop_name(const char* prop, short* isprop)
     if (prop[i] == '_') {
       for (j = i + 1; j < strlen(prop); j++) {
         if (prop[j] == '_') {
-          name = (char*) malloc(strlen(prop + j + 1) + 1);
-          strcpy(name, prop + j + 1);
           if (isprop)
             *isprop = true;
-          return name;
+          return prop + j + 1;
         }
       }
     }
@@ -7660,17 +7629,13 @@ static char* sdl_mol_prop_name(const char* prop, short* isprop)
   /* Rule 4: else return prop itself */
   if (isprop)
     *isprop = false;
-  name = (char*) strdup(prop);
-  return name;
+  return prop;
 }
 
 static short is_sdl_mol_prop_name(const char* prop)
 {
   short isprop;
-  char* cctmp = pymol::malloc<char>(strlen(prop) + 1);
-  strcpy(cctmp, prop);
-  free(sdl_mol_prop_name(cctmp, &isprop));
-  FreeP(cctmp);
+  sdl_mol_prop_name(prop, &isprop);
   return isprop;
 }
 
@@ -7875,7 +7840,7 @@ static CoordSet *ObjectMoleculeMOLStr2CoordSet(PyMOLGlobals * G, const char *buf
       const char* np = ptmp;
       char *cc = VLACalloc(char, 1024), *cctmp = VLACalloc(char, 1024);
       int ccp = 0;
-      char* prop_name = nullptr;
+      std::optional<std::string> prop_name;
       short is_prop_name, line = 0;
       int nchs;
       cc[0] = 0;
@@ -7897,17 +7862,16 @@ static CoordSet *ObjectMoleculeMOLStr2CoordSet(PyMOLGlobals * G, const char *buf
             if (prop_name) {
               short load = loadpropertiesall;
               if (!load && loadproplex) {
-                ovresult = OVLexicon_BorrowFromCString(loadproplex, prop_name);
+                ovresult = OVLexicon_BorrowFromCString(loadproplex, prop_name->c_str());
                 load = (ovresult.status == OVstatus_SUCCESS);
               }
               if (load) {
                 PropertyCheckUniqueID(G, cset);
-                PropertySetromString(G, cset->prop_id, prop_name, cc);
+                PropertySetromString(G, cset->prop_id, prop_name->c_str(), cc);
                 ccp = 0;
                 cc[0] = 0;
                 line = 0;
               }
-              free(prop_name);
             }
             prop_name = sdl_mol_prop_name(cctmp, nullptr);
           } else {
@@ -7934,17 +7898,16 @@ static CoordSet *ObjectMoleculeMOLStr2CoordSet(PyMOLGlobals * G, const char *buf
       if (prop_name) {
         short load = loadpropertiesall;
         if (!load && loadproplex) {
-          ovresult = OVLexicon_BorrowFromCString(loadproplex, prop_name);
+          ovresult = OVLexicon_BorrowFromCString(loadproplex, prop_name->c_str());
           load = (ovresult.status == OVstatus_SUCCESS);
         }
         if (load) {
           PropertyCheckUniqueID(G, cset);
-          PropertySetromString(G, cset->prop_id, prop_name, cc);
+          PropertySetromString(G, cset->prop_id, prop_name->c_str(), cc);
           ccp = 0;
           cc[0] = 0;
           line = 0;
         }
-        free(prop_name);
       }
       VLAFreeP(cc);
       VLAFreeP(cctmp);
@@ -8779,7 +8742,7 @@ ObjectMolecule *ObjectMoleculeReadStr(PyMOLGlobals * G, ObjectMolecule * I,
 
     if(!cset) {
       if(!isNew)
-        VLAFreeP(atInfo);
+        atInfo.freeP();
       if(!successCnt) {
 	if (isNew)
           std::swap(I->AtomInfo, atInfo);
@@ -8805,7 +8768,7 @@ ObjectMolecule *ObjectMoleculeReadStr(PyMOLGlobals * G, ObjectMolecule * I,
         frame = I->NCSet;
       if(I->NCSet <= frame)
         I->NCSet = frame + 1;
-      VLACheck(I->CSet, CoordSet *, frame);
+      I->CSet.check(frame);
 
       nAtom = cset->NIndex;
 
@@ -8835,7 +8798,7 @@ ObjectMolecule *ObjectMoleculeReadStr(PyMOLGlobals * G, ObjectMolecule * I,
         I->NAtom = nAtom;
       if(frame < 0)
         frame = I->NCSet;
-      VLACheck(I->CSet, CoordSet *, frame);
+      I->CSet.check(frame);
       if(I->NCSet <= frame)
         I->NCSet = frame + 1;
       delete I->CSet[frame];
@@ -9016,7 +8979,7 @@ int ObjectMoleculeMerge(ObjectMolecule * I, pymol::vla<AtomInfoType>&& ai,
       nAt = I->NAtom;
     }
     if(expansionFlag) {
-      VLACheck(I->AtomInfo, AtomInfoType, nAt);
+      I->AtomInfo.check(nAt);
       CHECKOK(ok, I->AtomInfo);
     }
   }
@@ -9043,7 +9006,7 @@ int ObjectMoleculeMerge(ObjectMolecule * I, pymol::vla<AtomInfoType>&& ai,
     cs->updateNonDiscreteAtmToIdx(nAt);
   }
 
-  VLAFreeP(ai);                 /* note that we're trusting AtomInfoCombine to have 
+  ai.freeP();                 /* note that we're trusting AtomInfoCombine to have 
                                    already purged all atom-dependent storage (such as strings) */
 
   AtomInfoFreeSortedIndexes(G, &index, &outdex);
@@ -9053,8 +9016,7 @@ int ObjectMoleculeMerge(ObjectMolecule * I, pymol::vla<AtomInfoType>&& ai,
     pymol::vla<BondType> bond;
     ok &= ObjectMoleculeConnect(I, nBond, bond, cs, bondSearchFlag, -1);
     if(nBond) {
-      index = pymol::malloc<int>(nBond);
-      CHECKOK(ok, index);
+      std::vector<int> index(nBond);
       c = 0;
       b = 0;
       nb = 0;
@@ -9105,7 +9067,7 @@ int ObjectMoleculeMerge(ObjectMolecule * I, pymol::vla<AtomInfoType>&& ai,
           I->Bond = pymol::vla<BondType>(1);
 	CHECKOK(ok, I->Bond);
 	if (ok)
-	  VLACheck(I->Bond, BondType, nBd);
+	  I->Bond.check(nBd);
 	CHECKOK(ok, I->Bond);
         for(a = 0; a < nBond; a++) {    /* copy the new bonds */
           a2 = index[a];
@@ -9115,7 +9077,6 @@ int ObjectMoleculeMerge(ObjectMolecule * I, pymol::vla<AtomInfoType>&& ai,
         }
         I->NBond = nBd;
       }
-      FreeP(index);
     }
   }
   if(invalidate) {
@@ -9175,6 +9136,7 @@ bool ObjectMoleculeSeleOp(ObjectMolecule * I, int sele, ObjectMoleculeOpRec * op
   int a1 = 0, ind;
   float rms;
   float v1[3], v2, *vv1, *vv2, *vt, *vt1, *vt2;
+  std::vector<float> vt_buf;
   int hit_flag = false;
   int ok = true;
   int cnt;
@@ -9436,7 +9398,9 @@ bool ObjectMoleculeSeleOp(ObjectMolecule * I, int sele, ObjectMoleculeOpRec * op
       }
       break;
     case OMOP_SFIT:            /* state fitting within a single object */
-      vt = pymol::malloc<float>(3 * op->nvv2);  /* temporary (matching) target vertex pointers */
+      /* temporary (matching) target vertex pointers */
+      vt_buf.resize(3 * op->nvv2);
+      vt = vt_buf.data();
       cnt = 0;
       for(a = 0; a < I->NAtom; a++) {
         s = I->AtomInfo[a].selEntry;
@@ -9548,7 +9512,6 @@ bool ObjectMoleculeSeleOp(ObjectMolecule * I, int sele, ObjectMoleculeOpRec * op
         }
         VLASize(op->f1VLA, float, I->NCSet);    /* NOTE this action is object-specific! */
       }
-      FreeP(vt);
       break;
     case OMOP_OnOff:
       for(a = 0; a < I->NAtom; a++) {
@@ -10510,12 +10473,11 @@ bool ObjectMoleculeSeleOp(ObjectMolecule * I, int sele, ObjectMoleculeOpRec * op
         break;
       case OMOP_RevalenceByGuessing:
         {
-          int *flag1 = pymol::calloc<int>(I->NAtom);
-          int *flag2 = pymol::calloc<int>(I->NAtom);
-          if(flag1 && flag2) {
+          std::vector<int> flag1(I->NAtom), flag2(I->NAtom);
+          {
             int a;
-            int *f1 = flag1;
-            int *f2 = flag2;
+            int *f1 = flag1.data();
+            int *f2 = flag2.data();
             const AtomInfoType *ai = I->AtomInfo.data();
             for(a = 0; a < I->NAtom; a++) {
               *(f1++) = SelectorIsMember(G, ai->selEntry, op->i1);
@@ -10526,12 +10488,11 @@ bool ObjectMoleculeSeleOp(ObjectMolecule * I, int sele, ObjectMoleculeOpRec * op
               int target_state = op->i3;
               if(target_state < 0)
                 target_state = 0;       /* TO DO */
-              ObjectMoleculeGuessValences(I, target_state, flag1, flag2, op->i4);
+              ObjectMoleculeGuessValences(
+                  I, target_state, flag1.data(), flag2.data(), op->i4);
               ObjectMoleculeVerifyChemistry(I, target_state);
               I->invalidate(cRepAll, cRepInvBonds, target_state);
             }
-            FreeP(flag1);
-            FreeP(flag2);
           }
         }
         break;
@@ -10747,8 +10708,8 @@ void ObjectMolecule::update()
           if((a<I->NCSet) && I->CSet[a])
             cnt++;
         {
-          CCoordSetUpdateThreadInfo *thread_info = pymol::malloc<CCoordSetUpdateThreadInfo>(cnt);
-          if(thread_info) {
+          std::vector<CCoordSetUpdateThreadInfo> thread_info(cnt);
+          {
             cnt = 0;
             for(a = start; a < stop; a++) {
               if((a<I->NCSet) && I->CSet[a]) {
@@ -10757,8 +10718,7 @@ void ObjectMolecule::update()
                 cnt++;
               }
             }
-            ObjMolCoordSetUpdateSpawn(G, thread_info, n_thread, cnt);
-            FreeP(thread_info);
+            ObjMolCoordSetUpdateSpawn(G, thread_info.data(), n_thread, cnt);
           }
 
         }
@@ -10912,23 +10872,12 @@ int ObjectMoleculeMoveAtomLabel(ObjectMolecule * I, int state, int index, float 
 /*========================================================================*/
 int ObjectMoleculeInitBondPath(ObjectMolecule * I, ObjectMoleculeBPRec * bp)
 {
-  int a;
-  bp->dist = pymol::malloc<int>(I->NAtom);
-  bp->list = pymol::malloc<int>(I->NAtom);
-  for(a = 0; a < I->NAtom; a++)
-    bp->dist[a] = -1;
+  bp->dist.assign(I->NAtom, -1);
+  bp->list.resize(I->NAtom);
   bp->n_atom = 0;
   return 1;
 }
 
-
-/*========================================================================*/
-int ObjectMoleculePurgeBondPath(ObjectMolecule * I, ObjectMoleculeBPRec * bp)
-{
-  FreeP(bp->dist);
-  FreeP(bp->list);
-  return 1;
-}
 
 
 /*========================================================================*/
@@ -11008,7 +10957,6 @@ int ***ObjectMoleculeGetBondPrint(ObjectMolecule * I, int max_bond, int max_type
       }
     }
   }
-  ObjectMoleculePurgeBondPath(I, &bp);
   return (result);
 }
 
@@ -11269,7 +11217,7 @@ void ObjectMoleculeCopyNoAlloc(const ObjectMolecule* obj, ObjectMolecule* I)
     I->CSTmpl = CoordSetCopy(obj->CSTmpl);
 
   if (obj->DiscreteFlag){
-    int sz = VLAGetSize(obj->DiscreteAtmToIdx);
+    int sz = obj->DiscreteAtmToIdx.size();
     I->DiscreteAtmToIdx = VLACopy2(obj->DiscreteAtmToIdx);
     I->DiscreteCSet = pymol::vla<CoordSet*>(sz);
     I->updateAtmToIdx();
@@ -11322,7 +11270,7 @@ int ObjectMoleculeSetStateOrder(ObjectMolecule * I, int * order, int len) {
     csets[a] = I->CSet[i];
   }
 
-  VLAFreeP(I->CSet);
+  I->CSet.freeP();
   I->CSet = pymol::vla_take_ownership(csets);
 
   return true;
@@ -11382,9 +11330,9 @@ ObjectMolecule::~ObjectMolecule()
       I->CSet[a] = nullptr;
     }
   }
-  VLAFreeP(I->DiscreteAtmToIdx);
-  VLAFreeP(I->DiscreteCSet);
-  VLAFreeP(I->CSet);
+  I->DiscreteAtmToIdx.freeP();
+  I->DiscreteCSet.freeP();
+  I->CSet.freeP();
   I->m_ciffile.reset(); // free data
 
   {
@@ -11395,7 +11343,7 @@ ObjectMolecule::~ObjectMolecule()
       AtomInfoPurge(I->G, ai);
       ai++;
     }
-    VLAFreeP(I->AtomInfo);
+    I->AtomInfo.freeP();
   }
   {
     int nBond = I->NBond;
@@ -11405,7 +11353,7 @@ ObjectMolecule::~ObjectMolecule()
       AtomInfoPurgeBond(I->G, bi);
       bi++;
     }
-    VLAFreeP(I->Bond);
+    I->Bond.freeP();
   }
   for(a = 0; a <= cUndoMask; a++)
     FreeP(I->UndoCoord[a]);
@@ -11505,7 +11453,7 @@ ObjectMolecule *ObjectMoleculeReadPDBStr(PyMOLGlobals * G, ObjectMolecule * I,
         if(SettingGetGlobal_b(G, cSetting_pdb_honor_model_number))
           state = *model_number - 1;
       }
-      VLACheck(I->CSet, CoordSet *, state);
+      I->CSet.check(state);
       CHECKOK(ok, I->CSet);
       if(ok){
 	if(I->NCSet <= state)
@@ -11861,13 +11809,13 @@ ok_except1:
  * them with -1/NULL if necessary.
  */
 bool ObjectMolecule::setNDiscrete(int natom) {
-  int n = VLAGetSize(DiscreteAtmToIdx);
+  int n = DiscreteAtmToIdx.size();
 
   if (n == natom)
     return true;
 
-  VLASize(DiscreteAtmToIdx, int, natom);
-  VLASize(DiscreteCSet, CoordSet*, natom);
+  DiscreteAtmToIdx.resize(natom);
+  DiscreteCSet.resize(natom);
 
   if (!DiscreteAtmToIdx || !DiscreteCSet)
     return false;

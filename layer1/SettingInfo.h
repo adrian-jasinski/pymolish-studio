@@ -513,7 +513,7 @@ enum {
   REC_b( 418, validate_object_names                   , global    , 1 ),
   REC_b( 419, unused_boolean_def_true                 , unused    , 1 ),
   REC_b( 420, auto_show_spheres                       , global    , 0 ),
-  REC_i( 421, sphere_mode                             , ostate    , 9, -1, 11 ),
+  REC_i( 421, sphere_mode                             , ostate    , 9, -1, 9 ),
   REC_f( 422, sphere_point_max_size                   , ostate    , 18.0f ),
   REC_f( 423, sphere_point_size                       , global    , 1.0f ),
   REC_b( 424, pdb_honor_model_number                  , global    , false ),
@@ -695,8 +695,8 @@ enum {
   REC_i( 595, mesh_grid_max                           , ostate    , 80 ),
   REC_i( 596, session_cache_optimize                  , global    , 0 ),
   REC_f( 597, sdof_drag_scale                         , global    , 0.5F ),
-  REC_i( 598, scene_buttons_mode                      , unused    , 1 ),
-  REC_b( 599, scene_buttons                           , global    , 1 ),
+  REC__( 598,  ),
+  REC__( 599,  ),
   REC_b( 600, map_auto_expand_sym                     , object    , 1 ),
   REC_b( 601, image_copy_always                       , global    , 0 ),
   REC_i( 602, max_ups                                 , global    , 0 ),
@@ -793,7 +793,7 @@ enum {
   /* 0 - none, 1 - just ladder, 2 - just strand, 3 - both ladder and strand */
   REC_i( 693, cartoon_nucleic_acid_as_cylinders       , global    , 1, 0, 3 ),
   REC_b( 694, cgo_shader_ub_flags                     , global    , 0 ),
-  REC_i( 695, antialias_shader                        , global    , 0 ),        /* 0 - none, 1 - fxaa, 2 - smaa */
+  REC_i( 695, antialias_shader                        , global    , 0, 0, 1 ),  /* 0 - none, 1 - fxaa */
   REC_f( 696, offscreen_rendering_multiplier          , unused    , 4.f ),
   REC_b( 697, cylinder_shader_ff_workaround           , unused    , 1 ),
   REC_i( 698, surface_color_smoothing                 , global    , 1 ),
@@ -905,6 +905,9 @@ enum {
   REC_f( 795, salt_bridge_distance                        , global    , 5.0f ),
   REC_b( 796, use_tessellation_shaders                , global    , true ),
   REC_c( 797, cell_color                              , ostate    , "-1" ),
+  REC_f( 798, ball_and_stick_scale                    , atom      , 0.25F ),
+  REC_f( 799, ball_and_stick_bond_radius              , atom      , 0.12F ),
+  REC_c( 800, ball_and_stick_color                    , atom      , "-1" ),
 
 #ifdef SETTINGINFO_IMPLEMENTATION
 #undef SETTINGINFO_IMPLEMENTATION

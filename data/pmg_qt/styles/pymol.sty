@@ -8,7 +8,7 @@
    this bar (pymol_qt_gui.py; docs/plans/20-toolbar-look.md). */
 #toolbar_actions
 {
-    spacing:        8px;
+    spacing:        10px;
     padding:        3px 6px;
 }
 
@@ -20,6 +20,20 @@
     font-weight:    600;
 }
 
+/* The quick-select chips: letters in a thin frame, close together. */
+#toolbar_actions QToolButton#chip
+{
+    padding:        3px 5px;
+    min-width:      1em;
+    border:         1px solid rgba(128, 128, 128, 0.45);
+    border-radius:  5px;
+}
+
+#toolbar_actions QToolButton#chip::menu-indicator
+{
+    image:          none;
+}
+
 /* Blue for what is chosen and for what the pointer is on: the text of the
    selection mode, a checked button, a hovered button. palette(link) is a
    blue that reads on the window color of either theme; the icons follow in
@@ -29,24 +43,6 @@
 #toolbar_actions QToolButton:checked
 {
     color:          palette(link);
-}
-
-/* In its menus the pointed-at row has the blue of the A button of the
-   Objects panel, and the chosen row is written in blue. */
-#toolbar_actions QMenu::item:selected
-{
-    background:     #1e4fb8;
-    color:          white;
-}
-
-#toolbar_actions QMenu::item:checked
-{
-    color:          palette(link);
-}
-
-#toolbar_actions QMenu::item:checked:selected
-{
-    color:          white;
 }
 
 /* the corners are see-through: theme.round_menus */
@@ -64,15 +60,37 @@ QMenu::item
     border-radius:  6px;
 }
 
-QMenu::item:selected
+/* In every menu the pointed-at row has the blue of the A button of the
+   Objects panel, and a chosen row is written in blue. */
+QMenu::item:selected,
+QMenuBar::item:selected
 {
-    background:     rgba(128, 128, 128, 0.28);
-    color:          palette(text);
+    background:     #1e4fb8;
+    color:          white;
 }
 
-QMenu::item:disabled
+QMenu::item:checked
 {
+    color:          palette(link);
+}
+
+QMenu::item:checked:selected
+{
+    color:          white;
+}
+
+QMenu::item:disabled,
+QMenu::item:disabled:selected
+{
+    background:     transparent;
     color:          palette(mid);
+}
+
+QMenuBar::item
+{
+    padding:        4px 8px;
+    border-radius:  6px;
+    background:     transparent;
 }
 
 QMenu::icon

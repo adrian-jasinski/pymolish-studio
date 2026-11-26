@@ -1435,10 +1435,10 @@ static void CGO_gl_enable(CCGORenderer* I, CGO_op_data pc)
       case GL_TRILINES_SHADER:
         shaderMgr->Enable_TriLinesShader();
         break;
-#ifndef _PYMOL_NO_AA_SHADERS
       case GL_FXAA_SHADER:
         shaderMgr->Enable_FXAAShader();
         break;
+#ifndef _PYMOL_NO_AA_SHADERS
       case GL_SMAA1_SHADER:
         shaderMgr->Enable_SMAA1Shader();
         break;

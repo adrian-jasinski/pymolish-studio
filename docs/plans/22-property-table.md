@@ -1,12 +1,74 @@
 # 22 — Property table
 
-[Roadmap](../../PLAN.md) · Request 2026-11-20 · Planned, not built.
+[Roadmap](../../PLAN.md) · Request 2026-11-20 · 22a–22c shipped below. Questions
+20 and 21 answered the same day: a window of its own over the viewport,
+stuck to the Objects panel; Excel read with the standard library.
 Replaces the metadata table of [step 3](03-modern-ui.md); step 3 is closed.
+
+**22d and 22e done 2026-11-23 in 4.45.0, 22f in 4.46.0; the step is
+finished.** 22d: the order of the columns, the hidden and the empty ones go
+into the session under the key of 28b and come back also in a table that
+is open; a Columns button hides and shows columns and adds counted ones
+(atoms, residues, chains, states, weight, charge; not sequence length);
+Follow shows only the object of the current row; the size of the window is
+kept with the main window's layout. 22e: the row of the object an atom was
+picked or clicked in becomes the current one. Measured at 150 %: the row
+of buttons needs 440 px; a real click in the viewport selected the row.
+22f: a column "stars" that is always there, after the name; the click rule
+recommended in question 57; the header is the property's name, lowercase.
+Checked: the picture in the real window, dark theme; the clicks through
+Qt's own mouse path in the test. Left out: the light theme, scales other
+than 150 %, a refresh time for the large table (its test still passes its
+limit of 100 ms).
+
+**22a done 2026-11-20 in 4.27.0.** Differences from the plan below:
+
+- The widget is a `QTreeWidget` with rows that compare by value, not a
+  `QTreeView` on a model with a proxy: it is what the Objects panel uses,
+  about a third of the code, and one poll of 1,000 objects with 20
+  properties takes 16 ms (the limit was 20). The model is the upgrade if
+  editing or 10,000 rows need it.
+- No Ctrl+T: it is "bond" in the viewport. The Table button and Display >
+  Panels open the window. Esc is not bound yet.
+- The window is placed by its visible area: under WSLg the frame has an
+  invisible margin of 25 px, which put the first version 50 px over the
+  panel. Measured in the real window: opens exactly over the viewport, its
+  right edge on the panel's left edge, and stays there when the main window
+  is moved or made wider.
+- Not exercised: a resize by the real mouse. The size is remembered from
+  the window system's resize event; a script cannot send one.
+- The size is not saved between sessions yet (the first size is the
+  viewport's each time).
+
+**22b done 2026-11-20 in 4.28.0** (cells, names, columns, copy, paste,
+Delete). Differences: Tab applies and moves to the cell below, not to the
+right: Qt's tree view walks rows. An edit is applied after Qt has closed the
+editor. Found on the way and fixed in 4.27.1: the core ended the program
+when a property was set again with another type.
+
+**22c done 2026-11-20 in 4.29.0** (`load_table`, `save_table`, Import and
+Export in the table, "Import table..." in the Open button). The Excel reader
+is 45 lines on `zipfile` and `xml.etree`. Checked against a workbook written
+by openpyxl 3.1.5 in a throwaway environment (not a dependency): numbers,
+text with a comma, non-ASCII text, booleans, an empty row, a second sheet
+that is ignored; a date arrives as its day number (46346), as the help
+says. Not checked: a file saved by Excel itself, which also stores the
+result of a formula (openpyxl does not). `load_table` has no `key`
+argument: `object_column` does that job. The words "true" and "false"
+become booleans; the core decides that.
+
+Open: 22d (column order and hidden columns in the session with 28b,
+computed columns, follow mode), 22e (a picked atom selects its row), the
+Columns menu to hide columns, the size of the window between sessions.
+**2026-11-23, draft 9: 22f adds the requested Stars column now; its old
+“Later” status is superseded.** Planned at 4.43.0; no new UI measurement or
+implementation in this run. Question 57 defines click behavior precisely.
 
 **A table with one row per object: row number, a dot that shows or hides the
 object, the name, then one column per property. Cells are edited in place,
-columns are added by hand or come from a CSV or Excel file. It is a dock at
-the bottom, opened by a Table button in the toolbar.**
+columns are added by hand or come from a CSV or Excel file. It is a window
+of its own that lies over the viewport with its right edge against the
+Objects panel, opened and closed by a Table button in the toolbar.**
 
 The pictures in `plan_images/` (Maestro's project table and entry list) are
 the model for the arrangement only: Row, In, Title, then properties, dark.
@@ -45,7 +107,7 @@ import and export, and the list of columns.
 
 | Part | Decision |
 | --- | --- |
-| Widget | `QTreeView` on a `QAbstractItemModel` (a tree, so group members nest as in the pictures), with a `QSortFilterProxyModel` for sorting and the filter box. New file `modules/pmg_qt/property_table.py`, dock `dock_table`, bottom area, tabbed with the command area. |
+| Widget | `QTreeView` on a `QAbstractItemModel` (a tree, so group members nest as in the pictures), with a `QSortFilterProxyModel` for sorting and the filter box. New file `modules/pmg_qt/property_table.py`. The window: see "Where the table lives". |
 | Row | One per molecular object, map and group, in the order of the Objects panel. Selections ("(sele)") are not rows. Row identity is the object name, never the row number: the number is only what is displayed and follows the sort. |
 | Row | The first column, 1 to n over the rows shown. Not stored. |
 | In | A dot, filled when the object is enabled. Click or Space toggles `enable` / `disable`, the same call as the dot of the Objects panel, so both agree at the next poll. Ctrl+click: show only this one (`disable all`, `enable name`). |
@@ -58,7 +120,7 @@ import and export, and the list of columns.
 | Look | The palette of the window, so it is dark with the dark theme and light with the light one; alternating row colors from the palette (`AlternateBase`), the blue of the menus for the selected rows. No hard-coded color. |
 | Selection | Selecting rows selects nothing in the viewport. Double click on the row number zooms on the object. Right click on a row: the same menu as in the Objects panel (`object_panel.context_menu`). |
 | Keyboard | Arrow keys, Tab and Shift+Tab between cells, F2 edit, Space toggles In, Delete empties cells, Ctrl+C and Ctrl+V copy and paste a block as tab-separated text (pasting from a spreadsheet fills cells). |
-| Refresh | Reads names and properties in the window's 0.5 s poll, only while the dock is shown, one call per poll that returns everything (a list of `(name, enabled, {property: value})`). Marked `ponytail:`; the upgrade is the change notification the Objects panel also waits for. |
+| Refresh | Reads names and properties in the window's 0.5 s poll, only while the window is shown, one call per poll that returns everything (a list of `(name, enabled, {property: value})`). Marked `ponytail:`; the upgrade is the change notification the Objects panel also waits for. |
 | Where the column list lives | Order, hidden columns and empty added columns are saved in the session under the key of [step 28](28-session-format.md) and restored with it. Column widths are window layout: `QSettings`. |
 
 ### Import
@@ -81,17 +143,39 @@ import and export, and the list of columns.
 as CSV (`csv` module). The Export button; Ctrl+C for a block. `.xlsx` is not
 written: every spreadsheet opens CSV.
 
+## Where the table lives (decided 2026-11-20)
+
+The answer to question 20: "a separate window that can be closed and
+resized; placed on the visualization, covering it, and it sticks to the
+Objects panel on the right side". None of the three options below; this
+replaces them.
+
+| Part | Decision |
+| --- | --- |
+| Kind of window | A floating `QDockWidget` named `dock_table` that cannot be docked (`setAllowedAreas(NoDockWidgetArea)`): a window of its own that stays above the main window, with a title bar, a close button and edges to resize. Being a dock widget, it is listed in Display > Panels, its Table button in the toolbar is its `toggleViewAction`, and the layout save keeps whether it was open. |
+| Where it opens | Over the viewport: the same top-left corner and the same height, its right edge on the left edge of the Objects panel. With the panel closed or floating, on the right edge of the viewport. It covers the picture; the picture is back when the table is closed or made smaller. |
+| Stuck to the panel | While the main window is moved or resized, or the Objects panel is made wider or narrower, the table's right edge follows the panel's left edge and its top follows the viewport. Width and height stay what the user made them, cut to the viewport's size when that is smaller. |
+| Coming unstuck | Dragging the table by its title bar to another place (another screen, for instance) frees it; it then keeps its place. Display > Panels > Reset Layout sticks it back. |
+| Size | Remembered in `QSettings` with the layout. One constant sets the first size (the whole viewport). |
+| Keyboard | Ctrl+T opens and closes it; Esc in the table gives the focus back to the command line without closing. |
+| How | An event filter on the main window and on the Objects dock (move, resize, show, hide) calls one function that places the table; about 25 lines. |
+
+To check in the real window under WSLg (X11): a floating dock stays above
+the main window and follows it without a visible lag; under Wayland a
+program cannot place its own windows, so there the table opens where the
+compositor puts it and "stuck" does nothing. That limit goes into the help.
+
 ## Options
 
-**Where the table lives** (question 20):
+**Where the table lives** (question 20, answered: none of these, see above):
 
 | | Option | Note |
 | --- | --- | --- |
-| A | **A dock of its own at the bottom; the Objects panel stays as it is. Recommended.** | Two views of the same objects: a narrow one with the action menus on the right, a wide one with the properties at the bottom, as Maestro has entry list and project table. Nothing that works is rebuilt. |
+| A | A dock of its own at the bottom; the Objects panel stays as it is. | Two views of the same objects: a narrow one with the action menus on the right, a wide one with the properties at the bottom, as Maestro has entry list and project table. Nothing that works is rebuilt. |
 | B | The table replaces the Objects panel; A, S, H, L, C become five columns. | One list instead of two, but the panel was rebuilt twice already, and a wide table on the right takes the viewport's room. |
 | C | A tab inside the Objects dock. | Too narrow for more than one property column. |
 
-**Excel** (question 21). A dependency needs the user's yes (`AGENTS.md` §6):
+**Excel** (question 21, answered 2026-11-20: A):
 
 | | Option | Note |
 | --- | --- | --- |
@@ -112,7 +196,7 @@ In the order I would build them; each is small and separate.
 | Color rows by a column | A gradient in the cell background for a numeric column, from the palette in use. | Later |
 | Select by value | Right click on a cell: "enable only rows with this value", "disable rows above/below". | Later |
 | Step through rows | Up and Down with "follow" checked shows only the current row's object: the way docking poses are looked at one by one. | Yes: it is the main use of the In column |
-| Stars | A 0 to 3 rating column, as in the picture. It is an integer property named `stars` drawn as stars. | Later |
+| Stars | A 0 to 3 rating column, an integer property named `stars`, drawn as three outlined/filled stars; see 22f. | Requested 2026-11-23; open, 22f |
 | 2D structure column | The ligand drawn in the row, from [step 24](24-ligand-2d.md)'s rdkit drawing. | Later, after 24 |
 | Plot two columns | A scatter plot. Needs a plotting library or own painting. | Skipped |
 
@@ -120,11 +204,12 @@ In the order I would build them; each is small and separate.
 
 | Slice | What | Files | Check |
 | --- | --- | --- | --- |
-| 22a | The dock with Row, In, Name and the properties that exist, read-only, sorted and filtered; the Table button. `split_states` keeps properties. | `property_table.py` (new), `pymol_qt_gui.py`, `action_toolbar.py`, `icons.py` + `table-2.svg`, the core's `split_states` | `testing/tests/api/property_table.py`: rows and nesting, In toggles, identity after rename and delete under a sort, an SDF's fields as columns; a test for `split_states` |
+| 22a | The window with Row, In, Name and the properties that exist, read-only, sorted and filtered; the Table button. `split_states` keeps properties. | `property_table.py` (new), `pymol_qt_gui.py`, `action_toolbar.py`, `icons.py` + `table-2.svg`, the core's `split_states` | `testing/tests/api/property_table.py`: rows and nesting, In toggles, identity after rename and delete under a sort, an SDF's fields as columns; a test for `split_states` |
 | 22b | Editing cells, adding, renaming and deleting columns, copy and paste. | `property_table.py` | Type rules, multi-row edit, delete; paste of a 2 x 3 block |
 | 22c | `load_table`, `save_table`, CSV; the Excel option that was chosen. | `tables.py` (new), `api.py`, `keywords.py`, `_gui.py` | Round trip CSV; match, skip and overwrite rules; a hand-made `.xlsx` in `testing/data` |
 | 22d | Column list in the session; computed columns; follow mode. | `property_table.py`, the session task of step 28 | A session keeps order and hidden columns; counts against `count_atoms` |
 | 22e | A picked atom selects its row (carried over from step 3). | `property_table.py`, `object_panel.py` | Simulated pick in the real window |
+| 22f | Stars: three clickable outlines, 0–3 integer rating, persistence and numeric table operations. | `property_table.py`, `tables.py` only if shared validation is needed | Every rating/click, keyboard, sort/filter/paste/import/export and session round trip |
 
 Real window at 150 % for each slice: 1,000 objects with 20 properties must
 scroll and sort without a pause (measure the poll; the limit is 20 ms).
@@ -137,7 +222,49 @@ Step 3 closes with this plan. Its open rows go here:
 | --- | --- |
 | A picked atom selects its row | 22e |
 | Rows moved by dragging | [Step 23](23-rename-in-panel.md), 23b |
-| Sequence viewer text and scene buttons still drawn by the core | Question 31 of the roadmap: keep as they are, or delete the core's scene buttons (the Scenes dock replaced them). |
+| Sequence viewer text and scene buttons still drawn by the core | Scene buttons deleted ([17f](17-legacy-ui.md)). The 2026-11-20 decision to keep sequence work at the strip is superseded by [step 33](33-sequence-window.md), requested 2026-11-23; the strip remains usable during that work. |
+
+## 22f — Stars
+
+Put **Stars** after Name by default. Always draw three star outlines for a
+molecular object: 0 = ☆☆☆, 1 = ★☆☆, 2 = ★★☆, 3 = ★★★. Fill uses the
+theme accent with adequate contrast on selected and ordinary rows; outline
+versus fill conveys the value without relying on color. Do not label it
+“Starts”. Groups/maps remain unrated because their properties are not
+supported by the current core.
+
+Store the integer in the existing object property `stars`; missing means
+zero on screen, without writing to every object just to display it. There
+must not be a duplicate generic `stars` column. Use a small
+`QStyledItemDelegate` on the existing `QTreeWidget` for paint and hit testing,
+not three button widgets per row. Keep row identity stable under sorting.
+
+Question 57, two possible readings of the request:
+
+- **Rating by position (recommended):** clicking empty star N sets N;
+  clicking filled star N sets N−1. Example: ★★★, click the third → ★★☆;
+  click the first → ☆☆☆. Filled stars remain contiguous from the left.
+- **One step per click:** any empty star adds one, any filled star removes
+  one, regardless of its position. This follows “add/remove a star” literally
+  but differs from a usual rating control.
+
+Keyboard: 0–3 assigns the value; Delete clears to the missing/zero state;
+the focused cell exposes “Stars: N of 3” to accessibility. Mouse editing
+uses the same validation/set-property path as keyboard/paste. Sort/filter
+uses the integer, clipboard/CSV uses 0–3, not star glyphs. Reject invalid
+new values (negative, fractional, above 3 or nonnumeric). A pre-existing
+invalid property is shown as invalid and preserved until the user edits it,
+not silently clamped or overwritten. Session persistence already comes
+from object properties; 22f does not need a second data store or wait for
+28b, though column layout later uses 22d.
+
+Tests extend `testing/tests/api/property_table.py` and `tables.py`: every
+rating, selected click rule, keyboard, rename/reorder under sort, missing
+and malformed imported values, multiple-row paste, CSV and PSE/PSEX reload.
+Check both themes and fractional scale with a real mouse; record refresh
+time on the existing large-table fixture. Update help and `ChangeLog` with
+an `X` version. Skip hover animation, half-stars and a separate rating API:
+`cmd.set_property('stars', 2, 'object')` already expresses the operation.
 | Spacing of the remaining dialogs | Dropped as a roadmap row: fixed when a dialog is touched or reported. |
 
 ## Skipped

@@ -60,6 +60,22 @@ pixi run -e py313 pip install --config-settings json=True .
 pixi run -e py313 pymolish
 ```
 
+## Optional sequence alignment
+
+The sequence window works without MAFFT; its **Align sequences** action and
+`sequence_align` command require a local MAFFT installation. No sequences
+are uploaded. On Debian/Ubuntu, install `mafft` from the system package
+manager. For macOS and Windows, use the
+[official downloads](https://mafft.ddbj.nig.ac.jp/alignment/software/).
+Keep the Windows distribution together and choose its `mafft.bat` entry
+point with the window's **MAFFT…** button. On any platform, an executable
+on PATH is discovered automatically; the chooser overrides it.
+
+MAFFT is not bundled or downloaded by pymolish. The Linux integration was
+tested with MAFFT 7.505; Windows batch launch and macOS still need native
+platform checks. MAFFT's core uses a BSD-style license; separately offered
+extensions have other terms and are neither needed nor distributed here.
+
 ## Working on the code
 
 An editable install: Python edits under `modules/` take effect on the next

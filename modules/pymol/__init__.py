@@ -531,6 +531,12 @@ if 'DISPLAY' in os.environ:
 
 ########## C MODULE ############################
 
+# Idle OpenMP threads sleep at once instead of spinning first: the same wall
+# time and a fifth less CPU time on a surface build (step 1b). The OpenMP
+# library reads the variable when it loads, which is with the core.
+if "GOMP_SPINCOUNT" not in os.environ:
+    os.environ.setdefault("OMP_WAIT_POLICY", "passive")
+
 import pymol._cmd
 _cmd = sys.modules['pymol._cmd']
 

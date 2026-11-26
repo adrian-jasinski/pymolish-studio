@@ -1,6 +1,6 @@
 import pytest
 import pymol
-from pymol import menu, cmd, testing
+from pymol import menu, cmd, stored, testing
 
 
 def _make_objects(n=2):
@@ -243,14 +243,23 @@ def testPresets(request):
     assert labels == [
         'default', 'classified', 'technical', 'ball and stick',
         'b factor putty', 'pretty', 'publication',
-        'glass', 'cartoon wire', 'cartoon spring',
-        'illustration', 'ligands',
+        'glass', 'balls in glass', 'cartoon wire', 'cartoon spring',
+        'cartoon cylinders', 'illustration', 'ligands',
         'ligand sites', 'protein interface', 'protein-protein interaction',
         'antibody and antigen', 'cartoon transparency',
         'show solvent',
-        'standard light', 'figure', 'soft', 'flat', 'comic', 'sketch',
-        'x-ray']
+        'theme', 'light', 'floor']
     assert [row[1] for row in m if row[0] == 2] == ['Preset:']
+    # 30d: themes, lights and the floor each have a submenu
+    def sub(name):
+        assert d[name][0][0] == 2  # under a caption
+        return [row[1] for row in d[name] if row[0] == 1]
+    assert sub('theme') == ['clay', 'blue', 'sage', 'mint', 'night']
+    assert sub('light') == [
+        'standard light', 'figure', 'soft', 'flat', 'comic', 'sketch',
+        'x-ray', 'studio', 'top light', 'soft shadow', 'no fog']
+    assert sub('floor') == ['floor', 'floor with mirror image', 'no floor']
+    lights = _to_dict(d['light'])
     from pymol import preset
     request.addfinalizer(lambda: setattr(preset, 'solvent', False))
     cmd.do(d['show solvent'], echo=0)
@@ -258,9 +267,15 @@ def testPresets(request):
     cmd.do(d['glass'], echo=0)
     assert cmd.count_atoms('rep surface') > 0
     request.addfinalizer(lambda: preset.look('default'))
-    cmd.do(d['comic'], echo=0)
+    cmd.do(lights['comic'], echo=0)
     assert cmd.get_setting_int('ray_trace_mode') == 3
-    cmd.do(d['standard light'], echo=0)
+    # 15e: the fog row is on top of any look; a look with an outline has none
+    fog = _to_dict(_to_dict(menu.presets(cmd, sele))['light'])
+    assert 'fog' in fog and not cmd.get_setting_int('depth_cue')
+    cmd.do(fog['fog'], echo=0)
+    assert cmd.get_setting_int('depth_cue')
+    assert cmd.get_setting_int('ray_trace_mode') == 3  # the look stays
+    cmd.do(lights['standard light'], echo=0)
     assert cmd.get_setting_int('ray_trace_mode') == 0
     # cartoon transparency lasts until the next preset
     cmd.do(_to_dict(d['cartoon transparency'])['50%'], echo=0)
@@ -291,13 +306,6 @@ def testRampAction():
 def _testRampColor(sele):
     m = menu.ramp_color(cmd, sele)
     _eval_first(m)
-
-
-def testSceneMenu():
-    _make_scenes()
-    m = menu.scene_menu(cmd, '001')
-    d = _to_dict(m)
-    _eval_first(d['update'])
 
 
 def testSeleAction():
@@ -360,7 +368,11 @@ def testShowHide():
     rows = {row[1].strip(): row for row in show if row[0] == 1}
     assert 'as' not in rows and 'valence' not in rows
     assert list(rows)[-2:] == ['hydrogens', 'more']
-    assert len(rows) == 15 and len(hide) == 17
+    assert len(rows) == 13 and len(hide) == 15  # no wire, sticks, nb_spheres
+    cmd.do(rows['ball and stick'][3], echo=0)
+    assert cmd.count_atoms('rep ball_and_stick') == cmd.count_atoms('m1')
+    cmd.do(hide['ball and stick'], echo=0)
+    assert cmd.count_atoms('rep ball_and_stick') == 0
     for more in (rows['more'][2], hide['more']):
         assert {'cell', 'valence', 'flag ignore'} <= set(_to_dict(more))
     for menu_ in (show, menu.mol_hide(cmd, 'm1'), menu.mol_as(cmd, 'm1')):
@@ -370,8 +382,9 @@ def testShowHide():
                     compile(command, 'menu', 'exec')
 
     # only the cartoon row has a submenu
-    assert [name for name, row in rows.items() if len(row) > 3] == ['cartoon']
-    cmd.do(rows['sticks'][2], echo=0)
+    assert [name for name, row in rows.items() if len(row) > 3] == ['ball and stick', 'cartoon']
+    assert not {'wire', 'sticks', 'nb_spheres'} & (set(rows) | set(hide))
+    cmd.do(rows['licorice'][2], echo=0)
     assert cmd.count_atoms('rep sticks') and cmd.count_atoms('rep lines')
     cmd.hide('lines')
 
@@ -497,3 +510,35 @@ def testVolColor():
     _eval_first(m)
     m = menu.volume_show(cmd, sele)
     _eval_first(m)
+
+
+def testBallAndStickMenus():
+    # S: a click on the row shows it, its hover menu has only its sizes;
+    # H hides only it; C colors only it
+    cmd.fragment('ala', 'm1')
+    cmd.show_as('lines')
+    cmd.show('spheres', 'name N')
+    cmd.set('sphere_scale', 0.7)
+    row = [r for r in menu.mol_show(cmd, 'm1') if r[0] == 1 and r[1] == 'ball and stick'][0]
+    cmd.do(row[3], echo=0)  # the click
+    assert cmd.count_atoms('rep ball_and_stick') == 10
+    assert cmd.get_setting_float('ball_and_stick_scale', 'm1') == pytest.approx(0.25)
+    sub = _to_dict(row[2])
+    assert list(sub) == ['ball size', 'bond thickness']
+    cmd.do(_to_dict(sub['ball size'])['large 0.50'], echo=0)
+    cmd.do(_to_dict(sub['bond thickness'])['thick 0.18'], echo=0)
+    cmd.do(_to_dict(_to_dict(_to_dict(menu.mol_color(cmd, 'm1'))['by rep'])['ball and stick'])['by element'], echo=0)
+    assert cmd.get_setting_float('ball_and_stick_scale', 'm1') == 0.5
+    assert cmd.get_setting_float('ball_and_stick_bond_radius', 'm1') == pytest.approx(0.18)
+    assert cmd.get('ball_and_stick_color', 'm1') == 'atomic'  # on the object
+    # nothing of lines and spheres changed
+    assert cmd.count_atoms('rep lines') == 10 and cmd.count_atoms('rep spheres') == 1
+    assert cmd.get_setting_float('sphere_scale') == pytest.approx(0.7)
+    # hiding lines leaves it, hiding it leaves lines
+    cmd.hide('lines')
+    assert cmd.count_atoms('rep ball_and_stick') == 10
+    cmd.show('lines')
+    cmd.do(_to_dict(menu.mol_hide(cmd, 'm1'))['ball and stick'], echo=0)
+    assert cmd.count_atoms('rep ball_and_stick') == 0 and cmd.count_atoms('rep lines') == 10
+    colors = _to_dict(menu.mol_color(cmd, 'm1'))
+    assert 'ball and stick only' not in colors and 'by rep' in colors

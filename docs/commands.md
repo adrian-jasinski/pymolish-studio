@@ -65,6 +65,31 @@ rdkit: the downloadable builds have it, a pip install needs
 | Command | What it does | Example |
 | --- | --- | --- |
 | `search_sequence pattern [, name [, selection]]` | Selects the residues of every protein chain that match a sequence or a regular expression. | `search_sequence N[^P][ST], sequon` |
+| `sequence_align filename [, output [, executable]]` | Aligns FASTA with local MAFFT; returns aligned FASTA and optionally writes it. No coordinates change. | `sequence_align sequences.fasta, aligned.fasta` |
+
+Display > Panels > Sequence alignment opens a separate resizable window.
+It accepts loaded chains and FASTA, aligns selected rows (all rows when none
+are selected), and shows observed secondary structure above the letters.
+Choose a reference and **Fit structures** to move mobile objects with
+`align`, `super` or `cealign`; FASTA-only rows cannot be fitted. Each object
+can appear only once in a fit batch. Results list RMSD and aligned counts.
+Undo restores the whole session snapshot, including changes made after the
+fit; it is unavailable above the existing snapshot limit of 600,000 atoms.
+Stop cancels pending work; a native fit already running finishes first,
+and completed structure changes remain undoable.
+
+Select residues in either view to highlight them in the other. Search accepts
+sequence text or a residue number (including insertion codes). Export saves
+FASTA or identity statistics as CSV. Identity counts positions where both
+rows have a known residue, excluding gaps and X/?/*; conservation applies
+the same exclusions per column. Secondary structure is read from `ss`;
+**Assign SS** explicitly recomputes it with `dss`. FASTA has no observed
+secondary structure. Alignment rows and their reference survive session
+save/load; deleted or renamed objects are marked unmapped. Remove the affected row and
+add its chain again to refresh sequence content after editing a structure.
+
+The command's filename arguments use normal filename completion. See
+[MAFFT installation](install.md#optional-sequence-alignment) for the backend.
 
 ## Repair
 
@@ -84,6 +109,16 @@ them, a pip install needs `pip install 'pymolish[fix]'`.
 | Command | What it does | Example |
 | --- | --- | --- |
 | `palette [name [, recolor]]` | Sets the colors that new objects cycle through. | `palette vivid` |
+| `load_table filename [, object_column]` | Sets object properties from a CSV, TSV or Excel (`.xlsx`, first sheet) file: one row per object, matched by name; new headers become new properties. | `load_table scores.csv` |
+| `ligand_2d [ligand [, cutoff [, filename]]]` | Draws a ligand flat with the residues around it and its contacts (hydrogen bonds, salt bridges, ring stacking), as SVG or PNG; without a file name it lists the contacts. Needs rdkit. | `ligand_2d resn CAU, filename=lig.svg` |
+| `stage [mode [, selection]]` | A floor under what is shown; ray traced, the molecule casts its shadow on it. `stage mirror` adds a mirror image, `stage off` removes it. | `stage` |
+| `show ball_and_stick, sele` / `hide` / `as` / `toggle` | A representation of its own: a ball on every atom (0.25 of its radius, as `sphere_scale` 0.25) and its bonds as thin sticks that show single, double, triple and aromatic order. Lines, sticks and spheres neither show nor hide it, and it changes none of their settings. Select with `rep ball_and_stick`. | `show ball_and_stick, organic` |
+| `set ball_and_stick_scale / ball_and_stick_bond_radius / ball_and_stick_color, value, sele` | Ball size (0.25), bond radius (0.12) and color of `ball_and_stick` only; `atomic` colors by element; `unset` goes back. In the panel: S > ball and stick (a click shows it; the hover menu has ball size and bond thickness), and C > by rep > ball and stick. | `set ball_and_stick_color, atomic, resn STU` |
+| `color_cpk [selection [, representation]]` | Colors the atoms of the selected residues by element in the CPK colors of RasMol (carbon light grey, oxygen red, nitrogen light blue, ...). With `ball_and_stick` as representation only the balls and sticks of that representation are colored; the atoms keep their colors. | `color_cpk organic` |
+| `ligand_next [selection [, step]]` | Goes to the next ligand (`step` -1: the previous one): shows it as ball_and_stick, the residues within 4 A as sticks and the polar contacts to its protein as dashes, and zooms on the site. The next call takes back what this one turned on. `step=0` clears. Ctrl-Shift-M and Ctrl-Shift-H. | `ligand_next` |
+| `save_table filename [, selection]` | Writes the properties of the objects as CSV. | `save_table scores.csv` |
+| `ask [prompt]` | Opens the Chat tab with a draft prompt; Send starts the conversation with the provider chosen there. Needs the extra `ai`, and an API key (Anthropic, OpenAI) or a sign-in in the browser (ChatGPT plan, OpenRouter); or, without the extra, the provider Claude Code: the Claude Code installed on this computer and the Claude account it is signed in to. | `ask color the ligand by element` |
+| `agent_server [action [, port]]` | `on` lets an AI agent on this computer (Claude Code, Codex) work in this session through MCP: the same reviewed operations as the Chat tab, on 127.0.0.1 only, with a token (`PYMOLISH_AGENT_TOKEN`, or a new one each run). It prints the line that connects each client. `off` closes it; nothing listens before `on`. Also the AI assistant button of the toolbar. | `agent_server on` |
 
 ## PyMOL commands that needed the commercial build
 

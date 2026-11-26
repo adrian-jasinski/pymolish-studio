@@ -185,16 +185,12 @@ Rep *RepRibbonNew(CoordSet * cs, int state)
 {
   PyMOLGlobals *G = cs->G;
   ObjectMolecule *obj;
-  int a, b, a1, a2, *i, *s, *at, *seg, nAt, *atp;
+  int a, b, a1, a2, *i, *s, nAt, *atp;
   float *v, *v1, *v2, *v3;
-  float *pv = nullptr;
-  float *dv = nullptr;
-  float *nv = nullptr;
-  float *tv = nullptr;
+  std::vector<float> dv, nv, dl, tv;
 
   float f0, f1, f2, f3, f4;
   float *d;
-  float *dl = nullptr;
   int nSeg;
   int sampling;
   float power_a = 5;
@@ -236,13 +232,12 @@ Rep *RepRibbonNew(CoordSet * cs, int state)
   /* find all of the CA points */
 
   auto const nAtIndex = cs->getNIndex(); // was NAtIndex
-  at = pymol::malloc<int>(nAtIndex * 2);
-  pv = pymol::malloc<float>(nAtIndex * 6);
-  seg = pymol::malloc<int>(nAtIndex * 2);
+  std::vector<int> at(nAtIndex * 2), seg(nAtIndex * 2);
+  std::vector<float> pv(nAtIndex * 6);
 
-  i = at;
-  v = pv;
-  s = seg;
+  i = at.data();
+  v = pv.data();
+  s = seg.data();
 
   nAt = 0;
   nSeg = 0;
@@ -380,15 +375,15 @@ Rep *RepRibbonNew(CoordSet * cs, int state)
   if(nAt) {
     /* compute differences and normals */
 
-    s = seg;
-    v = pv;
+    s = seg.data();
+    v = pv.data();
 
-    dv = pymol::malloc<float>(nAt * 6);
-    nv = pymol::malloc<float>(nAt * 6);
-    dl = pymol::malloc<float>(nAt * 2);
-    v1 = dv;
-    v2 = nv;
-    d = dl;
+    dv.resize(nAt * 6);
+    nv.resize(nAt * 6);
+    dl.resize(nAt * 2);
+    v1 = dv.data();
+    v2 = nv.data();
+    d = dl.data();
 
     for(a = 0; a < (nAt - 1); a++) {
       if(*s == *(s + 1)) {
@@ -413,11 +408,11 @@ Rep *RepRibbonNew(CoordSet * cs, int state)
 
     /* compute tangents */
 
-    s = seg;
-    v = nv;
+    s = seg.data();
+    v = nv.data();
 
-    tv = pymol::malloc<float>(nAt * 6 + 6);
-    v1 = tv;
+    tv.resize(nAt * 6 + 6);
+    v1 = tv.data();
 
     *(v1++) = *(v++);           /* first segment */
     *(v1++) = *(v++);
@@ -454,12 +449,12 @@ Rep *RepRibbonNew(CoordSet * cs, int state)
   I->primitiveCGO = 0;
 
   if(nAt) {
-    v1 = pv;                    /* points */
-    v2 = tv;                    /* tangents */
-    v3 = dv;                    /* direction vector */
-    d = dl;
-    s = seg;
-    atp = at;
+    v1 = pv.data();                    /* points */
+    v2 = tv.data();                    /* tangents */
+    v3 = dv.data();                    /* direction vector */
+    d = dl.data();
+    s = seg.data();
+    atp = at.data();
 
     I->primitiveCGO = CGONew(G);
     CGOSpecialWithArg(I->primitiveCGO, LINE_LIGHTING, 0.f);
@@ -574,19 +569,10 @@ Rep *RepRibbonNew(CoordSet * cs, int state)
     CGOEnd(I->primitiveCGO);
     CGOSpecialWithArg(I->primitiveCGO, LINE_LIGHTING, 1.f);
     CGOStop(I->primitiveCGO);
-
-    FreeP(dv);
-    FreeP(dl);
-    FreeP(tv);
-    FreeP(nv);
   } else {
     delete I;
     I = nullptr;
   }
-
-  FreeP(at);
-  FreeP(seg);
-  FreeP(pv);
 
   return (Rep *) I;
 }

@@ -69,6 +69,7 @@ enum cRep_t {
   cRepDihedral,        // 18
   cRepEllipsoid,       // 19
   cRepVolume,          // 20
+  cRepBallAndStick,    // 21: balls on thin sticks, with settings of its own
   // rep count
   cRepCnt
 };
@@ -102,6 +103,7 @@ using cRepBitmask_t = int;
 #define cRepDihedralBit        (1 << 18)
 #define cRepEllipsoidBit       (1 << 19)
 #define cRepVolumeBit          (1 << 20)
+#define cRepBallAndStickBit    (1 << 21)
 
 /* Add other reps here.  Don't forget to
  * update modules/constants.py::repres{}
@@ -115,7 +117,8 @@ using cRepBitmask_t = int;
 // all reps which can be shown for atoms
 constexpr cRepBitmask_t cRepsAtomMask = (cRepCylBit | cRepSphereBit | cRepSurfaceBit |
     cRepLabelBit | cRepNonbondedSphereBit | cRepCartoonBit | cRepRibbonBit | \
-    cRepLineBit | cRepMeshBit | cRepDotBit | cRepNonbondedBit | cRepEllipsoidBit);
+    cRepLineBit | cRepMeshBit | cRepDotBit | cRepNonbondedBit | cRepEllipsoidBit |
+    cRepBallAndStickBit);
 
 // all reps which can be shown for objects
 constexpr cRepBitmask_t cRepsObjectMask = (cRepSurfaceBit | cRepMeshBit | cRepDotBit |

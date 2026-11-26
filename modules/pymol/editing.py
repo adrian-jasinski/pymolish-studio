@@ -233,6 +233,12 @@ SEE ALSO
                 if is_error(r):
                     break
 
+                # the properties of the state (the data fields of an SDF
+                # record) go with it
+                for prop in _self.get_property_list(object, a) or ():
+                    _self.set_property(
+                        prop, _self.get_property(prop, object, a), name)
+
         _self.delete(sele)
         if _self._raising(r,_self): raise pymol.CmdException
         return r
@@ -508,8 +514,11 @@ SEE ALSO
         '''
 DESCRIPTION
 
-    "undo" restores the previous conformation of the object currently
-    being edited.
+    "undo" takes back the last row picked from the preset menu: colors,
+    representations, settings, light, background and view are as they
+    were before it, and so is everything done since. Without such a row
+    it restores the previous conformation of the object currently being
+    edited.
 
 USAGE
 
@@ -519,6 +528,10 @@ SEE ALSO
 
     redo, push_undo
     '''
+        from . import snapshots
+        if snapshots.step(True, _self=_self):
+            print(" Undo: back to before the last preset.")
+            return
         r = DEFAULT_ERROR
         try:
             _self.lock(_self)
@@ -561,8 +574,8 @@ SEE ALSO
         '''
 DESCRIPTION
 
-    "redo" reapplies the conformational change of the object currently
-    being edited.
+    "redo" takes back the last "undo": of a row of the preset menu, or
+    else of a conformational change of the object currently being edited.
 
 USAGE
 
@@ -572,6 +585,10 @@ SEE ALSO
 
     undo, push_undo
     '''
+        from . import snapshots
+        if snapshots.step(False, _self=_self):
+            print(" Redo: back to before the last undo.")
+            return
         r = DEFAULT_ERROR
         try:
             _self.lock(_self)

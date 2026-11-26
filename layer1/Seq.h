@@ -78,6 +78,7 @@ struct CSeq : public Block {
   int Size {};
   int VisSize {};
   int Changed {};
+  int Serial {}; //!< counts the rebuilds of Row, for the window's Sequence tab
   bool Dirty { true };
   int LineHeight { 13 };
   int CharWidth { 8 };
@@ -107,5 +108,7 @@ void SeqSetRow(PyMOLGlobals * G, std::vector<CSeqRow>&& row, int nRow);
 void SeqDirty(PyMOLGlobals * G);        /* sequence dirty -- need to update selections */
 void SeqChanged(PyMOLGlobals * G);      /* sequence changed -- need to rebuild */
 void SeqUpdate(PyMOLGlobals * G);
+void SeqPanelMouse(PyMOLGlobals* G, int kind, int button, int row_num,
+    int char_num, int mod);
 
 #endif

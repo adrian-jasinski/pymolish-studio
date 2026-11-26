@@ -31,7 +31,7 @@ def load_dialog(parent, fname, **kwargs):
     elif format == 'brix':
         load_map_dialog(parent, fname, 'o')
     else:
-        if format in ('pse', 'psw') and not ask_partial(parent, kwargs, fname):
+        if format in ('pse', 'psw', 'psex') and not ask_partial(parent, kwargs, fname):
             return
 
         if format in ('pml', 'py', 'pym'):

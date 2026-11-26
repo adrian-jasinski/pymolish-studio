@@ -35,7 +35,6 @@ struct RepDot : Rep {
 
   float dotSize;
   float *V = nullptr;
-  float *VC = nullptr;
   float *A = nullptr;                     //!< area
   float *VN = nullptr;                    //!< vector normal
   int *T = nullptr;                       //!< custom type

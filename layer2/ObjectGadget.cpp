@@ -312,7 +312,7 @@ static int ObjectGadgetGSetFromPyList(
   if (ok)
     ok = PyList_Check(list);
   if (ok) {
-    VLACheck(I->GSet, GadgetSet*, I->NGSet);
+    I->GSet.check(I->NGSet);
     for (a = 0; a < I->NGSet; a++) {
       if (ok) {
         auto* val = PyList_GetItem(list, a);

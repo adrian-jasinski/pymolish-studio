@@ -1,9 +1,11 @@
 """
-Action toolbar above the viewport: what a click selects, undo/redo, the view
+Action toolbar above the viewport: open a file, what a click selects, undo/redo, the view
 actions, presets, the object color palette, the background, and on the right
 the panels, the render popup and the UI scale. Every button has a line icon; undo and redo
 show only that. Replaces the grid of quick buttons that sat next to the log.
 """
+
+import random
 
 import pymol
 from pymol import menu as menus
@@ -49,6 +51,35 @@ BACKGROUND_SETTINGS = (
 )
 # toolbar icons: side in pixels, and line width on the 24 px grid of the
 # drawings (menus use 16 and 1.5)
+# Quick select: (letter, what it selects in words, selection expression).
+# The first group are the chips of the bar, the second the rows of "...".
+KINDS = (
+    ("P", "protein", "polymer.protein"),
+    ("L", "ligands", "organic"),
+    ("S", "water", "solvent"),
+)
+MORE_KINDS = (
+    ("Nucleic acid", "polymer.nucleic"),
+    ("Ions and metals", "inorganic"),
+    None,  # the chains of the objects that are switched on go here
+    ("Backbone", "backbone"),
+    ("Side chains", "sidechain"),
+    ("Hydrogens", "hydro"),
+    None,
+    ("Near the selection, 5 \u00c5", "byres (sele around 5)"),
+    ("Invert", "not sele"),
+)
+MAX_CHAINS = 20
+# Rock menu: (name, sweep_mode, spin); spin turns all the way round. sweep_mode
+# picks the axis: 0 y, 1 x, 2 z (Scene.cpp SceneUpdateCameraRock).
+ROCKS = (
+    ("Rock", 0, False),
+    ("Spin about X", 1, True),
+    ("Spin about Y", 0, True),
+    ("Spin about Z", 2, True),
+)
+RANDOM_DEG = (15, 180)  # "Random" turns this far, then about another axis
+SPIN_DEG_PER_S = 10 / 0.75  # at sweep_speed 1 (Scene.cpp SceneUpdateCameraRock)
 ICON = 20
 STROKE = 2
 ACCENT = "#1e4fb8"  # the A button of the Objects panel; also in pymol.sty
@@ -102,11 +133,12 @@ def _strip(colors):
 
 
 class ActionToolbar(QtWidgets.QToolBar):
-    def __init__(self, cmd, setting_callbacks, panels=(), more=()):
+    def __init__(self, cmd, setting_callbacks, panels=(), more=(), files=()):
         """setting_callbacks maps a setting index to callables the window
         runs with the new value when that setting changes. panels and more
         are (label, callback or QMenu) pairs for the right side and for the
-        More menu."""
+        More menu. files are such pairs for the Open button, None for a
+        separator; a click on the button itself runs the first."""
         super().__init__("Actions")
         self.setObjectName("toolbar_actions")
         self.setMovable(False)
@@ -115,6 +147,20 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.cmd = cmd
         self._icons = {}  # button or action -> icons.LABELS key
         index = cmd.setting._get_index
+
+        if files:
+            self.open = self._menu_button(
+                "Open", "Open a file", files[0][1], icon="open file"
+            )
+            self.open.setToolButtonStyle(Style.ToolButtonIconOnly)
+            for row in files:
+                if row is None:
+                    self.open.menu().addSeparator()
+                elif isinstance(row[1], QtWidgets.QMenu):
+                    self.open.menu().addMenu(row[1])  # under its own title
+                else:
+                    self.open.menu().addAction(*row)
+            self.addSeparator()
 
         self.selecting = self._menu_button(
             "", "What a click in the viewport selects", icon="select"
@@ -128,6 +174,44 @@ class ActionToolbar(QtWidgets.QToolBar):
         setting_callbacks[index("mouse_selection_mode")].append(self._show_selecting)
         self._show_selecting(cmd.get_setting_int("mouse_selection_mode"))
 
+        # Quick select: one click selects a kind of molecule in the objects
+        # that are switched on. One widget, so the chips stand close.
+        chips = QtWidgets.QWidget()
+        row = QtWidgets.QHBoxLayout(chips)
+        row.setContentsMargins(0, 0, 0, 0)
+        row.setSpacing(2)
+        self.chips = {}
+
+        def chip(text, tip, run=None):
+            button = QtWidgets.QToolButton(objectName="chip")
+            button.setText(text)
+            button.setToolTip(tip)
+            button.setToolButtonStyle(Style.ToolButtonTextOnly)
+            if run:
+                button.clicked.connect(run)
+            row.addWidget(button)
+            self.chips[text] = button
+            return button
+
+        hint = " (Shift adds, Ctrl takes away)"
+        for letter, what, expression in KINDS:
+            chip(
+                letter,
+                "Select %s%s" % (what, hint),
+                lambda _=False, e=expression, w=what: self.quick_select(e, w),
+            )
+        dots = chip("\u22ef", "Select more: chains, nucleic acid, ions ...")
+        dots.setMenu(QtWidgets.QMenu(dots))
+        dots.setPopupMode(Popup.InstantPopup)
+        dots.menu().aboutToShow.connect(self._fill_kinds)
+        chip(
+            "All", "Select everything" + hint, lambda: self.quick_select("all", "atoms")
+        )
+        none = chip("None", "Select nothing", self.select_nothing)
+        none.setToolButtonStyle(Style.ToolButtonIconOnly)
+        self._icons[none] = "select nothing"
+        self.addWidget(chips)
+
         self.addSeparator()
         for text, run in (("Undo", cmd.undo), ("Redo", cmd.redo)):
             # the name stays the tooltip and the accessible name
@@ -135,9 +219,7 @@ class ActionToolbar(QtWidgets.QToolBar):
             button.setToolButtonStyle(Style.ToolButtonIconOnly)
         self.addSeparator()
 
-        self.zoom = self._menu_button(
-            "Zoom", "Zoom on what is visible", self._zoom_visible
-        )
+        self.zoom = self._menu_button("Zoom", "Zoom")
         self.zoom.menu().addAction("Visible", self._zoom_visible)
         for label, command in (
             ("Everything", "zoom animate=1"),
@@ -146,17 +228,25 @@ class ActionToolbar(QtWidgets.QToolBar):
             ("Reset view", "reset"),
         ):
             self.zoom.menu().addAction(label, lambda c=command: cmd.do(c, echo=0))
-        orient = self._action("Orient", lambda: cmd.orient(animate=1.0))
-        self.rock = self._action("Rock", cmd.rock)
-        self.rock.setCheckable(True)
+        orient = self._action("Orient", self._orient_visible)
+        self.rock = self._menu_button("Rock", "Rock or spin the view")
+        self.rock.setCheckable(True)  # blue while it turns
+        self._rock_angle = None  # sweep_angle of the rock, kept while spinning
+        self._random = QtCore.QTimer(self, singleShot=True)
+        self._random.timeout.connect(self._random_turn)
+        menu = self.rock.menu()
+        for name, mode, spin in ROCKS:
+            menu.addAction(name, lambda m=mode, s=spin: self._set_rock(m, s))
+        menu.addAction("Random", self._random_turn)
+        menu.addSeparator()
+        menu.addAction("Stop", lambda: cmd.rock(0))
         # The view actions show only their icon: the name is the tooltip and
-        # the accessible name. The room goes to the texts of Palette and
-        # Background, which need the explanation more.
+        # the accessible name.
+        self.widgetForAction(orient).setToolButtonStyle(Style.ToolButtonIconOnly)
         self.zoom.setToolButtonStyle(Style.ToolButtonIconOnly)
-        for action in (orient, self.rock):
-            self.widgetForAction(action).setToolButtonStyle(Style.ToolButtonIconOnly)
+        self.rock.setToolButtonStyle(Style.ToolButtonIconOnly)
         self.rock.setChecked(bool(cmd.get_setting_int("rock")))
-        setting_callbacks[index("rock")].append(lambda v: self.rock.setChecked(bool(v)))
+        setting_callbacks[index("rock")].append(self._show_rock)
 
         self.presets = self._menu_button(
             "Presets", "A preset for everything, a look for the scene"
@@ -164,8 +254,11 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.presets.menu().aboutToShow.connect(self._fill_presets)
 
         self.colors = self._menu_button(
-            "Palette", "Colors of objects and chains", icon="color"
+            "Palette", "Palette: colors of objects and chains", icon="color"
         )
+        # one row for all buttons: only Residues, Presets and the
+        # scale keep a text (docs/plans/26-toolbar-buttons.md, 26d)
+        self.colors.setToolButtonStyle(Style.ToolButtonIconOnly)
         # The palettes the user defined here earlier. Like the saved choice
         # below, not with -k, which means no user configuration.
         if pymol.invocation.options.pymolrc is not None:
@@ -210,6 +303,7 @@ class ActionToolbar(QtWidgets.QToolBar):
             cmd.palette(saved)
 
         self.background = self._menu_button("Background", "Background color")
+        self.background.setToolButtonStyle(Style.ToolButtonIconOnly)
         menu = self.background.menu()
         _caption(menu, "Background:")
         self._backgrounds = []  # (action, top, bottom)
@@ -224,7 +318,7 @@ class ActionToolbar(QtWidgets.QToolBar):
             )
             self._backgrounds.append((action, top, bottom))
         menu.addSeparator()
-        # opaque_background is also what Draw/Ray > "transparent background"
+        # opaque_background is also what Draw > "transparent background"
         # and Display > Background > Opaque set
         self.ray_background = menu.addAction("Ray trace with this background")
         self.ray_background.setCheckable(True)
@@ -252,27 +346,42 @@ class ActionToolbar(QtWidgets.QToolBar):
         )
         self.addWidget(spacer)
 
+        self.panel_actions = {}
         for label, target in panels:
+            # a panel button shows only its icon; the name is the tooltip
             if isinstance(target, QtWidgets.QMenu):
-                self._menu_button(label, label).setMenu(target)
+                button = self._menu_button(label, label)
+                button.setMenu(target)
+                button.setToolButtonStyle(Style.ToolButtonIconOnly)
             else:
-                self._action(label, target)
+                action = self.panel_actions[label] = self._action(label, target)
+                self.widgetForAction(action).setToolButtonStyle(
+                    Style.ToolButtonIconOnly
+                )
 
-        # ponytail: Qt reads the scale once, so a pick needs a restart.
-        # Upgrade path: restart with the session saved and reloaded.
+        # any whole percent from 50 to 300: typed, or one of the rows
+        self._scale = theme.ui_scale()
         self.scale = self._menu_button(
-            "%d%%" % round(theme.ui_scale() * 100),
+            "%d%%" % round(self._scale * 100),
             "Size of text and controls",
             icon="ui scale",
         )
-        group = QtGui.QActionGroup(self)
+        menu = self.scale.menu()
+        self.scale_box = box = QtWidgets.QSpinBox()
+        box.setRange(round(theme.MIN_SCALE * 100), round(theme.MAX_SCALE * 100))
+        box.setSingleStep(10)
+        box.setSuffix(" %")
+        box.setValue(round(self._scale * 100))
+        box.setToolTip("Any value from 50 to 300; Enter applies")
+        box.editingFinished.connect(lambda: self._set_scale(box.value() / 100))
+        field = QtWidgets.QWidgetAction(menu)
+        field.setDefaultWidget(box)
+        menu.addAction(field)
+        menu.addSeparator()
         for scale in theme.SCALES:
-            action = group.addAction(
-                self.scale.menu().addAction("%d%%" % round(scale * 100))
-            )
-            action.setCheckable(True)
-            action.setChecked(scale == theme.ui_scale())
+            action = menu.addAction("%d%%" % round(scale * 100))
             action.triggered.connect(lambda _=False, s=scale: self._set_scale(s))
+        menu.aboutToShow.connect(lambda: box.setValue(round(self._scale * 100)))
 
         self.more = self._menu_button("More", "More view actions", icon="more actions")
         # with its text the bar does not fit the default window at 150 %
@@ -326,10 +435,53 @@ class ActionToolbar(QtWidgets.QToolBar):
         return button
 
     def _set_scale(self, scale):
+        """Save the scale and change the running window to it, once the
+        menu that asked has closed."""
+        if abs(scale - self._scale) < 0.005:
+            return
+        self.scale.menu().close()
+        QtCore.QTimer.singleShot(50, lambda: self._apply_scale(scale))
+
+    def _apply_scale(self, scale, ask=True):
+        if abs(scale - self._scale) < 0.005:
+            return  # Enter in the field asks twice: itself, and as the menu closes
+        old, self._scale = self._scale, scale
         theme.set_ui_scale(scale)
-        QtWidgets.QMessageBox.information(
-            self, "UI Scale", "The new scale applies the next time pymolish starts."
-        )
+        self.scale.setText("%d%%" % round(scale * 100))
+        app = QtWidgets.QApplication.instance()
+        if not theme.set_scale_live(app, self.window(), old, scale):
+            why = theme.live_scale_blocker(app)
+            QtWidgets.QMessageBox.information(
+                self,
+                "UI Scale",
+                (why + " The new scale applies the next time pymolish starts.").strip(),
+            )
+        elif ask and not 0.75 <= scale <= 2:
+            self._confirm_scale(old)
+
+    def _confirm_scale(self, old, seconds=10):
+        """Very small or very large: back to the old scale unless the user
+        says, within ten seconds, that the window is usable."""
+        Box = QtWidgets.QMessageBox
+        box = Box(Box.Icon.Question, "UI Scale", "", Box.StandardButton.NoButton, self)
+        keep = box.addButton("Keep this size", Box.ButtonRole.AcceptRole)
+        box.addButton("Revert", Box.ButtonRole.RejectRole)
+        left = [seconds]
+        timer = QtCore.QTimer(box, interval=1000)
+
+        def tick():
+            box.setText("Keep this size? Back to the old one in %d s." % left[0])
+            left[0] -= 1
+            if left[0] < 0:
+                box.reject()
+
+        timer.timeout.connect(tick)
+        tick()
+        timer.start()
+        box.exec()
+        timer.stop()
+        if box.clickedButton() is not keep:
+            self._apply_scale(old, ask=False)  # the way back asks nothing
 
     def _fill_palettes(self):
         cmd = self.cmd
@@ -347,6 +499,10 @@ class ActionToolbar(QtWidgets.QToolBar):
                 ]
                 item = QtWidgets.QListWidgetItem(_strip(strip), label, view)
                 item.setData(Qt.ItemDataRole.UserRole, name)
+                if len(colors) > len(strip):
+                    item.setToolTip(
+                        "%d colors; the first %d are shown" % (len(colors), len(strip))
+                    )
         view.setFixedSize(
             view.sizeHintForColumn(0) + 4,
             (view.sizeHintForRow(0) + 4) * view.count(),  # 4: the spacing
@@ -449,11 +605,113 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.selecting.setText(SELECTING[int(value)])
         self.selecting.menu().actions()[int(value)].setChecked(True)
 
+    def set_ligand(self, present):
+        """The 2D button works when an object that is switched on has a
+        ligand; else it says why not."""
+        action = self.panel_actions.get("2D")
+        if action:
+            action.setEnabled(present)
+            action.setToolTip(
+                "Ligand in 2D with its contacts"
+                if present
+                else "No ligand in the visible objects"
+            )
+
+    def quick_select(self, expression, what):
+        """Select `expression` in the objects that are switched on, as
+        "sele". With Shift it is added to the selection, with Ctrl taken
+        away from it. Nothing found: a line in the log, "sele" stays."""
+        cmd = self.cmd
+        have = "sele" in cmd.get_names("selections")
+        if "sele" in expression.split() and not have:
+            print(" Select: there is no selection yet.")
+            return
+        target = "(%s) and enabled" % expression
+        if not cmd.count_atoms(target):
+            print(" Select: no %s in the visible objects." % what)
+            return
+        modifiers = QtWidgets.QApplication.keyboardModifiers()
+        if have and modifiers & Qt.KeyboardModifier.ShiftModifier:
+            target = "sele or (%s)" % target
+        elif have and modifiers & Qt.KeyboardModifier.ControlModifier:
+            target = "sele and not (%s)" % target
+        cmd.select("sele", target, enable=1, quiet=0)
+
+    def select_nothing(self):
+        cmd = self.cmd
+        if "sele" in cmd.get_names("selections"):
+            cmd.select("sele", "none")
+        cmd.deselect()
+
+    def _fill_kinds(self):
+        menu = self.chips["\u22ef"].menu()
+        menu.clear()
+        for row in MORE_KINDS:
+            if row is not None:
+                label, expression = row
+                menu.addAction(
+                    label,
+                    lambda e=expression, w=label.lower(): self.quick_select(e, w),
+                )
+                continue
+            menu.addSeparator()
+            if menu.actions()[-2].text() == "Ions and metals":  # the chains
+                chains = self.cmd.get_chains("enabled")
+                for chain in chains[:MAX_CHAINS]:
+                    menu.addAction(
+                        "Chain %s" % (chain or "(no name)"),
+                        lambda c=chain: self.quick_select(
+                            "chain '%s'" % c, "chain %s" % c
+                        ),
+                    )
+                if len(chains) > MAX_CHAINS:
+                    note = menu.addAction(
+                        "%d more: A > select in the Objects panel"
+                        % (len(chains) - MAX_CHAINS)
+                    )
+                    note.setEnabled(False)
+                if chains:
+                    menu.addSeparator()
+
+    def _set_rock(self, mode, spin):
+        """Rock (spin False) or turn all the way round about one axis."""
+        cmd = self.cmd
+        self._random.stop()
+        angle = cmd.get_setting_float("sweep_angle")
+        if angle > 0:
+            self._rock_angle = angle
+        cmd.set("sweep_mode", mode)
+        cmd.set("sweep_angle", 0 if spin else (self._rock_angle or angle or 20))
+        cmd.rock(1)
+
+    def _random_turn(self):
+        """Spin about another axis than now, either way round, by a random
+        angle of RANDOM_DEG; then again, until the rock is stopped."""
+        cmd = self.cmd
+        now = cmd.get_setting_int("sweep_mode") if cmd.get_setting_int("rock") else -1
+        mode = random.choice([m for m in (0, 1, 2) if m != now])
+        speed = abs(cmd.get_setting_float("sweep_speed")) or 0.75
+        self._set_rock(mode, True)  # stops the timer: start it after
+        cmd.set("sweep_speed", random.choice((speed, -speed)))
+        seconds = random.uniform(*RANDOM_DEG) / (SPIN_DEG_PER_S * speed)
+        self._random.start(int(seconds * 1000))
+
+    def _show_rock(self, on):
+        self.rock.setChecked(bool(on))
+        if not on:
+            self._random.stop()
+
     def _zoom_visible(self):
         """Fill the viewport with what is shown, centered. Hidden objects
         and hidden atoms do not count; with nothing shown, with everything."""
         cmd = self.cmd
         cmd.zoom("visible" if cmd.count_atoms("visible") else "all", animate=1.0)
+
+    def _orient_visible(self):
+        """Turn the long axes of what is shown into the screen plane; the
+        same atoms as _zoom_visible."""
+        cmd = self.cmd
+        cmd.orient("visible" if cmd.count_atoms("visible") else "all", animate=1.0)
 
     def _fill_presets(self):
         menu = self.presets.menu()

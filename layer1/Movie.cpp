@@ -96,7 +96,7 @@ int MovieViewModify(PyMOLGlobals *G, ViewElemAction action, int index, int count
       if (index >= 0 && index < I->NFrame) {
         I->Sequence.insert(index, count);
         I->Cmd.insert(I->Cmd.begin() + index, count, "");
-        I->NFrame = VLAGetSize(I->Sequence);
+        I->NFrame = I->Sequence.size();
         {
           int frame = SceneGetFrame(G);
           if (frame >= index) {
@@ -110,7 +110,7 @@ int MovieViewModify(PyMOLGlobals *G, ViewElemAction action, int index, int count
         I->Sequence.erase(index, count);
         int end_pos = std::min(index + count, static_cast<int>(I->Cmd.size()));
         I->Cmd.erase(I->Cmd.begin() + index, I->Cmd.begin() + end_pos);
-        I->NFrame = VLAGetSize(I->Sequence);
+        I->NFrame = I->Sequence.size();
       }
       break;
     case ViewElemAction::Move:
@@ -163,7 +163,7 @@ int MovieGetSpecLevel(PyMOLGlobals *G,int frame)
 {
   CMovie *I = G->Movie;
   if(I->ViewElem) {
-    int size = VLAGetSize(I->ViewElem);
+    int size = I->ViewElem.size();
     if(frame<0) {
       int max_level = 0;
       int i;
@@ -461,7 +461,7 @@ int MovieFromPyList(PyMOLGlobals * G, PyObject * list, int *warning)
   }
   if(ok && (ll > 6)) {
     PyObject *tmp;
-    VLAFreeP(I->ViewElem);
+    I->ViewElem.freeP();
     I->ViewElem = nullptr;
     tmp = PyList_GetItem(list, 6);
     if(tmp && !(tmp == Py_None))
@@ -912,9 +912,9 @@ void MovieAppendSequence(PyMOLGlobals* G, const char* str, int start_from, bool 
   }
 
   if(!c) {
-    VLAFreeP(I->Sequence);
+    I->Sequence.freeP();
     I->Cmd.clear();
-    VLAFreeP(I->ViewElem);
+    I->ViewElem.freeP();
     I->NFrame = 0;
   } else {
     // to clear
@@ -1100,7 +1100,7 @@ int MovieView(PyMOLGlobals * G, MViewAction action, int first,
     frame = first;
     if(first < 0)
       frame = SceneGetFrame(G);
-    VLACheck(I->ViewElem, CViewElem, frame);
+    I->ViewElem.check(frame);
     if (action == MViewAction::Toggle) {
       if(I->ViewElem[frame].specification_level>1) {
         action = MViewAction::Clear;
@@ -1139,7 +1139,7 @@ int MovieView(PyMOLGlobals * G, MViewAction action, int first,
       }
       if(first <= last) {
         int a;
-        VLACheck(I->ViewElem, CViewElem, last);
+        I->ViewElem.check(last);
         for(a = 0; a < cycles; a++) {
           ViewElemSmooth(I->ViewElem + first, I->ViewElem + last, window, wrap);
         }
@@ -1158,11 +1158,11 @@ int MovieView(PyMOLGlobals * G, MViewAction action, int first,
       if(last < 0)
         last = first;
 
-      VLACheck(I->ViewElem, CViewElem, last);
+      I->ViewElem.check(last);
 
       for(frame = first; frame <= last; frame++) {
         if((frame >= 0) && (frame < I->NFrame)) {
-          VLACheck(I->ViewElem, CViewElem, frame);
+          I->ViewElem.check(frame);
           if(!quiet) {
             PRINTFB(G, FB_Movie, FB_Details)
               " MovieView: Setting frame %d.\n", frame + 1 ENDFB(G);
@@ -1201,7 +1201,7 @@ int MovieView(PyMOLGlobals * G, MViewAction action, int first,
         last = first;
       for(frame = first; frame <= last; frame++) {
         if((frame >= 0) && (frame < I->NFrame)) {
-          VLACheck(I->ViewElem, CViewElem, frame);
+          I->ViewElem.check(frame);
           ViewElemArrayPurge(G, I->ViewElem + frame, 1);
           UtilZeroMem((void *) (I->ViewElem + frame), sizeof(CViewElem));
         }
@@ -1227,7 +1227,7 @@ int MovieView(PyMOLGlobals * G, MViewAction action, int first,
             last--;
           else {
             int frame = 0;
-            VLACheck(I->ViewElem, CViewElem, last);
+            I->ViewElem.check(last);
             for(frame = 0; frame < last; frame++) {
               if(I->ViewElem[frame].specification_level > 1) {
                 last += frame;
@@ -1242,7 +1242,7 @@ int MovieView(PyMOLGlobals * G, MViewAction action, int first,
           last--;
       }
       
-      VLACheck(I->ViewElem, CViewElem, last);
+      I->ViewElem.check(last);
 
       if(wrap && (last >= I->NFrame)) {
         /* if we're interpolating beyond the last frame, then wrap by
@@ -1342,7 +1342,7 @@ int MovieView(PyMOLGlobals * G, MViewAction action, int first,
     break;
   case MViewAction::Reset:
     if(I->ViewElem) {
-      int size = VLAGetSize(I->ViewElem);
+      int size = I->ViewElem.size();
       I->ViewElem = pymol::vla<CViewElem>(size);
     }
     break;
@@ -1354,7 +1354,7 @@ int MovieView(PyMOLGlobals * G, MViewAction action, int first,
       }
       for(frame = first; frame <= last; frame++) {
         if((frame >= 0) && (frame < I->NFrame)) {
-          VLACheck(I->ViewElem, CViewElem, frame);
+          I->ViewElem.check(frame);
           if(I->ViewElem[frame].specification_level < 2) {
             ViewElemArrayPurge(G, I->ViewElem + frame, 1);
             UtilZeroMem((void *) (I->ViewElem + frame), sizeof(CViewElem));
@@ -1366,7 +1366,7 @@ int MovieView(PyMOLGlobals * G, MViewAction action, int first,
   }
   /* adjust VLA to current movie length */
   if(I->ViewElem) {
-    VLASize(I->ViewElem,CViewElem,I->NFrame);
+    I->ViewElem.resize(I->NFrame);
   }
   SceneSetFrame(G,1,0); /* force frame update */
   return 1;
@@ -1442,8 +1442,8 @@ void MovieReset(PyMOLGlobals * G)
   MovieClearImages(G);
 
   I->Cmd.clear();
-  VLAFreeP(I->Sequence);
-  VLAFreeP(I->ViewElem);
+  I->Sequence.freeP();
+  I->ViewElem.freeP();
 
   I->NFrame = 0;
   I->MatrixFlag = false;

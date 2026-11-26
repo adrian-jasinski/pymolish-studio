@@ -764,7 +764,7 @@ void InsertDistanceInfo(PyMOLGlobals* G, DistSet* ds, int state1, int state2,
   auto& coords = ds->Coord;
 
   // see if coords has room at another 6 floats
-  VLACheck(coords, float, (numVerts * 3) + 6);
+  coords.check((numVerts * 3) + 6);
   float* vv0 = coords + (numVerts * 3);
 
   if (atom1_vv != nullptr && atom2_vv != nullptr) {

@@ -1,8 +1,34 @@
 # 15 — Presets and looks
 
+**Built 2026-11-24 in 4.62.0: 15e.** Presets `balls_in_glass` ("balls in
+glass": `ball_and_stick` in the atoms' colors inside a surface at
+`ray_transparency_oblique_power` 20) and `cylinders` ("cartoon cylinders":
+publication with `cartoon_cylindrical_helices` 1); `depth_fog`, a "fog" /
+"no fog" row in the light menu; the look "soft" sets
+`ambient_occlusion_mode` 1 at `ambient_occlusion_scale` 16, and glass,
+balls in glass and illustration switch it off for their objects. Measured:
+scale 16 was picked by eye on 1oky against 12, 20 and 25 (25 paints the
+pockets black); a surface build of 1aon took 6.0 and 6.7 s without ambient
+occlusion and 7.4 and 10.5 s with it, on 4v6x the noise was larger than the
+difference. Left out: color steps in the viewport, because they are already
+there: `ray_trace_mode` 3 switches `ray_trace_mode_3` on in
+`anaglyph_header.fs` (45 colors counted in the viewport under "comic", 8436
+under the standard light), so the table row "One new setting and a few
+lines" below was wrong. Also left out: ambient occlusion in other looks,
+glow and blur. 15b is the only open slice.
+
+**Plan revision 2026-11-23, drafts 3, 4 and 6, at 4.43.0 (not built):**
+[34c](34-ball-and-stick.md) replaces the shared sticks/spheres ligand
+recipe with independent ball-and-stick, ball scale 0.31, for ligands in all
+applicable molecular presets. [35b](35-scene-appearance.md) makes stored
+scenes restore the style and color overrides these presets change. The
+earlier numerical recipes below describe shipped behavior, not future
+defaults. The rule that presets preserve polymer cartoon/surface colors
+still applies. Scene storage precedes the preset switch.
+
 [Roadmap](../../PLAN.md) · Request 2026-11-16 · **15a done 2026-11-16 in
-4.14.0, 15d in 4.14.3, 15f in 4.14.4.** 15b, 15c and 15e were approved on
-2026-11-20 and are to build. **15g and 15h done 2026-11-18 in 4.14.5, 15i (visible objects, two
+4.14.0, 15d in 4.14.3, 15f in 4.14.4.** 15b and 15e were approved on
+2026-11-20 and remain open; 15c shipped in 4.22.0. **15g and 15h done 2026-11-18 in 4.14.5, 15i (visible objects, two
 presets for complexes) in 4.19.1, 15j (the light after "illustration") in
 4.19.2, 15k (publication green) in 4.19.3, 15l (cartoon spring, colors kept,
 two-color interaction surface) in 4.19.29** (the last sections before "Skipped"). They change three decisions below: the looks are part of the
@@ -175,6 +201,17 @@ wire, illustration, the solvent row and cartoon transparency came.
   glass in the new flat.
 - Commit: `ui(presets): wire and illustration presets, shades of one color`.
 
+**Read for 15b on 2026-11-25, nothing built.** The picture that the FXAA
+pass reads (`CShaderMgr::bindOffscreen`, `SceneRenderAA`) is a color
+texture with a depth *renderbuffer* (`RenderTargetGL::layout` in
+`layer0/GenericBuffer.cpp`), and a shader cannot read a renderbuffer. An
+edge pass over the depth needs a depth texture on that target. The same
+renderbuffer is handed to the pass for transparency mode 3
+(`bindOffscreenOIT` takes `offscreen_rt->_rbo`), so that path has to be
+given the texture too, or keep a renderbuffer of its own. The shaders are
+GLSL 1.20, where a depth texture is read like any other. Only one driver
+can be tried on this machine (d3d12 under WSLg, or llvmpipe).
+
 **15b, outline in the viewport. Approved 2026-11-20, to build.** The answer:
 "black, or a color that will be visible on the selected background". So the
 line takes its color from the background, as the ray-traced outline does
@@ -183,7 +220,7 @@ since 15g: black on a light background, light on a dark one.
   in `data/shaders/` and the Scene draw path of `layer1/`. New shader code,
   to be measured with `testing/compare.py -- gui` before and after.
 
-**15c, ChimeraX object colors. Approved 2026-11-20, to build.**
+**15c, ChimeraX object colors. Done 2026-11-20 in 4.22.0:** palette `chimerax`, the ten values of ChimeraX's `atomic_color_names`; listed for "any" background, since its purple is too dark for the contrast rule of the dark palettes.
 - One more entry in `palettes.PALETTES` (tan, sky blue, plum, light green,
   salmon, ...), the pattern of [step 11](11-color-palettes.md). One line and
   the docstring.
@@ -502,12 +539,12 @@ white patch, then `preset.spring("binder")`.
 - `look` as a typed command. `preset.look("flat")` works on the command line.
 - A mark on the look that is active.
 - The Lighting plugin reading `LOOKS`, and its sliders following a look.
-- A new color for the sticks of "ball and stick". They are white, so on a
-  white background they show only where a look draws shading or an outline.
+- The old preset's white-stick limitation is superseded by step 34's
+  independent colors and bond-color choice (question 59).
 - The rest of the gist: Bondi radii, slate nitrogens, `valence_size`, its
   dash style, the orbital and density commands.
-- A ball-and-stick ligand in "pretty", "publication" and "glass". They keep
-  sticks.
+- The former exclusion of ball-and-stick ligands in "pretty", "publication"
+  and "glass" is superseded: they are included in 34c.
 - A mark on the active cartoon transparency.
 - A cross-hatched mesh on sheets. The wire draws them as a zigzag.
 - A color picker for the shades, and "shades (elem C)" rows.

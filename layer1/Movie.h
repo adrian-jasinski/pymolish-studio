@@ -23,6 +23,7 @@ Z* -------------------------------------------------------------------
 #include"Ortho.h"
 #include"Scene.h"
 #include"View.h"
+#include"ScrollBar.h"
 
 struct CMovieModal {
   int stage = 0;

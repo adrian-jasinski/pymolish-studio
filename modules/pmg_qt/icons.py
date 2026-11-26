@@ -18,7 +18,7 @@ LABELS = {
     "center": "crosshair",
     "origin": "locate-fixed",
     "reset": "rotate-ccw",
-    "movie": "clapperboard",
+    "movie": "video",
     "scene": "image",
     "enable": "eye",
     "show": "eye",
@@ -48,7 +48,7 @@ LABELS = {
     "fragment+joint(s)": "puzzle",
     "actions": "zap",
     "color": "palette",
-    "background": "image",
+    "background": "paint-roller",
     "preset": "sliders-horizontal",
     "label": "tag",
     "ss": "dna",
@@ -74,16 +74,30 @@ LABELS = {
     "forward": "fast-forward",
     "last": "skip-forward",
     # action toolbar
+    "open file": "folder-open",
+    "select nothing": "ban",
     "undo": "undo-2",
     "redo": "redo-2",
     "rock": "rotate-3d",
     "presets": "sliders-horizontal",
     "builder": "hammer",
     "scenes": "camera",
-    "draw/ray": "aperture",
+    "table": "sheet",
+    "2d": "hexagon",
+    "sequence alignment": "text-align-start",
+    "draw": "aperture",
     "ui scale": "scaling",
     "more actions": "ellipsis",
     "more": "ellipsis",
+    # the row under the object list
+    "mouse mode": "mouse",
+    "seq": "letter-text",
+    "ai assistant": "bot",
+    "wizard": "wand-sparkles",
+    "command line": "square-terminal",
+    # chat
+    "sign in": "log-in",
+    "sign out": "log-out",
 }
 
 
@@ -114,7 +128,9 @@ def menu_icon(label, color, size=16, stroke=1.5, accent=None):
     while the pointer is over its button and while the button is checked."""
     name = LABELS.get(label) or LABELS.get(label.split(" ")[0])
     if name:
-        ratio = QtWidgets.QApplication.instance().devicePixelRatio()
+        # of the screens: the application's own value is one Qt keeps from
+        # the start, and a live change of the UI scale leaves it as it was
+        ratio = max(s.devicePixelRatio() for s in QtWidgets.QApplication.screens())
         icon = QtGui.QIcon(_pixmap(name, color.name(), ratio, size, stroke))
         if accent is not None:
             pixmap = _pixmap(name, accent.name(), ratio, size, stroke)

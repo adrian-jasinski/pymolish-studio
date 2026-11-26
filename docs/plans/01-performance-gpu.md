@@ -46,6 +46,66 @@ Open, waits for the user ([PLAN.md](../../PLAN.md), "Waiting for the user"): a l
 
 Next candidates: sticks on the GPU (20 ms per frame of 1aon on the integrated GPU, the slowest representation there), lines as triangles on every driver (on llvmpipe 150 objects of lines draw in 35 ms as triangles and 75 ms as GL lines), the two advancing-front passes of the triangulation, `h_add` (1.6 s for 59k atoms, same as PyMOL 3).
 
+## Status 2026-11-25: the grid surface experiment (4.76.0)
+
+Built as the answer to "Grid surface: yes, as an experiment" below:
+`set surface_type, 7`, `SurfaceJobRunGrid` in `layer2/RepSurface.cpp`.
+Two distance grids and two runs of the marching cubes that were already
+in the code; every step is a loop over grid planes, one plane a thread.
+The user judges it: question 105 in [PLAN.md](../../PLAN.md).
+
+Measured on this laptop (32 threads), mmCIF from
+`~/.cache/pymolish-compare`, one process per row; "build" is `show_as
+surface` until `ray 16, 16` returns, the fastest of three builds (of two
+for 4v6x); memory is the peak resident size of the process, which also
+ray traced one picture of 800 x 600.
+
+| Structure | Surface | Probe | Build | Of it the surface job | Triangles | Peak memory |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1aon, 59,192 atoms | today (type 0) | 1.4 | 5.18 s | not timed | 905,146 | 2,648 MB |
+| | grid, cells 1 A | 1.4 | 1.67 s | 0.30 s | 924,276 | 2,570 MB |
+| | grid, cells 0.5 A (`surface_quality 1`) | 1.4 | 9.67 s | 1.73 s | 3,992,212 | 10,263 MB |
+| | today | 3.0 | 1.16 s | not timed | 195,556 | 929 MB |
+| | grid, cells 1 A | 3.0 | 1.38 s | 0.29 s | 668,588 | 1,990 MB |
+| 4v6x, 239,306 atoms | today | 1.4 | 34.31 s | not timed | 3,886,165 | 9,983 MB |
+| | grid, cells 1 A | 1.4 | 9.41 s | 1.56 s | 3,919,688 | 10,173 MB |
+| | today | 3.0 | 5.12 s | not timed | 730,230 | 2,104 MB |
+| | grid, cells 1 A | 3.0 | 6.29 s | 1.40 s | 2,500,536 | 6,578 MB |
+
+What the numbers say:
+
+- The grid work is small (0.3 s for 1aon, 1.6 s for 4v6x). What is left
+  of a build is paid after the surface job by every kind of surface: the
+  atom of each vertex, the colors, the triangles for drawing and for the
+  ray tracer. For the grid surface of 4v6x that is 7.9 of 9.4 s. It is the
+  next thing to look at, for both surfaces, and it has not been profiled.
+- That part and the memory follow the count of triangles, not the method.
+  Cells of one point separation gave 4.4 times the triangles of today's
+  surface and were slower and four times as heavy; cells of two give the
+  same count. Today's dots end up about two separations apart.
+- With a larger probe today's surface has fewer dots on a larger sphere
+  and gets coarse; it is then faster than the grid, which keeps its
+  density. For the rounded surface of 25b that density is the point.
+- Ray tracing: the same count of primitives and the same voxel grid for
+  both surfaces of 1aon; one cool pair of runs gave 4.05 and 4.08 s.
+  Other runs drifted between 4.6 and 15.6 s for both, as on 2026-11-20,
+  so the table has no ray times.
+
+How it looks: [1aon](../img/grid-surface-1aon.jpg),
+[4v6x](../img/grid-surface-4v6x.jpg). On a whole complex the surfaces
+look alike. Close up (ubiquitin), with cells of 1 A the borders between
+two colors are more jagged than on today's surface, whose vertices are
+spread evenly, and narrow grooves are a little shallower; with cells of
+0.5 A the two cannot be told apart. In the real window the first build
+was drawn dark: marching cubes turns its triangles the other way round.
+Corrected, and the test checks it.
+
+Left out, each named in the code: carving, cavity culling and cavity
+mode, `surface_solvent`, trimming; strips of more than one triangle; a
+grid in blocks (above 67 million cells the cells grow instead); a
+smoothness setting of its own (`solvent_radius` is that value); frame
+times in the viewport.
+
 ## Status 2026-11-19, later: a profile of the surface build
 
 No profiler is installed, so the main thread was sampled every 2 ms of wall
@@ -122,7 +182,7 @@ at two smoothness values next to its times.
 | Question | Answer | What follows |
 | --- | --- | --- |
 | A large surface freezes the window | **A, build it on a worker thread.** | The next large item of 1b. `SurfaceJob` leaves the GUI thread; the status line says "building surface"; the surface appears when it is ready. To settle while building: what happens when the atoms change during a job (drop the result and start again), and the headless path, which must still wait. Checks: 1aon and 4v6x in the real window, the suite, the sanitizer job. |
-| Idle OpenMP threads (row 4 above) | **Yes.** | `OMP_WAIT_POLICY=passive` at start, before the core loads, unless the user set the variable or `GOMP_SPINCOUNT`. One line next to the place that picks the GPU on WSL. Numbers again after the change. |
+| Idle OpenMP threads (row 4 above) | **Yes.** | `OMP_WAIT_POLICY=passive` at start, before the core loads, unless the user set the variable or `GOMP_SPINCOUNT`. One line next to the place that picks the GPU on WSL. Numbers again after the change. **Done 2026-11-20 in 4.23.1**, in `pymol/__init__.py` just before the core is imported (the GUI start is too late, and a headless run gains too). 1aon, three surface builds, three interleaved runs each: CPU 99, 101 and 93 s with the old spinning (`GOMP_SPINCOUNT=300000`, what libgomp does when nothing is set), 65, 66 and 68 s with the policy; wall time per build 5.1 to 6.1 s in both. The ray tracer has no OpenMP loop and is not touched; its times drifted from 4 to 16 s in both settings as the laptop heated up during the runs, so they are not reported. Not the same thing: `OMP_WAIT_POLICY=active` spins without end and made the builds 3 to 5 times slower here. |
 | Grid surface (row 3 above) | **Yes, as an experiment.** | A second `surface_type` with the distance grid and the marching cubes of `layer0/marching_cubes.cpp`. Table: build time, triangles, memory and ray time for 1aon and 4v6x against today's surface; pictures side by side. Then the user decides whether it stays, and for which sizes. Written from the description of the method, not from EDTSurf's code. |
 
 Order: the one-line change first, the worker thread next, the experiment

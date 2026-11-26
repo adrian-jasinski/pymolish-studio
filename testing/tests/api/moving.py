@@ -305,6 +305,25 @@ def testMview():
     pytest.skip("TODO")
 
 
+def testMviewSmooth():
+    cmd.pseudoatom('m1')
+    cmd.mset("1x30")
+    cmd.mview('store', 1)
+    cmd.turn('y', 90)
+    cmd.mview('store', 15)
+    cmd.turn('x', 90)
+    cmd.mview('store', 30)
+    cmd.mview('reinterpolate')
+    cmd.frame(15)
+    before = cmd.get_view()
+    cmd.mview('smooth', window=7)
+    cmd.frame(15)
+    after = cmd.get_view()
+    # the corner at the middle key frame is rounded off, nothing blows up
+    assert before != pytest.approx(after, abs=1e-4)
+    assert all(abs(x) < 1e3 for x in after)
+
+
 def testRewind():
     prep_movie()
     cmd.frame(30)

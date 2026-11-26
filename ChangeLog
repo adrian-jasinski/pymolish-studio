@@ -2,6 +2,1488 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-25 pymolish-studio
+
+	* 4.76.14
+
+	* Core
+	  - Fix: with sphere_mode 6, 7 or 8 and spheres shown for a part
+	    of an object, the normals of the spheres were computed from
+	    the wrong atoms and the code read past its coordinate buffer
+	    (a crash was possible). Present in 4.76.0 as well.
+
+2026-11-25 pymolish-studio
+
+	* 4.76.13
+
+	* Core
+	  - Fix: a surface with ambient_occlusion_mode 3 read a neighbor
+	    map that had been freed a few lines before, when the surface
+	    was recolored (a wrong variable name). Found by the sanitizer
+	    run on a new test; present in 4.76.0 as well.
+
+2026-11-25 pymolish-studio
+
+	* 4.76.12
+
+	* Core
+	  - The AMBER restart and topology readers hold the file text in
+	    a unique_ptr. Twelve more calls of the VLA macros on
+	    pymol::vla objects are member calls (Sculpt.cpp, Isosurf.cpp,
+	    RepMesh.cpp, ObjectAlignment.cpp). No behavior change. Steps
+	    8c and 8d.
+
+2026-11-25 pymolish-studio
+
+	* 4.76.11
+
+	* Core
+	  - Sphere.cpp: the sphere generator under "#ifndef
+	    FAST_SPHERE_INIT" is deleted, 554 lines. The macro is defined
+	    at the top of the same file, so the code was never compiled;
+	    the preprocessed text of the file is the same before and
+	    after.
+
+2026-11-25 pymolish-studio
+
+	* 4.76.10
+
+	* Core
+	  - Extrude.cpp, RepCartoon.cpp, RepRibbon.cpp, RepSphere.cpp,
+	    RepCylBond.cpp, RepWireBond.cpp and RepNonbondedSphere.cpp:
+	    72 lines that allocate with malloc and 110 that free by hand
+	    are gone; the arrays of the extrusion (cartoon tubes, sheets,
+	    helices), of the cartoon and ribbon builders and of the
+	    sphere, stick and line reps own their memory now. The
+	    compiled-out blocks of Extrude.cpp (179 lines) went with it.
+	    No behavior change: the ray geometry of 365 combinations of
+	    structure, rep and setting is identical to 4.76.0. Step 8c.
+
+2026-11-25 pymolish-studio
+
+	* 4.76.9
+
+	* Core
+	  - ObjectVolume.cpp: createPreintegrationTexture is deleted:
+	    nothing called it.
+
+2026-11-25 pymolish-studio
+
+	* 4.76.8
+
+	* Core
+	  - Ray.cpp, Basis.cpp, RepSurface.cpp, Triangle.cpp, Sphere.cpp,
+	    Isosurf.cpp, Tetsurf.cpp, RepMesh.cpp, RepDot.cpp,
+	    ObjectMap.cpp and ObjectVolume.cpp: 60 allocations with
+	    malloc or calloc and 66 frees by hand are gone; the buffers
+	    of the ray tracer, the surface and mesh builders, the
+	    triangulation and the map readers are std::vector or
+	    unique_ptr now. No behavior change: geometry and ray
+	    pictures (one thread) are identical to 4.76.0. Step 8c.
+	  - Fix: every surface leaked two arrays of one entry per atom
+	    when it was recolored the first time.
+	  - Fix: a mesh of a selection whose atoms are all flagged
+	    "ignore" wrote into an empty buffer.
+
+2026-11-25 pymolish-studio
+
+	* 4.76.7
+
+	* Core
+	  - ObjectMoleculeConvertIDsToIndices is deleted: nothing called
+	    it.
+
+2026-11-25 pymolish-studio
+
+	* 4.76.6
+
+	* Core
+	  - Fix: valence with a source object ("valence copy, sele1,
+	    sele2, source") wrote one byte before a buffer for the first
+	    atom of every match and ended in "double free or corruption".
+	    It copies the bond orders now.
+
+2026-11-25 pymolish-studio
+
+	* 4.76.5
+
+	* Core
+	  - Fix: load_png and bg_image_filename crashed (segmentation
+	    fault) on a "data:image/png;base64," text that is not base64,
+	    and read past the buffer when it decoded to fewer than 8
+	    bytes. Both now give no image, as for a file that cannot be
+	    opened.
+
+2026-11-25 pymolish-studio
+
+	* 4.76.4
+
+	* Core
+	  - OrthoSetBackgroundImage is deleted: its body was compiled
+	    out and nothing called it.
+
+2026-11-25 pymolish-studio
+
+	* 4.76.3
+
+	* Core
+	  - Sculpt.cpp, MyPNG.cpp, Util.cpp, Word.cpp, Match.cpp,
+	    Property.cpp, FontType.cpp, ObjectAlignment.cpp, View.cpp,
+	    Scene.cpp and ShaderPrg.cpp: 28 allocations with malloc or
+	    calloc and 31 frees by hand are gone; the buffers of sculpting,
+	    of the PNG and PPM writers, of the word list, of the alignment
+	    matrix reader and of the font texture are std::vector or
+	    unique_ptr now. One leak went with it: MatchAlign kept one of
+	    its two tables when the other could not be allocated. No
+	    behavior change. Step 8c.
+
+2026-11-25 pymolish-studio
+
+	* 4.76.2
+
+	* Core
+	  - 203 calls of the VLACheck, VLASize, VLAFreeP and VLAGetSize
+	    macros on arrays that already are pymol::vla objects are
+	    member calls now (check, resize, freeP, size), in 21 files.
+	    The macros forwarded to exactly these members; the compiler
+	    refused every call on a raw pointer, and those stay. No
+	    behavior change. Step 8d, the mechanical part.
+
+2026-11-25 pymolish-studio
+
+	* 4.76.1
+
+	* Core
+	  - Selector.cpp, ObjectMolecule.cpp, ObjectMolecule2.cpp and
+	    PlugIOManager.cpp: 55 allocations with malloc, calloc or
+	    strdup and 54 frees by hand are gone; the buffers are
+	    std::vector now, among them the scratch
+	    arrays of dss, distance, the editor's fragment selections,
+	    the Gaussian map, valence guessing, the AMBER trajectory and
+	    topology readers, the secondary structure table of the PDB
+	    reader and the atom and volume buffers of the VMD plugins.
+	    The names of SDF properties are std::string. The bond path
+	    record owns its two arrays, so ObjectMoleculePurgeBondPath
+	    is gone. No behavior change. Step 8c.
+
+2026-11-25 pymolish-studio
+
+	* 4.76.0
+
+	* An experiment, to be judged: "set surface_type, 7" builds the
+	  molecular surface on a grid. The distance to the atoms, each
+	  enlarged by the probe, is put on a grid; marching cubes gives the
+	  surface the probe center can reach; a second grid holds the
+	  distance to that surface, and marching cubes cuts it one probe
+	  radius inside. It is drawn, colored and ray traced like the solid
+	  surface. Today's surface (type 0) is unchanged and stays the
+	  default; there is no menu row for the new one.
+
+	  The cells are two point separations wide (1 A at surface_quality
+	  0), which gives about as many triangles as today's surface;
+	  surface_quality 1 halves them. solvent_radius is the smoothness:
+	  a larger probe gives a rounder surface, and the grid surface keeps
+	  its density of triangles there, where today's surface gets
+	  coarser.
+
+	  Measured on this laptop (32 threads, mmCIF, the fastest of the
+	  builds; "build" is show_as surface until the first picture):
+
+	    1aon, 59,192 atoms         build    triangles   peak memory
+	    today, probe 1.4           5.18 s     905,146     2,648 MB
+	    grid 1 A, probe 1.4        1.67 s     924,276     2,570 MB
+	    grid 0.5 A, probe 1.4      9.67 s   3,992,212    10,263 MB
+	    today, probe 3.0           1.16 s     195,556       929 MB
+	    grid 1 A, probe 3.0        1.38 s     668,588     1,990 MB
+
+	    4v6x, 239,306 atoms
+	    today, probe 1.4          34.31 s   3,886,165     9,983 MB
+	    grid 1 A, probe 1.4        9.41 s   3,919,688    10,173 MB
+	    today, probe 3.0           5.12 s     730,230     2,104 MB
+	    grid 1 A, probe 3.0        6.29 s   2,500,536     6,578 MB
+
+	  The grid work itself takes 0.30 s for 1aon and 1.56 s for 4v6x;
+	  the rest of a build is what every surface pays after it (colors,
+	  the triangles for drawing and for the ray tracer), and it grows
+	  with the triangles. Ray tracing the two surfaces of 1aon at 800 x
+	  600 took 4.05 and 4.08 s in one pair of runs, with the same count
+	  of primitives; other runs drifted from 4.6 to 15.6 s for both as
+	  the laptop got warm, so no ray times are in the table. Frame times
+	  in the viewport were not measured.
+
+	  How it looks: docs/img/grid-surface-1aon.jpg and
+	  grid-surface-4v6x.jpg. On a whole complex the surfaces look alike.
+	  Close up, with cells of 1 A the borders between the colors are
+	  more jagged than on today's surface and narrow grooves are a
+	  little shallower; with cells of 0.5 A it looks like today's
+	  surface and costs 4.4 times the triangles.
+
+	  Not in the experiment: carving (surface_carve_*), cavity culling
+	  and cavity mode, surface_solvent, trimming. The grid covers the
+	  whole box in memory; above 67 million cells the cells get larger.
+	  A session that has surface_type 7 shows no such surface in other
+	  PyMOL versions.
+
+	* 4.75.0
+
+	* Three buttons at the right of the tabs Command, Sequence and Chat
+	  set the size of the text in the tab that is shown: A- one point
+	  smaller, A+ one point larger, Reset back to what the tab starts
+	  with. Command: the log and the entry line. Sequence: the rows, in
+	  their monospace font; the scroll range and the place of a click
+	  follow. Chat: the conversation and the prompt. The change is seen
+	  at once, each tab has its own size, and the sizes come back at
+	  the next start. The titles of the tabs, the lists of the Sequence
+	  tab and the UI scale are not touched. Between 6 and 40 points.
+
+	  Tried in the real window: three points more in Command, two in
+	  Sequence, one less in Chat; after a restart the tabs had 12, 11
+	  and 8 points where they start with 9.
+
+	* 4.74.0
+
+	* The Sequence tab has a row of its own over the sequence: the lists
+	  Mode (residue codes, residue names, chain identifiers, atom names,
+	  states), Labels and Gaps, and the button "Multiple sequence
+	  alignment…", which opens the alignment window. The lists are the
+	  settings seq_view_format, seq_view_label_mode and
+	  seq_view_gap_mode: they change the tab and the sequence in the
+	  viewport alike, and they follow Display > Sequence Mode and the
+	  "set" command. Tried in the real window: "Residue Names" picked in
+	  the list changed the rows and the mark in the Display menu, and
+	  the button opened the alignment window.
+
+	* 4.73.0
+
+	* The mouse mode button under the object list shows the mouse icon
+	  and the short name of the mode ("Viewing", "Editing", "Selecting",
+	  "Lights", ...). The whole name is in its tooltip ("Mouse mode:
+	  3-Button Viewing") and in its menu, which is unchanged. The button
+	  is as wide as that content and no longer grows into the spare
+	  width of the row: the five buttons stand at the left.
+
+	  Measured in the real window on WSLg: the button is 83 px wide for
+	  "Viewing" and 78 px for "Editing", where "3-Button Viewing" took
+	  139 px and more in a wider panel; the same at a UI scale of 100,
+	  150 and 200 %. The narrowest panel is 234 px as before; there Qt
+	  shortens the name, down to the width of SEQ (73 px).
+
+	* 4.72.0
+
+	* In "New palette" and "Edit palette" a color is dragged to another
+	  place in the list with the mouse. The order shown is the order the
+	  objects get the colors in, and it is stored with OK; Cancel leaves
+	  the palette as it was. Up and Down do the same with the keys, as
+	  before. Tried in the real window with a real drag: the first of
+	  five colors went below the fourth.
+
+	* 4.71.0
+
+	* Each of the ten named palettes (vivid, deep, pastel, soft,
+	  colorblind, nord, dracula, catppuccin, chimerax, halo) now has 30
+	  colors, so 30 objects or chains get 30 colors before the first one
+	  comes again. They had 7 to 22. The colors a palette had keep their
+	  value and their place, the new ones follow them: <name>_22 and up
+	  for vivid, <name>_08 and up for dracula, and so on. The palette
+	  menu shows the first ten of each, as before; a tooltip gives the
+	  number. "PyMOL default" and the palettes of the user are unchanged.
+
+	  The added colors were computed, not taken from the palettes'
+	  sources: in OKLCH, inside each palette's own range of lightness and
+	  chroma, each the farthest from the colors already in the palette,
+	  with a contrast of at least 3 to the background the palette is
+	  made for, ordered so that neighbors differ. With 30 colors some
+	  pairs are close, and they were not tested for color-vision
+	  deficiencies: of "colorblind" only the first seven (Okabe-Ito)
+	  are designed as one set, as before.
+
+	* 4.70.0
+
+	* Rows of the Objects list are moved with the right mouse button:
+	  hold it on a row, drag, release. A line shows where the row would
+	  go between two rows, a frame marks the group it would go into.
+	  Dropped between rows it takes that place (and the group of the
+	  rows there, or the top level); dropped on a group it becomes a
+	  member; dropped under the last row it goes to the end of the top
+	  level. Objects, selections and whole groups move. "all" does not,
+	  and a group does not go into itself or into a group it holds: no
+	  mark is shown there and nothing happens.
+
+	  A right click without a drag opens the menu of the row as before,
+	  now when the button is released. The left button still shows and
+	  hides, F2 renames.
+
+	  With the keys, on the current row: Alt+Up and Alt+Down change
+	  places with the row above or below at the same level, Alt+Right
+	  puts the row into the group just above it, Alt+Left takes it out
+	  of its group.
+
+	  The order and the groups are those of the core ("order", "group"),
+	  so they are kept in a session. Tried in the real window with real
+	  right-button input: a drag above another row, a drag onto a
+	  group, and a click (the menu opened on release, not on press).
+
+	* 4.69.0
+
+	* The Delete key in the Objects list deletes the object or the
+	  selection of the current row (the row with the frame: the one
+	  clicked last, or reached with the arrow keys), without a question.
+	  For a group it asks first, names what is inside it, nested groups
+	  included, and deletes the group with all of that; Cancel is the
+	  default. Nothing happens on "all", and a held key deletes one row
+	  only. In the filter field and while a row is renamed the key edits
+	  the text. No button was added; "delete" in the menus is as before.
+
+	* 4.68.1
+
+	* File > Get by UniProt and File > Get Predicted Structure failed
+	  with "fetch_by_uniprot() got an unexpected keyword argument
+	  'async_'" where the old pymolish plugin was installed as a startup
+	  plugin: it registered its own fetch_by_uniprot, fetch_fold,
+	  fetch_uniprot_ligands and load_smiles over the built-in ones, with
+	  other arguments. A startup plugin named "pymolish" is no longer
+	  loaded; a line in the log says so and names its folder. Its
+	  commands are part of this program (docs/commands.md).
+
+	  Tried in the real window with that plugin in the startup path:
+	  before, the error above; now "fetch_by_uniprot P01542, 3, async_=1"
+	  loads three entries in the background.
+
+2026-11-24 pymolish-studio
+
+	* 4.68.0
+
+	* The Chat tab has the provider "Claude Code": the conversation runs
+	  through the Claude Code that is installed on this computer, with
+	  the Claude account it is signed in to (a Claude plan, or whatever
+	  else Claude Code uses there). No API key, no extra "ai". The row
+	  under the provider shows the account. If Claude Code is signed
+	  out, "Continue with Claude Code" starts its own sign-in ("claude
+	  auth login"), which opens the browser; the address is also written
+	  into the chat. The model field lists Claude Code's default and the
+	  names fable, opus, sonnet and haiku; any other model name can be
+	  typed.
+
+	  Anthropic allows no Claude.ai sign-in inside another program, so
+	  pymolish has none: it reads no token of the account and keeps
+	  nothing, and it has no Sign out for it (that would sign Claude
+	  Code out everywhere; use "claude auth logout").
+
+	  Each turn starts "claude -p" with the tool of the Chat tab only,
+	  served on 127.0.0.1 with a token of that turn. The built-in tools
+	  of Claude Code (shell, files, web), its other MCP servers and the
+	  settings files of the user are off, so the same reviews,
+	  confirmations, Stop and Undo hold as for the other providers.
+	  Claude Code keeps a transcript of each conversation in its own
+	  folder (~/.claude/projects), as it does for its own sessions.
+
+	  Tried in the real window with Claude Code 2.1.322 and a Team plan
+	  (model haiku): four tool calls answered a question and colored the
+	  carbons, a second turn continued the same conversation. Not
+	  tried: the sign-in button with a signed-out Claude Code (tests use
+	  a stand-in), Windows, macOS, and a release bundle.
+
+	* 4.67.0
+
+	* The sequence has a tab of its own: Sequence, between Command and
+	  Chat. It lists every object that is switched on, without seq_view,
+	  and it works like the rows in the viewport, because the same code of
+	  the core handles the mouse: a click adds a residue to the selection
+	  or takes it out, a drag or a Shift+click takes a range, Ctrl
+	  centers, the middle button centers (with Ctrl: zooms), the right
+	  button opens the menu of the residue or of the selection, a double
+	  click beside the rows selects nothing. The selected residues are
+	  marked, and the tab follows a selection made anywhere else. Sequence
+	  mode, labels and colors of the Display menu apply to it. The tab is
+	  drawn on the background color of the viewport, for which the colors
+	  of the residues are chosen.
+
+	  The SEQ button under the object list opens the tab. Its arrow has
+	  "Show in viewport", the old place of the sequence (the setting
+	  seq_view, as before), and "Sequence alignment". Display > Sequence
+	  is now Display > Sequence in Viewport; Display > Panels has a row
+	  Sequence. An object with seq_view off for itself is in neither
+	  place.
+
+	  Not drawn in the tab, unlike in the viewport: the dimming of the
+	  unaligned residues of an alignment, the frame around a drag, and the
+	  marks of the selection along the scroll bar.
+
+	* The AI assistant button (the robot) moved from the action toolbar
+	  to the row under the object list, after SEQ, drawn like the other
+	  icons there. The mouse mode button gives up the width: in a narrow
+	  panel its name is shortened.
+
+	  Measured in the real window on WSLg at 150 %: the row needs 234 px
+	  (the buttons 73, 73, 24, 24 and 24 px at their smallest), the
+	  toolbar 1254 px in a window of 1262 px, no button in the overflow
+	  menu. The clicks in the tab were tried there on 4hhb.
+
+2026-11-24 pymolish-studio
+
+	* 4.66.0
+
+	* Chat: sign in through the browser instead of typing an API key.
+	  Two more providers in the Chat tab, each with a "Continue with ..."
+	  button: ChatGPT (OpenAI's "Sign in with ChatGPT" for open-source
+	  apps; requests are paid from the user's ChatGPT plan) and
+	  OpenRouter (one sign-in for Claude, GPT and other models, paid from
+	  OpenRouter credits; the conversation passes through OpenRouter).
+	  After the sign-in the model field lists the models of that account,
+	  so no model ID is typed. "Stay signed in" keeps the sign-in in the
+	  keychain of the operating system (new optional package keyring, in
+	  the extra "ai"); without it the sign-in ends with the run and an
+	  OpenRouter key is asked to expire after a day. Sign out forgets it;
+	  for ChatGPT it also ends the session at OpenAI.
+
+	  Anthropic stays with an API key: Anthropic does not allow a
+	  Claude.ai login inside another program. A Claude subscription works
+	  through the agent connector (agent_server) with Claude Code.
+
+	  Changed for every provider: the model field is a list that can be
+	  typed into, and the provider and the model of each provider are
+	  remembered between runs. OPENROUTER_API_KEY is read like the other
+	  two key variables.
+
+	  Checked without an account: the stand-in tests, the streamed route
+	  through the real OpenAI package against a local server, OpenAI's
+	  server taking the first authorization request up to its log-in
+	  page, OpenRouter's model list. Not checked: a real sign-in and a
+	  real conversation with either provider.
+
+2026-11-24 pymolish-studio
+
+	* 4.65.0
+
+	* Smooth edges in the viewport: Setting > Rendering > Antialias (Real
+	  Time), the setting antialias_shader 1, now does something. The
+	  picture is drawn into a texture and passed once through a smoothing
+	  shader (FXAA, data/shaders/fxaa.fs). Off by default; like before, the
+	  setting is not kept in a session. Not in stereo and not for images
+	  drawn at another size than the window. It softens labels and thin
+	  lines a little. Value 2 (SMAA) is not built: the setting stops at 1,
+	  and the menu is one check row.
+
+	  Measured on WSLg (integrated AMD GPU, 1500 x 731, 1oky as cartoon,
+	  sticks and spheres): 10.3 ms a frame without, 12.0 ms with, each
+	  including a copy of the frame for the measurement. Looked at with
+	  transparency_mode 3, grid_mode, selection markers and labels.
+
+2026-11-24 pymolish-studio
+
+	* 4.64.0
+
+	* A session carries its background picture. On save, the picture that
+	  bg_image_filename names is written into the session as "data:" text
+	  in that same setting; loaded, the session shows it where the file is
+	  not. The session grows by about four thirds of the PNG. A name whose
+	  file is gone is saved as the name, as before. PyMOL 3.2.0a loads and
+	  saves such a session (tried); a program older than the "data:" reader
+	  shows no picture. The running program keeps the file name.
+
+2026-11-24 pymolish-studio
+
+	* 4.63.1
+
+	* sphere_mode stops at 9. The setting took 10 (cubes) and 11
+	  (tetrahedra), which only the commercial build draws; here they drew
+	  nothing and printed a warning. The test for them and its two reference
+	  images are deleted.
+
+2026-11-24 pymolish-studio
+
+	* 4.63.0
+
+	* Timeline: the shot list is kept in the session (key "pymolish",
+	  entry "timeline") with the length of the movie it built, and comes
+	  back when that session is loaded; a movie changed since then has no
+	  list, as before. PyMOL ignores the key.
+
+	* Timeline strip: a ruler of seconds on top (click or drag there to
+	  go to a moment); a shot is dragged to another place, and its right
+	  end to make it longer or shorter. Alt+Up, Alt+Down and typed seconds
+	  stay.
+
+	* Movie > Program: Camera Loop, Scene Loop and State Loop removed (116
+	  rows: 49, 43 and 24); the Timeline panel adds turns, rocks, nutations,
+	  scenes and states as shots. State Sweep, Update and Remove Last
+	  Program stay, and so do the commands (movie.add_roll, add_rock,
+	  add_nutate, add_scenes, add_state_loop).
+
+2026-11-24 pymolish-studio
+
+	* 4.62.0
+
+	* Presets (15e): "balls in glass" (balls and sticks inside a surface of
+	  which only the rim shows; for small proteins) and "cartoon cylinders"
+	  ("publication" with the helices as cylinders).
+
+	* Light menu: a "fog" / "no fog" row, on top of any look: what is far
+	  away fades into the background (depth_cue). The looks with an outline
+	  still start without fog.
+
+	* The look "soft" shades the pockets of a surface (ambient_occlusion_mode
+	  1 at ambient_occlusion_scale 16; the default 25 painted them black on
+	  1oky). The surface is built again when the look changes; on 1aon
+	  (58 996 atoms) a build took 6.0 and 6.7 s without and 7.4 and 10.5 s
+	  with it. "glass", "balls in glass" and "illustration" switch the shade
+	  off for their objects.
+
+	* Scenes keep ambient_occlusion_mode, ambient_occlusion_scale and
+	  ray_transparency_oblique_power.
+
+	* Nothing was needed for color steps in the viewport: the look "comic"
+	  already draws them there (ray_trace_mode 3, anaglyph_header.fs).
+
+2026-11-24 pymolish-studio
+
+	* 4.61.0
+
+	* Agent connector (31b): "agent_server on" lets an AI agent on this
+	  computer work in the session through MCP (Streamable HTTP): the
+	  reviewed operations of the Chat tab, as one tool. It listens on
+	  127.0.0.1 only (port 9257), wants a bearer token (the environment
+	  variable PYMOLISH_AGENT_TOKEN, or a new one each run), turns away
+	  requests with another Host or Origin, and nothing listens before
+	  "on". Every call shows in the Chat tab and the log; deleting, files
+	  and the network ask first; each change keeps an Undo step. Tried with
+	  Claude Code 2.1.322 in the real window. Codex 0.163.0 accepts the
+	  setup line, but no call could be tried (its account had no credits).
+	  Standard library only, no new dependency.
+
+	* Toolbar: an AI assistant button (bot icon) with Chat, Agent connector
+	  (on/off; the button is blue while it listens) and "Copy setup line"
+	  for Claude Code and Codex.
+
+2026-11-24 pymolish-studio
+
+	* 4.60.1
+
+	* Rock > Random no longer stops after the second turn (the timer was
+	  stopped by the turn it started). It now spins by a random 15 to 180
+	  degrees about one axis, then about another one, either way round,
+	  until Stop.
+
+2026-11-24 pymolish-studio
+
+	* 4.60.0
+
+	* Sequence alignment: a Secondary structure track under the consensus,
+	  drawn like Jalview: helices as red cylinders, strands as green
+	  arrows, numbered, coil as a line; a column shows what most structure
+	  rows have there. A color menu: residue type (Zappo), hydrophobicity
+	  (Kyte-Doolittle) or percent identity to the consensus; the choice is
+	  kept.
+
+2026-11-24 pymolish-studio
+
+	* 4.59.0
+
+	* Action toolbar: a Sequence alignment button after 2D opens the
+	  alignment window. Background and Draw show only their icon; a little
+	  more room between buttons. Zoom opens its menu like Presets, Palette
+	  and Background ("Visible" is its first row). Rock is a menu: Rock,
+	  Spin about X, Y or Z, Random (another axis and direction every 3 s)
+	  and Stop; the spins use sweep_mode and sweep_angle 0.
+
+2026-11-24 pymolish-studio
+
+	* 4.58.1
+
+	* Ligand 2D: a ligand in an object of its own (extracted, or a docked
+	  pose) found its residues in the protein's object but named them in
+	  the ligand's, so a click selected nothing and a double click warned
+	  "selection doesn't specify any coordinates". Residues now carry
+	  their own object; hydrogen bonds and metals across objects count.
+
+2026-11-24 pymolish-studio
+
+	* 4.58.0
+
+	* AI chat (31a, 31c): a Chat tab next to the command line, also under
+	  Display > Panels > AI chat. Anthropic or OpenAI with your own API key
+	  (this run only, or ANTHROPIC_API_KEY / OPENAI_API_KEY); nothing is sent
+	  until you press Send. The model discovers the installed commands,
+	  settings and presets live, inspects the session and runs reviewed API
+	  calls; delete, load, save, fetch and other file/network actions ask
+	  first. Viewport images and Python are off unless ticked; Python is
+	  not sandboxed. Stop cancels the request; Undo restores the session
+	  from before the turn's first change. Every call is shown in the chat
+	  and the log.
+	* New public command: ask [prompt]. Opens the Chat tab with a draft.
+	* Optional SDKs: pip install 'pymolish[ai]' (openai, anthropic); not in
+	  the release bundles. Without them the rest of pymolish is unchanged.
+	* Not yet tried against a live provider; tested with stand-ins only.
+
+2026-11-24 pymolish-studio
+
+	* 4.57.0
+
+	* Sequence alignment window (33a-c), opened from Display > Panels or
+	  the SEQ context menu. Loaded chains and FASTA, local MAFFT alignment,
+	  secondary structure, linked residue selections, search/copy/export,
+	  consensus and identity, and alignment rows kept in PSE/PSEX sessions.
+	* Fit selected structures to a reference with align, super or cealign;
+	  per-mobile RMSD/count/error and one session Undo snapshot per batch.
+	  A fit moves whole objects; conflicting chains/states are rejected.
+	* New public command: sequence_align filename, output, executable.
+	  Returns aligned FASTA, optionally writes it; never moves coordinates.
+	  MAFFT is an optional, separately installed local program.
+
+2026-11-23 pymolish-studio
+
+	* 4.56.0
+
+	* The ligand in 2D, the rest of its contacts (24c)
+	  - The pocket's outline: a line between the ligand and the residues in
+	    the colors of the nearest residue, open where no residue is near.
+	  - A grey halo on the ligand atoms the protein leaves open to the
+	    solvent (a share of their surface over 0.3, Shrake and Rupley with a
+	    water of 1.4 A, 64 points an atom; nothing written into the b-factors).
+	  - Metal contacts: a ligand atom within 3.0 A of a metal, a grey line;
+	    metals are no longer taken as hydrogen bond partners.
+	  - "Show in 3D" in the panel: the contacts as dashes in the viewport,
+	    one distance object per kind in its color, in the group ligand_2d;
+	    they go when the panel is closed and come back when it is opened
+	    with the box on. Objects put into that group by hand stay.
+	  - A residue's tooltip: its kind, each contact with its distance, and
+	    the nearest atoms. Tab walks the residues around the ring with a
+	    ring on the current one and its tooltip; Enter selects it (Ctrl
+	    adds); past the last one Tab goes on to the next control.
+	  - ligand2d.analyze gives each residue "pairs" (contact, ligand
+	    selection, residue selection, distance) and "nearest".
+
+2026-11-23 pymolish-studio
+
+	* 4.55.0
+
+	- C in the panel: the row "ball and stick only" is gone; ball and stick
+	  is colored from C > by rep > ball and stick, as every other
+	  representation.
+
+2026-11-23 pymolish-studio
+
+	* 4.54.0
+
+	- S and H in the panel: the rows "wire", "sticks" and "nb_spheres" are
+	  gone. The commands `show wire`, `show sticks` and `show nb_spheres`
+	  still work; "licorice" (sticks with balls on lone atoms) stays in
+	  the menus.
+
+2026-11-23 pymolish-studio
+
+	* 4.53.0
+
+	- ball_and_stick_scale defaults to 0.25 (was 0.31): balls are 0.25 of the
+	  atom's radius. Sessions that never set it draw smaller balls.
+	- S > ball and stick in the panel: the hover menu keeps only "ball size"
+	  (standard now 0.25) and "bond thickness"; "show", "as only", "color" and
+	  "standard look" are gone. A click on the row still shows it; C > ball
+	  and stick only still colors it.
+
+2026-11-23 pymolish-studio
+
+	* 4.52.0
+
+	* Ball and stick in the menus of the Objects panel
+	  - S > ball and stick: a click shows it; its hover menu has
+	    show, as only, ball size (0.20 to 0.50, standard 0.31), bond
+	    thickness (0.08, 0.12, 0.18), color (all colors, by element,
+	    CPK, unset) and "standard look", which takes those settings
+	    away again. All of them set only the ball_and_stick settings:
+	    lines, sticks and spheres and their sizes and colors stay.
+	  - C > ball and stick only: the color of the balls and bonds,
+	    not of the atoms.
+	  - H > ball and stick hides only it.
+	  - docs/commands.md lists the representation and its three
+	    settings for the command line.
+
+2026-11-23 pymolish-studio
+
+	* 4.51.0
+
+	* New command ligand_next: the next ligand with its polar
+	  contacts
+	  - `ligand_next` goes to the next ligand: it is shown as
+	    ball_and_stick, the residues of its protein within 4 A as
+	    sticks, the polar contacts between the two as dashes in the
+	    object "ligand_contacts", and the view zooms on the site.
+	    `ligand_next enabled, -1` goes back; after the last ligand
+	    comes the first. `ligand_next step=0` clears.
+	  - The ligands and their order are those of the 2D panel: the
+	    one in its pocket first. A selection named explicitly may
+	    hold a peptide or a cofactor, and a protein in another
+	    object as the partner of the contacts.
+	  - The next call takes back what the one before turned on (its
+	    dashes, the sticks, the balls) and nothing else: what was
+	    shown before stays, the protein keeps its colors and its
+	    cartoon, other objects stay enabled. An object of the user's
+	    named "ligand_contacts" is left alone; the walk then uses
+	    "ligand_contacts_01".
+	  - The contacts are found by geometry (`distance`, mode 2), in
+	    the state that is shown, inside the ligand's own object. The
+	    message says so, or "no polar contacts".
+	  - Keys: Ctrl-Shift-M next, Ctrl-Shift-H previous (both were
+	    free and can be changed in the shortcut editor). Ctrl-L
+	    stays "zoom to the next ligand" (question 58, the
+	    recommended answer). Menu: Display > Zoom > Next Ligand with
+	    Contacts, Previous, Clear Ligand Contacts.
+	  - An open 2D panel shows the ligand the walk went to. Where
+	    the walk stands is kept with the session.
+	  - Measured: 9 ms a step on 2RH1 (10 ligands), 100 ms on 1AON
+	    (59,192 atoms, 7 ligands). Tried in the real window: the
+	    menu rows, both keys, the picture, the 2D panel, Clear.
+	    Step 36a.
+
+2026-11-23 pymolish-studio
+
+	* 4.50.0
+
+	* New command color_cpk: CPK colors by element
+	  - `color_cpk selection` colors the atoms of the selected
+	    residues by element in the CPK colors of RasMol: carbon light
+	    grey, oxygen red, hydrogen white, nitrogen light blue, sulfur
+	    yellow, phosphorus orange; 28 elements have a color, any other
+	    is deep pink. One atom of a residue colors the residue. It is
+	    a coloring by element, not by kind of residue.
+	  - `color_cpk selection, ball_and_stick` colors only the balls
+	    and sticks of that representation (ball_and_stick_color on the
+	    atoms): the atoms, spheres, sticks and the cartoon keep their
+	    colors. `unset ball_and_stick_color, selection` takes it back.
+	  - In the color menus: by element > CPK, and by rep > ball and
+	    stick > "CPK (balls only)", each the same call as the command.
+	  - The colors are given as RGB values: no named color is defined
+	    or changed, no palette is touched. Scenes and sessions keep
+	    them.
+	  - The table is the "CPK Colours" table of the RasMol manual,
+	    written from what is known of it: the manual and the two other
+	    sources tried could not be read in this run. Checked against
+	    a source: only the color of an element without one, FF1493
+	    (the Jmol color page). Compare `palettes.CPK` with the manual
+	    before the colors are published.
+	  - Looked at on a black and on a white background. Step 11c.
+
+2026-11-23 pymolish-studio
+
+	* 4.49.0
+
+	* Ligands are ball_and_stick: in the presets and when a
+	  structure is loaded
+	  - Every preset that draws ligands uses the representation
+	    ball_and_stick for them: technical, pretty, publication (with
+	    and without solvent, and green), glass, wire, spring,
+	    illustration, ligands, the ligand sites presets, classified,
+	    interaction and antibody. Until now: sticks, or sticks plus
+	    small spheres with settings of their own. Ions, water and the
+	    protein keep their representations; "simple" and "default"
+	    draw ligands as lines, as before.
+	  - The view a loaded structure opens with (auto_show_classified)
+	    draws ligands and small molecules as ball_and_stick, where it
+	    drew sticks. Changed default.
+	  - No preset writes sphere_scale, stick_radius or stick_color any
+	    more, and the presets no longer reset them: such settings of
+	    the user's survive a preset, also on what is hidden. A ligand
+	    is no longer colored grey by "ligands" and "ligand sites";
+	    the atoms keep their colors.
+	  - `preset.ball_and_stick(selection, mode)`: mode 1 shows
+	    ball_and_stick in the colors of the atoms (was: white sticks
+	    of 0.14 plus spheres at scale 0.25); mode 2 colors balls and
+	    bonds by element through ball_and_stick_color (was: stick_ball,
+	    set for everything). Other modes show nothing, as before.
+	  - `set ball_and_stick_color, atomic, selection` means "by
+	    element" on atoms too; for other color settings "atomic" on
+	    atoms stays the atom's own color.
+	  - The selection `visible` and the cartoon's side chain helper
+	    know the representation.
+	  - A scene stored before a preset brings the old ligand style
+	    back (tried: sticks and spheres, preset, recall).
+	  - Tested on 1OKY with a ligand, water, a modified residue and an
+	    added zinc ion, 20 presets. Step 34c.
+
+2026-11-23 pymolish-studio
+
+	* 4.48.0
+
+	* New representation: ball_and_stick
+	  - `show ball_and_stick, organic`, `hide`, `as`, `toggle` and
+	    the selection `rep ball_and_stick`: a ball on every atom and
+	    its bonds as thin sticks, with a visibility of its own.
+	    Sticks, spheres and lines can be shown beside it, and
+	    `hide everything` hides it too. In the menus: "ball and
+	    stick" under show, hide and as; "hydrogens" follows it.
+	  - Three new settings, each for all, an object or atoms
+	    (`set name, value, selection`; `unset` goes back):
+	    ball_and_stick_scale (0.31: the ball is 0.31 of the atom's
+	    radius, the basis of sphere_scale), ball_and_stick_bond_radius
+	    (0.12; a bond is as thin as its thinner end) and
+	    ball_and_stick_color (the atom's color; "atomic" colors by
+	    element whatever color the atoms have). In the color menu:
+	    by representation > ball and stick, with "by element".
+	  - stick_radius, stick_color, stick_ball*, stick_transparency,
+	    stick_h_scale, valence, sphere_scale, sphere_color and
+	    line_width do not change it, and its settings change no
+	    stick, sphere or line (a test compares the ray tracer's
+	    primitives).
+	  - Bonds always show their order: two and three cylinders for
+	    double and triple, a solid and a broken one for aromatic.
+	    Each half of a bond has the color of its atom's ball
+	    (question 59, the recommended answer). An atom without bonds
+	    is a ball. The molecule is not changed by being drawn.
+	  - Scenes keep its visibility and settings; .pse and .psex too.
+	  - PyMOL 3.2.0a and a session with it (tried): loads, ray
+	    traces, recalls scenes and saves; the representation is not
+	    drawn there. Found on the way: PyMOL ends when it saves a
+	    session that has a setting it does not know on an atom, so
+	    those are written under a session key of their own,
+	    "pymolish_unique_settings". PyMOL drops them when it saves.
+	  - Measured in the window, 1AON with all 59,192 atoms: a frame
+	    takes 23.6 ms as ball_and_stick, 24.2 ms as sticks plus
+	    spheres of the same sizes, 23.0 ms as sticks alone. A real
+	    click on a ball picks its atom.
+	  - Built by the stick code with its own visibility bit and
+	    settings. Shared with sticks: the quality settings
+	    (stick_quality, stick_use_shader, stick_round_nub,
+	    half_bonds, hide_long_bonds, the side chain helpers). It is
+	    never transparent. Steps 34a and 34b.
+
+2026-11-23 pymolish-studio
+
+	* 4.47.0
+
+	* Scenes keep the style of presets and colorings
+	  - `scene` now also stores and recalls: the cartoon type of the
+	    atoms (`cartoon`), the settings of atoms, bonds and objects
+	    (sphere scale, stick radius, valence, the colors of
+	    representations, transparency, ...), the light, outline,
+	    background and fog settings of looks, themes and `stage`, and
+	    the definitions of the named colors the scene uses.
+	  - A setting an atom, bond or object did not have when the scene
+	    was stored is taken away again on recall: store A, apply
+	    another preset and colors, store B, and A, B, A come back as
+	    they were. Coordinates, objects loaded or deleted since and
+	    object properties are not touched.
+	  - Public behavior of `cmd.scene`: `color=0` also leaves color
+	    settings and color definitions alone, `rep=0` the cartoon type
+	    and the settings of atoms, bonds and objects. New keyword
+	    `settings=0` stores or recalls without the style, as before.
+	    A recalled color definition is global.
+	  - The panel, the command, the function keys and movie playback
+	    all recall through the same code. The settings kept at the
+	    global and the object level are a fixed list; a test fails
+	    when a preset writes one that is not on it.
+	  - Session files: a scene with a style has a seventh item in
+	    its record; scenes of older files load as before and change
+	    no style. PyMOL 3.2.0a loads and recalls such a session
+	    (tried), without the style.
+	  - Measured: the ray-traced geometry and the viewport picture
+	    of A are the same after B and back. 4V6X (239,306 atoms):
+	    store 40 ms (14 without style), recall 28 ms (13); with two
+	    settings and a cartoon type on every atom a scene adds 1.7 MB
+	    to the session, without them nothing measurable.
+	  - Step 35b. Not kept: settings of single states, secondary
+	    structure, labels' text.
+
+2026-11-23 pymolish-studio
+
+	* 4.46.0
+
+	* Property table: stars
+	  - A column "stars" stands after the name: three stars per
+	    molecule, as many filled as its rating from 0 to 3. Empty
+	    and filled differ by outline and fill, not only by color.
+	  - A click on an empty star rates up to it, a click on a filled
+	    one down to the one before it: on three stars, a click on
+	    the third leaves two, a click on the first leaves none.
+	  - The rating is the whole-number property "stars" of the
+	    object: `set_property stars, 2, name` does the same. It is
+	    typed in the cell like any value (0 to 3, Delete removes
+	    it), sorted as a number, copied and exported as 0 to 3 and
+	    saved with the session. No object gets the property just by
+	    being shown.
+	  - Typed, pasted and imported values that are no rating from 0
+	    to 3 are refused, and `load_table` says how many. A value
+	    set from elsewhere that is no rating is shown as its text
+	    and kept.
+	  - Groups and maps have no stars. The header reads "stars", the
+	    name of the property, so that an exported table comes back.
+	  - An exported table has the column "stars" now, empty where
+	    nothing is rated.
+	  - Step 22f, with the click rule recommended in question 57.
+	    Tried in the real window at 150 %, dark theme: the picture;
+	    the clicks through Qt's own mouse path in the test.
+
+2026-11-23 pymolish-studio
+
+	* 4.45.0
+
+	* Property table: columns kept in the session, counted columns,
+	  Follow, the row of a picked atom
+	  - The order of the columns, the hidden ones and the empty ones
+	    added by hand are saved with a session (.pse and .psex) and
+	    come back when it is loaded, also in a table that is open.
+	  - New button Columns: a check mark per column hides or shows
+	    it; "Add counted" writes atoms, residues, chains, states,
+	    weight or charge of each molecule as ordinary properties (so
+	    they are saved and exported); "Refresh counted" counts again.
+	  - New box Follow: only the object of the current row is shown,
+	    with the groups it is in. Up and Down step through the
+	    objects, as for docking poses.
+	  - An atom picked or clicked in the viewport makes the row of
+	    its object the current one.
+	  - Ctrl+click on a dot also shows the groups the object is in.
+	  - The size given to the table window is kept between starts.
+	  - New in a session: the key "pymolish", one entry per feature
+	    (now "table"). Entries of a newer pymolish are kept and
+	    written back. PyMOL 3.2.0a loads a .pse with the key
+	    (tried). A session of a table never opened has no such key.
+	  - Tried in the real window at 150 %: the row of buttons needs
+	    440 px, a click on an atom selects its row. Steps 28b, 22d
+	    and 22e. Not built: sequence length as a counted column.
+
+2026-11-23 pymolish-studio
+
+	* 4.44.0
+
+	* Scenes panel: one click recalls a scene
+	  - A click on a row or its thumbnail recalls the scene, once; so
+	    does Enter. Before, it took Enter or a double click. A double
+	    click recalls once and does not start a rename.
+	  - A right click and the arrow keys pick a row without recalling
+	    it: that is how a scene is picked for Update, Rename (F2) and
+	    Delete while the view stays as it is.
+	  - Dragging a row, Ctrl+Up / Ctrl+Down and the refresh of the
+	    list recall nothing.
+	  - Tried in the real window with clicks sent through the X
+	    server, dark theme. Step 35a.
+
+2026-11-23 pymolish-studio
+
+	* 4.43.2
+
+	* Fix: the 2D picture of a ligand was cut at one side
+	  - The ring of residues goes around the mean of the ligand's
+	    atoms, rdkit centers the box around the ligand: with atoms
+	    to one side of the box (carazolol in 2RH1) circles ran over
+	    the edge of the picture, in the panel and in a saved file.
+	    The mean of the atoms is now the middle of the picture.
+	  - The panel draws the picture as large as it has room for;
+	    the ceiling of 125 % is gone.
+	  - Tried in the real window on 2RH1, docked from 259 to 600 px
+	    wide and floating from 300 x 300 to 800 x 1000: every circle
+	    whole, the picture inside the panel.
+	  - Step 24d. Not tried: dragging the edge of the floating panel
+	    with the mouse, and scales other than 150 %.
+
+2026-11-23 pymolish-studio
+
+	* 4.43.1
+
+	* Fix: the window stayed dead after a change of the UI scale
+	  - Found on WSLg, 150 % to 120 %: the program kept running, but
+	    the window manager showed the rebuilt window 0.1 to 4.6 s
+	    late (30 changes measured), in other runs not after 3.5 s.
+	    Rebuilding the native window is what it does late, with or
+	    without a new scale; a pause before showing changes nothing.
+	  - On WSLg the scale is now saved and applies at the next
+	    start, and the message says why. Other displays change it
+	    in the running window as before.
+	  - Enter in the scale field asked for the change twice, so the
+	    window was rebuilt twice within 30 ms. Once now.
+	  - Step 27d. Windows and macOS (27c) are still unchecked: the
+	    new test says on each display whether the change ran live
+	    or waits for the next start.
+
+2026-11-20 pymolish-studio
+
+	* 4.43.0
+
+	* Movie button in the action toolbar
+	  - After Scenes: a click opens the Timeline panel, a second
+	    click closes it. Its name is the tooltip.
+	  - Its icon is a video camera. The "movie" rows of the menus
+	    show the same one now, in place of the clapperboard.
+	  - Measured at 150 %: the bar needs 1236 px (1195 before), the
+	    window opens 1244 px wide and every button is in the bar.
+	  - Step 32b.
+
+2026-11-20 pymolish-studio
+
+	* 4.42.0
+
+	* Icons in the row under the object list
+	  - Each of the four buttons has an icon. The mouse mode keeps
+	    its name and SEQ its letters beside the icon; Wizard and
+	    the command line show the icon alone, the name is the
+	    tooltip. SEQ now stands before Wizard.
+	  - The icons of SEQ and of the command line are blue while
+	    they are on.
+	  - Measured at 150 %: the row needs 254 px of its 292, the
+	    buttons are 23 px high (21 before).
+	  - Step 32a.
+
+2026-11-20 pymolish-studio
+
+	* 4.41.0
+
+	* Palette "halo"
+	  - Twelve strong colors: turquoise, blue, cyan, indigo and deep
+	    purple from a brand book, and between them pink, yellow,
+	    lime, red, green, magenta and orange. In the Palette menu
+	    of the toolbar and as "palette halo".
+	  - Listed for any background: on black the deep purple and the
+	    indigo are dark (contrast 1.8 and 2.7), on white six of the
+	    twelve are light.
+	  - Step 11b.
+
+2026-11-20 pymolish-studio
+
+	* 4.40.0
+
+	* Undo and Redo take back a row of the Presets menu
+	  - Before a row of the preset menu runs (a preset, a theme, a
+	    light, the floor, cartoon transparency, the solvent row),
+	    the session is kept in memory. "undo", Ctrl-Z and the Undo
+	    button put it back: colors, representations, settings,
+	    light, background, view, the contacts a preset measured.
+	    "redo" goes forward again. Until now Undo did nothing
+	    after a preset.
+	  - API change, cmd.undo and cmd.redo: with a kept step they
+	    restore the session; without one they restore coordinates
+	    as before.
+	  - Limits: five steps, and 600,000 atoms over all of them;
+	    above that a preset runs without a step and says so. A
+	    step is the whole session, so undo also takes back what
+	    was done after the preset, and redo brings it back. The
+	    steps are dropped by "reinitialize" and when a session
+	    file is opened.
+	  - Measured on 1AON (59,192 atoms): 0.15 s to keep a step,
+	    0.06 s to put it back, 17.8 MB.
+	  - Step 30f; the first piece of 21g.
+
+2026-11-20 pymolish-studio
+
+	* 4.39.0
+
+	* Clean menu: remove crystallization additives
+	  - A > clean > "remove crystallization additives" removes
+	    what a crystal was grown and frozen in, by residue name,
+	    and says how many atoms went: fragments of PEG, glycerol,
+	    MPD and other cryoprotectants, buffers (TRIS, HEPES, MES,
+	    citrate, acetate ...), sulfate, phosphate and nitrate,
+	    reducing agents, detergents. 111 names; the list is
+	    ADDITIVES in pymol/grouping.py.
+	  - As asked for, the list also has the sugars of
+	    glycosylation (NAG, NDG, BMA, MAN, FUC) and NAD, NADH,
+	    NADP and NADPH. They are not additives: where a sugar or
+	    the cofactor is what the structure is about, use "remove"
+	    on a selection instead.
+	  - Step 30e.
+
+2026-11-20 pymolish-studio
+
+	* 4.38.0
+
+	* Presets menu: submenus for themes, lights and the floor; no
+	  preset colors a cartoon or a surface
+	  - The menu has 21 rows in place of 33: the presets, the two
+	    switches, and the submenus "theme", "light" and "floor".
+	    The themes read "clay", "blue", ... without "theme" in
+	    front.
+	  - No row but a theme changes the color of a cartoon or of a
+	    surface. A surface drawn by a preset has, over each
+	    residue, the color of its carbons, also where an earlier
+	    preset colored the other atoms by element.
+	  - API change, preset.default: it colors the atoms that are
+	    no carbon by element and leaves the carbons. Before, it
+	    gave the carbons the object's color, or green.
+	  - API change, preset.glass and preset.illustration: the
+	    surface is no longer white.
+	  - API change, preset.interaction: the surface is no longer
+	    orange with white contact areas. It has the colors of the
+	    chains, and orange within 4.5 A of another chain.
+	    preset.antibody: the antigen is no longer sand-colored;
+	    the epitope stays orange.
+	  - API change, technical, pretty, publication and the ligand
+	    presets: a modified residue of the protein (a
+	    phosphoserine) keeps the color of the protein. Before, its
+	    side chain was colored like a ligand.
+	  - Step 30d.
+
+2026-11-20 pymolish-studio
+
+	* 4.37.1
+
+	* Fix: UI scale changed in the running window
+	  - The icons of the toolbar and of the States panel were
+	    blurred after a change: they stayed pictures made for the
+	    old scale, and so did every icon made later, because Qt
+	    keeps the application's pixel ratio from the start. Icons
+	    are made for the ratio of the screens now, and after a
+	    change everything that draws icons draws them again.
+	  - "QHighDpiScaling::setFactor: Should only be called when no
+	    windows exist" is no longer printed. Qt says it whenever a
+	    window object exists; the change works all the same.
+	  - Step 30c.
+
+2026-11-20 pymolish-studio
+
+	* 4.37.0
+
+	* Property table: values at the left, a new icon, no message
+	  for a group
+	  - Every value starts at the left of its cell, numbers too.
+	    The row number stays at the right.
+	  - The Table button has the icon of a sheet: a grid under a
+	    header. The old one read as a window with panes.
+	  - Fix: with a group, a map or a measurement among the
+	    objects (A > split > by type makes a group), the console
+	    got "ExecutiveGetProperty: objname='...' not found" twice
+	    a second while the table was open. Only molecules have
+	    properties, and only they are asked and written now.
+	  - Step 30b.
+
+2026-11-20 pymolish-studio
+
+	* 4.36.0
+
+	* Ligand 2D: circles, larger text, tones for a light and a dark
+	  window, a larger legend
+	  - A residue is a circle with its name and number in larger
+	    text. Its fill runs from a lighter to a deeper tone of the
+	    color of its kind, inside an outline of the same color.
+	  - On a dark window the fills are deep, the outlines bright
+	    and the text white; on a light window the other way round.
+	    The contact lines are lighter on dark, and the ring around
+	    a selected residue is the blue of the window's links.
+	  - The legend has larger text and marks and wraps into rows:
+	    its end was cut off in a narrow picture. The picture has
+	    less empty margin.
+	  - A PNG written by "ligand_2d" has plain fills; the SVG and
+	    the panel have the tones.
+	  - Fix: "qt.svg: Invalid path data; path truncated", printed
+	    three times whenever the panel drew its picture.
+	  - Step 30a.
+
+2026-11-20 pymolish-studio
+
+	* 4.35.0
+
+	* Presets menu: five color themes
+	  - "theme clay", "theme blue", "theme sage", "theme mint" and
+	    "theme night": one soft color for the protein, one that
+	    stands out for the carbons of the ligands, and a two-color
+	    background that goes with them. A theme changes colors and
+	    the background only, so it combines with any preset and
+	    any light; in the toolbar it acts on the objects that are
+	    switched on.
+	  - Step 25b, the themes.
+
+2026-11-20 pymolish-studio
+
+	* 4.34.0
+
+	* New command: stage, a floor under the molecule
+	  - "stage" puts a floor under what is shown, horizontal for
+	    the view of the moment, and tilts the view 20 degrees so
+	    that it is seen. A ray-traced picture has the shadow of the
+	    molecule on it. "stage mirror" adds a reflected copy seen
+	    through the floor, also in the viewport. "stage off"
+	    removes both and puts the view and the fog back.
+	  - The floor fades into the background with distance, so its
+	    far edge does not show.
+	  - Presets menu: "floor", "floor with mirror image", "no
+	    floor", and three new light setups: "top light" (one light
+	    from above, a strong shadow), "soft shadow" (four lights
+	    close together; three to four times slower) and "studio"
+	    (key, fill and rim light).
+	  - The viewport shows the floor and the mirror image, not the
+	    shadow: that needs Draw > Ray.
+	  - Step 25a.
+
+2026-11-20 pymolish-studio
+
+	* 4.33.0
+
+	* Ligand in 2D: the panel
+	  - A button in the toolbar (a hexagon) opens the panel
+	    "Ligand 2D" with the picture of ligand_2d, in the colors of
+	    the window. The button works when an object that is
+	    switched on has a ligand.
+	  - A click on a residue in the picture selects it in the
+	    viewport and shows it as sticks; Ctrl+click adds; a double
+	    click zooms on it. The other way too: residues that are
+	    selected in the viewport are ringed in blue in the picture.
+	  - A list picks among several ligands; the one with the most
+	    protein around it is first, so a lipid or a buffer molecule
+	    on the surface is not what opens. Refresh finds ligands and
+	    contacts again. Save writes SVG or PNG.
+	  - The picture is as large as the panel allows.
+	  - Step 24b.
+
+2026-11-20 pymolish-studio
+
+	* 4.32.0
+
+	* New command: ligand_2d
+	  - "ligand_2d [ligand [, cutoff [, filename]]]" draws a ligand
+	    flat with the residues around it: colored by kind
+	    (hydrophobic, polar, negative, positive, glycine), with
+	    lines for hydrogen bonds, salt bridges, ring stacking and
+	    cation-ring contacts, and a legend. It writes SVG or PNG;
+	    without a file name it lists the contacts.
+	  - Without a ligand argument it takes the largest small
+	    molecule of the objects that are switched on.
+	  - Needs rdkit (extra "chem", in the downloadable builds).
+	  - The window for it, with clicks that select in 3D, follows.
+	  - Step 24a.
+
+2026-11-20 pymolish-studio
+
+	* 4.31.0
+
+	* UI scale: any value from 50 to 300 %, without a restart
+	  - The scale button of the toolbar has a field for any whole
+	    percent from 50 to 300 and rows for the common steps (75
+	    to 300). The window changes at once; the molecule, the
+	    layout and the panels stay. The window keeps its size on
+	    the screen where the screen allows.
+	  - Below 75 % and above 200 % the program asks "Keep this
+	    size?" and goes back by itself after ten seconds without
+	    an answer, in case the window became unusable.
+	  - The live change uses a function inside Qt that is not part
+	    of its public interface. Where it is missing or has no
+	    effect, the value is saved and the old message "applies
+	    the next time pymolish starts" is shown. Tried on Linux
+	    (X11); Windows and macOS are not tried yet.
+	  - The viewport follows a changed pixel ratio by itself (also
+	    when the window is moved to a screen with another scale).
+	  - Step 27.
+
+2026-11-20 pymolish-studio
+
+	* 4.30.0
+
+	* Action toolbar: quick select
+	  - Chips after the selection mode: P selects the protein, L the
+	    ligands, S the water, All everything, in the objects that
+	    are switched on. The result is the selection "sele". With
+	    Shift a click adds to the selection, with Ctrl it takes
+	    away. The last chip selects nothing.
+	  - The chip with three dots lists more: nucleic acid, ions and
+	    metals, each chain of the objects that are switched on,
+	    backbone, side chains, hydrogens, everything within 5 A of
+	    the selection, and the inverse.
+	  - Palette shows only its icon now, so that the bar stays one
+	    row: the names of Residues, Presets and Draw remain.
+	  - Steps 26c and 26d.
+
+2026-11-20 pymolish-studio
+
+	* 4.29.0
+
+	* Property table: import and export
+	  - New command "load_table file": reads a CSV, TSV or Excel
+	    (.xlsx, first sheet) file and sets object properties from
+	    it. A row goes to the object named in the column "name",
+	    "title", "object", "id" or "entry", else in the first
+	    column; object_column= names another. Rows that name no
+	    object are skipped and counted. A header that is no
+	    property yet becomes a new column; an empty cell leaves
+	    the property as it is.
+	  - Excel files are read without a new package. Limits: the
+	    first sheet, a formula gives its stored result, a date
+	    arrives as Excel's day number, .xls is not read.
+	  - New command "save_table file [, selection]": the
+	    properties of the objects as CSV.
+	  - In the table: Import and Export buttons. Export writes the
+	    rows and columns that are shown, in the order shown. The
+	    Open button of the toolbar has "Import table...".
+	  - Step 22c.
+
+2026-11-20 pymolish-studio
+
+	* 4.28.0
+
+	* Property table: editing
+	  - A double click, F2 or typing on a cell edits it. The value
+	    becomes a whole number, a decimal number or text, by what
+	    was typed. Emptying a cell deletes the property. With
+	    several cells of one column selected, the edit goes to all
+	    of them. Tab applies and edits the cell below.
+	  - The Name cell renames the object.
+	  - "+ Column" adds an empty column; a right click on a column
+	    header renames or deletes the column (deleting asks first:
+	    it deletes the property from every object).
+	  - Ctrl+C copies the selected cells as tab-separated text,
+	    Ctrl+V pastes such text from the first selected cell to
+	    the right and down (from a spreadsheet, for instance),
+	    Delete empties the selected cells. A paste changes only
+	    property cells, never a name.
+	  - Step 22b.
+
+2026-11-20 pymolish-studio
+
+	* 4.27.1
+
+	* Fix: a property set again with another type ended the program
+	  - cmd.set_property on a property that already had a value of
+	    another type (a number, then a text; a whole number over a
+	    decimal one) aborted with std::bad_variant_access. The old
+	    value was read as the new type before the types were
+	    compared. Found while building the editing of the property
+	    table.
+
+2026-11-20 pymolish-studio
+
+	* 4.27.0
+
+	* Property table, first part
+	  - A Table button in the toolbar opens a window with one row
+	    per object: row number, a dot that shows or hides the
+	    object (Ctrl+click: only this one), the name, and one
+	    column per object property. Properties are what
+	    cmd.set_property sets and what the data fields of an SDF
+	    file become at load. Group members nest under their group.
+	  - A click on a column header sorts by value; a second click
+	    reverses; the Row header gives the order of the Objects
+	    panel back. The filter box keeps the rows whose name or
+	    any value contains the text.
+	  - The window opens over the viewport with its right edge at
+	    the Objects panel and follows the main window. It can be
+	    resized and closed; dragged elsewhere it stays there, and
+	    Display > Panels > Reset Layout brings it back.
+	  - Read-only so far: editing, import and export follow.
+	  - split_states: the new objects keep the properties of their
+	    state. Until now they were lost.
+	  - Step 22a.
+
+2026-11-20 pymolish-studio
+
+	* 4.26.0
+
+	* A packed session file: .psex
+	  - "save work.psex" writes what a .pse holds, packed: atoms
+	    and coordinates as bytes, then lzma. 1AON: 19.6 MB as .pse,
+	    1.1 MB as .psex; 4V6X: 87.2 MB and 3.9 MB. Writing and
+	    reading are faster too (4V6X: saved in 0.8 s against
+	    1.5 s, loaded in 0.2 s against 1.0 s).
+	  - File > Save Session As offers it first; a name typed
+	    without an extension gets .psex. "PyMOL Session File
+	    (.pse)" is the second choice and is what PyMOL reads.
+	    Save Session (Ctrl+S) keeps the type the session has.
+	  - "load" tells the two apart by the first bytes of the file,
+	    not by the name. A file cut short or written by a newer
+	    format gives an error and loads nothing.
+	  - Every .pse loads as before; nothing is converted.
+	  - Step 28a.
+
+2026-11-20 pymolish-studio
+
+	* 4.25.0
+
+	* Removed: the scene buttons drawn in the viewport
+	  - The column of buttons at the lower left of the viewport, one
+	    per scene, is gone. The Scenes panel (toolbar, camera icon)
+	    lists the scenes with pictures; Enter recalls, F2 renames,
+	    dragging reorders.
+	  - The setting scene_buttons no longer exists: "set
+	    scene_buttons" reports an unknown setting. A session that
+	    stored it loads as before. Scene > Buttons and the row
+	    "buttons" of the viewport's scene menu are gone with it.
+	  - pymol.menu.scene_buttons and pymol.menu.scene_menu are
+	    deleted; only the buttons used them.
+	  - 498 lines of C++ deleted, in Scene.cpp, SceneMouse.cpp,
+	    Setting.cpp and MovieScene.cpp, with SceneElem.h.
+	  - Step 17f. Left over from step 3.
+
+2026-11-20 pymolish-studio
+
+	* 4.24.0
+
+	* Objects panel: rename on the row
+	  - F2 on a row, or "rename" in its menus, opens a text field
+	    on the row with the old name selected. Enter renames, Esc
+	    cancels. A space becomes "_"; a name that is taken is
+	    refused with a line in the log. The row "all" cannot be
+	    renamed.
+	  - The green "Renaming ... to:" line in the viewport is no
+	    longer used by the window. It remains for a viewport
+	    without the window (pymolish -x): pymol.menu.rename starts
+	    it when no window took the rename.
+	  - The "rename" rows of the menus run menu.rename(name)
+	    instead of cmd.wizard("renaming", name).
+	  - Step 23a.
+
+2026-11-20 pymolish-studio
+
+	* 4.23.1
+
+	* Less CPU time while surfaces are built
+	  - Worker threads that wait for work sleep at once instead of
+	    spinning first (OMP_WAIT_POLICY=passive, set at start
+	    unless that variable or GOMP_SPINCOUNT is already set).
+	    1aon, three surface builds: CPU time 98 s to 66 s, the same
+	    time on the clock (5.1 to 6.1 s a build). Less heat and
+	    battery, not more speed. The ray tracer has its own threads
+	    and is not touched by this.
+	  - Step 1b.
+
+2026-11-20 pymolish-studio
+
+	* 4.23.0
+
+	* Menus and Orient
+	  - Every menu of the program shows the row under the pointer
+	    in blue with white text, and a chosen row in blue letters:
+	    the menu bar, the right-click menus, the menus of the
+	    Objects panel. Until now only the menus of the toolbar did.
+	  - Orient in the toolbar acts on what is shown, like Zoom: a
+	    hidden object no longer pulls the view. With nothing shown
+	    it acts on everything. The command "orient" is unchanged.
+	  - Step 20, the two follow-ups.
+
+2026-11-20 pymolish-studio
+
+	* 4.22.0
+
+	* Palette "chimerax"
+	  - The ten colors UCSF ChimeraX gives to models 1 to 10: tan,
+	    sky blue, plum, light green, salmon, light gray, deep pink,
+	    gold, dodger blue, purple. In the Palette menu of the
+	    toolbar and as "palette chimerax".
+	  - Step 15c.
+
+2026-11-20 pymolish-studio
+
+	* 4.21.0
+
+	* Action toolbar: an Open button
+	  - The first button of the bar, a folder. A click opens the
+	    file dialog (as File > Open). Its arrow lists: Open file,
+	    Open folder, Open Recent, Get PDB entry, Get by UniProt,
+	    Get predicted structure. They are the rows of the File
+	    menu, which keeps them.
+	  - Step 26b.
+
+2026-11-20 pymolish-studio
+
+	* 4.20.0
+
+	* Action toolbar: shorter
+	  - "Background" reads "Bg" and has a paint roller as its icon;
+	    the tooltip still says "Background color".
+	  - Builder and Scenes show only their icon. The name appears
+	    under the mouse and is what a screen reader says.
+	  - "Draw/Ray" reads "Draw". Its panel is unchanged.
+	  - The bar is 192 px narrower at 150 % (1096 to 904).
+	  - Step 26a and the first part of 26d.
+
+	* Version numbers: a new rule, from this version on
+	  - The second number goes up when something a user can see or
+	    use changes; the third for every other change to the
+	    program. A change to plans, documents or tests alone gets
+	    no number. The first number stays 4. AGENTS.md, section 5.
+
 2026-11-20 pymolish-studio
 
 	* 4.19.43

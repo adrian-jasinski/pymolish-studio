@@ -770,78 +770,47 @@ int SettingUniqueFromPyList(PyMOLGlobals * G, PyObject * list, int partial_resto
 /**
  * @pre GIL
  */
-PyObject *SettingUniqueAsPyList(PyMOLGlobals * G)
+PyObject *SettingUniqueAsPyList(PyMOLGlobals * G, bool pymolish)
 {
   assert(PyGILState_Check());
 
-  PyObject *result = nullptr;
   CSettingUnique *I = G->SettingUnique;
-  {
-    auto n_entry = I->id2offset.size();
-    result = PyList_New(n_entry);
-    if(result) {
-      n_entry = 0;
-      for (auto id2offset : I->id2offset) {
-        PyObject *setting_list = nullptr;
-        auto unique_id = id2offset.first;
-        auto offset = id2offset.second;
-        {
-          int n_set = 0;
-
-          /* count number of settings for this unique_id */
-
-          auto save_offset = offset;
-          while(offset) {
-            auto entry = &I->entry[offset];
-            n_set++;
-            offset = entry->next;
-          }
-
-          /* create and insert list for each setting */
-
-          setting_list = PyList_New(n_set);
-          n_set = 0;
-          offset = save_offset;
-          while(offset) {
-            PyObject *setting_entry = PyList_New(3);
-            auto entry = &I->entry[offset];
-            int type = SettingInfo[entry->setting_id].type;
-            PyList_SetItem(setting_entry, 0, PyInt_FromLong(entry->setting_id));
-            PyList_SetItem(setting_entry, 1, PyInt_FromLong(type));
-            switch (type) {
-            case cSetting_int:
-            case cSetting_color:
-            case cSetting_boolean:
-              PyList_SetItem(setting_entry, 2, PyInt_FromLong(entry->value.int_));
-              break;
-            case cSetting_float:
-              PyList_SetItem(setting_entry, 2,
-                             PyFloat_FromDouble(*(float *) &entry->value.float_));
-              break;
-	    case cSetting_float3:
-	      PyList_SetItem(setting_entry, 2,
-			     PConvFloatArrayToPyList((float *) &entry->value.float3_, 3));
-	      break;
-            }
-            PyList_SetItem(setting_list, n_set, setting_entry);
-            n_set++;
-            offset = entry->next;
-          }
-        }
-
-        /* add this unique_id set into the overall list */
-
-        {
-          PyObject *unique_list = PyList_New(2);
-          PyList_SetItem(unique_list, 0, PyInt_FromLong(unique_id));
-          PyList_SetItem(unique_list, 1, setting_list);
-          PyList_SetItem(result, n_entry, unique_list);
-        }
-        n_entry++;
+  PyObject *result = PyList_New(0);
+  for (auto id2offset : I->id2offset) {
+    PyObject *setting_list = PyList_New(0);
+    for (auto offset = id2offset.second; offset; offset = I->entry[offset].next) {
+      auto entry = &I->entry[offset];
+      if ((entry->setting_id >= cSettingPymolishFirst) != pymolish)
+        continue;
+      int type = SettingInfo[entry->setting_id].type;
+      PyObject *value = nullptr;
+      switch (type) {
+      case cSetting_int:
+      case cSetting_color:
+      case cSetting_boolean:
+        value = PyInt_FromLong(entry->value.int_);
+        break;
+      case cSetting_float:
+        value = PyFloat_FromDouble(entry->value.float_);
+        break;
+      case cSetting_float3:
+        value = PConvFloatArrayToPyList(entry->value.float3_, 3);
+        break;
+      default:
+        continue;
       }
+      PyObject *setting_entry = Py_BuildValue("[iiN]", entry->setting_id, type, value);
+      PyList_Append(setting_list, setting_entry);
+      Py_DECREF(setting_entry);
     }
+    if (PyList_Size(setting_list)) {
+      PyObject *unique_list = Py_BuildValue("[iO]", id2offset.first, setting_list);
+      PyList_Append(result, unique_list);
+      Py_DECREF(unique_list);
+    }
+    Py_DECREF(setting_list);
   }
-  return (PConvAutoNone(result));
+  return result;
 }
 
 int SettingSetSmart_i(PyMOLGlobals * G, CSetting * set1, CSetting * set2, int index,
@@ -2106,11 +2075,6 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
   case cSetting_stereo_dynamic_strength:
     SceneInvalidate(G);
     break;
-  case cSetting_scene_buttons:
-  case cSetting_scene_buttons_mode:
-    SceneInvalidate(G);
-    OrthoInvalidateDoDraw(G);
-    break;
   case cSetting_dash_round_ends:
   case cSetting_dash_color:
     if (SettingGetGlobal_b(G, cSetting_use_shaders) && SettingGetGlobal_b(G, cSetting_dash_use_shader)){
@@ -2186,6 +2150,12 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
   case cSetting_stick_as_cylinders:
   case cSetting_stick_good_geometry:
     ExecutiveInvalidateRep(G, inv_sele, cRepCyl, cRepInvRep);
+    SceneChanged(G);
+    break;
+  case cSetting_ball_and_stick_scale:
+  case cSetting_ball_and_stick_bond_radius:
+  case cSetting_ball_and_stick_color:
+    ExecutiveInvalidateRep(G, inv_sele, cRepBallAndStick, cRepInvRep);
     SceneChanged(G);
     break;
   case cSetting_line_use_shader:
@@ -2405,13 +2375,6 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
     ExecutiveInvalidateRep(G, inv_sele, cRepNonbonded, cRepInvRep);
     SceneChanged(G);
     break;
-  case cSetting_scenes_changed:
-    {
-      int scene_buttons = SettingGetGlobal_i(G, cSetting_scene_buttons);
-      if (scene_buttons)
-	OrthoInvalidateDoDraw(G);
-    }
-    break;
   case cSetting_button_mode_name:
     {
       auto internal_gui_mode = SettingGet<InternalGUIMode>(cSetting_internal_gui_mode, G->Setting);
@@ -2450,11 +2413,6 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
     SceneChanged(G);
     break;
   case cSetting_sphere_mode:
-    if (SettingGet<int>(G, cSetting_sphere_mode) > 9) {
-      PRINTFB(G, FB_Setting, FB_Warnings)
-        " Setting-Warning: sphere_mode > 9 is not supported in Open-Source "
-        "version of PyMOL\n" ENDFB(G);
-    }
     ExecutiveInvalidateRep(G, inv_sele, cRepSphere, cRepInvRep);
     SceneInvalidate(G);
     break;
@@ -2903,6 +2861,8 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
     SceneChanged(G);
     break;    
   case cSetting_antialias_shader:
+    SceneInvalidate(G);
+    break;
   case cSetting_atom_type_format:
   case cSetting_colored_feedback:
   case cSetting_suspend_undo:
@@ -3172,6 +3132,27 @@ bool CPyMOLInitSetting(OVLexicon * Lex, std::unordered_map<int, int>& Setting) {
  * Export the settings names to Python a as (name: index) dictionary.
  * Replacement for pymol.settings.SettingIndex
  */
+PyObject* SettingGetDefault(int index)
+{
+  const auto& rec = SettingInfo[index];
+  switch (rec.type) {
+  case cSetting_boolean:
+    return PyBool_FromLong(rec.value.i[0]);
+  case cSetting_int:
+    return PyLong_FromLong(rec.value.i[0]);
+  case cSetting_float:
+    return PyFloat_FromDouble(pymol::pretty_f2d(rec.value.f[0]));
+  case cSetting_float3:
+    return Py_BuildValue("(ddd)", pymol::pretty_f2d(rec.value.f[0]),
+        pymol::pretty_f2d(rec.value.f[1]), pymol::pretty_f2d(rec.value.f[2]));
+  case cSetting_string:
+  case cSetting_color:
+    return PyUnicode_FromString(rec.value.s ? rec.value.s : "");
+  default:
+    Py_RETURN_NONE;
+  }
+}
+
 PyObject * SettingGetSettingIndices() {
   PyObject * val;
   PyObject * dict = PyDict_New();
@@ -3194,6 +3175,23 @@ PyObject * SettingGetSettingIndices() {
 /**
  * Return a list of all setting indices for the given unique id
  */
+std::vector<SettingUniqueEntry> SettingUniqueGetEntries(PyMOLGlobals* G, int unique_id)
+{
+  auto I = G->SettingUnique;
+  std::vector<SettingUniqueEntry> entries;
+  auto it = I->id2offset.find(unique_id);
+  if (it != I->id2offset.end()) {
+    for (int offset = it->second; offset; offset = I->entry[offset].next) {
+      entries.push_back(I->entry[offset]);
+    }
+  }
+  std::sort(entries.begin(), entries.end(),
+      [](const SettingUniqueEntry& a, const SettingUniqueEntry& b) {
+        return a.setting_id < b.setting_id;
+      });
+  return entries;
+}
+
 PyObject * SettingUniqueGetIndicesAsPyList(PyMOLGlobals * G, int unique_id)
 {
   CSettingUnique *I = G->SettingUnique;

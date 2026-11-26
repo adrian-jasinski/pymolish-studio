@@ -2,7 +2,8 @@
 Objects panel: the Qt replacement for the object list and the wizard buttons
 of the viewport's internal GUI. One row per object or selection (group members
 nested) with a visibility dot and the A/S/H/L/C menus from pymol.menu; a click
-on the row shows or hides the object. Under the list: the states panel (step,
+on the row shows or hides the object, the Delete key deletes it, a drag with
+the right button (or Alt and an arrow key) moves it in the list or into a group. Under the list: the states panel (step,
 play, speed) while there is more than one state or frame.
 Everything is Qt text, so it follows the application font, the theme and
 the toolbar's UI scale, and the dock is resized by dragging its edge.
@@ -458,6 +459,9 @@ class ObjectPanel(QtWidgets.QDockWidget):
         self.cmd = cmd
         self.rows = []
         self.items = {}
+        self._editing = None  # the name being renamed in place
+        self._press = None  # right button down: (position, name of the row)
+        self._drag = None  # the name of the row a right-button drag moves
 
         self.tree = tree = QtWidgets.QTreeWidget()
         tree.setHeaderLabels(["Name"] + [letter for letter, _ in BUTTONS])
@@ -474,6 +478,9 @@ class ObjectPanel(QtWidgets.QDockWidget):
         )
         tree.viewport().setAttribute(Qt.WidgetAttribute.WA_Hover)
         tree.setExpandsOnDoubleClick(False)
+        # a click toggles and a double click zooms: only rename() edits
+        tree.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        tree.itemDelegate().closeEditor.connect(self._edit_closed)
         tree.setSelectionMode(
             QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection
         )
@@ -491,6 +498,10 @@ class ObjectPanel(QtWidgets.QDockWidget):
         tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         tree.customContextMenuRequested.connect(self._context_menu)
         tree.viewport().installEventFilter(self)
+        # where a dragged row would land: a line between rows, a frame on a group
+        self._mark = QtWidgets.QWidget(tree.viewport())
+        self._mark.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self._mark.hide()
 
         copy = QtGui.QShortcut(QtGui.QKeySequence.StandardKey.Copy, tree)
         copy.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
@@ -500,6 +511,23 @@ class ObjectPanel(QtWidgets.QDockWidget):
         space.activated.connect(
             lambda: tree.currentItem() and self._toggle(tree.currentItem())
         )
+        f2 = QtGui.QShortcut(Qt.Key.Key_F2, tree)
+        f2.setContext(Qt.ShortcutContext.WidgetShortcut)
+        f2.activated.connect(self.rename)
+        # this widget only: Delete in the filter or in a rename edits text
+        delete = QtGui.QShortcut(Qt.Key.Key_Delete, tree)
+        delete.setContext(Qt.ShortcutContext.WidgetShortcut)
+        delete.setAutoRepeat(False)  # a held key must not empty the list
+        delete.activated.connect(self.delete)
+        for key, step in (
+            (Qt.Key.Key_Up, "up"),
+            (Qt.Key.Key_Down, "down"),
+            (Qt.Key.Key_Left, "out"),
+            (Qt.Key.Key_Right, "in"),
+        ):
+            move = QtGui.QShortcut(Qt.KeyboardModifier.AltModifier | key, tree)
+            move.setContext(Qt.ShortcutContext.WidgetShortcut)
+            move.activated.connect(lambda step=step: self.move_current(step))
 
         self.filter = QtWidgets.QLineEdit()
         self.filter.setPlaceholderText("Filter by name")
@@ -538,6 +566,10 @@ class ObjectPanel(QtWidgets.QDockWidget):
         QtCore.QTimer.singleShot(0, self.poll)
 
     def refresh(self):
+        # a rebuild would close the editor of a rename, or move the rows
+        # under a drag
+        if self._editing or self._drag:
+            return
         rows = snapshot(self.cmd)
         if rows == self.rows:
             return
@@ -609,6 +641,194 @@ class ObjectPanel(QtWidgets.QDockWidget):
             self.cmd.enable(name)
         self.refresh()
 
+    def delete(self):
+        """The Delete key: delete the object or selection of the current
+        row. A group asks first, and goes with everything inside it."""
+        item = self.tree.currentItem()
+        if item is None or item.data(0, UserRole)[1] == "all":
+            return
+        name, kind = item.data(0, UserRole)
+        if kind == "object:group":
+            inside, queue = [], [item]
+            for parent in queue:  # nested groups and their members too
+                children = [parent.child(i) for i in range(parent.childCount())]
+                inside += [child.data(0, UserRole) for child in children]
+                queue += children
+            groups = sum(k == "object:group" for _, k in inside)
+            counts = "%d objects" % (len(inside) - groups) + (
+                " and %d groups" % groups if groups else ""
+            )
+            names = ", ".join(n for n, _ in inside[:12]) + (
+                " ..." if len(inside) > 12 else ""
+            )
+            Button = QtWidgets.QMessageBox.StandardButton
+            answer = QtWidgets.QMessageBox.question(
+                self,
+                "Delete group",
+                'Delete the group "%s" and the %s inside it?\n\n%s'
+                % (name, counts, names)
+                if inside
+                else 'Delete the empty group "%s"?' % name,
+                Button.Yes | Button.Cancel,
+                Button.Cancel,
+            )
+            if answer != Button.Yes:
+                return
+        self.cmd.delete(name)  # of a group: with all its members
+        self.refresh()
+
+    def _new_parent(self, name, target, where):
+        """The group a move would put the row into ("" for the top level),
+        or None when the move is not possible: see move."""
+        kinds = {r[0]: r[1] for r in self.rows}
+        parents = {r[0]: r[3] for r in self.rows}
+        if name == target or name == "all" or not {name, target} <= set(kinds):
+            return None
+        if where == "into":
+            if kinds[target] != "object:group":
+                return None
+            parent = target
+        elif target == "all":
+            if where != "after":
+                return None
+            parent = ""
+        else:
+            parent = parents[target]
+        above = parent
+        while above:  # a group does not go into itself or into what it holds
+            if above == name:
+                return None
+            above = parents.get(above, "")
+        return parent
+
+    def move(self, name, target, where):
+        """Move a row "before" or "after" the row of target (into the group
+        of that row, or out to the top level), or "into" the group target.
+        The drag with the right button and the Alt+arrow keys end here.
+        False when the row cannot go there."""
+        parent = self._new_parent(name, target, where)
+        if parent is None:
+            return False
+        cmd = self.cmd
+        kind, old = {r[0]: (r[1], r[3]) for r in self.rows}[name]
+        if parent != old:
+            if parent:
+                cmd.group(parent, name)
+            elif kind == "object:group":
+                cmd.group(name, action="raise")  # "ungroup" would empty it
+            else:
+                cmd.ungroup(name)
+        if where != "into":
+            names = [r[0] for r in self.rows[1:] if r[0] != name]
+            at = 0 if target == "all" else names.index(target) + (where == "after")
+            names.insert(at, name)
+            cmd.order(" ".join(names), location="top")
+        self.rows = []
+        self.refresh()
+        if name in self.items:
+            self.tree.setCurrentItem(self.items[name])
+        return True
+
+    def move_current(self, step):
+        """Alt+Up/Down: the current row changes place with the row above or
+        below it at its level. Alt+Left: out of its group, after it.
+        Alt+Right: into the group just above it."""
+        item = self.tree.currentItem()
+        if item is None:
+            return False
+        name = item.data(0, UserRole)[0]
+        parent = item.parent() or self.tree.invisibleRootItem()
+        if step == "out":
+            return bool(item.parent()) and self.move(
+                name, parent.data(0, UserRole)[0], "after"
+            )
+        rows = [parent.child(i) for i in range(parent.childCount())]
+        rows = [row for row in rows if not row.isHidden()]  # as filtered
+        at = rows.index(item) + (1 if step == "down" else -1)
+        if not 0 <= at < len(rows):
+            return False
+        where = {"up": "before", "down": "after", "in": "into"}[step]
+        return self.move(name, rows[at].data(0, UserRole)[0], where)
+
+    def _drop(self, position):
+        """Where the dragged row would land at this point of the list:
+        (target, where, rectangle that shows it), or None."""
+        tree = self.tree
+        width = tree.viewport().width()
+        item = tree.itemAt(position)
+        if item is None:  # under the last row: the end of the top level
+            last = tree.topLevelItem(tree.topLevelItemCount() - 1)
+            item = last
+            while tree.itemBelow(item):
+                item = tree.itemBelow(item)
+            target, where = last.data(0, UserRole)[0], "after"
+            edge = tree.visualItemRect(item).bottom()
+        else:
+            target, kind = item.data(0, UserRole)
+            rect = tree.visualItemRect(item)
+            at = (position.y() - rect.top()) / max(1, rect.height())
+            opened = item.isExpanded() and item.childCount()
+            if kind == "all":
+                where = "after"
+            elif kind == "object:group" and at >= 0.25 and (opened or at <= 0.75):
+                where = "into"  # under an open group come its members
+            else:
+                where = "before" if at < 0.5 else "after"
+            edge = rect.top() if where == "before" else rect.bottom()
+        if self._new_parent(self._drag, target, where) is None:
+            return None
+        if where == "into":
+            return target, where, QtCore.QRect(0, rect.top(), width, rect.height())
+        return target, where, QtCore.QRect(0, edge - 1, width, 2)
+
+    def _right_button(self, event):
+        """A drag with the right button moves the row; a click without a
+        drag opens its menu, on release. True: the event was used."""
+        kind, Type = event.type(), QtCore.QEvent.Type
+        if kind == Type.ContextMenu:
+            # the mouse asks on press (X11) or on release (Windows): see below
+            return event.reason() == QtGui.QContextMenuEvent.Reason.Mouse
+        if (
+            kind == Type.MouseButtonPress
+            and event.button() == Qt.MouseButton.RightButton
+        ):
+            item = self.tree.itemAt(event.pos())
+            self._press = (event.pos(), item.data(0, UserRole)[0] if item else None)
+            return True
+        if self._press is None:
+            return False
+        start, name = self._press
+        if kind == Type.MouseMove:
+            far = (event.pos() - start).manhattanLength()
+            if self._drag is None and far >= QtWidgets.QApplication.startDragDistance():
+                # "": the pointer left, but "all" or the empty part does not move
+                self._drag = "" if name in (None, "all") else name
+            if self._drag:
+                drop = self._drop(event.pos())
+                self._mark.setVisible(bool(drop))
+                if drop:
+                    self._mark.setGeometry(drop[2])
+                    self._mark.setStyleSheet(
+                        "border: 2px solid palette(highlight);"
+                        if drop[1] == "into"
+                        else "background: palette(highlight);"
+                    )
+            return True
+        if (
+            kind == Type.MouseButtonRelease
+            and event.button() == Qt.MouseButton.RightButton
+        ):
+            drop = self._drop(event.pos()) if self._drag in self.items else None
+            drag, self._press, self._drag = self._drag, None, None
+            self._mark.hide()
+            if drag is None:
+                self._context_menu(start)
+            elif drop:
+                self.move(drag, *drop[:2])
+            self.refresh_soon()
+            return True
+        return False
+
     def _clicked(self, item, column):
         if column:
             rect = self.tree.visualRect(self.tree.indexFromItem(item, column))
@@ -626,6 +846,50 @@ class ObjectPanel(QtWidgets.QDockWidget):
             self.cmd.enable(name)
             self.cmd.zoom(name, animate=-1)
             self.refresh()
+
+    def rename(self, name=None):
+        """Edit the name of an object or selection on its row (F2, the
+        "rename" rows through pymol.menu.rename_hook); without a name, the
+        current row. True when the row exists and can be renamed."""
+        if name is not None:
+            self.show()  # asked for from a menu of the viewport
+            self.refresh()
+        item = self.items.get(name) if name else self.tree.currentItem()
+        if item is None or item.data(0, UserRole)[1] == "all":
+            return False
+
+        def edit():  # once the menu that asked has closed
+            name = item.data(0, UserRole)[0]
+            if self.items.get(name) is not item or self._editing:
+                return
+            self._editing = name
+            with QtCore.QSignalBlocker(self.tree):
+                item.setText(0, name)  # a selection without its brackets
+                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
+            self.tree.setCurrentItem(item)
+            self.tree.editItem(item, 0)
+
+        QtCore.QTimer.singleShot(0, edit)
+        return True
+
+    def _edit_closed(self, *_):
+        """Enter, Esc or a click elsewhere ended the editor."""
+        cmd = self.cmd
+        old, self._editing = self._editing, None
+        item = self.items.get(old)
+        new = cmd.get_legal_name(item.text(0).strip()) if item else ""
+        if new and new != old:
+            if new in cmd.get_names("all"):
+                print(" Rename: the name '%s' is taken." % new)
+            else:
+                try:
+                    cmd.set_name(old, new)
+                except CmdException as error:  # a selection keyword
+                    print(error)
+        self.rows = []  # rebuild: the new name, or the old text back
+        self.refresh()
+        if new in self.items:
+            self.tree.setCurrentItem(self.items[new])
 
     def _popup(self, item, button, position):
         entries = menu_entries(self.cmd, *item.data(0, UserRole), button)
@@ -645,6 +909,8 @@ class ObjectPanel(QtWidgets.QDockWidget):
         self.refresh_soon()
 
     def eventFilter(self, watched, event):
+        if self._right_button(event):
+            return True
         # counts are looked up when asked for, never while polling
         if event.type() == QtCore.QEvent.Type.ToolTip:
             item = self.tree.itemAt(event.pos())

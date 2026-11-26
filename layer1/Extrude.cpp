@@ -48,12 +48,12 @@ CExtrude *ExtrudeCopyPointsNormalsColors(CExtrude * orig)
     ok &= ExtrudeAllocPointsNormalsColors(I, orig->N);
 
   if (ok){
-    CopyArray(I->p, orig->p, float, 3 * I->N);
-    CopyArray(I->n, orig->n, float, 9 * I->N);
-    CopyArray(I->c, orig->c, float, 3 * I->N);
-    CopyArray(I->alpha, orig->alpha, float, I->N);
-    CopyArray(I->i, orig->i, unsigned int, I->N);
-    CopyArray(I->sf, orig->sf, float, I->N);      /* PUTTY: scale factors */
+    CopyArray(I->p.get(), orig->p.get(), float, 3 * I->N);
+    CopyArray(I->n.get(), orig->n.get(), float, 9 * I->N);
+    CopyArray(I->c.get(), orig->c.get(), float, 3 * I->N);
+    CopyArray(I->alpha.get(), orig->alpha.get(), float, I->N);
+    CopyArray(I->i.get(), orig->i.get(), unsigned int, I->N);
+    CopyArray(I->sf.get(), orig->sf.get(), float, I->N);      /* PUTTY: scale factors */
   } else {
     ExtrudeFree(I);
     I = nullptr;
@@ -66,19 +66,7 @@ void ExtrudeInit(PyMOLGlobals * G, CExtrude * I)
   I->G = G;
 
   I->N = 0;
-  I->p = nullptr;
-  I->n = nullptr;
-  I->c = nullptr;
-  I->alpha = nullptr;
-  I->i = nullptr;
-
-  I->sv = nullptr;                 /* shape vertices */
-  I->sn = nullptr;                 /* shape normals */
-  I->tv = nullptr;                 /* transformed vertices */
-  I->tn = nullptr;                 /* transformed normals */
   I->Ns = 0;                    /* number of shape points */
-
-  I->sf = nullptr;
 }
 
 int ExtrudeCircle(CExtrude * I, int n, float size)
@@ -92,29 +80,17 @@ int ExtrudeCircle(CExtrude * I, int n, float size)
   if(n > 50)
   n = 50;*/
 
-  FreeP(I->sv);
-  FreeP(I->sn);
-  FreeP(I->tv);
-  FreeP(I->tn);
-
-  I->sv = pymol::malloc<float>(3 * (n + 1));
-  CHECKOK(ok, I->sv);
-  if (ok)
-    I->sn = pymol::malloc<float>(3 * (n + 1));
-  CHECKOK(ok, I->sn);
-  if (ok)
-    I->tv = pymol::malloc<float>(3 * (n + 1));
-  CHECKOK(ok, I->tv);
-  if (ok)
-    I->tn = pymol::malloc<float>(3 * (n + 1));
-  CHECKOK(ok, I->tn);
+  I->sv.reset(new float[3 * (n + 1)]);
+  I->sn.reset(new float[3 * (n + 1)]);
+  I->tv.reset(new float[3 * (n + 1)]);
+  I->tn.reset(new float[3 * (n + 1)]);
 
   if (ok){
     I->Ns = n;
     I->r = size;
     
-    v = I->sv;
-    vn = I->sn;
+    v = I->sv.get();
+    vn = I->sn.get();
     
     for(a = 0; a <= n; a++) {
       *(vn++) = 0.0;
@@ -124,17 +100,6 @@ int ExtrudeCircle(CExtrude * I, int n, float size)
       *(v++) = (float) cos(a * 2 * PI / n) * size;
       *(v++) = (float) sin(a * 2 * PI / n) * size;
     }
-  }
-
-  if (!ok){
-    FreeP(I->sv);
-    FreeP(I->sn);
-    FreeP(I->tv);
-    FreeP(I->tn);
-    I->sv = nullptr;
-    I->sn = nullptr;
-    I->tv = nullptr;
-    I->tn = nullptr;
   }
 
   PRINTFD(I->G, FB_Extrude)
@@ -154,26 +119,14 @@ int ExtrudeOval(CExtrude * I, int n, float width, float length)
   /*  if(n > 50)
       n = 50;*/
 
-  FreeP(I->sv);
-  FreeP(I->sn);
-  FreeP(I->tv);
-  FreeP(I->tn);
-
-  I->sv = pymol::malloc<float>(3 * (n + 1));
-  CHECKOK(ok, I->sv);
-  if (ok)
-    I->sn = pymol::malloc<float>(3 * (n + 1));
-  CHECKOK(ok, I->sn);
-  if (ok)
-    I->tv = pymol::malloc<float>(3 * (n + 1));
-  CHECKOK(ok, I->tv);
-  if (ok)
-    I->tn = pymol::malloc<float>(3 * (n + 1));
-  CHECKOK(ok, I->tn);
+  I->sv.reset(new float[3 * (n + 1)]);
+  I->sn.reset(new float[3 * (n + 1)]);
+  I->tv.reset(new float[3 * (n + 1)]);
+  I->tn.reset(new float[3 * (n + 1)]);
   I->Ns = n;
 
-  v = I->sv;
-  vn = I->sn;
+  v = I->sv.get();
+  vn = I->sn.get();
 
   for(a = 0; a <= n; a++) {
     *(vn++) = 0.0;
@@ -186,12 +139,6 @@ int ExtrudeOval(CExtrude * I, int n, float width, float length)
 
   PRINTFD(I->G, FB_Extrude)
     " ExtrudeOval-DEBUG: exiting...\n" ENDFD;
-  if (!ok){
-    FreeP(I->sv);
-    FreeP(I->sn);
-    FreeP(I->tv);
-    FreeP(I->tn);
-  }
   return ok;
 }
 
@@ -212,37 +159,13 @@ int ExtrudeRectangle(CExtrude * I, float width, float length, int mode)
     break;
   }
 
-  FreeP(I->sv);
-  FreeP(I->sn);
-  FreeP(I->tv);
-  FreeP(I->tn);
+  I->sv.reset(new float[3 * (I->Ns + 1)]);
+  I->sn.reset(new float[3 * (I->Ns + 1)]);
+  I->tv.reset(new float[3 * (I->Ns + 1)]);
+  I->tn.reset(new float[3 * (I->Ns + 1)]);
 
-  I->sv = pymol::malloc<float>(3 * (I->Ns + 1));
-  CHECKOK(ok, I->sv);
-  if (ok)
-    I->sn = pymol::malloc<float>(3 * (I->Ns + 1));
-  CHECKOK(ok, I->sn);
-  if (ok)
-    I->tv = pymol::malloc<float>(3 * (I->Ns + 1));
-  CHECKOK(ok, I->tv);
-  if (ok)
-    I->tn = pymol::malloc<float>(3 * (I->Ns + 1));
-  CHECKOK(ok, I->tn);
-
-  if (!ok){
-    FreeP(I->sv);
-    FreeP(I->sn);
-    FreeP(I->tv);
-    FreeP(I->tn);
-    I->sv = nullptr;
-    I->sn = nullptr;
-    I->tv = nullptr;
-    I->tn = nullptr;
-    return ok;
-  }
-
-  v = I->sv;
-  vn = I->sn;
+  v = I->sv.get();
+  vn = I->sn.get();
 
   if((!mode) || (mode == 1)) {
     *(vn++) = 0.0;
@@ -328,36 +251,13 @@ int ExtrudeDumbbell1(CExtrude * I, float width, float length, int mode)
 
   }
 
-  FreeP(I->sv);
-  FreeP(I->sn);
-  FreeP(I->tv);
-  FreeP(I->tn);
+  I->sv.reset(new float[3 * (I->Ns + 1)]);
+  I->sn.reset(new float[3 * (I->Ns + 1)]);
+  I->tv.reset(new float[3 * (I->Ns + 1)]);
+  I->tn.reset(new float[3 * (I->Ns + 1)]);
 
-  I->sv = pymol::malloc<float>(3 * (I->Ns + 1));
-  CHECKOK(ok, I->sv);
-  if (ok)
-    I->sn = pymol::malloc<float>(3 * (I->Ns + 1));
-  CHECKOK(ok, I->sn);
-  if (ok)
-    I->tv = pymol::malloc<float>(3 * (I->Ns + 1));
-  CHECKOK(ok, I->tv);
-  if (ok)
-    I->tn = pymol::malloc<float>(3 * (I->Ns + 1));
-  CHECKOK(ok, I->tn);
-
-  if (!ok){
-    FreeP(I->sv);
-    FreeP(I->sn);
-    FreeP(I->tv);
-    FreeP(I->tn);
-    I->sv = nullptr;
-    I->sn = nullptr;
-    I->tv = nullptr;
-    I->tn = nullptr;
-  }
-
-  v = I->sv;
-  vn = I->sn;
+  v = I->sv.get();
+  vn = I->sn.get();
 
   if((!mode) || (mode == 1)) {  /* top */
     *(vn++) = 0.0;
@@ -402,8 +302,8 @@ void ExtrudeDumbbellEdge(CExtrude * I, int samp, int sign, float length)
   PRINTFD(I->G, FB_Extrude)
     " ExtrudeDumbbellEdge-DEBUG: entered.\n" ENDFD;
   disp = (float) (sign * sin(PI / 4) * length);
-  p = I->p;
-  n = I->n;
+  p = I->p.get();
+  n = I->n.get();
   for(a = 0; a < I->N; a++) {
     if(a <= samp)
       f = disp * smooth((a / ((float) samp)), 2);
@@ -421,65 +321,6 @@ void ExtrudeDumbbellEdge(CExtrude * I, int samp, int sign, float length)
 
 }
 
-#if 0
-int ExtrudeDumbbell2(CExtrude * I, int n, int sign, float length, float size)
-{
-  int a;
-  float *v, *vn;
-  int ok = true;
-
-  PRINTFD(I->G, FB_Extrude)
-    " ExtrudeDumbbell2-DEBUG: entered.\n" ENDFD;
-  /*  if(n > 50)
-      n = 50;*/
-
-  FreeP(I->sv);
-  FreeP(I->sn);
-  FreeP(I->tv);
-  FreeP(I->tn);
-  
-  I->sv = pymol::malloc<float>(3 * (n + 1));
-  CHECKOK(ok, I->sv);
-  if (ok)
-    I->sn = pymol::malloc<float>(3 * (n + 1));
-  CHECKOK(ok, I->sn);
-  if (ok)
-    I->tv = pymol::malloc<float>(3 * (n + 1));
-  CHECKOK(ok, I->tv);
-  if (ok)
-    I->tn = pymol::malloc<float>(3 * (n + 1));
-  CHECKOK(ok, I->tn);
-
-  if (!ok){
-    FreeP(I->sv);
-    FreeP(I->sn);
-    FreeP(I->tv);
-    FreeP(I->tn);
-    I->sv = nullptr;
-    I->sn = nullptr;
-    I->tv = nullptr;
-    I->tn = nullptr;
-  }
-
-  I->Ns = n;
-
-  v = I->sv;
-  vn = I->sn;
-
-  for(a = 0; a <= n; a++) {
-    *(vn++) = 0.0;
-    *(vn++) = (float) cos(a * 2 * PI / n);
-    *(vn++) = (float) sin(a * 2 * PI / n);
-    *(v++) = 0.0;
-    *(v++) = (float) cos(a * 2 * PI / n) * size;
-    *(v++) = (float) ((sin(a * 2 * PI / n) * size) + (sign * sin(PI / 4) * length));
-  }
-
-  PRINTFD(I->G, FB_Extrude)
-    " ExtrudeDumbbell2-DEBUG: exiting...\n" ENDFD;
-  return ok;
-}
-#endif
 
 CExtrude *ExtrudeNew(PyMOLGlobals * G)
 {
@@ -497,8 +338,8 @@ void ExtrudeBuildNormals1f(CExtrude * I)
     " ExtrudeBuildNormals1f-DEBUG: entered.\n" ENDFD;
 
   if(I->N) {
-    get_system1f3f(I->n, I->n + 3, I->n + 6);   /* first is arbitrary */
-    v = I->n + 9;
+    get_system1f3f(I->n.get(), I->n.get() + 3, I->n.get() + 6);   /* first is arbitrary */
+    v = I->n.get() + 9;
     for(a = 1; a < I->N; a++) {
       copy3f(v - 6, v + 3);
       get_system2f3f(v, v + 3, v + 6);  /* the rest are relative to first */
@@ -519,7 +360,7 @@ void ExtrudeBuildNormals2f(CExtrude * I)
     " ExtrudeBuildNormals2f-DEBUG: entered.\n" ENDFD;
 
   if(I->N) {
-    v = I->n;
+    v = I->n.get();
     for(a = 0; a < I->N; a++) {
       get_system2f3f(v, v + 3, v + 6);
       v += 9;
@@ -559,8 +400,8 @@ void ExtrudeShiftToAxis(CExtrude* I, float radius, int sampling)
   float p_end[3];
 
   // original start and end points
-  copy3(I->p, p_start);
-  copy3(I->p + (I->N - 1) * 3, p_end);
+  copy3(I->p.get(), p_start);
+  copy3(I->p.get() + (I->N - 1) * 3, p_end);
 
   ExtrudeBuildNormals2f(I);
 
@@ -568,23 +409,6 @@ void ExtrudeShiftToAxis(CExtrude* I, float radius, int sampling)
   // first and last position. We can reconstruct the desired normals from the
   // next position by an ideal rotation.
   if (I->N > 2) {
-#if 0
-    // dump residue rotations to figure out ideal rotation
-    for (int a = 1; a + 2 < I->N; ++a) {
-      const float* base0 = I->n + (a + 0) * 9;
-      const float* base1 = I->n + (a + 1) * 9;
-
-      float base0_inv[9];
-      float residue_rotation[9];
-
-      assert(fabs(determinant33f(base0) - 1.0) < 1e-3);
-      transpose33f33f(base0, base0_inv);
-      multiply33f33f(base1, base0_inv, residue_rotation);
-
-      printf("========= a %d\n", a);
-      dump33f(residue_rotation, "rotation");
-    }
-#endif
 
     // ideal rotation from one alpha helix residue to the next
     static float const residue_rotation[9] = {
@@ -593,15 +417,15 @@ void ExtrudeShiftToAxis(CExtrude* I, float radius, int sampling)
         0.224, 0.809, -0.544, -0.809, -0.157, -0.567, -0.544, 0.567, 0.619};
 
     multiply33f33f(residue_rotation_inv, //
-        I->n + 9 * sampling, I->n);
+        I->n.get() + 9 * sampling, I->n.get());
     multiply33f33f(residue_rotation, //
-        I->n + 9 * (I->N - 1 - sampling), I->n + 9 * (I->N - 1));
+        I->n.get() + 9 * (I->N - 1 - sampling), I->n.get() + 9 * (I->N - 1));
   }
 
   // move points to helix axes
   for (int a = 0; a < I->N; ++a) {
-    float* point = I->p + a * 3;
-    const float* normal = I->n + a * 9 + 3;
+    float* point = I->p.get() + a * 3;
+    const float* normal = I->n.get() + a * 9 + 3;
 
     // distance to move point (distance between C-alpha atom and helix axis)
     float factor = 2.3;
@@ -628,13 +452,13 @@ void ExtrudeShiftToAxis(CExtrude* I, float radius, int sampling)
 
         for (int j = -w2; j <= w2; ++j) {
           int const k = std::clamp(a + j, 0, I->N - 1);
-          add3f(I->p + k * 3, avg, avg);
+          add3f(I->p.get() + k * 3, avg, avg);
         }
 
         scale3f(avg, 1. / (2 * w2 + 1), avg);
       }
 
-      std::copy(smoothed.begin(), smoothed.end(), I->p + 3);
+      std::copy(smoothed.begin(), smoothed.end(), I->p.get() + 3);
     }
   }
 
@@ -645,8 +469,8 @@ void ExtrudeShiftToAxis(CExtrude* I, float radius, int sampling)
   auto const push_out_tip = [&](int index, float const* pos_orig,
                                 int direction) {
     float const protrusion = loop_radius * 2;
-    float const* normal = I->n + index * 9;
-    float* pos = I->p + index * 3;
+    float const* normal = I->n.get() + index * 9;
+    float* pos = I->p.get() + index * 3;
     float offset[3];
     subtract3f(pos_orig, pos, offset);
     float const len = project3f(offset, normal, offset) * direction;
@@ -660,72 +484,20 @@ void ExtrudeShiftToAxis(CExtrude* I, float radius, int sampling)
   push_out_tip(I->N - 1, p_end, 1);
 }
 
-#if 0
-/* Is this ever used? */
-void ExtrudeCGOTraceAxes(CExtrude * I, CGO * cgo)
-{
-  int a;
-  float *v, *n;
-  float v0[3];
-
-  if(I->N) {
-    CGOColor(cgo, 0.5, 0.5, 0.5);
-    CGOBegin(cgo, GL_LINES);
-    v = I->p;
-    n = I->n;
-    for(a = 0; a < I->N; a++) {
-      add3f(v, n, v0);
-      CGOVertexv(cgo, v0);
-      CGOVertexv(cgo, v);
-      n += 3;
-      add3f(v, n, v0);
-      CGOVertexv(cgo, v0);
-      CGOVertexv(cgo, v);
-      n += 3;
-      add3f(v, n, v0);
-      CGOVertexv(cgo, v0);
-      CGOVertexv(cgo, v);
-      n += 3;
-      v += 3;
-    }
-    CGOEnd(cgo);
-  }
-}
-
-/* Is this ever used? */
-void ExtrudeCGOTrace(CExtrude * I, CGO * cgo)
-{
-  int a;
-  float *v;
-  if(I->N) {
-    CGOColor(cgo, 0.5, 0.5, 0.5);
-    CGOBegin(cgo, GL_LINE_STRIP);
-    v = I->p;
-    for(a = 0; a < I->N; a++) {
-      CGOVertexv(cgo, v);
-      v += 3;
-    }
-    CGOEnd(cgo);
-  }
-}
-#endif
 
 int ExtrudeComputeTangents(CExtrude * I)
 {
-  float *nv, *v1, *v;
+  float *v1, *v;
   int a;
   int ok = true;
 
   PRINTFD(I->G, FB_Extrude)
     " ExtrudeComputeTangents-DEBUG: entered.\n" ENDFD;
 
-  nv = pymol::malloc<float>(I->N * 3);
-  CHECKOK(ok, nv);
-  if (!ok)
-    return ok;
+  std::vector<float> nv(I->N * 3);
 
-  v = nv;
-  v1 = I->p + 3;
+  v = nv.data();
+  v1 = I->p.get() + 3;
 
   for(a = 1; a < I->N; a++) {
     subtract3f(v1, v1 - 3, v);
@@ -736,8 +508,8 @@ int ExtrudeComputeTangents(CExtrude * I)
 
   /* compute tangents */
 
-  v = nv;
-  v1 = I->n;
+  v = nv.data();
+  v1 = I->n.get();
 
   *(v1++) = *(v++);             /* first segment */
   *(v1++) = *(v++);
@@ -756,59 +528,11 @@ int ExtrudeComputeTangents(CExtrude * I)
   *(v1++) = *(v - 2);
   *(v1++) = *(v - 1);
 
-  FreeP(nv);
-
   PRINTFD(I->G, FB_Extrude)
     " ExtrudeComputeTangents-DEBUG: exiting...\n" ENDFD;
   return ok;
 }
 
-#if 0
-/* Is this ever used? */
-void ExtrudeCGOTraceFrame(CExtrude * I, CGO * cgo)
-{
-  int a, b;
-  float *v;
-  float *n;
-  float *sv, *tv;
-  float v0[3], v1[3];
-
-  if(I->N && I->Ns) {
-    CGOColor(cgo, 0.5, 0.5, 0.5);
-    {
-      CGOBegin(cgo, GL_LINES);
-      v = I->p;
-      n = I->n;
-      for(a = 0; a < I->N; a++) {
-	sv = I->sv;
-	tv = I->tv;
-	for(b = 0; b < I->Ns; b++) {
-	  transform33Tf3f(n, sv, tv);
-	  sv += 3;
-	  tv += 3;
-	}
-	/* trace shape */
-	tv = I->tv;
-	add3f(v, tv, v0);
-	for(b = 1; b < I->Ns; b++) {
-	  tv += 3;
-	  add3f(v, tv, v1);
-	  CGOVertexv(cgo, v0);
-	  CGOVertexv(cgo, v1);
-	  copy3f(v1, v0);
-	}
-	tv = I->tv;
-	add3f(v, tv, v1);
-	CGOVertexv(cgo, v0);
-	CGOVertexv(cgo, v1);
-	v += 3;
-	n += 9;
-      }
-      CGOEnd(cgo);
-    }
-  }
-}
-#endif
 
 /**
  * Draw flat cap on a tube cartoon (loop, oval, etc.)
@@ -821,8 +545,8 @@ void ExtrudeCGOTraceFrame(CExtrude * I, CGO * cgo)
  */
 static
 void TubeCapFlat(const CExtrude * I, CGO * cgo, int index, bool inv_dir, const float * color) {
-  const float * vertex = I->p + 3 * index;
-  const float * base33 = I->n + 9 * index;
+  const float * vertex = I->p.get() + 3 * index;
+  const float * base33 = I->n.get() + 9 * index;
   const float * normal = base33;
   float tmp3f[3];
   int b_end = -1, b_incr = -1;
@@ -837,7 +561,7 @@ void TubeCapFlat(const CExtrude * I, CGO * cgo, int index, bool inv_dir, const f
   }
 
   CGOBegin(cgo, GL_TRIANGLE_FAN);
-  CGOColorv(cgo, color ? color : (I->c + 3 * index));
+  CGOColorv(cgo, color ? color : (I->c.get() + 3 * index));
   CGOAlpha(cgo, I->alpha[index]);
   CGOPickColor(cgo, I->i[index], cPickableAtom);
   CGONormalv(cgo, normal); // (tmp3f again free to use)
@@ -846,7 +570,7 @@ void TubeCapFlat(const CExtrude * I, CGO * cgo, int index, bool inv_dir, const f
   // Indexing trickery: going in a loop, visiting first index twice to
   // close the loop. Iterating backwards in case of `inv_dir`.
   for (int b = I->Ns; b != b_end; b += b_incr) {
-    transform33Tf3f(base33, I->sv + (b % I->Ns) * 3, tmp3f);
+    transform33Tf3f(base33, I->sv.get() + (b % I->Ns) * 3, tmp3f);
     add3f(vertex, tmp3f, tmp3f);
     CGOVertexv(cgo, tmp3f);
   }
@@ -872,33 +596,30 @@ int ExtrudeCGOSurfaceTube(const CExtrude* I, CGO* cgo, cCylCap cap,
   float *n;
   float *c;
   const float *alpha;
-  float *sv, *sn, *tv, *tn, *tv1, *tn1, *TV = nullptr, *TN = nullptr;
+  float *sv, *sn, *tv, *tn, *tv1, *tn1;
   int start, stop;
   int ok = true;
   PRINTFD(I->G, FB_Extrude)
     " ExtrudeCGOSurfaceTube-DEBUG: entered.\n" ENDFD;
 
   if(I->N && I->Ns) {
-    TV = pymol::malloc<float>(3 * (I->Ns + 1) * I->N);
-    CHECKOK(ok, TV);
-    if (ok)
-      TN = pymol::malloc<float>(3 * (I->Ns + 1) * I->N);
-    CHECKOK(ok, TN);
+    std::vector<float> TV(3 * (I->Ns + 1) * I->N);
+    std::vector<float> TN(3 * (I->Ns + 1) * I->N);
     /* compute transformed shape vertices */
 
     if (ok){
-      tn = TN;
-      tv = TV;
+      tn = TN.data();
+      tv = TV.data();
       
-      sv = I->sv;
-      sn = I->sn;
+      sv = I->sv.get();
+      sn = I->sn.get();
       for(b = 0; b <= I->Ns; b++) {
 	if(b == I->Ns) {
-	  sv = I->sv;
-	  sn = I->sn;
+	  sv = I->sv.get();
+	  sn = I->sn.get();
 	}
-	v = I->p;
-	n = I->n;
+	v = I->p.get();
+	n = I->n.get();
 	
 	for(a = 0; a < I->N; a++) {
 	  transform33Tf3f(n, sv, tv);
@@ -934,12 +655,12 @@ int ExtrudeCGOSurfaceTube(const CExtrude* I, CGO* cgo, cCylCap cap,
 	  ok &= CGOBegin(cgo, GL_LINE_STRIP);
 	}
 	if (ok){
-          c = I->c + a_start * 3;
-          alpha = I->alpha + a_start;
-          i = I->i + a_start;
+          c = I->c.get() + a_start * 3;
+          alpha = I->alpha.get() + a_start;
+          i = I->i.get() + a_start;
 
-          tv = TV + 3 * (a_start + b * I->N);
-          tn = TN + 3 * (a_start + b * I->N);
+          tv = TV.data() + 3 * (a_start + b * I->N);
+          tn = TN.data() + 3 * (a_start + b * I->N);
 
           tv1 = tv + 3 * I->N;
           tn1 = tn + 3 * I->N;
@@ -992,10 +713,10 @@ int ExtrudeCGOSurfaceTube(const CExtrude* I, CGO* cgo, cCylCap cap,
 	float c, d, prev, x, y, *v1, nEdge = I->Ns, nEdgeH = 2.f * floor(I->Ns/2.f);
 
 	if (ok){
-	  n = I->n;
-	  v = I->p;
-	  sv = I->sv;
-	  tv = I->tv;
+	  n = I->n.get();
+	  v = I->p.get();
+	  sv = I->sv.get();
+	  tv = I->tv.get();
 	  for(b = 0; b < I->Ns; b++) {
 	    transform33Tf3f(n, sv, tv);
 	    add3f(v, tv, tv);
@@ -1003,9 +724,9 @@ int ExtrudeCGOSurfaceTube(const CExtrude* I, CGO* cgo, cCylCap cap,
 	    tv += 3;
 	  }
 	  
-	  copy3f(I->n, p0);
+	  copy3f(I->n.get(), p0);
 	  invert3f(p0);
-	  transform33Tf3f(I->n, I->sv, p1);
+	  transform33Tf3f(I->n.get(), I->sv.get(), p1);
 	  cross_product3f(p0, p1, p2);
 	  normalize3f(p1);
 	  normalize3f(p2);
@@ -1014,7 +735,7 @@ int ExtrudeCGOSurfaceTube(const CExtrude* I, CGO* cgo, cCylCap cap,
 	  if(color_override)
 	    ok &= CGOColorv(cgo, color_override);
 	  else
-	    ok &= CGOColorv(cgo, I->c);
+	    ok &= CGOColorv(cgo, I->c.get());
 	}
     if (ok){
       ok &= CGOAlpha(cgo, I->alpha[0]);
@@ -1022,7 +743,7 @@ int ExtrudeCGOSurfaceTube(const CExtrude* I, CGO* cgo, cCylCap cap,
 	if (ok)
 	  ok &= CGOPickColor(cgo, I->i[0], cPickableAtom);
 	if (ok){
-        v = I->p;
+        v = I->p.get();
 	if (use_spheres){
 	  ok &= CGOSphere(cgo, v, I->r); // this matches the Cylinder
 	} else {
@@ -1037,7 +758,7 @@ int ExtrudeCGOSurfaceTube(const CExtrude* I, CGO* cgo, cCylCap cap,
 	  z1 = z2 = 1.f;
 	  prev = 1.f;
 	  v1 = v;
-	  tv = I->tv;
+	  tv = I->tv.get();
 	  for (c = 1; ok && c <= (nEdgeH/2); c++){
 	    short last = (c + 1) > (nEdgeH/2);
 	    z1 = z2;
@@ -1087,10 +808,10 @@ int ExtrudeCGOSurfaceTube(const CExtrude* I, CGO* cgo, cCylCap cap,
 	}
 
 	if (ok){
-	  n = I->n + 9 * (I->N - 1);
-	  v = I->p + 3 * (I->N - 1);
-	  sv = I->sv;
-	  tv = I->tv;
+	  n = I->n.get() + 9 * (I->N - 1);
+	  v = I->p.get() + 3 * (I->N - 1);
+	  sv = I->sv.get();
+	  tv = I->tv.get();
 	  for(b = 0; b < I->Ns; b++) {
 	    transform33Tf3f(n, sv, tv);
 	    add3f(v, tv, tv);
@@ -1099,7 +820,7 @@ int ExtrudeCGOSurfaceTube(const CExtrude* I, CGO* cgo, cCylCap cap,
 	  }
 	  
 	  copy3f(n, p0);
-	  transform33Tf3f(n, I->sv, p1);
+	  transform33Tf3f(n, I->sv.get(), p1);
 	  cross_product3f(p0, p1, p2);
 	  normalize3f(p1);
 	  normalize3f(p2);
@@ -1107,7 +828,7 @@ int ExtrudeCGOSurfaceTube(const CExtrude* I, CGO* cgo, cCylCap cap,
 	  if(color_override)
 	    ok &= CGOColorv(cgo, color_override);
 	  else
-	    ok &= CGOColorv(cgo, I->c + 3 * (I->N - 1));
+	    ok &= CGOColorv(cgo, I->c.get() + 3 * (I->N - 1));
 	}
     if (ok){
       ok &= CGOAlpha(cgo, I->alpha[I->N - 1]);
@@ -1130,7 +851,7 @@ int ExtrudeCGOSurfaceTube(const CExtrude* I, CGO* cgo, cCylCap cap,
 	  z1 = z2 = 1.f;
 	  prev = 1.f;
 	  v1 = v;
-	  tv = I->tv;
+	  tv = I->tv.get();
 	  for (c = 1; ok && c <= (nEdgeH/2); c++){
 	    short last = (c + 1) > (nEdgeH/2);
 	    z1 = z2;
@@ -1184,8 +905,6 @@ int ExtrudeCGOSurfaceTube(const CExtrude* I, CGO* cgo, cCylCap cap,
       break;
     }
     }
-    FreeP(TV);
-    FreeP(TN);
   }
 
   PRINTFD(I->G, FB_Extrude)
@@ -1203,10 +922,10 @@ int ExtrudeCylindersToCGO(CExtrude * I, CGO * cgo, float tube_radius){
   PRINTFD(I->G, FB_Extrude)
     " ExtrudeCylindersToCGO-DEBUG: entered.\n" ENDFD;
 
-  v1 = I->p + 3;
-  c1 = I->c + 3;
-  alpha = I->alpha + 1;
-  i = I->i + 1;
+  v1 = I->p.get() + 3;
+  c1 = I->c.get() + 3;
+  alpha = I->alpha.get() + 1;
+  i = I->i.get() + 1;
   
   int cap = (cCylShaderBothCapsRound | cCylShaderInterpColor);
   for(a = 1; a < I->N; a++) {
@@ -1239,7 +958,7 @@ int ExtrudeCGOSurfaceVariableTube(const CExtrude* I, CGO* cgo, cCylCap cap)
   float *n;
   float *c;
   const float *alpha;
-  float *sv, *sn, *tv, *tn, *tv1, *tn1, *TV = nullptr, *TN = nullptr, *AN = nullptr, *an;
+  float *sv, *sn, *tv, *tn, *tv1, *tn1, *an;
   float v0[3];
   float *sf;                    /* PUTTY: scale factor from ExtrudeMakeSausLUT() */
   int ok = true;
@@ -1248,23 +967,23 @@ int ExtrudeCGOSurfaceVariableTube(const CExtrude* I, CGO* cgo, cCylCap cap)
 
   if(I->N && I->Ns) {
 
-    TV = pymol::malloc<float>(3 * (I->Ns + 1) * I->N);
-    TN = pymol::malloc<float>(3 * (I->Ns + 1) * I->N);
-    AN = pymol::malloc<float>(3 * I->N);        /* normals adjusted for changing widths */
+    std::vector<float> TV(3 * (I->Ns + 1) * I->N);
+    std::vector<float> TN(3 * (I->Ns + 1) * I->N);
+    std::vector<float> AN(3 * I->N);        /* normals adjusted for changing widths */
 
     /* compute transformed shape vertices */
 
-    tv = TV;
+    tv = TV.data();
 
-    sv = I->sv;
+    sv = I->sv.get();
     for(b = 0; b <= I->Ns; b++) {
       if(b == I->Ns) {
-        sv = I->sv;
+        sv = I->sv.get();
       }
 
-      n = I->n;                 /* NOTE: n is not a counter -- it's a 3x3 coordinate system! */
-      v = I->p;
-      sf = I->sf;               /* PUTTY: scale factors */
+      n = I->n.get();                 /* NOTE: n is not a counter -- it's a 3x3 coordinate system! */
+      v = I->p.get();
+      sf = I->sf.get();               /* PUTTY: scale factors */
 
       for(a = 0; a < I->N; a++) {
         transform33Tf3f(n, sv, tv);
@@ -1284,20 +1003,20 @@ int ExtrudeCGOSurfaceVariableTube(const CExtrude* I, CGO* cgo, cCylCap cap)
 
     /* compute transformed normals, taking into account changing radii */
 
-    tn = TN;
-    tv = TV;
+    tn = TN.data();
+    tv = TV.data();
 
-    sn = I->sn;
+    sn = I->sn.get();
     for(b = 0; b <= I->Ns; b++) {
 
       float d1, d2, r0, r1, r2, x1, x2;
 
       if(b == I->Ns) {
-        sn = I->sn;
+        sn = I->sn.get();
       }
 
-      an = AN;
-      v = I->p;
+      an = AN.data();
+      v = I->p.get();
 
       for(a = 0; a < I->N; a++) {
         if((a > 0) && (a < (I->N - 1))) {
@@ -1338,8 +1057,8 @@ int ExtrudeCGOSurfaceVariableTube(const CExtrude* I, CGO* cgo, cCylCap cap)
         an += 3;
       }
 
-      n = I->n;                 /* NOTE: n is not a counter -- it's a 3x3 coordinate system! */
-      an = AN;
+      n = I->n.get();                 /* NOTE: n is not a counter -- it's a 3x3 coordinate system! */
+      an = AN.data();
 
       for(a = 0; a < I->N; a++) {
         transform33Tf3f(n, an, tn);
@@ -1352,11 +1071,11 @@ int ExtrudeCGOSurfaceVariableTube(const CExtrude* I, CGO* cgo, cCylCap cap)
 
     /* fill in each strip separately */
 
-    tv = TV;
-    tn = TN;
+    tv = TV.data();
+    tn = TN.data();
 
-    tv1 = TV + 3 * I->N;
-    tn1 = TN + 3 * I->N;
+    tv1 = TV.data() + 3 * I->N;
+    tn1 = TN.data() + 3 * I->N;
 
     for(b = 0; b < I->Ns; b++) {
       if(SettingGetGlobal_i(I->G, cSetting_cartoon_debug) < 1.5)
@@ -1364,9 +1083,9 @@ int ExtrudeCGOSurfaceVariableTube(const CExtrude* I, CGO* cgo, cCylCap cap)
       else {
         CGOBegin(cgo, GL_LINE_STRIP);
       }
-      c = I->c;
-      alpha = I->alpha;
-      i = I->i;
+      c = I->c.get();
+      alpha = I->alpha.get();
+      i = I->i.get();
       for(a = 0; a < I->N; a++) {
         CGOColorv(cgo, c);
         CGOAlpha(cgo, *alpha);
@@ -1389,18 +1108,18 @@ int ExtrudeCGOSurfaceVariableTube(const CExtrude* I, CGO* cgo, cCylCap cap)
 
     if(ok && SettingGetGlobal_i(I->G, cSetting_cartoon_debug) > 3.5) {
 
-      tv = TV;
-      tn = TN;
+      tv = TV.data();
+      tn = TN.data();
 
-      tv1 = TV + 3 * I->N;
-      tn1 = TN + 3 * I->N;
+      tv1 = TV.data() + 3 * I->N;
+      tn1 = TN.data() + 3 * I->N;
 
       for(b = 0; b < I->Ns; b++) {
         float vv[3];
 	  CGOBegin(cgo, GL_LINES);
-	  c = I->c;
-      alpha = I->alpha;
-	  i = I->i;
+	  c = I->c.get();
+      alpha = I->alpha.get();
+	  i = I->i.get();
 	  for(a = 0; a < I->N; a++) {
 	    CGOColorv(cgo, c);
         CGOAlpha(cgo, *alpha);
@@ -1430,12 +1149,12 @@ int ExtrudeCGOSurfaceVariableTube(const CExtrude* I, CGO* cgo, cCylCap cap)
 
     if(ok && cap != cCylCap::None) {
 
-      n = I->n;
-      v = I->p;
-      sf = I->sf;
+      n = I->n.get();
+      v = I->p.get();
+      sf = I->sf.get();
 
-      sv = I->sv;
-      tv = I->tv;
+      sv = I->sv.get();
+      tv = I->tv.get();
       for(b = 0; b < I->Ns; b++) {
         transform33Tf3f(n, sv, tv);
 
@@ -1448,26 +1167,26 @@ int ExtrudeCGOSurfaceVariableTube(const CExtrude* I, CGO* cgo, cCylCap cap)
         tv += 3;
       }
       CGOBegin(cgo, GL_TRIANGLE_FAN);
-      copy3f(I->n, v0);
+      copy3f(I->n.get(), v0);
       invert3f(v0);
-      CGOColorv(cgo, I->c);
+      CGOColorv(cgo, I->c.get());
       CGOAlpha(cgo, I->alpha[0]);
       CGOPickColor(cgo, I->i[0], cPickableAtom);
       CGONormalv(cgo, v0);
       if (ok) {
 	CGOVertexv(cgo, v);
 	/* trace shape */
-	CGOVertexv(cgo, I->tv);
+	CGOVertexv(cgo, I->tv.get());
 	for(b = I->Ns - 1; b >= 0; b--) {
-	  CGOVertexv(cgo, I->tv + b * 3);
+	  CGOVertexv(cgo, I->tv.get() + b * 3);
 	}
 	CGOEnd(cgo);
-	n = I->n + 9 * (I->N - 1);
-	v = I->p + 3 * (I->N - 1);
-	sf = I->sf + (I->N - 1);  /* PUTTY */
+	n = I->n.get() + 9 * (I->N - 1);
+	v = I->p.get() + 3 * (I->N - 1);
+	sf = I->sf.get() + (I->N - 1);  /* PUTTY */
 	
-	sv = I->sv;
-	tv = I->tv;
+	sv = I->sv.get();
+	tv = I->tv.get();
 	for(b = 0; b < I->Ns; b++) {
 	  transform33Tf3f(n, sv, tv);
 	  
@@ -1481,22 +1200,19 @@ int ExtrudeCGOSurfaceVariableTube(const CExtrude* I, CGO* cgo, cCylCap cap)
 	}
 	
 	CGOBegin(cgo, GL_TRIANGLE_FAN);
-	CGOColorv(cgo, I->c + 3 * (I->N - 1));
+	CGOColorv(cgo, I->c.get() + 3 * (I->N - 1));
     CGOAlpha(cgo, I->alpha[I->N - 1]);
 	CGOPickColor(cgo, I->i[I->N - 1], cPickableAtom);
 	CGONormalv(cgo, n);
 	CGOVertexv(cgo, v);
 	/* trace shape */
 	for(b = 0; b < I->Ns; b++) {
-	  CGOVertexv(cgo, I->tv + b * 3);
+	  CGOVertexv(cgo, I->tv.get() + b * 3);
 	}
-	CGOVertexv(cgo, I->tv);
+	CGOVertexv(cgo, I->tv.get());
 	CGOEnd(cgo);
       }
       CGOPickColor(cgo, -1, cPickableNoPick);
-      FreeP(TV);
-      FreeP(TN);
-      FreeP(AN);
     }
     
     PRINTFD(I->G, FB_Extrude)
@@ -1513,7 +1229,7 @@ int ExtrudeCGOSurfacePolygon(const CExtrude * I, CGO * cgo, cCylCap cap, const f
   float *n;
   float *c;
   const float *alpha;
-  float *sv, *sn, *tv, *tn, *tv1, *tn1, *TV = nullptr, *TN = nullptr;
+  float *sv, *sn, *tv, *tn, *tv1, *tn1;
   float v0[3];
   int ok = true;
 
@@ -1522,26 +1238,23 @@ int ExtrudeCGOSurfacePolygon(const CExtrude * I, CGO * cgo, cCylCap cap, const f
 
   if(I->N && I->Ns) {
 
-    TV = pymol::malloc<float>(3 * (I->Ns + 1) * I->N);
-    CHECKOK(ok, TV);
-    if (ok)
-      TN = pymol::malloc<float>(3 * (I->Ns + 1) * I->N);
-    CHECKOK(ok, TN);
+    std::vector<float> TV(3 * (I->Ns + 1) * I->N);
+    std::vector<float> TN(3 * (I->Ns + 1) * I->N);
     /* compute transformed shape vertices */
 
     if (ok){
-      tn = TN;
-      tv = TV;
+      tn = TN.data();
+      tv = TV.data();
       
-      sv = I->sv;
-      sn = I->sn;
+      sv = I->sv.get();
+      sn = I->sn.get();
       for(b = 0; b <= I->Ns; b++) {
 	if(b == I->Ns) {
-	  sv = I->sv;
-	  sn = I->sn;
+	  sv = I->sv.get();
+	  sn = I->sn.get();
 	}
-	v = I->p;
-	n = I->n;
+	v = I->p.get();
+	n = I->n.get();
 	
 	for(a = 0; a < I->N; a++) {
 	  transform33Tf3f(n, sv, tv);
@@ -1558,11 +1271,11 @@ int ExtrudeCGOSurfacePolygon(const CExtrude * I, CGO * cgo, cCylCap cap, const f
       
       /* fill in each strip separately */
       
-      tv = TV;
-      tn = TN;
+      tv = TV.data();
+      tn = TN.data();
       
-      tv1 = TV + 3 * I->N;
-      tn1 = TN + 3 * I->N;
+      tv1 = TV.data() + 3 * I->N;
+      tn1 = TN.data() + 3 * I->N;
     }
     for(b = 0; ok && b < I->Ns; b += 2) {
       if(SettingGetGlobal_i(I->G, cSetting_cartoon_debug) < 1.5)
@@ -1572,9 +1285,9 @@ int ExtrudeCGOSurfacePolygon(const CExtrude * I, CGO * cgo, cCylCap cap, const f
       }
       if(ok && color_override)
         ok &= CGOColorv(cgo, color_override);
-      c = I->c;
-      alpha = I->alpha;
-      i = I->i;
+      c = I->c.get();
+      alpha = I->alpha.get();
+      i = I->i.get();
       for(a = 0; ok && a < I->N; a++) {
         if(!color_override)
           ok &= CGOColorv(cgo, c);
@@ -1615,11 +1328,11 @@ int ExtrudeCGOSurfacePolygon(const CExtrude * I, CGO * cgo, cCylCap cap, const f
         ok &= CGOColorv(cgo, color_override);
 
       if (ok){
-	n = I->n;
-	v = I->p;
+	n = I->n.get();
+	v = I->p.get();
 	
-	sv = I->sv;
-	tv = I->tv;
+	sv = I->sv.get();
+	tv = I->tv.get();
 	for(b = 0; b < I->Ns; b++) {
 	  transform33Tf3f(n, sv, tv);
 	  add3f(v, tv, tv);
@@ -1630,10 +1343,10 @@ int ExtrudeCGOSurfacePolygon(const CExtrude * I, CGO * cgo, cCylCap cap, const f
       if (ok)
 	ok &= CGOBegin(cgo, GL_TRIANGLE_FAN);
       if (ok){
-	copy3f(I->n, v0);
+	copy3f(I->n.get(), v0);
 	invert3f(v0);
 	if(!color_override)
-	  ok &= CGOColorv(cgo, I->c);
+	  ok &= CGOColorv(cgo, I->c.get());
     if (ok){
       ok &= CGOAlpha(cgo, I->alpha[0]);
     }
@@ -1646,20 +1359,20 @@ int ExtrudeCGOSurfacePolygon(const CExtrude * I, CGO * cgo, cCylCap cap, const f
 	ok &= CGOVertexv(cgo, v);
       /* trace shape */
       if (ok)
-	ok &= CGOVertexv(cgo, I->tv);
+	ok &= CGOVertexv(cgo, I->tv.get());
       for(b = I->Ns - 1; ok && b >= 0; b--) {
-        ok &= CGOVertexv(cgo, I->tv + b * 3);
+        ok &= CGOVertexv(cgo, I->tv.get() + b * 3);
       }
       if (ok)
 	ok &= CGOEnd(cgo);
       if (ok)
 	ok &= CGOPickColor(cgo, -1, cPickableNoPick);
       if (ok){
-	n = I->n + 9 * (I->N - 1);
-	v = I->p + 3 * (I->N - 1);
+	n = I->n.get() + 9 * (I->N - 1);
+	v = I->p.get() + 3 * (I->N - 1);
 	
-	sv = I->sv;
-	tv = I->tv;
+	sv = I->sv.get();
+	tv = I->tv.get();
 	for(b = 0; b < I->Ns; b++) {
 	  transform33Tf3f(n, sv, tv);
 	  add3f(v, tv, tv);
@@ -1670,7 +1383,7 @@ int ExtrudeCGOSurfacePolygon(const CExtrude * I, CGO * cgo, cCylCap cap, const f
       if (ok)
 	ok &= CGOBegin(cgo, GL_TRIANGLE_FAN);
       if(ok && !color_override)
-        ok &= CGOColorv(cgo, I->c + 3 * (I->N - 1));
+        ok &= CGOColorv(cgo, I->c.get() + 3 * (I->N - 1));
       if (ok){
         ok &= CGOAlpha(cgo, I->alpha[I->N - 1]);
       }
@@ -1682,17 +1395,15 @@ int ExtrudeCGOSurfacePolygon(const CExtrude * I, CGO * cgo, cCylCap cap, const f
 	ok &= CGOVertexv(cgo, v);
       /* trace shape */
       for(b = 0; ok && b < I->Ns; b++) {
-        ok &= CGOVertexv(cgo, I->tv + b * 3);
+        ok &= CGOVertexv(cgo, I->tv.get() + b * 3);
       }
       if (ok)
-	ok &= CGOVertexv(cgo, I->tv);
+	ok &= CGOVertexv(cgo, I->tv.get());
       if (ok)
 	ok &= CGOEnd(cgo);
       if (ok)
 	ok &= CGOPickColor(cgo, -1, cPickableNoPick);
     }
-    FreeP(TV);
-    FreeP(TN);
   }
 
   PRINTFD(I->G, FB_Extrude)
@@ -1709,7 +1420,7 @@ int ExtrudeCGOSurfacePolygonTaper(const CExtrude * I, CGO * cgo, int sampling,
   float *n;
   float *c;
   const float *alpha;
-  float *sv, *sn, *tv, *tn, *tv1, *tn1, *TV = nullptr, *TN = nullptr;
+  float *sv, *sn, *tv, *tn, *tv1, *tn1;
   float s0[3];
   float f;
   int subN;
@@ -1722,26 +1433,23 @@ int ExtrudeCGOSurfacePolygonTaper(const CExtrude * I, CGO * cgo, int sampling,
 
   if(I->N && I->Ns) {
 
-    TV = pymol::malloc<float>(3 * (I->Ns + 1) * I->N);
-    CHECKOK(ok, TV);
-    if (ok)
-      TN = pymol::malloc<float>(3 * (I->Ns + 1) * I->N);
-    CHECKOK(ok, TN);
+    std::vector<float> TV(3 * (I->Ns + 1) * I->N);
+    std::vector<float> TN(3 * (I->Ns + 1) * I->N);
     /* compute transformed shape vertices */
 
     if (ok){
-    tn = TN;
-    tv = TV;
+    tn = TN.data();
+    tv = TV.data();
 
-    sv = I->sv;
-    sn = I->sn;
+    sv = I->sv.get();
+    sn = I->sn.get();
     for(b = 0; b <= I->Ns; b++) {
       if(b == I->Ns) {
-        sv = I->sv;
-        sn = I->sn;
+        sv = I->sv.get();
+        sn = I->sn.get();
       }
-      v = I->p;
-      n = I->n;
+      v = I->p.get();
+      n = I->n.get();
 
       for(a = 0; a < I->N; a++) {
         if((a >= sampling) && (a < subN)) {
@@ -1781,11 +1489,11 @@ int ExtrudeCGOSurfacePolygonTaper(const CExtrude * I, CGO * cgo, int sampling,
 
     /* fill in each strip separately */
 
-    tv = TV;
-    tn = TN;
+    tv = TV.data();
+    tn = TN.data();
 
-    tv1 = TV + 3 * I->N;
-    tn1 = TN + 3 * I->N;
+    tv1 = TV.data() + 3 * I->N;
+    tn1 = TN.data() + 3 * I->N;
     }
     for(b = 0; ok && b < I->Ns; b += 2) {
       if (ok){
@@ -1797,9 +1505,9 @@ int ExtrudeCGOSurfacePolygonTaper(const CExtrude * I, CGO * cgo, int sampling,
       }
       if(ok && color_override)
         ok &= CGOColorv(cgo, color_override);
-      c = I->c;
-      alpha = I->alpha;
-      i = I->i;
+      c = I->c.get();
+      alpha = I->alpha.get();
+      i = I->i.get();
       for(a = 0; ok && a < I->N; a++) {
         if(!color_override)
           ok &= CGOColorv(cgo, c);
@@ -1834,8 +1542,6 @@ int ExtrudeCGOSurfacePolygonTaper(const CExtrude * I, CGO * cgo, int sampling,
       }
     }
 
-    FreeP(TV);
-    FreeP(TN);
   }
 
   PRINTFD(I->G, FB_Extrude)
@@ -1851,7 +1557,7 @@ int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling, const f
   float *n;
   float *c;
   const float *alpha;
-  float *sv, *sn, *tv, *tn, *tv1, *tn1, *TV = nullptr, *TN = nullptr;
+  float *sv, *sn, *tv, *tn, *tv1, *tn1;
   float v0[3], n0[3], s0[3], z[3] = { 1.0, 0.0, 1.0 };
   int subN;
   int ok = true;
@@ -1862,25 +1568,22 @@ int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling, const f
 
   if(I->N && I->Ns) {
 
-    TV = pymol::malloc<float>(3 * (I->Ns + 1) * I->N);
-    CHECKOK(ok, TV);
-    if (ok)
-      TN = pymol::malloc<float>(3 * (I->Ns + 1) * I->N);
-    CHECKOK(ok, TN);
+    std::vector<float> TV(3 * (I->Ns + 1) * I->N);
+    std::vector<float> TN(3 * (I->Ns + 1) * I->N);
     /* compute transformed shape vertices */
 
     if (ok){
-      tn = TN;
-      tv = TV;
-      sv = I->sv;
-      sn = I->sn;
+      tn = TN.data();
+      tv = TV.data();
+      sv = I->sv.get();
+      sn = I->sn.get();
       for(b = 0; b <= I->Ns; b++) {
 	if(b == I->Ns) {
-	  sv = I->sv;
-	  sn = I->sn;
+	  sv = I->sv.get();
+	  sn = I->sn.get();
 	}
-	v = I->p;
-	n = I->n;
+	v = I->p.get();
+	n = I->n.get();
 	for(a = 0; a < I->N; a++) {
 	  copy3f(sv, s0);
 	  if(a == subN) {
@@ -1900,11 +1603,11 @@ int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling, const f
 
       /* fill in each strip of arrow separately */
       
-      tv = TV;
-      tn = TN;
+      tv = TV.data();
+      tn = TN.data();
       
-      tv1 = TV + 3 * I->N;
-      tn1 = TN + 3 * I->N;
+      tv1 = TV.data() + 3 * I->N;
+      tn1 = TN.data() + 3 * I->N;
     }
 
     for(b = 0; ok && b < I->Ns; b += 2) {
@@ -1913,9 +1616,9 @@ int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling, const f
       else {
         ok &= CGOBegin(cgo, GL_LINE_STRIP);
       }
-      c = I->c;
-      alpha = I->alpha;
-      i = I->i;
+      c = I->c.get();
+      alpha = I->alpha.get();
+      i = I->i.get();
       for(a = 0; ok && a < I->N; a++) {
         if(a < subN) {
 	  if(color_override && ((b == 2) || (b == 3) || (b == 6) || (b == 7)))
@@ -1957,11 +1660,11 @@ int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling, const f
 
     if(ok) {
 
-      n = I->n;
-      v = I->p;
+      n = I->n.get();
+      v = I->p.get();
 
-      sv = I->sv;
-      tv = I->tv;
+      sv = I->sv.get();
+      tv = I->tv.get();
       for(b = 0; b < I->Ns; b++) {
         transform33Tf3f(n, sv, tv);
         add3f(v, tv, tv);
@@ -1969,13 +1672,13 @@ int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling, const f
         tv += 3;
       }
 
-      copy3f(I->n, v0);
+      copy3f(I->n.get(), v0);
       invert3f(v0);
       if (ok){
 	if(color_override)
 	  ok &= CGOColorv(cgo, color_override);
 	else
-	  ok &= CGOColorv(cgo, I->c);
+	  ok &= CGOColorv(cgo, I->c.get());
        }
       if(ok){
         ok &= CGOAlpha(cgo, I->alpha[0]);
@@ -1988,10 +1691,10 @@ int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling, const f
       if (ok)
 	ok &= CGONormalv(cgo, v0);
 
-      ok &= CGOVertexv(cgo, I->tv + 6 * 3);
-      ok &= CGOVertexv(cgo, I->tv + 4 * 3);
-      ok &= CGOVertexv(cgo, I->tv + 0 * 3);
-      ok &= CGOVertexv(cgo, I->tv + 2 * 3);
+      ok &= CGOVertexv(cgo, I->tv.get() + 6 * 3);
+      ok &= CGOVertexv(cgo, I->tv.get() + 4 * 3);
+      ok &= CGOVertexv(cgo, I->tv.get() + 0 * 3);
+      ok &= CGOVertexv(cgo, I->tv.get() + 2 * 3);
       if (ok)
 	ok &= CGOEnd(cgo);
       if (ok)
@@ -2000,19 +1703,19 @@ int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling, const f
 
     /* now do the arrow part */
 
-    tn = TN;
-    tv = TV;
+    tn = TN.data();
+    tv = TV.data();
 
-    sv = I->sv;
-    sn = I->sn;
+    sv = I->sv.get();
+    sn = I->sn.get();
     if (ok){
       for(b = 0; b <= I->Ns; b++) {
 	if(b == I->Ns) {
-	  sv = I->sv;
-	  sn = I->sn;
+	  sv = I->sv.get();
+	  sn = I->sn.get();
 	}
-	v = I->p;
-	n = I->n;
+	v = I->p.get();
+	n = I->n.get();
 	
 	for(a = 0; a < I->N; a++) {
 	  copy3f(sv, s0);
@@ -2035,11 +1738,11 @@ int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling, const f
       }
     }
 
-    tv = TV;
-    tn = TN;
+    tv = TV.data();
+    tn = TN.data();
 
-    tv1 = TV + 3 * I->N;
-    tn1 = TN + 3 * I->N;
+    tv1 = TV.data() + 3 * I->N;
+    tn1 = TN.data() + 3 * I->N;
 
     for(b = 0; ok && b < I->Ns; b += 2) {
       if (ok){
@@ -2049,9 +1752,9 @@ int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling, const f
 	  ok &= CGOBegin(cgo, GL_LINE_STRIP);
 	}
       }
-      c = I->c;
-      alpha = I->alpha;
-      i = I->i;
+      c = I->c.get();
+      alpha = I->alpha.get();
+      i = I->i.get();
       for(a = 0; ok && a < I->N; a++) {
         if(a >= (subN - 1)) {
           if(color_override && ((b == 2) || (b == 3) || (b == 6) || (b == 7)))
@@ -2091,10 +1794,10 @@ int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling, const f
 	ok &= CGOPickColor(cgo, -1, cPickableNoPick);
     }
 
-    n = I->n + 9 * (subN - 1);
-    v = I->p + 3 * (subN - 1);
-    sv = I->sv;
-    tv = I->tv;
+    n = I->n.get() + 9 * (subN - 1);
+    v = I->p.get() + 3 * (subN - 1);
+    sv = I->sv.get();
+    tv = I->tv.get();
     if (ok){
       for(b = 0; b < I->Ns; b++) {
 	copy3f(sv, s0);
@@ -2114,7 +1817,7 @@ int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling, const f
       if(color_override)
 	ok &= CGOColorv(cgo, color_override);
       else
-	ok &= CGOColorv(cgo, I->c + 3 * (subN - 1));
+	ok &= CGOColorv(cgo, I->c.get() + 3 * (subN - 1));
     }
     if (ok){
       ok &= CGOAlpha(cgo, I->alpha[(subN - 1)]);
@@ -2123,21 +1826,21 @@ int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling, const f
       ok &= CGOPickColor(cgo, I->i[(subN - 1)], cPickableAtom);
 
     // draw first side
-    tv = I->tv;
+    tv = I->tv.get();
     if (ok)
       ok &= CGOBegin(cgo, GL_TRIANGLE_STRIP);
     if (ok)
       ok &= CGONormalv(cgo, v0);
-    ok &= CGOVertexv(cgo, I->tv + 6 * 3);
-    ok &= CGOVertexv(cgo, I->tv + 4 * 3);
-    ok &= CGOVertexv(cgo, I->tv + 0 * 3);
-    ok &= CGOVertexv(cgo, I->tv + 2 * 3);
+    ok &= CGOVertexv(cgo, I->tv.get() + 6 * 3);
+    ok &= CGOVertexv(cgo, I->tv.get() + 4 * 3);
+    ok &= CGOVertexv(cgo, I->tv.get() + 0 * 3);
+    ok &= CGOVertexv(cgo, I->tv.get() + 2 * 3);
     if (ok)
       ok &= CGOEnd(cgo);
 
     // switch vertices to other side of flat surface of arrow
-    sv = I->sv;
-    tv = I->tv;
+    sv = I->sv.get();
+    tv = I->tv.get();
     if (ok){
       for(b = 0; b < I->Ns; b++) {
 	copy3f(sv, s0);
@@ -2153,18 +1856,16 @@ int ExtrudeCGOSurfaceStrand(const CExtrude * I, CGO * cgo, int sampling, const f
       ok &= CGOBegin(cgo, GL_TRIANGLE_STRIP);
     if (ok)
       ok &= CGONormalv(cgo, v0);
-    ok &= CGOVertexv(cgo, I->tv + 0 * 3);
-    ok &= CGOVertexv(cgo, I->tv + 2 * 3);
-    ok &= CGOVertexv(cgo, I->tv + 6 * 3);
-    ok &= CGOVertexv(cgo, I->tv + 4 * 3);
+    ok &= CGOVertexv(cgo, I->tv.get() + 0 * 3);
+    ok &= CGOVertexv(cgo, I->tv.get() + 2 * 3);
+    ok &= CGOVertexv(cgo, I->tv.get() + 6 * 3);
+    ok &= CGOVertexv(cgo, I->tv.get() + 4 * 3);
     if (ok)
       ok &= CGOEnd(cgo);
 
     if (ok)
       ok &= CGOPickColor(cgo, -1, cPickableNoPick);
 
-    FreeP(TV);
-    FreeP(TN);
   }
 
   PRINTFD(I->G, FB_Extrude)
@@ -2187,8 +1888,8 @@ int ExtrudeComputePuttyScaleFactors(CExtrude * I, ObjectMolecule * obj, int tran
 
   if(I->N && I->Ns) {
     int invalid = false;
-    i = I->i;
-    sf = I->sf;
+    i = I->i.get();
+    sf = I->sf.get();
 
     /* guard against invalid inputs that would imply division by zero */
 
@@ -2308,14 +2009,12 @@ int ExtrudeComputePuttyScaleFactors(CExtrude * I, ObjectMolecule * obj, int tran
     /* now compute window average */
 
     {
-      float *SF = pymol::malloc<float>(I->N);
+      std::vector<float> SF(I->N);
       int w, ww;
       float accum;
       int cnt;
 
-      CHECKOK(ok, SF);
-
-      sf = I->sf;
+      sf = I->sf.get();
 
       if (ok){
 	for(a = 1; a < (I->N - 1); a++) {
@@ -2334,15 +2033,12 @@ int ExtrudeComputePuttyScaleFactors(CExtrude * I, ObjectMolecule * obj, int tran
 	}
 	for(a = 1; a < I->N - 1; a++)
 	  sf[a] = SF[a];
-	FreeP(SF);
       }
     }
   }
   return (ok);
 }
 
-#if 0
-#endif
 
 void ExtrudeTruncate(CExtrude * I, int n)
 {
@@ -2356,37 +2052,12 @@ int ExtrudeAllocPointsNormalsColors(CExtrude * I, int n)
   int ok = true;
   if(I->N < n) {
     /* reset */
-    FreeP(I->p);
-    FreeP(I->n);
-    FreeP(I->c);
-    FreeP(I->alpha);
-    FreeP(I->i);
-    FreeP(I->sf);               /* PUTTY */
-    I->p = pymol::malloc<float>(3 * (n + 1));
-    CHECKOK(ok, I->p);
-    if (ok)
-      I->n = pymol::malloc<float>(9 * (n + 1));
-    CHECKOK(ok, I->n);
-    if (ok)
-      I->c = pymol::malloc<float>(3 * (n + 1));
-    CHECKOK(ok, I->c);
-    if (ok)
-      I->alpha = pymol::malloc<float>(n + 1);
-    CHECKOK(ok, I->alpha);
-    if (ok)
-      I->i = pymol::malloc<unsigned int>(3 * (n + 1));
-    CHECKOK(ok, I->i);
-    if (ok)
-      I->sf = pymol::malloc<float>(n + 1);        /* PUTTY: scale factors */
-    CHECKOK(ok, I->sf);
-    if (!ok){
-      FreeP(I->p);
-      FreeP(I->n);
-      FreeP(I->c);
-      FreeP(I->alpha);
-      FreeP(I->i);
-      FreeP(I->sf);
-    }
+    I->p.reset(new float[3 * (n + 1)]);
+    I->n.reset(new float[9 * (n + 1)]);
+    I->c.reset(new float[3 * (n + 1)]);
+    I->alpha.reset(new float[n + 1]);
+    I->i.reset(new unsigned int[3 * (n + 1)]);
+    I->sf.reset(new float[n + 1]);        /* PUTTY: scale factors */
   }
   I->N = n;
   return ok;
@@ -2394,15 +2065,5 @@ int ExtrudeAllocPointsNormalsColors(CExtrude * I, int n)
 
 void ExtrudeFree(CExtrude * I)
 {
-  FreeP(I->p);
-  FreeP(I->n);
-  FreeP(I->c);
-  FreeP(I->alpha);
-  FreeP(I->tn);
-  FreeP(I->tv);
-  FreeP(I->sn);
-  FreeP(I->sv);
-  FreeP(I->i);
-  FreeP(I->sf);
-  DeleteP(I);
+  delete I;
 }

@@ -13,7 +13,9 @@ def _assertSimpleReps():
 def _assertPrettyReps():
     assert cmd.count_atoms('rep cartoon & guide') == cmd.count_atoms('guide')
     assert cmd.count_atoms('rep ribbon') == 0
-    assert cmd.count_atoms('rep sticks & organic') == cmd.count_atoms('organic')
+    # 34c: ligands are ball_and_stick, not sticks
+    assert cmd.count_atoms('rep ball_and_stick & organic') == cmd.count_atoms('organic')
+    assert cmd.count_atoms('rep sticks & organic') == 0
     assert cmd.count_atoms('rep nonbonded') == 0
     assert cmd.count_atoms('rep nonbonded') == 0
 
@@ -24,26 +26,62 @@ def testSimple():
     _assertSimpleReps()
 
 
-def testKeepsCartoonColors(request):
-    # 15l: no row of the menu but "default" colors the cartoon, of a
-    # protein (guide atoms) or of a nucleic acid (P and the bases)
+def _menuRows(rows, path=''):
+    """(label, command) of every row of a menu and of its submenus; a row
+    of a submenu is labelled "submenu > row"."""
+    for row in rows:
+        if row[0] == 1 and isinstance(row[2], str):
+            yield path + row[1], row[2]
+        elif row[0] == 1:
+            yield from _menuRows(row[2], path + row[1] + ' > ')
+
+
+def testKeepsCartoonAndSurfaceColors(request):
+    # 15l, 30d: no row of the menu colors the cartoon, of a protein (guide
+    # atoms) or of a nucleic acid (P and the bases), and none colors a
+    # surface. Two exceptions. The color themes: coloring is what they
+    # are for (2026-11-20, question 32); test_themes has them. The two
+    # presets for complexes: the surface is orange where chains touch,
+    # and only there.
     from pymol import menu
     cmd.load(testing.datafile('1oky.pdb.gz'))
     cmd.fab('ACDEFGHIK', 'pep', chain='B')
     cmd.load(testing.datafile('1bna.cif'), 'dna')
     cmd.color('yellow')
-    request.addfinalizer(lambda: preset.look('default'))
+    yellow, orange = 6, cmd.get_color_index('orange')
+    request.addfinalizer(cmd.reinitialize)  # light, background, the floor
+    request.addfinalizer(lambda: cmd.stage('off'))
     request.addfinalizer(lambda: setattr(preset, 'solvent', False))
-    rows = menu.presets(cmd, 'all') + menu.preset_ligand_sites(cmd, 'all')
-    ran = 0
-    for row in rows:
-        if row[0] == 1 and isinstance(row[2], str) and row[1] != 'default':
-            cmd.do(row[2], echo=0)
-            assert _colors('guide | (dna & polymer)') == {6}, row[1]
-            ran += 1
-    assert ran > 20
-    preset.default('all')  # the reset still colors
-    assert len(_colors('dna & polymer')) > 1
+
+    def surface():
+        # the color a surface is drawn in: its own, else the atom's. Not
+        # the nitrogen that is all there is of the last residue of 1oky:
+        # it has no carbon to take a color from. Not the ligand and the
+        # water of "ligand sites": flagged "ignore" (25), they have no
+        # surface.
+        stored.drawn = set()
+        cmd.iterate('rep surface & byres elem C & !flag 25', 'stored.drawn.add('
+                    'color if s.surface_color in (None, -1) else s.surface_color)')
+        return stored.drawn
+
+    ran = surfaces = 0
+    for label, command in _menuRows(menu.presets(cmd, 'all')):
+        if label.startswith('theme > '):
+            continue
+        before = surface()
+        cmd.do(command, echo=0)
+        assert _colors('guide | (dna & polymer)') == {yellow}, label
+        if label in ('protein-protein interaction', 'antibody and antigen'):
+            assert surface() == {yellow, orange}, label  # not the whole surface
+        elif 'from_menu' in command:  # a preset: it draws everything anew
+            assert surface() <= {yellow}, label
+        else:  # transparency, solvent, a light, the floor: what was there
+            assert surface() == before, label
+        for name in cmd.get_names('public_objects'):  # nor through the object
+            assert cmd.get('surface_color', name) == 'default', label
+        ran += 1
+        surfaces += bool(surface())
+    assert ran > 30 and surfaces >= 8
 
 
 def _surfaceColors(selection):
@@ -64,9 +102,12 @@ def testInteraction():
     preset.interaction('all')
     assert cmd.count_atoms('rep surface') == cmd.count_atoms('polymer')
     assert cmd.count_atoms('rep cartoon | rep sticks') == 0
-    # the surface: orange, white where chains touch; the atoms keep theirs
-    assert _surfaceColors('one | two') == {index('white'), index('orange')}
-    assert _surfaceColors('far') == {index('orange')}
+    # 30d: the surface is orange where chains touch and has no color of
+    # its own elsewhere; the atoms keep theirs
+    assert index('orange') in _surfaceColors('one | two')
+    assert _surfaceColors('(one | two) & elem C') <= {None, index('orange')}
+    assert _surfaceColors('far & elem C') == {None}
+    assert _surfaceColors('far & elem O') == _colors('far & elem C')
     assert _colors('all') == before
     assert '_p_tmp' not in cmd.get_names('all')
     # the next preset undoes the surface and its colors
@@ -90,10 +131,10 @@ def testAntibody():
     before = _colors('guide')
     preset.antibody('all')
     assert _colors('guide') == before  # 15l: the cartoon keeps its colors
-    # the antigen: a surface, sand with the epitope in orange
+    # the antigen: a surface in its own colors with the epitope in orange
     assert cmd.count_atoms('rep surface') == cmd.count_atoms('ag')
     assert cmd.count_atoms('rep cartoon') == cmd.count_atoms('m | m2')
-    assert _surfaceColors('ag') <= {index('wheat'), index('orange')}
+    assert _surfaceColors('ag & elem C') <= {None, index('orange')}
     assert index('orange') in _surfaceColors('ag')
     assert _surfaceColors('m | m2') == {None}
     assert cmd.count_atoms('rep sticks & (m | m2)') > 0
@@ -128,12 +169,12 @@ def testEnabledOnly(request):
                 for r in ('lines', 'sticks', 'cartoon', 'surface', 'spheres')]
 
     before = reps('hidden')
-    request.addfinalizer(lambda: preset.look('default'))
+    request.addfinalizer(cmd.reinitialize)  # light, background, the floor
+    request.addfinalizer(lambda: cmd.stage('off'))
     request.addfinalizer(lambda: setattr(preset, 'solvent', False))  # the solvent row
-    for row in menu.presets(cmd, 'enabled'):
-        if row[0] == 1 and isinstance(row[2], str):
-            cmd.do(row[2], echo=0)
-            assert reps('hidden') == before, row[1]
+    for label, command in _menuRows(menu.presets(cmd, 'enabled')):
+        cmd.do(command, echo=0)
+        assert reps('hidden') == before, label
     rows = dict((r[1], r[2]) for r in menu.cartoon_transparency(cmd, 'enabled'))
     cmd.do(rows['50%'], echo=0)
     assert cmd.get_setting_float('cartoon_transparency', 'shown') == 0.5
@@ -185,12 +226,13 @@ def testLigands():
     assert cmd.count_atoms('rep cartoon') > 0
     assert cmd.count_atoms('rep ribbon') == 0
     # the ligand as balls and thin sticks
-    assert cmd.count_atoms('rep sticks & organic') == cmd.count_atoms('organic')
-    assert cmd.count_atoms('rep spheres & organic') == cmd.count_atoms('organic')
-    assert cmd.count_atoms('rep spheres') == cmd.count_atoms(preset.lig_sele)
+    # 34c: ball_and_stick; no sphere or stick is shown, no setting written
+    assert cmd.count_atoms('rep ball_and_stick') == cmd.count_atoms(preset.lig_sele)
+    assert cmd.count_atoms('rep spheres') == 0
+    assert cmd.count_atoms('rep sticks & organic') == 0
     stored.scales = set()
-    cmd.iterate('organic', 'stored.scales.add(round(s.sphere_scale, 2))')
-    assert stored.scales == {0.18}
+    cmd.iterate('organic', 'stored.scales.add(s.sphere_scale)')
+    assert stored.scales == {1.0}
     solvent_nb_count = cmd.count_atoms('rep nonbonded & solvent')
     assert solvent_nb_count > 0
     assert solvent_nb_count < cmd.count_atoms('solvent')
@@ -200,9 +242,7 @@ def testLigands():
     # the next preset undoes the balls
     preset.pretty('all')
     assert cmd.count_atoms('rep spheres') == 0
-    stored.scales = set()
-    cmd.iterate('organic', 'stored.scales.add(s.sphere_scale)')
-    assert stored.scales == {1.0}
+    assert cmd.count_atoms('rep ball_and_stick & organic') == cmd.count_atoms('organic')
 
 
 def testDefault():
@@ -215,24 +255,65 @@ def testDefault():
     assert cmd.count_atoms('rep spheres') == 0
     assert cmd.count_atoms('rep lines') == cmd.count_atoms()
     assert cmd.count_atoms('rep nonbonded & solvent') == cmd.count_atoms('solvent')
-    # object color must be preserved for carbons
+    # 30d: the carbons keep the color they have, the rest is by element
     color_set = set()
     cmd.iterate('elem C', 'color_set.add(color)', space=locals())
     assert sorted(color_set) == sorted([6])
+    assert len(_colors('not elem C')) > 2
+    cmd.color('blue', 'elem C and resi 100-120')  # not the object's color
+    preset.default('1oky')
+    assert _colors('elem C and resi 100-120') == {cmd.get_color_index('blue')}
 
 
 def testGlass():
     cmd.load(testing.datafile('1oky.pdb.gz'))
     preset.glass('all')
+    # 30d: no white; the color of the carbons, also over the oxygens
+    assert cmd.get('surface_color', '1oky') == 'default'
+    carbons = _colors('polymer & elem C')
+    assert len(carbons) == 1 and _surfaceColors('polymer & elem O') == carbons
     assert cmd.count_atoms('rep surface') == cmd.count_atoms('polymer')
     assert cmd.count_atoms('rep cartoon & guide') == cmd.count_atoms('guide')
-    assert cmd.count_atoms('rep sticks & organic') == cmd.count_atoms('organic')
+    assert cmd.count_atoms('rep ball_and_stick & organic') == cmd.count_atoms('organic')
     assert cmd.get_setting_float('ray_transparency_oblique') == 1
     # the next preset undoes all of it
     preset.simple('all')
     assert cmd.count_atoms('rep surface') == 0
     assert cmd.get_setting_float('ray_transparency_oblique') == 0
     assert cmd.get('surface_color', '1oky') == 'default'
+
+
+def testEffects(request):
+    """15e: balls in glass, cylinders, and the shade of the soft look."""
+    request.addfinalizer(lambda: preset.look('default'))
+    cmd.load(testing.datafile('1oky.pdb.gz'))
+    preset.balls_in_glass('all')
+    assert cmd.count_atoms('rep ball_and_stick') == cmd.count_atoms()
+    assert cmd.count_atoms('rep surface') == cmd.count_atoms('polymer')
+    assert cmd.get_setting_float('ray_transparency_oblique_power') == 20
+    assert cmd.get('surface_color', '1oky') == 'default'  # no recoloring
+    preset.cylinders('all')
+    assert cmd.count_atoms('rep surface') == 0
+    assert cmd.get_setting_float('ray_transparency_oblique_power') == 4
+    assert cmd.get_setting_int('cartoon_cylindrical_helices', '1oky') == 1
+    assert cmd.count_atoms('rep cartoon & guide') == cmd.count_atoms('guide')
+    # the soft look shades the pockets of a surface, but not a glass one
+    preset.look('soft')
+    assert cmd.get_setting_int('ambient_occlusion_mode') == 1
+    preset.glass('all')
+    assert cmd.get_setting_int('cartoon_cylindrical_helices', '1oky') == 0
+    assert cmd.get_setting_int('ambient_occlusion_mode', '1oky') == 0
+    preset.pretty('all')  # an opaque surface shown afterwards is shaded
+    assert cmd.get_setting_int('ambient_occlusion_mode', '1oky') == 1
+    preset.look('default')
+    assert cmd.get_setting_int('ambient_occlusion_mode') == 0
+    assert cmd.get_setting_float('ambient_occlusion_scale') == 25
+    # fog on top of a look that has none
+    preset.look('figure')
+    assert not cmd.get_setting_int('depth_cue')
+    preset.depth_fog(1)
+    assert cmd.get_setting_int('depth_cue')
+    assert cmd.get_setting_int('ray_trace_mode') == 1
 
 
 def testWire():
@@ -338,3 +419,128 @@ def testLook(request):
     preset.look('default')
     assert cmd.get_setting_float('ambient') == pytest.approx(0.14, abs=5e-8)
     assert cmd.get_setting_int('light_count') == 2
+
+
+def test_themes(request):
+    """A theme colors protein and ligand carbons and sets a two-color
+    background; representations and the light stay."""
+    saved = [cmd.get(k) for k in ("bg_rgb", "bg_rgb_top", "bg_rgb_bottom", "bg_gradient")]
+    request.addfinalizer(lambda: [cmd.set(k, v) for k, v in zip(("bg_rgb", "bg_rgb_top", "bg_rgb_bottom", "bg_gradient"), saved)])
+    cmd.load(testing.datafile("1oky.pdb.gz"), "m")
+    cmd.fragment("ala", "other")
+    reps = cmd.count_atoms("rep lines")
+    light = cmd.get("ambient")
+    other = cmd.get_color_tuple(cmd.get_object_color_index("other"))
+
+    def color_of(selection):
+        found = set()
+        cmd.iterate(selection, "found.add(color)", space={"found": found})
+        return {tuple(round(c * 255) for c in cmd.get_color_tuple(i)) for i in found}
+
+    for name, (protein, ligand, top, bottom) in preset.THEMES.items():
+        preset.theme(name, "m")
+        rgb = lambda text: tuple(int(text[i:i + 2], 16) for i in (2, 4, 6))
+        assert color_of("m and polymer") == {rgb(protein)}
+        assert color_of("m and organic and elem C") == {rgb(ligand)}
+        assert len(color_of("m and resn STU and not elem C")) > 1  # N and O keep theirs
+        assert cmd.get_setting_int("bg_gradient") == 1
+        assert tuple(round(c * 255) for c in cmd.get_color_tuple(cmd.get("bg_rgb_bottom"))) == rgb(bottom)
+    assert cmd.get_color_tuple(cmd.get_object_color_index("other")) == other  # not in the selection
+    assert cmd.count_atoms("rep lines") == reps and cmd.get("ambient") == light
+
+
+LIGAND_PRESETS = (
+    'technical', 'pretty', 'pretty_solv', 'publication', 'pub_solv',
+    'publication_green', 'glass', 'wire', 'spring', 'illustration',
+    'ligands', 'ligand_sites', 'ligand_sites_hq', 'ligand_sites_trans',
+    'ligand_sites_trans_hq', 'ligand_sites_mesh', 'ligand_sites_dots',
+    'ligand_cartoon', 'classified', 'interaction',
+)
+
+
+def _complex():
+    """A protein with a ligand, water and an ion, and sphere and stick
+    settings of the user's on the ligand."""
+    cmd.load(testing.datafile('1oky.pdb.gz'), 'm')
+    cmd.pseudoatom('m', pos=[20, 20, 20], elem='Zn', name='ZN', resn='ZN',
+                   resi='900', chain='A', hetatm=1)
+    cmd.set('sphere_scale', 0.77, 'organic')
+    cmd.set_bond('stick_radius', 0.33, 'organic')
+    cmd.set_bond('stick_color', 'red', 'organic')
+
+
+def _user_settings():
+    stored.scales = set()
+    cmd.iterate('organic', 'stored.scales.add(round(s.sphere_scale, 2))')
+    radii = {round(v, 2) for _, bonds in cmd.get_bond('stick_radius', 'organic', quiet=1)
+             for _, _, v in bonds}
+    colors = {v for _, bonds in cmd.get_bond('stick_color', 'organic', quiet=1)
+              for _, _, v in bonds}
+    return stored.scales, radii, colors
+
+
+@pytest.mark.parametrize('name', LIGAND_PRESETS)
+def testLigandsAreBallAndStick(name):
+    """34c: every preset that draws ligands draws them as ball_and_stick,
+    writes no sphere or stick setting and keeps the user's, leaves the ion
+    and the water to their own representations and the protein its colors."""
+    _complex()
+    user = _user_settings()
+    assert user[0] == {0.77} and user[1] == {0.33} and len(user[2]) == 1
+    carbons = _colors('polymer & guide')
+    getattr(preset, name)('m')
+    n_organic = cmd.count_atoms('organic')
+    assert n_organic and cmd.count_atoms('organic & rep ball_and_stick') == n_organic
+    assert cmd.count_atoms('organic & (rep sticks | rep spheres)') == 0
+    # (a modified residue, SEP here, counts as a ligand, as it did for sticks)
+    assert cmd.count_atoms('(resn ZN | solvent | (polymer & !hetatm)) & rep ball_and_stick') == 0
+    assert _user_settings() == user
+    if name != 'publication_green':  # that one colors the chains
+        assert _colors('polymer & guide') == carbons
+    # nothing of the new representation is styled by a preset
+    stored.own = set()
+    cmd.iterate('all', 'stored.own.add((s.ball_and_stick_scale, s.ball_and_stick_color, '
+                's.ball_and_stick_bond_radius))')
+    assert len(stored.own) == 1
+    assert not {s[0] for s in cmd.get_object_settings('m') or ()} & {
+        'ball_and_stick_scale', 'ball_and_stick_color', 'ball_and_stick_bond_radius',
+        'sphere_scale', 'stick_radius', 'stick_color'}
+
+
+def testBallAndStickPreset():
+    """The preset "ball and stick" uses the representation; its modes."""
+    _complex()
+    user = _user_settings()
+    preset.ball_and_stick('m')  # mode 1: the colors of the atoms
+    assert cmd.count_atoms('rep ball_and_stick') == cmd.count_atoms('m')
+    assert cmd.count_atoms('rep sticks | rep spheres') == 0
+    assert _user_settings() == user
+    stored.colors = set()
+    cmd.iterate('all', 'stored.colors.add(s.ball_and_stick_color)')
+    assert stored.colors == {None}
+    preset.ball_and_stick('m', mode=2)  # by element, on the atoms
+    stored.colors = set()
+    cmd.iterate('all', 'stored.colors.add(s.ball_and_stick_color)')
+    assert stored.colors == {-4}  # "atomic"
+    preset.ball_and_stick('m', 1)  # and back
+    stored.colors = set()
+    cmd.iterate('all', 'stored.colors.add(s.ball_and_stick_color)')
+    assert stored.colors == {None}
+    preset.ball_and_stick('m', mode=7)  # no such mode: nothing shown, as before
+    assert cmd.count_atoms('visible') == 0
+
+
+def testSceneBeforeAPreset():
+    """A scene stored before a preset brings the old ligand style back."""
+    _complex()
+    cmd.hide('spheres')  # of the ion
+    cmd.show_as('sticks', 'organic')
+    cmd.show('spheres', 'organic & elem N')
+    cmd.scene('mine', 'store')
+    preset.pretty('m')
+    assert cmd.count_atoms('organic & rep ball_and_stick') == cmd.count_atoms('organic')
+    cmd.scene('mine', 'recall', animate=0)
+    assert cmd.count_atoms('organic & rep sticks') == cmd.count_atoms('organic')
+    assert cmd.count_atoms('rep ball_and_stick') == 0
+    assert cmd.count_atoms('rep spheres') == cmd.count_atoms('organic & elem N')
+    assert _user_settings() == ({0.77}, {0.33}, _user_settings()[2])

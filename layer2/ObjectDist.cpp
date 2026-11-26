@@ -556,7 +556,7 @@ ObjectDist *ObjectDistNewFromAngleSele(PyMOLGlobals * G, ObjectDist * oldObj,
     }
   }
   /* else {
-     VLAFreeP(I->DSet);
+     I->DSet.freeP();
      DeleteP(I);
      }
    */
@@ -650,7 +650,7 @@ ObjectDist *ObjectDistNewFromDihedralSele(PyMOLGlobals * G, ObjectDist * oldObj,
     }
   }
   /* else {
-     VLAFreeP(I->DSet);
+     I->DSet.freeP();
      DeleteP(I);
      }
    */

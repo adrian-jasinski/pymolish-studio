@@ -84,7 +84,26 @@ def test_action_menus():
         # "remove waters" lives in the submenu only
         assert not [text for text in labels if "waters" in text]
         submenu = entries[labels.index("clean")][2]
-        assert len(submenu) == 9
+        assert len(submenu) == 10
+
+
+def test_remove_additives(capsys):
+    # 30e: what the crystal was grown and frozen in goes; the drug stays
+    from pymol import grouping
+
+    cmd.read_pdbstr(PDB, "m")  # its ethanol is an additive
+    cmd.fragment("ala", "other")  # outside the menu's target
+    cmd.alter("other", "resn='GOL'")
+    for resn, resi in (("PEG", 401), ("NAG", 402), ("NAD", 403), ("STU", 404), ("SO4", 405)):
+        cmd.pseudoatom("m", resn=resn, resi=resi, chain="A", elem="C", pos=[30, resi - 400, 0])
+    names = grouping.ADDITIVES.split(" ", 1)[1].split("+")
+    assert len(names) == len(set(names)) > 100 and all(len(n) == 3 for n in names)
+    row = [r for r in menu.clean(cmd, "m") if r[1].endswith("remove crystallization additives")]
+    cmd.do(row[0][2], echo=0)
+    left = set()
+    cmd.iterate("m and not polymer", "left.add(resn)", space={"left": left})
+    assert left == {"HOH", "NA", "STU"}
+    assert cmd.count_atoms("m and polymer") == 9 and cmd.count_atoms("other") == 10
 
 
 def test_without_rdkit():

@@ -5331,6 +5331,11 @@ int ExecutiveGetSession(
   PyDict_SetItemString(dict, "unique_settings", tmp);
   Py_XDECREF(tmp);
 
+  tmp = SettingUniqueAsPyList(G, true);
+  if (PyList_Size(tmp)) // a key PyMOL does not read: see cSettingPymolishFirst
+    PyDict_SetItemString(dict, "pymolish_unique_settings", tmp);
+  Py_XDECREF(tmp);
+
   if (partial) { /* mark this as a partial session */
 
     PyDict_SetItemString(dict, "partial", PConvAutoNone(Py_None));
@@ -5612,6 +5617,10 @@ int ExecutiveSetSession(
     tmp = PyDict_GetItemString(session, "unique_settings");
     if (tmp) {
       ok = SettingUniqueFromPyList(G, tmp, partial_restore);
+    }
+    if (ok) { // added to the above, with the same ids
+      SettingUniqueFromPyList(G,
+          PyDict_GetItemString(session, "pymolish_unique_settings"), true);
     }
 
     if (tmp || (!partial_session)) { /* ignore missing if partial restore */
@@ -6201,8 +6210,6 @@ int ExecutiveDebug(PyMOLGlobals* G, const char* name)
     for (a = 0; a < bp.n_atom; a++) {
       printf("%d %d %d\n", a, bp.list[a], bp.dist[bp.list[a]]);
     }
-
-    ObjectMoleculePurgeBondPath(obj, &bp);
   }
   return (1);
 }
@@ -10780,7 +10787,7 @@ int ExecutiveRMS(PyMOLGlobals* G, const char* s1, const char* s2, int mode,
                 id_p[2] = 0;
                 id_p += 3;
               }
-              VLASize(align_vla, int, n_pair * 3);
+              align_vla.resize(n_pair * 3);
             }
             {
               ObjectAlignment* obj = nullptr;
@@ -11834,7 +11841,9 @@ pymol::Result<> ExecutiveSetSetting(PyMOLGlobals* G, int index, PyObject* tuple,
                 if ((color_index < 0) && (color_index > cColorExtCutoff)) {
                   switch (color_index) {
                   case cColorAtomic:
-                    color_index = -1;
+                    // for a ball it means "by element", not the atom's color
+                    if (index != cSetting_ball_and_stick_color)
+                      color_index = -1;
                     break;
                   case cColorFront:
                   case cColorBack:
@@ -15268,7 +15277,7 @@ pymol::Result<> ExecutiveSetPropertyForObject(PyMOLGlobals* G,
   if (!vla)
     return pymol::make_error("No object(s) found");
   if (ok) {
-    int nObj = VLAGetSize(vla);
+    int nObj = vla.size();
     for (int a = 0; a < nObj; a++) {
       obj = vla[a];
       ok &= ObjectMoleculeSetProperty((ObjectMolecule*) obj, propname, value,

@@ -48,8 +48,8 @@ enum cLoadType_t : int;
  * ObjectMolecule's Bond Path (BP) Record
  */
 struct ObjectMoleculeBPRec {
-  int *dist;
-  int *list;
+  std::vector<int> dist;
+  std::vector<int> list;
   int n_atom;
 };
 
@@ -452,7 +452,6 @@ void ObjectMoleculeSculptClear(ObjectMolecule * I);
 int ObjectMoleculeGetBondPaths(ObjectMolecule * I, int atom, int max,
                                ObjectMoleculeBPRec * bp);
 int ObjectMoleculeInitBondPath(ObjectMolecule * I, ObjectMoleculeBPRec * bp);
-int ObjectMoleculePurgeBondPath(ObjectMolecule * I, ObjectMoleculeBPRec * bp);
 int ***ObjectMoleculeGetBondPrint(ObjectMolecule * I, int max_bond, int max_type,
                                   int *dim);
 
@@ -482,7 +481,6 @@ int ObjectMoleculeGetCheckHBond(AtomInfoType **h_real,
                                 ObjectMolecule * acc_obj,
                                 int acc_atom, int acc_state, HBondCriteria * hbc);
 void ObjectMoleculeInitHBondCriteria(PyMOLGlobals * G, HBondCriteria * hbc);
-int ObjectMoleculeConvertIDsToIndices(ObjectMolecule * I, int *id, int n_id);
 
 #define cObjectMoleculeDummyOrigin 1
 #define cObjectMoleculeDummyCenter 2

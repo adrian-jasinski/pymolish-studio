@@ -26,6 +26,8 @@ Z* -------------------------------------------------------------------
 #include"Util.h"
 #include"Character.h"
 
+#include <memory>
+
 static const float kR_SMALL4 = 0.0001F;
 static const float kR_SMALL5 = 0.0001F;
 #define EPSILON 0.000001F
@@ -2991,15 +2993,11 @@ int BasisMakeMap(CBasis* I, int* vert2prim, CPrimitive* prim, int n_prim,
     }
 
     extra_vert += I->NVertex;
-    if (ok)
-      tempVertex = pymol::malloc<float>(extra_vert * 3);
-    CHECKOK(ok, tempVertex);
-    if (ok)
-      tempRef = pymol::malloc<int>(extra_vert);
-    CHECKOK(ok, tempRef);
-
-    ErrChkPtr(I->G, tempVertex);        /* can happen if extra vert is unreasonable */
-    ErrChkPtr(I->G, tempRef);
+    // an upper bound, used in part: not std::vector, which would fill it
+    std::unique_ptr<float[]> tempVertexBuf(new float[extra_vert * 3]);
+    std::unique_ptr<int[]> tempRefBuf(new int[extra_vert]);
+    tempVertex = tempVertexBuf.get();
+    tempRef = tempRefBuf.get();
 
     /* lower indexes->flags, top is ref->lower index */
     ok &= !I->G->Interrupt;
@@ -3234,19 +3232,13 @@ int BasisMakeMap(CBasis* I, int* vert2prim, CPrimitive* prim, int n_prim,
          impact of this optimization is to reduce the size of the
          express list (I->Map->Elist) array by about 3-fold */
 
-      int *prm_spanner = nullptr;
-      int *spanner = nullptr;
+      std::vector<int> prm_spanner(n_prim);
+      std::vector<int> spanner(n);
       float *v = tempVertex;
       int j, k, l, jj, kk, ll;
       int nVertex = I->NVertex;
       int prm_index;
       MapType *map = I->Map;
-
-      prm_spanner = pymol::calloc<int>(n_prim);
-      CHECKOK(ok, prm_spanner);
-      if (ok)
-	spanner = pymol::calloc<int>(n);
-      CHECKOK(ok, spanner);
 
       /* figure out which primitives span more than one voxel */
       for(a = 0; ok && a < n; a++) {
@@ -3286,9 +3278,8 @@ int BasisMakeMap(CBasis* I, int* vert2prim, CPrimitive* prim, int n_prim,
 	ok &= !I->G->Interrupt;
       }
       /* and do the optimized expansion */
-      ok &= MapSetupExpressPerp(I->Map, tempVertex, front, true, spanner);
-      FreeP(spanner);
-      FreeP(prm_spanner);
+      ok &= MapSetupExpressPerp(I->Map, tempVertex, front, true,
+          spanner.data());
     } else if(n_voxel < (3 * n)) {
       ok &= MapSetupExpressXY(I->Map, n, true);
     } else {
@@ -3509,8 +3500,6 @@ int BasisMakeMap(CBasis* I, int* vert2prim, CPrimitive* prim, int n_prim,
       }
     }
 
-    FreeP(tempVertex);
-    FreeP(tempRef);
 
   } else {
     /* simple sphere mode */

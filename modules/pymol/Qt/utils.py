@@ -159,43 +159,26 @@ class MainThreadCaller(QtCore.QObject):
     """
     mainthreadrequested = QtCore.Signal(object)
 
-    RESULT_RETURN = 0
-    RESULT_EXCEPTION = 1
-
     def __init__(self):
         super(MainThreadCaller, self).__init__()
-        self.waitcondition = QtCore.QWaitCondition()
-        self.mutex = QtCore.QMutex()
-        self.results = {}
         self.mainthreadrequested.connect(self._mainThreadAction)
 
-    def _mainThreadAction(self, func):
+    def _mainThreadAction(self, request):
+        func, future = request
         try:
-            self.results[func] = (self.RESULT_RETURN, func())
+            future.set_result(func())
         except Exception as ex:
-            self.results[func] = (self.RESULT_EXCEPTION, ex)
-        self.waitcondition.wakeAll()
+            future.set_exception(ex)
 
     def __call__(self, func):
         if self.thread() is QtCore.QThread.currentThread():
             return func()
 
-        self.mainthreadrequested.emit(func)
+        from concurrent.futures import Future
 
-        while True:
-            self.mutex.lock()
-            self.waitcondition.wait(self.mutex)
-            self.mutex.unlock()
-            try:
-                result = self.results.pop(func)
-                break
-            except KeyError:
-                print(type(self).__name__ + ': result was not ready')
-
-        if result[0] == self.RESULT_EXCEPTION:
-            raise result[1]
-
-        return result[1]
+        future = Future()
+        self.mainthreadrequested.emit((func, future))
+        return future.result()
 
 
 def connectFontContextMenu(widget):

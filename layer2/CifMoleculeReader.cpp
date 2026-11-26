@@ -297,7 +297,7 @@ static bool BondTypeInit3(PyMOLGlobals* G, BondType* bond, unsigned i1,
  * Add one bond without checking if it already exists
  */
 static void ObjectMoleculeAddBond2(ObjectMolecule * I, int i1, int i2, int order) {
-  VLACheck(I->Bond, BondType, I->NBond);
+  I->Bond.check(I->NBond);
   BondTypeInit2(I->Bond + I->NBond, i1, i2, order);
   I->NBond++;
 }
@@ -586,7 +586,7 @@ static int ObjectMoleculeConnectComponents(ObjectMolecule * I,
   ConnectComponent(I, i_start, I->NAtom, bond_dict);
 
   // clean up
-  VLASize(I->Bond, BondType, I->NBond);
+  I->Bond.resize(I->NBond);
 
   return true;
 }
@@ -866,7 +866,7 @@ static bool read_pdbx_coordinate_model(PyMOLGlobals * G, const pymol::cif_data *
     return false;
 
   // set on atom-level
-  for (int i = 0, nrows = VLAGetSize(mol->AtomInfo); i < nrows; ++i) {
+  for (int i = 0, nrows = mol->AtomInfo.size(); i < nrows; ++i) {
     AtomInfoType * ai = mol->AtomInfo + i;
     if (asyms.count(LexStr(G, ai->segi))) {
       SettingSet(G, cSetting_cartoon_trace_atoms, true, ai);
@@ -1608,7 +1608,7 @@ static bool read_ss(PyMOLGlobals * G, const pymol::cif_data * datablock,
   if (ssrecords.empty())
     return false;
 
-  AtomInfoType *aj, *ai, *atoms_end = atInfo + VLAGetSize(atInfo);
+  AtomInfoType *aj, *ai, *atoms_end = atInfo + atInfo.size();
   sshashkey key;
 
   for (ai = atInfo.data(); ai < atoms_end;) {
@@ -1712,7 +1712,7 @@ static bool read_atom_site_aniso(PyMOLGlobals * G, const pymol::cif_data * data,
   }
 
   AtomInfoType *ai;
-  int nAtom = VLAGetSize(atInfo);
+  int nAtom = atInfo.size();
 
   std::map<int, AtomInfoType*> id_dict;
   std::map<std::string, AtomInfoType*> name_dict;
@@ -1774,7 +1774,7 @@ static pymol::vla<BondType> read_geom_bond(PyMOLGlobals * G, const pymol::cif_da
   const cif_array *arr_symm_2 = data->get_opt("_geom_bond?site_symmetry_2");
 
   int nrows = arr_ID_1->size();
-  int nAtom = VLAGetSize(atInfo);
+  int nAtom = atInfo.size();
   int nBond = 0;
 
   auto bondvla = pymol::vla<BondType>(6 * nAtom);
@@ -1809,9 +1809,9 @@ static pymol::vla<BondType> read_geom_bond(PyMOLGlobals * G, const pymol::cif_da
   }
 
   if (nBond) {
-    VLASize(bondvla, BondType, nBond);
+    bondvla.resize(nBond);
   } else {
-    VLAFreeP(bondvla);
+    bondvla.freeP();
   }
 
   return bondvla;
@@ -1931,7 +1931,7 @@ static bool read_struct_conn_(PyMOLGlobals * G, const pymol::cif_data * data,
   const cif_array *col_order = data->get_opt("_struct_conn.pdbx_value_order");
 
   int nrows = col_type_id->size();
-  int nAtom = VLAGetSize(atInfo);
+  int nAtom = atInfo.size();
   int nBond = 0;
 
   cset->TmpBond = pymol::vla<BondType>(6 * nAtom);
@@ -2001,10 +2001,10 @@ next_row:;
   }
 
   if (nBond) {
-    VLASize(cset->TmpBond, BondType, nBond);
+    cset->TmpBond.resize(nBond);
     cset->NTmpBond = nBond;
   } else {
-    VLAFreeP(cset->TmpBond);
+    cset->TmpBond.freeP();
   }
 
   return true;
@@ -2034,7 +2034,7 @@ static pymol::vla<BondType> read_chem_comp_bond(PyMOLGlobals * G, const pymol::c
       "_chem_comp_bond.type");
 
   int nrows = col_ID_1->size();
-  int nAtom = VLAGetSize(atInfo);
+  int nAtom = atInfo.size();
   int nBond = 0;
 
   auto bondvla = pymol::vla<BondType>(6 * nAtom);
@@ -2068,9 +2068,9 @@ static pymol::vla<BondType> read_chem_comp_bond(PyMOLGlobals * G, const pymol::c
   }
 
   if (nBond) {
-    VLASize(bondvla, BondType, nBond);
+    bondvla.resize(nBond);
   } else {
-    VLAFreeP(bondvla);
+    bondvla.freeP();
   }
 
   return bondvla;
@@ -2092,7 +2092,7 @@ static pymol::vla<BondType> read_pymol_bond(PyMOLGlobals * G, const pymol::cif_d
     return {};
 
   int nrows = col_ID_1->size();
-  int nAtom = VLAGetSize(atInfo);
+  int nAtom = atInfo.size();
 
   auto bondvla = pymol::vla<BondType>(nrows);
   auto bond = bondvla.data();
@@ -2179,7 +2179,7 @@ ObjectMolecule *ObjectMoleculeReadCifData(PyMOLGlobals * G,
   }
 
   // get number of atoms and coordinate sets
-  I->NAtom = VLAGetSize(I->AtomInfo);
+  I->NAtom = I->AtomInfo.size();
   ncsets = VLAGetSize(csets);
 
   // initialize the new coordsets (not data, but indices, etc.)
@@ -2192,7 +2192,7 @@ ObjectMolecule *ObjectMoleculeReadCifData(PyMOLGlobals * G,
   }
 
   // get coordinate sets into ObjectMolecule
-  VLAFreeP(I->CSet);
+  I->CSet.freeP();
   I->CSet = pymol::vla_take_ownership(csets);
   I->NCSet = ncsets;
   I->updateAtmToIdx();
@@ -2270,7 +2270,7 @@ ObjectMolecule *ObjectMoleculeReadCifData(PyMOLGlobals * G,
     }
   } else {
     if (!I->NBond)
-      I->NBond = VLAGetSize(I->Bond);
+      I->NBond = I->Bond.size();
 
     // bonds from coordset
     if (cset && cset->TmpBond && cset->NTmpBond) {
@@ -2280,8 +2280,8 @@ ObjectMolecule *ObjectMoleculeReadCifData(PyMOLGlobals * G,
             cset->IdxToAtm[cset->TmpBond[i].index[1]],
             cset->TmpBond[i].order);
       }
-      VLASize(I->Bond, BondType, I->NBond);
-      VLAFreeP(cset->TmpBond);
+      I->Bond.resize(I->NBond);
+      cset->TmpBond.freeP();
     }
   }
 

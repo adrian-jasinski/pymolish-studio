@@ -168,10 +168,11 @@ repres = {
     'dihedrals'     :18,
     'ellipsoids'    :19,
     'volume'        :20,
+    'ball_and_stick':21,
 }
 
 repmasks = {
-    'everything'    : 0b000111111111111111111111,
+    'everything'    : 0b001111111111111111111111,
     'sticks'        : 0b000000000000000000000001,
     'spheres'       : 0b000000000000000000000010,
     'surface'       : 0b000000000000000000000100,
@@ -193,6 +194,7 @@ repmasks = {
     'dihedrals'     : 0b000001000000000000000000,
     'ellipsoids'    : 0b000010000000000000000000,
     'volume'        : 0b000100000000000000000000,
+    'ball_and_stick': 0b001000000000000000000000,
 
     # combinations
     'licorice'      : 0b000000000000000000010001, # sticks | nb_spheres

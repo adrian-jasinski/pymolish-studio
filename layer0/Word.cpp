@@ -588,14 +588,14 @@ CWordList *WordListNew(PyMOLGlobals * G, const char *st)
     }
     /* allocate the storage we'll need to hold the words */
     {
-      I->word = pymol::malloc<char>(len);
-      I->start = pymol::malloc<char *>(n_word);
+      I->word.resize(len);
+      I->start.resize(n_word);
 
       /* and copy the words */
 
-      if(I->word && I->start) {
-        char *q = I->word;
-        char **q_ptr = I->start;
+      {
+        char *q = I->word.data();
+        char **q_ptr = I->start.data();
         p = st;
         while(*p) {
           if(*p > 32) {
@@ -617,11 +617,7 @@ CWordList *WordListNew(PyMOLGlobals * G, const char *st)
 
 void WordListFreeP(CWordList * I)
 {
-  if(I) {
-    FreeP(I->word);
-    FreeP(I->start);
-    DeleteP(I);
-  }
+  delete I;
 }
 
 void WordListDump(CWordList * I, const char *prefix)

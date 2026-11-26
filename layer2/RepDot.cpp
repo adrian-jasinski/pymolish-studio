@@ -42,7 +42,6 @@ RepDot::~RepDot()
     CGOFree(I->shaderCGO);
     I->shaderCGO = 0;
   }
-  FreeP(I->VC);
   FreeP(I->V);
   FreeP(I->T);
   FreeP(I->F);

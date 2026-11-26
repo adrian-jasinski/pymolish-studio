@@ -1,9 +1,25 @@
 # 21 — Features of the commercial build: removed, kept, to rebuild
 
+**Built 2026-11-24, 4.63.1 to 4.65.0: 21f, all three items.** 4.63.1:
+`sphere_mode` stops at 9; the test and its two images are deleted. 4.64.0:
+on save the picture of `bg_image_filename` goes into the session as "data:"
+text in that setting (the core already read it); PyMOL 3.2.0a loads, ray
+traces and saves such a session. 4.65.0: FXAA, `data/shaders/fxaa.fs`, one
+pass over the offscreen texture the render path already had; the setting
+`antialias_shader` is 0 or 1 and off at start, because only WSLg was tried.
+Measured there (integrated AMD, 1500 x 731, 1oky): 10.3 ms a frame without,
+12.0 ms with. Left out: SMAA, stereo, images drawn at another size than the
+window, Windows and macOS. Two test files still carry the mark `incentive`,
+both for 21g: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`.
+
 [Roadmap](../../PLAN.md) · Request 2026-11-19 · **Removals done in 4.19.18
 to 4.19.26. 21a to 21e built in 4.19.33 to 4.19.37. 21f was decided on
 2026-11-20 and is to build; 21g was decided the same day (option C) and is
-to build last.** Answers of the
+to build last. A first piece of 21g shipped on 2026-11-20 in 4.40.0, ahead
+of its turn, as slice 30f of [step 30](30-polish.md): a row of the preset
+menu is undone and redone through a snapshot of the whole session
+(`modules/pymol/snapshots.py`; 1AON: 0.15 s to keep, 17.8 MB). The stack of
+slice 1, with one order for snapshots and moves, is still to build.** Answers of the
 user from 2026-11-19 are applied: all Maestro support removed, a command is
 enough for stereochemistry, stubs that break nothing else removed.
 
@@ -218,7 +234,7 @@ files, and the change of what a PSE contains.
 Since 2026-11-20 there is a second place for the picture: the session key
 of [step 28](28-session-format.md). With it PyMOL would still see the file
 name in the setting instead of text it cannot use. Option A stands as
-decided unless question 29 of the roadmap says otherwise. The FXAA pass is
+decided: the answer to question 29 (2026-11-20) did not move it. The FXAA pass is
 also what a shadow pass for the floor of [step 25](25-studio-effects.md)
 would follow.
 

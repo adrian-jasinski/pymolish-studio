@@ -1,8 +1,40 @@
 # 28 — Session format: is a new one needed?
 
+**2026-11-23 extension, planned at 4.43.0:** alignment-window data from
+[step 33](33-sequence-window.md) joins table columns and the shot list under
+the `pymolish` key when needed. Stars (22f) use existing object properties.
+Scene appearance (35b) should extend the native scene record so movie recall
+works; use a side entry only if compatibility requires it. A new core
+representation (34) needs its own compatibility tests: the old experiment
+with extra dictionary keys below does not validate new representation bits
+or scene payloads. No output format is changed by this planning run.
+
+**28b done 2026-11-23 in 4.45.0; the step is finished.**
+`modules/pymol/session_extra.py`, 28 lines: `entries`, a dictionary the
+features read and write, saved as `session["pymolish"]` with a version and
+restored on load; reinitialize empties it; an entry of a newer version is
+kept and written back with its version number. A session of a program that
+used none of the features has no such key. Users so far: `table` (4.45.0)
+and `ligand_next` (4.51.0). PyMOL 3.2.0a loads a `.pse` with the key
+(tried). Two more things a session may now hold, outside this key: a
+seventh item in a scene's record (35b) and the key
+`pymolish_unique_settings` (step 34); see question 62. Left out:
+`compare.py` was not extended; the check with PyMOL 3 was done by hand.
+
 [Roadmap](../../PLAN.md) · Request 2026-11-20 ("think if we need a new
-session format ... e.g. psex") · Planned, not built. Sizes and compatibility
-were measured.
+session format ... e.g. psex") · **28a done 2026-11-20 in 4.26.0.** 28b (the
+one session key for new data) is built with its first user, the table
+columns of 22d or the shot list of step 19: a module nothing calls is not
+written ahead.
+
+Result of 28a, measured with the shipped code: 1AON 19.6 MB to 1.10 MB,
+4V6X 87.2 MB to 3.90 MB (18 and 22 times smaller). The pickle is written
+with protocol 4, which stores the packed bytes as they are: that is the
+difference to the 1.4 MB of the trial below, which used the protocol of a
+`.pse`. Save 0.20 s against 0.30 s (1AON), 0.78 s against 1.53 s (4V6X);
+load 0.04 s against 0.21 s and 0.20 s against 0.99 s. `load` goes by the
+first bytes, so a renamed file loads. Not done: a file association in the
+bundles (they have none for `.pse` either).
 
 **Short answer: no new format is needed to store the new options, a `.pse`
 can carry them today. A new file type is still worth having for size: the
@@ -49,7 +81,7 @@ within 30 % of the gzipped mmCIF, which holds less (no settings, no scenes):
 little is left to gain by a different layout. zstd would be faster still but
 is in the standard library only from Python 3.14; the floor is 3.13.
 
-## Options (question 29)
+## Options (question 29, answered 2026-11-20: B with B1)
 
 | | Option | Note |
 | --- | --- | --- |
@@ -71,7 +103,7 @@ is in the standard library only from Python 3.14; the floor is 3.13.
 | File | The bytes `PSEX` and a format number (1) and three reserved bytes, then the lzma stream (`lzma.compress(data, preset=1)`) of the pickle that `get_session(binary=1)` gives. The mark lets `load` tell the type without trusting the file name, and a later change of packing (zstd when 3.14 is the floor) is a new format number. |
 | Writing | `save name.psex` and File > Save Session. The dialog offers "pymolish session (*.psex)" first and "PyMOL session (*.pse)" second. |
 | Reading | `load name.psex`, File > Open, a dropped file, Open Recent, the file association of the bundles. `.pse` and `.pze` load as before. |
-| One key for everything new | `session["pymolish"]`, a dictionary with a `version` and one entry per feature: `table` ([step 22](22-property-table.md): column order and hidden columns), `shots` ([step 19](19-movie-timeline.md): the shot list), later, if question 29 says so, `background_image` ([21f](21-commercial-features.md) decided on 2026-11-20 to store the picture as text in the setting itself; under this key PyMOL would keep seeing the file name), and `stage` and `ligand_2d` if they need one. One save task and one restore task in a new `modules/pymol/session_extra.py` hand each entry to its owner. Object properties need no entry: the core saves them. |
+| One key for everything new | `session["pymolish"]`, a dictionary with a `version` and one entry per feature: `table` ([step 22](22-property-table.md): column order and hidden columns), `shots` ([step 19](19-movie-timeline.md): the shot list), not `background_image` ([21f](21-commercial-features.md) decided on 2026-11-20 to store the picture as text in the setting itself; that stands, the answer to question 29 did not move it), later `stage` and `ligand_2d` if they need one. One save task and one restore task in a new `modules/pymol/session_extra.py` hand each entry to its owner. Object properties need no entry: the core saves them. |
 | Unknown entries | Kept and written back untouched, so an older pymolish does not strip what a newer one saved. |
 | Safety | A session is a pickle, and loading a pickle can run code: true for `.pse` today and unchanged by this plan. The existing warning on files from others stays; `.psex` adds no new risk and removes none. |
 | Old sessions | Every `.pse` ever written loads as before. Nothing is converted by itself. |

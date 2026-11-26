@@ -3,6 +3,24 @@
 [Roadmap](../../PLAN.md) · Request 2026-11-13 · Draft; counts are `grep` counts,
 nothing was built, timed or changed for this plan
 
+> **2026-11-25, 4.76.1 to 4.76.14.** The `malloc` half of 8c is done as far
+> as a buffer has one owner: 230 of 297 allocation sites and 274 of 353
+> frees are gone (67 and 79 left, each with its reason below). The
+> mechanical part of 8d is done: 215 macro calls on `pymol::vla` objects are
+> member calls; 611 calls on raw pointers are left. Measured: the suite
+> (1154 passed, 250 skipped), a sanitizer run without a report, the ray
+> geometry of 385 combinations and a session round trip identical to
+> 4.76.0. Eight defects that were in 4.76.0 came out and are fixed. Left
+> out: `compare.py` (the machine was in use), any run on Windows, macOS or
+> GCC 11, any look at a window. Not started: raw `new` / `delete`, 8e, 8f,
+> 8g.
+>
+> **Closed 2026-11-25 at 4.76.14.** Asked where the step should end
+> (question 106), the user answered "finish here". The rest of 8c, 8d on
+> raw pointers, 8e, 8f and 8g are no longer planned; the counts and the
+> reasons per file below are what stays in the code, and the place to
+> start from if the step is opened again.
+
 **Modernize the C-style C++ of the core one idiom and one file at a time, behind
 tests and sanitizers. No from-scratch rewrite. Vendored C stays C.**
 
@@ -273,6 +291,118 @@ removal lays bare, not removed because it is not neutral:
   selection appear and grow with `selection_width`. A PSE round trip.
   Not run: `compare.py` (the machine was busy with the sanitizer build;
   none of the seven functions is on a profile of the benchmark rows).
+
+**8c, the `malloc` half, 2026-11-25 in 4.76.1 to 4.76.14.**
+
+- Done in four groups of files, three of them in parallel branches, one
+  commit per group: Selector, ObjectMolecule, ObjectMolecule2, PlugIOManager
+  (4.76.1); Sculpt and ten small files (4.76.3); Ray, Basis, RepSurface,
+  Triangle, Sphere, Isosurf, Tetsurf, RepMesh, ObjectMap, ObjectVolume
+  (4.76.8); Extrude, RepCartoon, RepRibbon, RepSphere and the bond reps
+  (4.76.10); the two AMBER readers (4.76.12).
+- Counts over `layer0` to `layer5` and `layerGraphics`, without the files
+  that define the macros: allocation sites 297 before, 67 now; frees 353
+  before, 79 now. 60 source files changed, 1,181 lines added and 2,605
+  removed.
+- The rule that was kept: a vector zero-fills where `malloc` did not. Where
+  that costs (a buffer sized for the worst case and filled in part, a buffer
+  made every frame) the owner is `std::unique_ptr<T[]>` without
+  initialization: the arrays of `CExtrude`, `tempVertex` and `tempRef` of
+  `BasisMakeMap`, the dots of `RepMesh`, the two sort buffers of a
+  transparent surface.
+- Dead code that went with it, each in a commit of its own: the sphere
+  generator of `Sphere.cpp` under a macro the same file always defines (554
+  lines, same preprocessed text before and after, 4.76.11),
+  `createPreintegrationTexture` (62 lines, 4.76.9),
+  `ObjectMoleculeConvertIDsToIndices` (69 lines, 4.76.7),
+  `OrthoSetBackgroundImage` (30 lines, 4.76.4), the `#if 0` blocks of
+  `Extrude.cpp` (179 lines, in 4.76.10).
+- Defects that were in 4.76.0, found by the new tests or by reading, and
+  fixed:
+
+  | Defect | Found by | Version |
+  | --- | --- | --- |
+  | `load_png` and `bg_image_filename` crash on a `data:image/png;base64,` text that is not base64 | a new test | 4.76.5 |
+  | `valence` with a source object writes one byte before a vector (bond index -1) and ends in "double free or corruption" | a new test | 4.76.6 |
+  | a surface with `ambient_occlusion_mode` 3 reads a neighbor map that was freed | the sanitizer run on a new test | 4.76.13 |
+  | spheres of a part of an object with `sphere_mode` 6 to 8 take their normals from the wrong atoms and read past the coordinate buffer | reading, then reproduced under the sanitizer | 4.76.14 |
+  | with `cartoon_all_alt` the cartoon leaks four arrays per alternate location | reading | 4.76.10 |
+  | every surface leaks two arrays (`LastVisib`, `LastColor`) | reading | 4.76.8 |
+  | a mesh without solvent dots writes into a zero-size buffer | reading | 4.76.8 |
+  | `MatchAlign` leaks one table when the other allocation fails | reading | 4.76.3 |
+
+- Left, and why (67 allocation sites):
+
+  | Where | Sites | Why it stays |
+  | --- | --- | --- |
+  | `ccealignmodule.cpp` and the frees of `ExecutiveCEAlign` | 14 | contributed code in its own style, `double**` matrices handed across two files, one path allocated per cell of the search |
+  | `RepDot.cpp` | 12 | allocated for the worst case and cut down with `realloc`; a vector would zero-fill ten floats per dot and atom |
+  | `PyMOL.cpp`, `Editor.cpp`, `Cmd.cpp`, `P.cpp`, `Util.cpp`, `Word.cpp`, `TypeFace.cpp`, `Character.cpp`, `VFont.cpp` | 13 | singletons that hang off the calloc'd `PyMOLGlobals`; they belong to the `new` / `delete` half |
+  | `PConv.cpp`, `File.cpp`, `Util.cpp` (`UtilArrayCalloc`), `ObjectMolecule.cpp` (`AtomInfoGetSortedIndex`), `ObjectMolecule2.cpp` (the other-index list) | 9 | the block is returned to callers in other files |
+  | `ObjectMolecule.cpp` `UndoCoord` | 2 | the null pointer is the mark of an empty undo slot; 21g reworks the ring |
+  | `Ray.cpp` | 4 | the depth buffer goes to the global `rayDepthPixels`; `VectorHash` sits inside VLA records (8d) |
+  | `MyPNG.cpp` | 2 | assigned after `setjmp` |
+  | `RepLabel.cpp`, `RepDistLabel.cpp`, `RepCylBond.cpp`, `Pixmap.cpp`, `CGOGL.cpp`, `Field.cpp`, `TestPyMOL.cpp`, `ListMacros.h` | 11 | `Rep::P` is freed in `Rep.cpp`; `CPixmap` is memset; a three-float block per bond; the rest was not looked at |
+
+- Checks: the suite on the final tree, 1154 passed and 250 skipped (1122
+  and 251 before; the new tests are in `core_buffers.py`,
+  `buffers_ray_surface.py` and five existing files). A sanitizer build of the committed tree in a
+  copy (address and undefined behavior, the flags of the CI job, GCC 13):
+  no report; 1123 passed, 275 skipped (no rdkit, PDBFixer or OpenMM there).
+  Ray geometry: the SHA-256 of `cmd.get_povray()` is the same on the 4.76.0
+  build and on the new one for 385 combinations of five structures
+  (protein, DNA, RNA), nine cartoon types, 31 cartoon settings, ribbon,
+  sticks, lines, spheres and nonbonded; and for 95 more rows of the ray and
+  surface group (surface types 0 to 7 and their settings, ambient
+  occlusion, mesh, dots, maps with isomesh and isosurface, ray pictures),
+  run on 4.76.13 with one thread. With four threads ray pictures differ
+  between two runs of the same build, 4.76.0 included. A session written by
+  either build is read by either build with the same atoms, bonds, view and
+  geometry; two old sessions of `testing/data` read the same.
+- Coverage, measured with `gcov` on the final tree (suite plus the geometry
+  script): of 727 changed places, 132 are never executed. 59 of them are
+  member calls of the mechanical 8d pass, which the compiler proves. The 73
+  written by hand: `RepSurface.cpp` 10 (transparency sorting and other
+  paths of a window), `ObjectMolecule.cpp` 10 (the AMBER restart reader,
+  branches of valence guessing and of the SDF names), `ObjectVolume.cpp` 9
+  (color ramps), `ObjectMap.cpp` 9 (the readers without a sample file: PHI,
+  ACNT, FLD, GRD, XPLOR), `RepCartoon.cpp` 7 (cyclic peptides, one helix
+  branch), `Ray.cpp` 5, `FontType.cpp` 5 (text drawn with OpenGL),
+  `Selector.cpp` 4, `RepMesh.cpp` 4, `Extrude.cpp` 4, `Sculpt.cpp` 2,
+  `ShaderPrg.cpp` 2, `Util.cpp` 1, `Triangle.cpp` 1. These compile and
+  were read; no test or picture proves them.
+- Seen and not fixed: in `RepCartoonNew` the VLA `ring_anchor` is
+  allocated on every pass of the loop over alternate locations and freed
+  once after it (a leak with `cartoon_all_alt`; it goes with 8d).
+- Not run: `compare.py` (the user's own pymolish ran on the machine; none
+  of the changed functions got a new zero-fill inside a loop per atom or
+  pixel). Nothing was compiled with MSVC, Apple Clang or GCC 11: the first
+  CI run of the pushed branch is that check. No window was opened.
+
+**8d, the mechanical part, 2026-11-25 in 4.76.2 and 4.76.12.**
+
+- `VLACheck`, `VLASize`, `VLAFreeP` and `VLAGetSize` forward to `check`,
+  `resize`, `freeP` and `size` when the array is a `pymol::vla` (overloads
+  in `vla.h`). A script rewrote every such call to the member and compiled
+  the file; a rewrite that did not compile (a raw pointer) was taken back.
+  215 calls in 25 files.
+- 829 macro calls before, 611 now, all on raw pointers: 174 allocations (`VLAlloc`,
+  `VLACalloc`, `VLAMalloc`), 378 `VLACheck` / `VLASize` / `VLAFreeP` /
+  `VLAGetSize`, 48 `VLAprintf` (all in `MoleculeExporter.cpp`), 11 others.
+  The largest families: the members of `ObjectMoleculeOpRec` (used by
+  `Executive.cpp`, `ObjectMolecule.cpp`, `Selector.cpp`, `Cmd.cpp`), the
+  lists of `Selector.cpp`, the readers of `ObjectMolecule.cpp`.
+
+**Counts on 2026-11-25 at 4.76.13, unchanged by 4.76.14** (`grep`, same patterns as above):
+
+| Idiom | Left | Slice |
+| --- | --- | --- |
+| `malloc` family / frees | 67 / 79 | 8c, each with a reason above |
+| raw `new` (outside smart pointers) / `delete` / `DeleteP` | 181 / 109 / 64 | 8c, not started; 27 of them are local `MapType` |
+| VLA macros on raw pointers | 611 | 8d |
+| `ok_assert` / `ok_raise` / `ok_except`, `goto`, `CHECKOK` | 197, 24, 198 | 8e |
+| `sprintf` / `strcpy` / `strcat` through a pointer | 60 | 8b, closes with 8d and 8e |
+| `ov/` users | 72 | 8g, not measured |
 
 ## Review 2026-11-14: is it finished, and what is next
 

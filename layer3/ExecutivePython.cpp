@@ -278,7 +278,7 @@ static pymol::Result<PyObject*> ExecutiveGetRawAlignmentImpl(
   }
 
   auto hide_underscore = SettingGet<bool>(G, cSetting_hide_underscore_names);
-  const auto vla_len = VLAGetSize(vla);
+  const auto vla_len = vla.size();
 
   PyObject* raw = PyList_New(0);
 

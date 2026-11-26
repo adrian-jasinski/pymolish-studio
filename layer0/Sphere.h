@@ -18,6 +18,8 @@ Z* -------------------------------------------------------------------
 #ifndef _H_Sphere
 #define _H_Sphere
 
+#include <vector>
+
 #include"Vector.h"
 #include"PyMOLGlobals.h"
 
@@ -38,7 +40,7 @@ typedef struct SphereRec {
 
 struct _CSphere {
   SphereRecPtr Sphere[NUMBER_OF_SPHERE_LEVELS];
-  SphereRec *Array;
+  std::vector<SphereRec> Array;
 };
 
 void SphereInit(PyMOLGlobals * G);

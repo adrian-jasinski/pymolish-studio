@@ -66,6 +66,9 @@ def _prepare(selection,polar_contacts=None,_self=cmd):
     cmd.set("two_sided_lighting",0) # global
     cmd.unset("cartoon_debug") # global
     cmd.unset("ray_transparency_oblique") # global
+    cmd.unset("ray_transparency_oblique_power") # global
+    cmd.unset("ambient_occlusion_mode", selection)
+    cmd.unset("cartoon_cylindrical_helices", selection)
     cmd.unset("transparency",s)
     cmd.unset("cartoon_transparency",s)
     cmd.unset("cartoon_transparency",selection)
@@ -73,9 +76,8 @@ def _prepare(selection,polar_contacts=None,_self=cmd):
     cmd.unset("surface_color", s) # per atom: interaction
     cmd.unset("surface_quality", selection)
     cmd.unset("surface_type",selection)
-    cmd.unset("sphere_scale",s)
-    cmd.unset_bond("stick_radius",s,s)
-    cmd.unset_bond("stick_color",s,s)
+    # Not sphere_scale, stick_radius or stick_color: since 4.49 no preset
+    # sets them (ligands are "ball_and_stick"), so they are the user's.
     cmd.unset("cartoon_highlight_color",selection)
     cmd.unset("cartoon_fancy_helices",selection)
     cmd.unset("cartoon_smooth_loops",selection)
@@ -107,16 +109,16 @@ def simple(selection="(all)",_self=cmd):
     cmd.delete(s)
 
 def _ball_and_stick_ligand(lig, _self=cmd):
-    # thin dark sticks and small balls, after BallnStick of bobbypaton's
-    # pymol_style.py gist
-    _self.show("sticks", lig)
-    _self.show("spheres", lig)
-    _self.set_bond("stick_radius", 0.07, lig, lig)
-    _self.set_bond("stick_color", "grey30", lig, lig)
-    _self.set("sphere_scale", 0.18, lig)
-    _self.set("sphere_scale", 0.13, lig + " & elem H")
-    # not the guide atom of a modified residue: it colors the cartoon
-    _self.color("grey85", lig + " & elem C & !guide")
+    # How every preset draws a ligand: the representation of its own, at
+    # its own sizes and in the colors of the atoms. No sphere, stick or
+    # color setting is written (until 4.48: sticks plus small spheres).
+    _self.show("ball_and_stick", lig)
+
+
+def _show_hetero(s, _self=cmd):
+    # ligands as balls and sticks; ions and the like as they were
+    _ball_and_stick_ligand('organic & ?' + s, _self)
+    _self.show('licorice', 'inorganic & ?' + s)
 
 def simple_no_solv(selection="(all)",_self=cmd):
     cmd=_self
@@ -167,23 +169,28 @@ def ligands(selection="(all)",_self=cmd):
     cmd.delete(s)
 
 def ball_and_stick(selection="(all)",mode=1,_self=cmd):
+    '''
+    Everything in `selection` as "ball_and_stick", the representation.
+
+    mode = 1: balls and bonds in the colors of the atoms (until 4.48:
+    sticks of 0.14 in white plus spheres at scale 0.25)
+
+    mode = 2: balls and bonds colored by element, whatever color the
+    atoms have: ball_and_stick_color is set to "atomic" on the atoms
+    (until 4.48: stick_ball with white sticks, set for everything)
+
+    Sizes are those of ball_and_stick_scale and ball_and_stick_bond_radius.
+    No sphere or stick setting is written.
+    '''
     cmd=_self
     s, selection = _prepare(selection, _self=cmd)[:2]
-    if mode == 1:
+    mode = int(mode)
+    if mode in (1, 2):
         cmd.hide("everything",s)
-        cmd.set_bond("stick_color","white",s,s)
-        cmd.set_bond("stick_radius","0.14",s,s)
-        cmd.set("sphere_scale","0.25",s)
-        cmd.show("sticks",s)
-        cmd.show("spheres",s)
-    elif mode == 2:
-        cmd.hide("everything",s)
-        cmd.set_bond("stick_color","white",s,s)
-        cmd.set_bond("stick_radius","-0.14",s,s)
-        cmd.set("stick_ball","1")
-        cmd.set("stick_ball_ratio",-1.0)
-        cmd.set("stick_ball_color","atomic")
-        cmd.show("sticks",s)
+        cmd.unset("ball_and_stick_color",s)
+        if mode == 2:
+            cmd.set("ball_and_stick_color","atomic",s)
+        cmd.show("ball_and_stick",s)
     cmd.delete(s)
 
 def b_factor_putty(selection="(name CA+P)",_self=cmd):
@@ -201,6 +208,19 @@ def ligand_cartoon(selection="(all)",_self=cmd):
     cmd.set("cartoon_side_chain_helper",1,selection)
     cmd.hide("surface")
     cmd.delete(s)
+
+def _surface_like_carbons(s, _self=cmd):
+    # A surface drawn by a preset has, over each residue, the color of its
+    # carbons, which is the color of its cartoon. The element colors of
+    # the other atoms, from this preset or an earlier one, are for lines
+    # and sticks. _prepare takes it back.
+    space = {"colors": {}}
+    # byres: a surface can end in the middle of a residue
+    _self.iterate("(byres (("+s+") and rep surface)) and elem C",
+                  "colors[model, segi, chain, resi] = color", space=space)
+    _self.alter("("+s+") and rep surface and not elem C",
+                "s.surface_color = colors.get((model, segi, chain, resi), color)",
+                space=space)
 
 def ligand_sites(selection="(all)",_self=cmd):
     cmd=_self
@@ -222,6 +242,7 @@ def ligand_sites(selection="(all)",_self=cmd):
         cmd.show("cartoon",host)
         cmd.show("lines","("+s+" and byres ("+host+" within 5 of "+lig+"))")
         cmd.show("surface","("+s+" and ((rep lines expand 4) within 6 of "+lig+"))")
+        _surface_like_carbons(s, _self=cmd)
         cmd.set("two_sided_lighting",1) # global setting
         cmd.set("transparency",0,s)
         cmd.set("surface_quality",0, selection)
@@ -304,11 +325,11 @@ def technical(selection="(all)",_self=cmd):
     cmd=_self
     s, selection, polar_contacts = _prepare(selection, _self=cmd)
     # the protein keeps its colors: only ligands and non-carbon atoms
-    util.cbc("("+lig_sele+" and ("+s+") and not guide)",_self=cmd)
+    util.cbc("("+lig_sele+" and ("+s+") and not polymer)",_self=cmd)
     util.cbac("(("+s+") and "+by_element+")",_self=cmd)
     cmd.show("nonbonded",s)
     cmd.show("lines","((("+s+") and not "+lig_sele+") extend 1)")
-    cmd.show("sticks","("+lig_sele+" and ("+s+"))")
+    _ball_and_stick_ligand("("+lig_sele+" and ("+s+"))", _self=cmd)
     cmd.show("cartoon",s)
     cmd.dist(polar_contacts,s,s,mode=2,label=0,reset=1) # hbonds
     if polar_contacts in cmd.get_names():
@@ -329,12 +350,10 @@ def pretty(selection="(all)", *, solv=False, _self=cmd):
     cmd.cartoon("auto",s)
     cmd.show("cartoon",s)
     if solv:
-        cmd.show("licorice", f"({lig_sele}|{wat_sele}) and ?{s}")
-    else:
-        cmd.show("sticks", f"({lig_sele}) and ?{s}")
-    # the protein keeps its colors: only ligands, not the guide atom of a
-    # modified residue
-    util.cbc("("+lig_sele+" and ("+s+") and not guide)",_self=cmd)
+        cmd.show("licorice", f"({wat_sele}) and ?{s}")
+    _ball_and_stick_ligand(f"({lig_sele}) and ?{s}", _self=cmd)
+    # the protein keeps its colors: only ligands, not a modified residue
+    util.cbc("("+lig_sele+" and ("+s+") and not polymer)",_self=cmd)
     util.cbac("("+lig_sele+" and ("+s+") and not elem C)",_self=cmd)
     cmd.set("cartoon_highlight_color",-1,selection)
     cmd.set("cartoon_fancy_helices",0,selection)
@@ -375,12 +394,8 @@ def default(selection="(all)",_self=cmd):
     s, selection = _prepare(selection, _self=cmd)[:2]
     cmd.show("lines",s)
     cmd.show("nonbonded",s)
-    color=cmd.get_object_color_index(selection)
-    if color<0:
-        util.cbag(selection,_self=cmd)
-    else:
-        util.cnc(selection,_self=cmd)
-        cmd.color(str(color),"("+s+") and elem C")
+    # the carbons keep their color, and with them the cartoon
+    util.cnc("(("+s+") and "+by_element+")",_self=cmd)
     cmd.delete(s)
 
 
@@ -441,18 +456,18 @@ def _contacts(name, pairs, _self=cmd):
 
 def interaction(selection='*', _self=cmd):
     '''
-    Protein-protein interaction: every chain as a surface, orange, and
-    white where it is within 4.5 A of another chain. The colors of the
-    atoms stay: the surface has its own.
+    Protein-protein interaction: every chain as a surface in the colors
+    of its carbons, and orange where it is within 4.5 A of another chain.
+    The colors of the atoms stay: the orange is the surface's own.
     '''
     s = _prepare(selection, _self=_self)[0]
 
     _self.show('surface', 'polymer & ?' + s)
-    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _show_hetero(s, _self)
     _self.color('atomic', '(organic | inorganic) & ?%s & !(elem C)' % (s))
-    _self.set('surface_color', 'orange', 'polymer & ?' + s)
+    _surface_like_carbons('?' + s, _self)
     for unit, _ in _units(s, _self):
-        _self.set('surface_color', 'white',
+        _self.set('surface_color', 'orange',
                   'byres (%s within 4.5 of (polymer & ?%s & !%s))'
                   % (unit, s, unit))
 
@@ -469,7 +484,7 @@ _light_re = 'W[YFL][QLH]Q.[PSA]G'
 def antibody(selection='*', _self=cmd):
     '''
     Antibody with its antigen: the antibody as cartoon in the colors it
-    has; the antigen as a sand-colored surface with the epitope in orange;
+    has; the antigen as a surface in its colors with the epitope in orange;
     the residues of the antibody that touch the antigen as sticks; the
     polar contacts between the two as dashes.
 
@@ -502,16 +517,16 @@ def antibody(selection='*', _self=cmd):
     ag = '(%s)' % (' | '.join(antigen) or 'none')
     epitope = '(%s within 4.5 of %s)' % (ag, ab)
     paratope = '(%s within 4.5 of %s)' % (ab, ag)
-    # the surface has its own colors: the atoms keep theirs
-    _self.set('surface_color', 'wheat', ag)
+    _self.show('surface', ag)
+    _surface_like_carbons(ag, _self)
+    # the orange is the surface's own: the atoms keep their colors
     _self.set('surface_color', 'orange', 'byres ' + epitope)
     # element colors only on what is drawn as sticks
     _self.color('atomic', '((byres %s) | ((organic | inorganic) & ?%s)) & !(elem C)'
                 % (paratope, s))
 
     _self.show('cartoon', ab)
-    _self.show('surface', ag)
-    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _show_hetero(s, _self)
     _self.set('cartoon_side_chain_helper', 1, selection)
     _self.show('sticks', 'byres ' + paratope)
     _contacts(dname, [(paratope, epitope)], _self)
@@ -557,7 +572,7 @@ def classified(selection='*', _self=cmd):
     s = _prepare(selection, _self=_self)[0]
 
     _self.show_as('cartoon', 'polymer & %' + s)
-    _self.show_as('sticks', 'organic & %' + s)
+    _self.show_as('ball_and_stick', 'organic & %' + s)
     _self.show_as('spheres', 'inorganic & %' + s)
 
     _self.delete(s)
@@ -565,21 +580,61 @@ def classified(selection='*', _self=cmd):
 
 def glass(selection='*', _self=cmd):
     '''
-    Cartoon and ligand sticks inside a transparent white surface that
-    gets denser toward its edges, like glass.
+    Cartoon and ligand sticks inside a transparent surface that gets
+    denser toward its edges, like glass. The surface has the colors of
+    the carbons under it.
     '''
     s, selection = _prepare(selection, _self=_self)[:2]
 
-    _self.color('atomic', '?%s & %s' % (s, by_element))
+    # element colors only on what is drawn as sticks, not under the surface
+    _self.color('atomic', '(organic | inorganic) & ?%s & !(elem C)' % (s))
 
     _self.show('cartoon', 'polymer & ?' + s)
-    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _show_hetero(s, _self)
     _self.show('surface', 'polymer & ?' + s)
+    _surface_like_carbons('?' + s, _self)
     _self.set('transparency', 0.6, s)
-    _self.set('surface_color', 'white', selection)
     _self.set('ray_transparency_oblique', 1) # global
+    # the shade of the look "soft" in the pockets: black blotches on glass
+    _self.set('ambient_occlusion_mode', 0, selection)
 
     _self.delete(s)
+
+
+def balls_in_glass(selection='*', _self=cmd):
+    '''
+    The atoms as balls and sticks inside a surface of which only the rim
+    shows: what the molecule is made of, in its outline. After the
+    gallery picture "Complex Stylized Protein"; reads on small proteins.
+    '''
+    s, selection = _prepare(selection, _self=_self)[:2]
+
+    _self.show('ball_and_stick', '?' + s)
+    _self.show('surface', 'polymer & ?' + s)
+    _surface_like_carbons('?' + s, _self)
+    _self.set('transparency', 0.6, s)
+    _self.set('ray_transparency_oblique', 1) # global
+    _self.set('ray_transparency_oblique_power', 20) # global: the rim only
+    _self.set('ambient_occlusion_mode', 0, selection)
+
+    _self.delete(s)
+
+
+def cylinders(selection='*', _self=cmd):
+    '''
+    "publication" with the helices as cylinders: a schematic drawing.
+    '''
+    publication(selection, solv=True, _self=_self)
+    for name in _self.get_object_list(selection) or ():
+        _self.set('cartoon_cylindrical_helices', 1, name)
+
+
+def depth_fog(on, _self=cmd):
+    '''
+    The fog row of the light menu: what is far away fades into the
+    background, on top of any look. The looks with an outline turn it off.
+    '''
+    _self.set('depth_cue', int(on))
 
 
 def wire(selection='*', _self=cmd):
@@ -591,7 +646,7 @@ def wire(selection='*', _self=cmd):
     _self.color('atomic', '?%s & %s' % (s, by_element))
 
     cartoon_style('wire', 'polymer & ?' + s, _self=_self)
-    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _show_hetero(s, _self)
 
     _self.delete(s)
 
@@ -604,7 +659,7 @@ def spring(selection='*', _self=cmd):
     s = _prepare(selection, _self=_self)[0]
 
     cartoon_style('spring', 'polymer & ?' + s, _self=_self)
-    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _show_hetero(s, _self)
 
     _self.delete(s)
 
@@ -617,10 +672,11 @@ def illustration(selection='*', _self=cmd):
     s, selection = _prepare(selection, _self=_self)[:2]
 
     _self.show('cartoon', 'polymer & ?' + s)
-    _self.show('licorice', '(organic | inorganic) & ?' + s)
+    _show_hetero(s, _self)
     _self.show('surface', 'polymer & ?' + s)
+    _surface_like_carbons('?' + s, _self)
     _self.set('transparency', 0.85, s)
-    _self.set('surface_color', 'white', selection)
+    _self.set('ambient_occlusion_mode', 0, selection)
     look('flat', _self=_self) # the picture is its outline
     global _lit_by_preset
     _lit_by_preset = True
@@ -666,13 +722,19 @@ LOOKS = {
     'figure': dict(_outline, ambient=0.05, direct=0.2, reflect=0.5,
                    shininess=10, power=1.67),
     # light from eight sides and soft shadows, after ChimeraX "lighting soft"
+    # and the pockets of a surface in shade: ambient occlusion, at a scale
+    # of 16 where the default 25 paints them black. A surface is built
+    # again when the look changes, and that takes longer (1aon: 6 to 7 s
+    # without, 7 to 10 s with).
     'soft': dict(_outline, light_count=8, ambient=0.35, direct=0, reflect=0.9,
                  spec_count=1, shininess=10, specular=0.1,
-                 ray_shadow_decay_factor=0.1, ray_shadow_decay_range=2),
+                 ray_shadow_decay_factor=0.1, ray_shadow_decay_range=2,
+                 ambient_occlusion_mode=1, ambient_occlusion_scale=16),
     # unshaded colors as they are; outlines also around transparent things
     'flat': dict(_outline, ambient=1, direct=0, reflect=0, specular=0,
                  ray_shadow=0, ray_trace_trans_cutoff=1),
-    # bright colors in four steps inside thick outlines, like a comic
+    # bright colors in four steps inside thick outlines, like a comic; the
+    # viewport draws the steps too (ray_trace_mode_3 in anaglyph_header.fs)
     'comic': dict(_outline, ray_trace_mode=3, antialias=1, ambient=0.5,
                   direct=0.6, reflect=0.3, specular=0, ray_shadow=0),
     # black outlines on white and nothing else, a line drawing
@@ -680,7 +742,49 @@ LOOKS = {
     # the X-Ray light of the Lighting plugin
     'x-ray': dict(ambient=1, direct=-0.6, reflect=-0.6, shininess=0,
                   specular=0),
+    # Three lights as photographers set them: a key light high on the left,
+    # a weak fill from the right, a rim light from behind for the outline.
+    'studio': dict(light_count=4, light=[-0.55, -0.7, -0.6],
+                   light2=[0.7, -0.1, -0.7], light3=[0.2, -0.3, 0.9],
+                   ambient=0.18, direct=0.25, reflect=0.75, specular=0.6,
+                   shininess=40),
+    # one light from straight above: a strong shadow on the floor of "stage"
+    'top light': dict(light_count=2, light=[-0.15, -1.0, -0.35], ambient=0.3,
+                      direct=0.15, reflect=0.8, ray_shadow=1),
+    # the same from four lights ten degrees apart: the shadow has a soft
+    # edge, and the ray tracer takes three to four times as long
+    'soft shadow': dict(light_count=5, light=[-0.15, -1.0, -0.35],
+                        light2=[-0.3, -1.0, -0.25], light3=[0.0, -1.0, -0.45],
+                        light4=[-0.05, -1.0, -0.2], ambient=0.3, direct=0.15,
+                        reflect=0.8, ray_shadow=1),
 }
+
+
+# Color themes: one soft color for the protein, one that stands out for the
+# carbons of the ligands, and a two-color background that goes with them.
+# Unlike a look or a preset, a theme sets colors and the background, and
+# nothing else; it combines with any of them.
+THEMES = {  # name: (protein, ligand carbons, background top, bottom)
+    'clay': ('0xE9C9A8', '0xC8553D', '0xF7EFE6', '0xEBDCCB'),
+    'blue': ('0x8EC5E8', '0xE8D44A', '0xEAF4FB', '0xD6E8F5'),
+    'sage': ('0xA9C4B0', '0x4F7C8A', '0xF6F6F1', '0xE4E8E0'),
+    'mint': ('0xA8D5BA', '0x2F6F5E', '0xF4FBF7', '0xE3F2EA'),
+    'night': ('0x7FA6E8', '0xF0A050', '0x1B2338', '0x0D1220'),
+}
+
+
+def theme(name, selection='*', _self=cmd):
+    '''
+    Color the protein and the ligands of `selection` and set the background
+    as THEMES[name] says.
+    '''
+    protein, ligand, top, bottom = THEMES[name]
+    _self.color(protein, '(%s) and polymer' % selection)
+    _self.color(ligand, '(%s) and organic and elem C' % selection)
+    _self.set('bg_rgb', top)  # fog and the outline color follow it
+    _self.set('bg_rgb_top', top)
+    _self.set('bg_rgb_bottom', bottom)
+    _self.set('bg_gradient', 1)
 
 
 def look(name, _self=cmd):

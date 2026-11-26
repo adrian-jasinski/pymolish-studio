@@ -19,7 +19,7 @@ Numbers in brackets are pymolish-studio versions; the
 | Theme | Dark by default; Display > Dark Theme switches it (4.5.2). |
 | Size | The percent button in the toolbar sets the size of text and controls, 100 to 200 %. It starts at 150 % (4.7.0). |
 | Layout | Toolbar with icons on top, viewport in the middle, log and command line at the bottom. The layout is remembered (4.5.0, 4.5.14). |
-| Objects panel | Lists objects, selections and groups. Click a row to show or hide, double-click to zoom; each row has the Action, Show, Hide, Label and Color menus (4.5.11, 4.5.15). |
+| Objects panel | Lists objects, selections and groups. Click a row to show or hide, double-click to zoom; each row has the Action, Show, Hide, Label and Color menus (4.5.11, 4.5.15). Delete removes the current row, and asks first for a group (4.69.0). A row is moved by a drag with the right mouse button, or with Alt and the arrow keys: to another place, into a group, out of it (4.70.0). The mouse mode button under the list shows the short name of the mode, the whole name is in its tooltip (4.73.0). |
 | States panel | First, previous, play, next, last, jump to a state, speed. Appears when there is more than one state or movie frame (4.6.0). |
 | Menus | The right-click menu opens at the pointer as a normal menu, with icons (4.5.18). |
 | Select and split | The A menu of an object or group has "select" (one row per chain and per kind of molecule the object has: protein, nucleic, membrane, ligand, ions, solvent) and "split" (by chain or by type: new objects in a group, the original switched off). With more than one state, "split" also has "by state" (4.19.3). Presets left the A menus; they are in the toolbar (4.19.2). |
@@ -28,12 +28,15 @@ Numbers in brackets are pymolish-studio versions; the
 | Movie timeline | Movie > Timeline: the movie as a list of shots (scenes, views, zoom, turn, rock, nutate, states, hold) with a strip and a table; record views as you move, one-click tours, fades, export with an estimate (4.18.0). |
 | Sequence viewer | The scroll bar under the sequence is a rounded Qt scroll bar; the marks of the selection show through it (4.17.0). |
 | Background | The button after the palette sets the background: plain colors, two blues and six gradients. "Remember after restart" in the same menu keeps the choice (4.15.0). |
-| Own palettes | Palette menu > New palette: a name and a list of colors; listed with the others and kept between starts (4.19.0). |
+| Own palettes | Palette menu > New palette: a name and a list of colors; listed with the others and kept between starts (4.19.0). A color is dragged to its place in the list (4.72.0). |
+| Sequence tab | The sequence in a tab between Command and Chat, with the clicks of the sequence in the viewport (4.67.0); over it the lists Mode, Labels and Gaps and a button for the alignment window (4.74.0). |
+| Text size of the tabs | A−, A+ and Reset at the right of the tabs Command, Sequence and Chat: a size for each tab, kept between starts (4.75.0). |
 | Object colors | The palette button in the toolbar shows the palettes as color strips. Picking one recolors the loaded objects, and new objects and "by chain" follow it. The choice is remembered (4.10.0, 4.13.1). |
-| Complex presets | Presets > "protein-protein interaction": every chain as an orange surface, white where it touches another chain (4.19.29). "antibody and antigen": the antibody as cartoon, the residues that touch the antigen as sticks, polar contacts as dashes, the antigen as a sand surface with the epitope in orange (4.19.1). A preset from the toolbar acts on the objects that are switched on. |
-| Presets keep the colors | No preset but "default" changes the color of the cartoon: color the chains first, then pick any preset (4.19.29). |
+| Complex presets | Presets > "protein-protein interaction": every chain as a surface in its own colors, orange where it touches another chain (4.38.0). "antibody and antigen": the antibody as cartoon, the residues that touch the antigen as sticks, polar contacts as dashes, the antigen as a surface in its own colors with the epitope in orange (4.19.1, 4.38.0). A preset from the toolbar acts on the objects that are switched on. |
+| Presets keep the colors | No preset changes the color of a cartoon or of a surface: color the chains first, then pick any preset. A surface drawn by a preset has the color of the carbons under it. Only the themes color, and the two presets for complexes color the contact area (4.19.29, 4.38.0). |
+| Undo a preset | Undo (the button, Ctrl-Z, `undo`) takes back the last row picked from the Presets menu, with everything done since; Redo goes forward again. Five steps (4.40.0). |
 | Cartoon spring and wire | Presets > "cartoon spring": the cartoon as one thick round tube, a helix as a spring (4.19.29). "cartoon wire": the cartoon as a wire mesh (4.14.4). |
-| Presets and looks | The Presets button lists the presets in order, with one "show solvent" / "hide solvent" row and a glass preset (cartoon inside a transparent surface). The last group of the same list sets light and outline for the whole scene: standard light, figure, soft, flat, comic, sketch and x-ray. They leave the background alone; the outline is black on a light background and white on a dark one, and appears in ray-traced images (4.14.0, 4.14.5). technical and the ligand presets keep the colors of the protein (4.14.5). Every preset draws the protein as cartoon; the ligand presets draw the ligand as balls on thin sticks; a "cartoon transparency" row makes the cartoon see-through until the next preset (4.14.3). Presets cartoon wire (the cartoon as a wire mesh) and illustration (the cartoon inside a faint outlined surface, a colored line drawing when ray traced); "shades" in the color menus colors a chain, or the chains, in shades of one color (4.14.4). |
+| Presets and looks | The Presets button lists the presets in order, with one "show solvent" / "hide solvent" row and a glass preset (cartoon inside a transparent surface). Under the presets, three submenus: theme (colors and background), floor, and light, which sets light and outline for the whole scene (4.38.0): standard light, figure, soft, flat, comic, sketch and x-ray. They leave the background alone; the outline is black on a light background and white on a dark one, and appears in ray-traced images (4.14.0, 4.14.5). technical and the ligand presets keep the colors of the protein (4.14.5). Every preset draws the protein as cartoon; every preset that draws ligands, and the view a loaded structure opens with, draws them as `ball_and_stick`, a representation with its own visibility, sizes and colors that leaves the sphere and stick settings alone (4.48.0, 4.49.0); a "cartoon transparency" row makes the cartoon see-through until the next preset (4.14.3). Presets cartoon wire (the cartoon as a wire mesh) and illustration (the cartoon inside a faint outlined surface, a colored line drawing when ray traced); "shades" in the color menus colors a chain, or the chains, in shades of one color (4.14.4). |
 
 ### Object color palettes
 
@@ -52,18 +55,30 @@ also recolors what is loaded; typed, `palette vivid` leaves it alone and
 | `nord` | dark background | ![nord](img/palette-nord.png) |
 | `dracula` | dark background | ![dracula](img/palette-dracula.png) |
 | `catppuccin` | dark background | ![catppuccin](img/palette-catppuccin.png) |
+| `chimerax` | any background | ![chimerax](img/palette-chimerax.png) |
+| `halo` | any background | ![halo](img/palette-halo.png) |
+
+Every palette has 30 colors (4.71.0). The pictures show the colors a palette
+was made with; the ones after them were computed in the same tone and belong
+to no published set. The palette menu shows the first ten.
 
 `colorblind` is Okabe-Ito followed by Paul Tol's bright and muted sets, with
 the published values. Only the first seven colors are designed as one set.
 `nord`, `dracula` and `catppuccin` are the accent colors of the editor themes
 of those names (Nord frost and aurora, Dracula, Catppuccin Mocha).
+`chimerax` is the ten colors UCSF ChimeraX gives to models 1 to 10 (tan, sky
+blue, plum, light green, salmon, light gray, deep pink, gold, dodger blue,
+purple), for those who move between the two programs.
+`halo` is five colors of a brand book (turquoise, blue, cyan, indigo, deep
+purple) with seven strong colors between them for the other hues. The indigo
+and the purple are dark on a black background.
 
 ## New commands and menu entries
 
 | What | How it works now |
 | --- | --- |
 | Commands from the pymolish plugin | 19 commands are built in: groups, folders, UniProt structures and ligands, predicted structures, SMILES, sequence search. [Commands](commands.md) lists them (4.11.0 to 4.11.4, 4.12.9). |
-| Clean | The A menu of an object, a group, a selection and of "all" has a "clean" submenu: remove waters, remove ions, remove waters and ions, remove ligands. Ions are what the `inorganic` selector matches; additives that contain carbon (glycerol, acetate) count as ligands (4.12.0). |
+| Clean | The A menu of an object, a group, a selection and of "all" has a "clean" submenu: remove waters, remove ions, remove waters and ions, remove ligands. Ions are what the `inorganic` selector matches; additives that contain carbon (glycerol, acetate) count as ligands (4.12.0). "remove crystallization additives" removes, by residue name, what a crystal was grown and frozen in: PEG fragments, glycerol and other cryoprotectants, buffers, sulfate and phosphate, reducing agents, detergents; and, as asked for, the sugars of glycosylation (NAG, BMA, MAN, FUC) and NAD(P). The 111 names are `ADDITIVES` in `modules/pymol/grouping.py` (4.39.0). |
 | Optimize a ligand | `clean` works: it minimizes one small molecule (up to 1000 atoms) with the MMFF94 force field of rdkit. In the menu: A > clean > optimize ligand geometry; the Clean button of the Builder uses it too. In Open-Source PyMOL the command only raises an error. The atoms around the ligand are not seen, and bond orders are used as they are (4.12.1). |
 | Fix a structure | `fix_structure` repairs a protein with PDBFixer and loads the result as a new object: missing atoms of residues that are present, hydrogens for a pH, nonstandard residues replaced; water, ligands and ions kept or dropped. In the menu: A > clean > fix structure... opens the options. Gaps in the chain are not built (4.12.2). |
 | Relax a protein | `minimize` relaxes a protein with OpenMM (Amber14, implicit solvent) while holding the heavy atoms near their place, and loads the result as a new object. 260 residues take about 5 seconds. In the menu: A > clean > optimize protein geometry. It needs complete residues: run fix structure first. Ligands have no parameters and must be left out (4.12.3). |
@@ -119,6 +134,9 @@ Each row was unused, outdated or had a better replacement.
 
 - The `cmd` API and the plugin loader: [Writing a plugin](plugins.md).
 - Reading and writing PDB, mmCIF, SDF/MOL and PSE sessions; PNG export.
+- `.psex`, a packed session: the content of a `.pse` in a fraction of the
+  size (1AON: 19.6 MB as `.pse`, 1.1 MB as `.psex`), written faster. PyMOL
+  itself reads `.pse`, which stays available.
 - Ray tracing, movies, the POV-Ray renderer, the VMD molfile plugins.
 
 What comes next is in the [roadmap](../PLAN.md).
