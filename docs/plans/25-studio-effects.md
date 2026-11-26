@@ -1,7 +1,51 @@
 # 25 — Studio effects: floor, lights, surface looks
 
-[Roadmap](../../PLAN.md) · Request 2026-11-20 · Planned, not built. Eight
-trial pictures were ray traced; two sheets are below.
+**Planning cross-reference, 2026-11-26 at 4.82.0:** step 25 stays finished.
+The new image review and menu work are [15m–15p](15-presets.md). Reuse
+Glossy, Candy glass, Frosted and Clay for the amber/soft-surface references;
+do not rebuild them or add one preset per image. The proposed light-only
+Glossy action already has a callable implementation in `preset.look`.
+New recipes leave backgrounds unchanged and never invoke a theme. Existing
+themes remain explicitly labeled as changing colors and background. Glow
+gets a measured experiment under 15p; it does not reopen the deferred
+physical-material, Gaussian-blob or floor-shadow work here. No new
+measurement or implementation in this planning update.
+
+[Roadmap](../../PLAN.md) · Request 2026-11-20 · Finished 2026-11-26 with
+4.82.0. Eight trial pictures were ray traced; two sheets are below.
+
+**Built 2026-11-25 and 2026-11-26 in 4.81.0 and 4.82.0: 25b-3 and 25b-1,
+the grid surface as a choice and the four surface looks.**
+
+![surface looks](../img/surface-looks.jpg)
+
+From the left: glossy, candy glass, frosted, clay; 2rh1 without the
+lysozyme in the themes "blue" and "clay", ray traced on white and on black.
+
+- 4.81.0: "Solid (grid)" in Setting > Surface. The grid surface follows
+  `cavity_cull` (a closed cavity under 25 A3 is not drawn),
+  `surface_cavity_mode` 1 and 2 and `surface_solvent`; carving worked
+  already. Not followed: `surface_trim_cutoff` and `surface_trim_factor`.
+- 4.82.0: Presets > surface look. A row shows the surface of the protein
+  and the ligands as balls and sticks (question 115, option A; the plan
+  below had looks that only set settings). Candy glass, frosted and clay
+  are the grid surface with a probe of 3 A, set on the objects; glossy is
+  today's surface. The light is set for the whole scene. The next preset
+  takes all of it back; a row of the light menu replaces the light only.
+
+Measured: 1aon, fastest of two builds: the grid 1.67 s (the dots 5.46 s),
+"Cavities and Pockets (Culled)" 0.80 s (the dots 5.95 s), the solvent
+surface 1.31 s, the round surface of clay 1.42 s with 668,588 triangles.
+The eight pictures above took 0.14 to 0.27 s each at 400 x 340. The suite:
+1178 passed, 250 skipped; the surface, preset and scene tests also pass
+under the address and undefined-behavior sanitizers.
+
+Left out: a look at the four rows in the viewport (no window was opened
+in the run); the build of clay under 1 s for 1aon (1.42 s); the "wrap"
+light of option B below; the Gaussian blob of the trial picture, which is
+rounder than a probe of 3 A makes the surface; a shadow in the viewport
+(25a-2). The settings in the table "The looks" are those that were tried
+in 2026-11-20; what shipped is `SURFACES` in `modules/pymol/preset.py`.
 
 **Answers of 2026-11-20.** Question 24: shadows are ray traced only at
 first. Question 25: "start with 1b, then plan further; do not add to
@@ -15,9 +59,15 @@ that only sets surface settings and no new setting is added before that.
 table is in [1b](01-performance-gpu.md)). What it means here: with a probe
 of 3 A it is a rounded surface with fine triangles (1aon: 668,588
 triangles in 1.38 s; today's surface has 195,556 coarse ones at that
-probe), so "clay" could be this surface instead of a Gaussian map in a
-second object. This plan is written again once the user has judged the
-experiment: question 105 in [PLAN.md](../../PLAN.md).
+probe).
+
+**Decision 2026-11-25, question 105: A, recommended.** Keep the grid
+surface as a choice beside today's default. Add "Solid (grid)" in
+Setting > Surface and support carving, cavity culling and cavity mode.
+Clay uses `surface_type 7` with `solvent_radius` about 3 A, instead of a
+Gaussian map in a second object. Reconsider the default after the surface
+worker (order 4 since 2026-11-26). Built in 4.81.0 and 4.82.0, see the
+note at the top.
 Question 32: the color themes are built, as a group of their own.
 
 **25a-1 done 2026-11-20 in 4.34.0:** the command `stage` and three light
@@ -79,7 +129,7 @@ background and one accent color for the ligand.
 | Rim transparency | `ray_transparency_oblique`: a transparent surface gets denser where it turns away from the eye. In the ray tracer and, since the shaders have the same term (`compute_color_for_light.fs`), in the viewport. |
 | A smooth blob | `map_new name, gaussian` and `isosurface`: a rounded shape without the creases of the molecular surface. A separate object, not a representation. |
 | Depth by shading | `ambient_occlusion_mode` 1 on surfaces (planned for the soft look in 15e). |
-| Open in the roadmap | [15e](15-presets.md) five effects, [15b](15-presets.md) outline in the viewport, [21f](21-commercial-features.md) FXAA pass, [1b](01-performance-gpu.md) a grid surface as a second `surface_type`. 25 builds on them; nothing here replaces them. |
+| Roadmap dependencies | [15e](15-presets.md) five effects shipped in 4.62.0, [21f](21-commercial-features.md) FXAA in 4.65.0, and [1b](01-performance-gpu.md) the grid surface in 4.76.0 (kept by answer 105 A). [15b](15-presets.md) outline in the viewport remains open. 25 builds on them; nothing here replaces them. |
 
 ## What others do (read 2026-11-20)
 
@@ -168,8 +218,8 @@ and Molecular Nodes show.
 
 | | Option | Note |
 | --- | --- | --- |
-| A | **Now: `solvent_radius` 3 for candy glass, and the gaussian map with `isosurface` for clay, made by the preset as a second object. Then: when the grid surface of [1b](01-performance-gpu.md) (order 7 of the old roadmap) is tried, give it a "smoothness" value. If it stays, the blob becomes a `surface_type` and the presets switch to it. Recommended.** | Works today (the pictures). The second object does not follow atom colors or `hide`, which is the reason to move to a real surface type once one exists. No second smooth-surface code is written. |
-| B | A new `surface_type` for the blob right away, own code. | Same goal, but written before 1b's experiment says whether the grid surface is kept: possibly twice. |
+| A | **Selected by answer 105 A: reuse the grid `surface_type 7` with `solvent_radius` about 3 A for clay.** | The existing surface follows atom colors and visibility; no second object, surface implementation or smoothness setting is needed. The trial pictures above used the old Gaussian map. |
+| B | A separate `surface_type` implementation for the blob. | Not selected: the grid surface of 1b is now kept. |
 | C | Looks only, no blob. | Smallest; clay and night are then matte versions of today's surface. |
 
 ### Color themes
@@ -200,10 +250,10 @@ so the pieces can be mixed.
 
 | Slice | What | Check |
 | --- | --- | --- |
-| 25b-1 | Waits for 1b. Looks glossy, candy glass, frosted. | `testing/tests/api/preset.py`: each look sets and the next one undoes its settings; a picture each on black and on white. |
+| 25b-1 | **Done in 4.82.0, with clay.** Looks glossy, candy glass, frosted; replan with answer 105 A. The grid experiment and its judgment are complete. | `testing/tests/api/preset.py`: each look sets and the next one undoes its settings; a picture each on black and on white. |
 | 25b-2 | Themes: five rows, five palettes, five backgrounds. Built with 15e's five effects. | The palette and background tests list them; pictures. |
 | 25a-1 | `stage`: floor, shadow, soft, mirror, off; looks studio, top light, soft box. | `testing/tests/api/stage.py`: the floor lies under every visible atom; `off` leaves no object and the old view; `zoom` ignores the floor; a ray-traced picture has darker floor pixels under the molecule. Ray times in the plan. |
-| 25b-3 | Waits for 1b. Clay on the blob surface, as a surface type if the grid surface stays. | Blob built in under 1 s for 1AON; picture. |
+| 25b-3 | **Done in 4.81.0 (the menu row and the settings) and 4.82.0 (clay).** Clay on the kept grid surface (`surface_type 7`, probe about 3 A); include "Solid (grid)" and carving/cavity support in the replan. | Target: blob built in under 1 s for 1aon; picture. Not met: 1.38 s in 4.76.0, 1.42 s in 4.81.0 with culling. |
 | 25a-2 | Not planned now (question 24: ray traced only at first). A viewport shadow is asked again after 25a-1 is seen. | |
 
 ## Skipped

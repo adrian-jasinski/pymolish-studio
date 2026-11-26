@@ -7,30 +7,41 @@
 
 pymolish-studio. Based on PyMOL(TM) technology.
 
-A desktop program for looking at molecules in 3D: open a protein structure,
-turn it around, color it, save a picture. It is
+Open a molecular structure, inspect its parts, and make figures or short
+movies. pymolish-studio is a desktop program for looking at molecules in
+3D. It is
 [Open-Source PyMOL](https://github.com/schrodinger/pymol-open-source) with a
-cleaner window, less old code and faster heavy operations.
+new window, less old code and faster heavy operations.
 
 > pymolish-studio is an independent fork. It is not a Schrodinger product and
 > is not affiliated with or endorsed by Schrodinger, LLC. The official PyMOL
 > is at [pymol.org](https://pymol.org).
 
-![The pymolish-studio window with a protein shown as cartoon](docs/img/window.png)
+![The pymolish-studio window with the structure 1oky: a protein as cartoon and its ligand as balls and sticks](docs/img/window.png)
 
-## Why use it
+[Download](https://github.com/adrian-jasinski/pymolish-studio/releases) ·
+[Start here](docs/getting-started.md) ·
+[Documentation](docs/README.md)
 
-- **A window that is easy to read.** Dark theme, one toolbar with icons, a
-  panel that lists your objects, and a size button for high-resolution
-  screens.
-- **Faster where it was slow.** A large session opens 6.6 times faster and a
-  large surface builds in about half the time.
-- **Nothing to relearn.** Commands, scripts, Qt plugins and files (PDB,
-  mmCIF, SDF, PSE sessions) work as they do in PyMOL.
-- **Less to carry.** Old interfaces and unused features are gone, so there is
-  less to install and less to break.
+## What you can do with it
 
-The full list is in [What is different](docs/features.md).
+- **Make a figure.** Pick a ready-made look (cartoon, atoms, a glossy or
+  frosted surface), a light and a background, and save a ray-traced
+  picture. [Appearance](docs/appearance.md)
+- **Look at a binding site.** Jump from ligand to ligand, see the residues
+  around each and its contacts, and draw the same contacts flat.
+  [Ligands](docs/ligands.md)
+- **Compare sequences and structures.** Align sequences, see the matching
+  residues in 3D, fit structures on a reference.
+  [Sequences](docs/sequences.md)
+- **Sort through many molecules.** Load a folder, read scores from a
+  spreadsheet, step through the rows, rate them.
+  [Property table](docs/properties.md)
+- **Make a movie.** Store scenes, put them on a timeline, export a video.
+  [Scenes and movies](docs/scenes-movies.md)
+- **Script it.** The command language and the Python API of PyMOL, with
+  the differences listed in
+  [Compatibility](docs/reference.md#compatibility-with-pymol).
 
 ## Try it
 
@@ -39,7 +50,8 @@ The full list is in [What is different](docs/features.md).
    There is one for Linux, Windows and macOS (Apple silicon). You do not need
    Python.
 2. Unpack it and start `pymolish` (`pymolish.exe` on Windows).
-3. Choose File > Get PDB, type `1ubq`, and drag with the mouse.
+3. Choose File > Get PDB..., type `1oky`, press Download, and drag with the
+   mouse.
 
 [Getting started](docs/getting-started.md) takes it from there.
 
@@ -49,11 +61,15 @@ checksums.
 
 ## Documentation
 
+The [documentation home](docs/README.md) links every page.
+
 | I want to | Read |
 | --- | --- |
 | Open a structure and make a picture | [Getting started](docs/getting-started.md) |
+| Do one thing: looks, ligands, sequences, tables, movies, saving | [Task guides](docs/README.md#choose-a-task) |
+| Look up a command, a key or a setting | [Commands](docs/commands.md), [Reference](docs/reference.md) |
+| Solve a problem | [Troubleshooting](docs/troubleshooting.md) |
 | Know what changed compared with PyMOL | [What is different](docs/features.md) |
-| Look up the commands that PyMOL does not have | [Commands](docs/commands.md) |
 | Build it from source | [Install from source](docs/install.md) |
 | Write a plugin | [Writing a plugin](docs/plugins.md) |
 | Help with the code | [Contributing](CONTRIBUTING.md) |
@@ -62,9 +78,9 @@ checksums.
 
 ## Support the project
 
-pymolish-studio is free and built in spare time. If it is useful to you, you
-can [sponsor the work on GitHub Sponsors](https://github.com/sponsors/adrian-jasinski) 💖.
-Sponsorship pays for the time spent on new features, fixes and releases.
+pymolish-studio is free and built in my spare time. If you find it useful, consider buying me a coffee ☕ — even a small contribution makes a difference!
+Your support helps me spend more time on new features, bug fixes, and releases.
+[Support on GitHub Sponsors](https://github.com/sponsors/adrian-jasinski) 💖
 
 ## License
 

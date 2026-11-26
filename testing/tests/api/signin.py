@@ -315,10 +315,16 @@ def test_panel_chatgpt_keeps_the_refresh_token_and_welcomes_once(panel, monkeypa
 
     monkeypatch.setattr(signin, "chatgpt", chatgpt)
     chat = panel()
-    chat.provider.setCurrentText("ChatGPT")
+    assert chat.provider.findText("ChatGPT") < 0  # the sign-in of "OpenAI"
+    chat.provider.setCurrentText("OpenAI")
+    chat.model.setEditText("gpt-key")
+    assert not chat.key.isHidden() and chat._route() == "OpenAI"  # a key, or:
+    assert chat.login.text() == "Continue with ChatGPT"
     chat.stay.setChecked(True)
     chat.login.click()
     chat.until(lambda: "ChatGPT" in chat.credentials)
+    assert chat.key.isHidden() and chat._route() == "ChatGPT"
+    assert chat.login.text() == "Sign out" and chat._model() == "a/one"
     assert welcomed == ["You're using your ChatGPT plan"]
     assert (
         "a@example.org" in chat.account.text() and "Manage usage" in chat.account.text()
@@ -332,6 +338,30 @@ def test_panel_chatgpt_keeps_the_refresh_token_and_welcomes_once(panel, monkeypa
     assert renewed[0]["refresh_token"] == "r1" and renewed[0]["client_id"] == "oaiapp_1"
     assert again.keychain == {"ChatGPT": "r2"}  # the rotated token replaces the old
     assert len(asked) == 1 and len(welcomed) == 1
+    assert again.provider.currentText() == "OpenAI"
+
+    monkeypatch.setattr(signin, "revoke", lambda credential: True)
+    again.settings.setValue("chat/model/OpenAI", "gpt-key")  # as Send with a key does
+    again.login.click()  # signed out: the key field and its model are back
+    assert not again.key.isHidden() and again._route() == "OpenAI"
+    assert again.login.text() == "Continue with ChatGPT" and again._model() == "gpt-key"
+
+    again.settings.setValue("chat/provider", "ChatGPT")  # chosen before 4.80.0
+    assert panel().provider.currentText() == "OpenAI"
+
+
+def test_panel_failed_chatgpt_sign_in_keeps_the_typed_model(panel, monkeypatch):
+    def fail(host, client, email, cancel, open_url):
+        raise CmdException("declined")
+
+    monkeypatch.setattr(signin, "chatgpt", fail)
+    chat = panel()
+    chat.provider.setCurrentText("OpenAI")
+    chat.model.setEditText("gpt-key")
+    chat.login.click()
+    chat.until(lambda: chat.cancel is None)
+    assert chat._route() == "OpenAI" and chat._model() == "gpt-key"
+    assert not chat.key.isHidden() and "declined" in chat.history.toPlainText()
 
 
 # A stand-in for "claude auth": signed in once the file beside it exists.

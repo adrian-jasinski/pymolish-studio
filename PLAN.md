@@ -101,10 +101,11 @@ choices were made while building (98 to 104).
 
 Built in the same run, 4.76.0: the grid surface experiment of 1b,
 `surface_type 7`, with its times, triangle counts, memory and pictures for
-1aon and 4v6x. It is an experiment to be judged (question 105), not a
-default. Not started in that run: the outline (15b), the surface worker
-and general undo (21g), each a slice of its own in the core; 25b waits for
-that judgment. Two of them need long benchmark runs and many test windows
+1aon and 4v6x. The user chose to keep it as an option (question 105, A,
+2026-11-25); today's surface remains the default. Not started in that run:
+the outline (15b), the surface worker and general undo (21g), each a slice
+of its own in the core; 25b waited for that judgment, now recorded in
+[PLAN-DONE.md](PLAN-DONE.md). Two of them need long benchmark runs and many test windows
 on the machine the user was working at: the runs of 4v6x took 10 of its
 17 GB, and a test window once caught what the user was typing. What was
 read for 15b is noted in its plan.
@@ -123,63 +124,95 @@ counts, is in its plan. Where the step should end was question 106; the
 user answered it the same day: finish here. Step 8 is closed and left this
 file for [PLAN-DONE.md](PLAN-DONE.md).
 
-**Shipped state, checked 2026-11-25: 4.76.14.** Built since 4.19.43,
-with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
+Built 2026-11-25, 4.77.0 to 4.78.0, from a conversation in the Chat tab
+that failed ("download EGFR structures by UniProt id": every UniProt
+command was refused) and the request that followed, "check other commands
+if they are in the allowed list, if not add them". The model now runs 286
+of the 504 commands it finds (84 before the run); 218 stay out, with the reason
+per kind in the `ChangeLog`. A switch "Download without asking" was new in
+the Chat tab (choices 107 and 108, answered in the run; replaced in
+4.79.0). Found by the
+check and fixed in 4.77.1: `safe_eval` ran any Python, and `set_color`
+gave it text of the model without a question. Step 31 stays open for its
+trial with real accounts (order 2).
 
-| Version | What |
-| --- | --- |
-| 4.20.0 to 4.21.0 | The version rule (step 29). The bar: "Bg", icons, "Draw", the Open button. |
-| 4.22.0 to 4.25.0 | Palette `chimerax`, blue hover in every menu, Orient on what is visible, sleeping idle threads, rename on the row, the scene buttons of the core deleted. |
-| 4.26.0 | The packed session file `.psex`. |
-| 4.27.0 to 4.29.0 | The property table: window, editing, import and export. A fix in the core. |
-| 4.30.0 to 4.31.0 | Quick-select chips; UI scale from 50 to 300 %, live. |
-| 4.32.0 to 4.35.0 | The ligand in 2D (command and panel), `stage` with floor, shadow and mirror, five color themes. |
-| 4.36.0 to 4.40.0 | Step 30: the 2D picture with circles, tones and a larger legend; the table's alignment and icon; the live UI scale with sharp icons; the preset menu with three submenus, and no preset colors a cartoon or a surface; a clean row for crystallization additives; Undo and Redo for a row of the preset menu. |
-| 4.41.0 | Palette `halo` (11b): five colors of a brand book and seven added ones. |
-| 4.42.0 to 4.43.0 | Step 32: an icon on each of the four buttons under the object list; a Movie button in the action toolbar that opens and closes the Timeline panel. |
-| 4.43.1 to 4.43.2 | Two repairs: the UI scale waits for the next start on WSLg, where the rebuilt window came back late or not at all; the 2D picture of a ligand is no longer cut at one side. |
-| 4.44.0 | One click recalls a scene. |
-| 4.45.0 to 4.46.0 | The property table: columns kept in the session (the new session key `pymolish`), counted columns, Follow, the row of a picked atom, stars. |
-| 4.47.0 | Scenes keep the style of presets and colorings. |
-| 4.48.0 to 4.49.0 | The representation `ball_and_stick`; ligands drawn with it by the presets and when a structure is loaded. |
-| 4.50.0 to 4.51.0 | `color_cpk`; `ligand_next`, the next ligand with its polar contacts. |
-| 4.52.0 to 4.55.0 | Ball and stick in the S and H menus of the panel and under C > by rep; S > ball and stick holds only ball size and bond thickness; balls 0.25 of the atom radius by default (was 0.31); wire, sticks and nb_spheres taken out of S and H (the commands stay). |
-| 4.56.0 | The ligand in 2D (24c): the pocket's outline, halos on atoms open to the solvent, metal contacts, Show in 3D, distances in tooltips, Tab through the residues. |
-| 4.57.0 | Sequence window (33a–c): loaded chains and FASTA, local MAFFT, secondary structure, linked selection, fitting with Undo, statistics/export and session persistence. |
-| 4.58.0 | AI chat (31a, 31c): a Chat tab beside the command line, `ask`, live discovery of commands/settings/presets, reviewed execution with confirmation, Stop and Undo; optional `ai` extra. Stand-in tests only, no live provider yet. |
-| 4.58.1 | Ligand 2D: a ligand in an object of its own (extracted, docked) selects and zooms on its residues again. |
-| 4.59.0 | Action toolbar: a Sequence alignment button, Zoom and Rock as menus like the others (Rock: rock, spin about X/Y/Z, random axis, stop), Bg and Draw icon only. |
-| 4.60.0 | Sequence window: a Jalview-like consensus secondary-structure track (cylinders, arrows, numbered) and residue colors (Zappo, hydrophobicity, percent identity). |
-| 4.60.1 | Rock > Random keeps turning: by a random 15 to 180 degrees about one axis, then about another one, until Stop (it stopped after the second turn). |
-| 4.61.0 | Agent connector (31b): `agent_server on` serves the reviewed operations of the Chat tab to Claude Code or Codex on this computer, over MCP on 127.0.0.1 with a token. An AI assistant button in the toolbar: Chat, the connector on and off, a setup line to copy. |
-| 4.62.0 | 15e: the presets "balls in glass" and "cartoon cylinders", a fog row in the light menu, shade in the pockets of a surface in the look "soft". |
-| 4.63.0 | Step 19: the shot list of the Timeline is kept in the session; shots are dragged and stretched on the strip, under a ruler of seconds; Movie > Program lost Camera Loop, Scene Loop and State Loop. |
-| 4.63.1 | `sphere_mode` stops at 9 (21f). |
-| 4.64.0 | A session carries its background picture (21f). |
-| 4.65.0 | Smooth edges in the viewport: Setting > Rendering > Antialias (Real Time), an FXAA pass, off by default (21f). |
-| 4.66.0 | Chat sign-in in the browser (31d): "Continue with ChatGPT" (the user's ChatGPT plan) and "Continue with OpenRouter" (credits there), the models of the account as a list, "Stay signed in" in the keychain of the operating system. Stand-in tests only, no real sign-in yet. |
-| 4.67.0 | The sequence in a tab: Sequence, between Command and Chat, with the clicks, drags and menus of the rows in the viewport; SEQ opens it, and its arrow has "Show in viewport". The AI assistant button moved from the toolbar to the row under the object list. |
-| 4.68.0 | Chat with a Claude account (31d): the provider "Claude Code" runs the conversation through the Claude Code installed on the computer and its own sign-in in the browser; no API key, no extra `ai`. Tried in the real window with a Team plan. |
-| 4.68.1 | File > Get by UniProt and Get Predicted Structure no longer fail where the old pymolish plugin is a startup plugin: that plugin is not loaded (37a). |
-| 4.69.0 | The Delete key deletes the current row of the Objects list; a group asks first and goes with its members (37b). |
-| 4.70.0 | Rows of the Objects list are moved by a drag with the right button, or with Alt and the arrow keys: order, into a group, out of it (23b). |
-| 4.71.0 | Thirty colors in each of the ten named palettes; the menu shows the first ten (37c). |
-| 4.72.0 | Colors are dragged to their place in the New/Edit palette dialog (37d). |
-| 4.73.0 | The mouse mode button shows the icon and the short name ("Viewing") and is as wide as that (37e). |
-| 4.74.0 | The Sequence tab has the lists Mode, Labels and Gaps and a button for the alignment window (37f). |
-| 4.75.0 | A−, A+ and Reset beside the tabs Command, Sequence and Chat: a text size per tab, kept (37g). |
-| 4.76.0 | An experiment: `set surface_type, 7` builds the molecular surface on a grid with marching cubes (1b). 1aon 1.67 s against 5.18 s, 4v6x 9.41 s against 34.31 s, at the same count of triangles. Not a default, no menu row. |
-| 4.76.1 to 4.76.14 | Step 8, no feature: 230 hand-managed buffers of the core own their memory, 215 VLA macro calls are member calls, 894 lines of dead code deleted. Fixed on the way: `load_png` with a data URL that is not base64, `valence` with a source object, a surface with `ambient_occlusion_mode` 3 and spheres of a part of an object with `sphere_mode` 6 to 8 no longer crash or corrupt memory; three leaks. |
+Built 2026-11-25, 4.79.0, from the request "add option to chat windows
+to run agents / commands without asking (like checkbox to mark)": the
+check box "Run without asking" in the Chat tab, off at every start. While
+it is on, no reviewed command asks "Allow this action?", for the model of
+the tab and for the agents on the connector, and with "Trusted Python"
+ticked Python runs without the question too. "Download without asking"
+(4.77.0) is gone, the new switch covers it. Choices 109 to 111 were asked
+and answered in the run.
 
-Of the ten features requested on 2026-11-20, nine have a working version.
-The tenth, the surface looks, waits for the judgment of the grid surface of 1b
-(4.76.0, question 105). Steps 19, 20,
-26, 29 and 32 are finished. Of the eleven drafts of 2026-11-23, all eleven have a working version;
-the chat (31a, 31c) shipped in 4.58.0, its external connector 31b in 4.61.0,
-the sign-in in the browser 31d in 4.66.0, the provider "Claude Code" in
-4.68.0. Only that last one was tried with a real account (two turns on
-the user's Team plan); the other providers saw no paid request and no
-real sign-in by this program itself: the live trial is order 2.
+Built 2026-11-25, 4.80.0, from the request "add OAuth option to other
+chats like OpenAI like current claude code option": the provider "OpenAI"
+of the Chat tab has the button "Continue with ChatGPT" next to its field
+for an API key, and the entry "ChatGPT" left the list. It is the sign-in
+of 4.66.0, moved; no new sign-in was built. Three options were offered
+(question 112); the user chose this one, recommended was a provider
+"Codex" that works like "Claude Code". Two choices were made while
+building (113 and 114). Still no real sign-in to ChatGPT was made: order 2.
+
+Built 2026-11-25 and 2026-11-26, 4.81.0 and 4.82.0, from the request
+"implement order 3: 25b, surface looks and blob": the grid surface as a
+row "Solid (grid)" in Setting > Surface, with cavity culling, the two
+cavity modes and "Solvent Accessible" (4.81.0), and the submenu "surface
+look" of the Presets menu: glossy, candy glass, frosted and clay, the
+last three on the grid surface with a probe of 3 A (4.82.0). One
+question was asked and answered in the run (115: a row shows the surface
+itself); five choices were made while building (116 to 120). Step 25 is
+finished and left this file; the open orders moved up by one.
+
+See [Shipped state](PLAN-STATE.md) for the shipped versions and their summary.
+
+**Planning update 2026-11-26 at 4.82.0:** the reference images and the
+request for larger buttons below Objects add 15m–15p, 32c and 34d. All
+24 local PNG/JPG references were reviewed and grouped into visual families
+in [plan 15](docs/plans/15-presets.md), with descriptive names and reuse of
+existing rendering first. Steps 32 and 34 reopen for these additions; their
+earlier releases remain shipped. No program changes, version bump, new
+render or GUI/performance measurement in this update. The user chose larger
+icons with short labels and two rows when narrow (121), and existing recipes
+followed by a measured true-glow experiment (122).
+
+Built 2026-11-26, 4.83.0 to 4.89.0, from the request "implement plan
+tasks" with orders 3 to 9 of that update pasted, and "for questions 123,
+124 and 125 use recommended options": the four reference recipes and the
+label "contour cartoon" (15m, 4.83.0), the Transparency submenu with a
+transparency of its own for ball and stick (34d and 15n, 4.84.0), the
+Presets menu in groups (15o, 4.85.0), the larger buttons under the object
+list (32c, 4.86.0), the outline in the viewport (15b, 4.87.0), the glow
+experiment as a setting (15p, 4.88.0) and the surface worker (1b, 4.89.0).
+Steps 32 and 34 are finished again; of step 15 only the answer to
+question 128 is open, of step 1 the two measured items. Seven choices were
+made while building (130 to 136); two new questions came out of the work
+(128, 129). In the same message the user reported that the drag with the
+right button works, that the Chat tab works with Claude Code and with
+ChatGPT, signed in and with "Run without asking", and that the old
+pymolish plugin is removed.
+
+Built 2026-11-26, 4.90.0, from a request with a picture of the Sequence
+alignment window ("show only this bottom secondary structure"): the line
+of characters above every residue and its legend are gone; the drawn
+track at the bottom stays. No row of the table and no question changed.
+
+**Documentation plan, 2026-11-26:** step 38 adds a current-function coverage
+audit, plain task guides, clear front pages and deeper reference, and real
+screenshots plus short demonstrations. Initial source snapshot: 4.84.0
+(`6a76b605`); menu grouping landed in 4.85.0 during planning. Refresh the
+baseline when writing/recording. Planning only: no user docs
+rewritten, media captured or program version changed.
+
+**Documentation written, 2026-11-26, at 4.90.0:** the user answered 126 A
+(Markdown in this repository) and 127 A (MP4 behind a poster), and 38a to
+38d were done the same day: a docs home (`docs/README.md`), nine task
+guides, a reference, a troubleshooting page, a command index of all 350
+registered commands, 14 pictures of the real window, 3 sheets of rendered
+pictures and 4 clips with posters, and the recipes with their scripts in
+`docs/media/`. No program version and no ChangeLog entry. The checklist,
+what was only read from the code, and the faults found in the program on
+the way are in [plan 38](docs/plans/38-documentation.md).
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
@@ -201,17 +234,21 @@ implementation task/PR, with an `X` feature or `Y` fix version under
 | Order | Step | What is left | Exit condition |
 | --- | --- | --- | --- |
 | 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Needs the pushed branch: the last CI run is older than the repair. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
-| 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; one real sign-in and one conversation each with ChatGPT and with OpenRouter (31d, shipped in 4.66.0 on stand-ins), which needs the user's accounts; for the provider "Claude Code" (4.68.0, two turns tried on WSLg with a Team plan) the same five tasks, the button "Continue with Claude Code" with a signed-out Claude Code, and one turn on Windows or macOS; and one call through the connector from Codex, whose account had no credits on 2026-11-24. | Live trial recorded for Anthropic, OpenAI and Claude Code; a sign-in and a conversation recorded for ChatGPT, OpenRouter and Claude Code, on WSL and on one other system; one Codex call through the connector. |
-| 3 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan with the result of the grid surface experiment (4.76.0: times and pictures are there). Waits for the user's judgment of it, question 105; no new surface-look setting before that. | New detailed section grounded in the experiment. |
-| 4 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. A second pass over the texture that FXAA reads since 4.65.0 (`SceneRenderAA`, `fxaa.fs`). | Frame times and pictures on black/white. |
-| 5 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. | Real-window responsiveness, suite and sanitizer checks. |
-| 6 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
+| 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). On 2026-11-26 the user reported that the Chat tab works with Claude Code and with ChatGPT, signed in and with "Run without asking": that is the real sign-in and a conversation for those two (the sign-in of 4.66.0 and 4.80.0 had only seen stand-ins). Nothing was recorded of it here (which tasks, commands, errors, time, tokens, which system). Left: the same for OpenRouter (31d); the Chat tab with an API key of Anthropic and of OpenAI; the five recorded tasks (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature); the button "Continue with Claude Code" with a signed-out Claude Code; one turn on Windows or macOS; one call through the connector from Codex, whose account had no credits on 2026-11-24. | The five tasks recorded for one provider with a key and for Claude Code; a sign-in and a conversation recorded for OpenRouter; one other system; one Codex call through the connector. |
+| 3 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
+| 4 | **38 rest** — [Current documentation and real demos](docs/plans/38-documentation.md) | 38a to 38d were written and captured on 2026-11-26 at 4.90.0. Left: see how GitHub plays the four MP4 clips from their posters (needs the pushed branch; each has a plain link as the fallback); a picture and a clip of a finished Chat turn, after the trial of order 2; the GUI statements the checklist marks "code" were not done by hand; nothing was looked at on Windows or macOS; no reader who does not know the window. | The clips play, or their links are the documented way; the Chat picture is in `docs/assistant.md`. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 
-The earlier surface dependency is preserved: the grid experiment (tried in
-4.76.0) and its judgment come before the surface looks. FXAA shipped in 4.65.0, so the outline can follow it. MAFFT stays
-separately installed and the provider SDKs are the lazy extra `ai`. 5c stays
-shelved; builds stay on GitHub Actions.
+Step 38 was written without waiting for the earlier orders. Its slices are
+docs-only and got no program version or ChangeLog entry; its rest (order 4)
+needs the pushed branch and the trial of order 2.
+
+Orders 3 to 9 of the planning update of 2026-11-26 were built the same
+day (4.83.0 to 4.89.0) and left the table; general undo moved from order 10
+to 3 and the documentation (step 38) from 11 to 4. Earlier dated release
+notes keep their historical order numbers.
+MAFFT stays separately installed and the provider SDKs are the lazy extra
+`ai`. 5c stays shelved; builds stay on GitHub Actions.
 
 The toolbar, measured in the real window at 4.61.0 at 150 %, with the AI
 assistant button: 1297 px of content, a 1305 px window, nothing in the
@@ -270,18 +307,56 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-One question waits, the judgment of the grid surface (4.76.0). Its
-numbers are in the `ChangeLog` and in
-[docs/plans/01-performance-gpu.md](docs/plans/01-performance-gpu.md), its
-pictures are `docs/img/grid-surface-1aon.jpg` and
-`docs/img/grid-surface-4v6x.jpg`; try it with `set surface_type, 7`.
+Open: two questions from the run of 4.83.0 to 4.89.0 (128, 129). Both
+features work as they are; the answers decide what is added or changed.
+126 and 127 of the documentation plan were answered on 2026-11-26, A and A,
+and built (step 38):
 
-| Question | A — recommended | B | C | Dependent work |
-| --- | --- | --- | --- | --- |
-| 105 — Does the grid surface stay, and for what? | It stays as a choice beside today's surface, which remains the default: a row "Solid (grid)" in Setting > Surface, and the settings it lacks (carving, cavities) are added. Decide about a default once the surface worker (order 5) is built, since a build then no longer blocks the window. | It becomes the default above a size, for example 100,000 atoms, where today's surface takes longest (4v6x: 34 s against 9 s). Colors meet in more jagged borders there. | It is taken out again: the three-fold shorter build is not worth a second kind of surface. | 25b (order 3): with A or B the rounded "clay" surface is this surface with a probe of about 3 A, which keeps fine triangles where today's surface gets coarse; with C it stays the Gaussian map. |
+| No. | Choice | Options and recommendation |
+| --- | --- | --- |
+| 128 | What becomes of the glow experiment ([15p](docs/plans/15-presets.md), `set glow, 1`, 4.88.0; pictures in `docs/img/glow-experiment.jpg`) | **A, recommended:** keep the setting and add one row "glow" / "no glow" to the light menu, as fog has, for the viewport only. **B:** leave it as a setting without a menu row (today). **C:** also in ray-traced pictures and in images of another size: a blur over the finished image, new work in the ray path; a slice of its own. **D:** take it out again. Measured: about 2.5 ms a frame at 1436 x 702 on the integrated GPU; one driver tried. |
+| 129 | Whether "Solid (grid)" becomes the default surface, now that the worker is built (answer 105 A said: decide again then; [plan 1](docs/plans/01-performance-gpu.md)) | **A, recommended:** "Solid" stays the default. The freeze was the reason to look at the grid, and the worker took it away (1aon: the window blocked 1.2 s instead of 5 s); pictures and sessions stay as they are. **B:** the grid for surfaces of 5000 atoms or more, today's surface below. **C:** the grid always. With the grid a surface of 1aon is on screen after 1.8 s instead of 5.5 s; it is smoother, has no trimming, and its cavity modes draw 71 to 74 % of the area of the dots. |
+
+Answered and built: **121** (4.86.0), **122** (4.83.0 and 4.88.0), and
+**123**, **124**, **125**, each with its recommended option as the user
+said on 2026-11-26 (4.83.0, 4.84.0, 4.85.0). They are in
+[PLAN-DONE.md](PLAN-DONE.md) with the seven choices made while building
+(130 to 136). Three of those are worth a look:
+
+- 134: the outline follows `ray_trace_mode`. A session or script that set
+  it to 1, 2 or 3 for ray tracing now has the outline in the viewport
+  too; `set viewport_outline, 0` gives the old viewport.
+- 131: a preset now also takes back `sphere_transparency` and
+  `transparency` that were set on an object (not on atoms, not for the
+  whole scene), as it did for the cartoon: that is how the rows of the
+  Transparency menu end.
+- 136: a surface of 5000 atoms or more that the window asks for comes a
+  moment after the frame, also for 5000 to 10,000 atoms where the wait
+  was under a second. `set async_surface, 0` gives the old order.
+
+Earlier decisions: question 105 (the grid surface stays as
+an option, today's surface the default) was answered on 2026-11-25 and
+built in 4.81.0 and 4.82.0; question 115 (a row of "surface look" shows
+the surface itself) was asked and answered in that run. Both are in
+[PLAN-DONE.md](PLAN-DONE.md), with the five choices made while building
+(116 to 120). Two of those are worth a look:
+
+- 118: the grid surface now leaves out closed cavities under 25 A3, as
+  the surface of dots leaves out its smallest ones (`cavity_cull`, on by
+  default). A session of 4.76.0 to 4.80.0 with `surface_type 7` shows
+  fewer of them; `set cavity_cull, 0` gives the old picture.
+- 117: a surface look sets its light for the whole scene, as a row of
+  the light menu does, and the round shape on the objects of the preset.
+  A light row afterwards replaces the light and leaves the surface.
 
 Choices 91–97 were answered on 2026-11-25 and built the same day (4.69.0
-to 4.75.0); they are in [PLAN-DONE.md](PLAN-DONE.md).
+to 4.75.0); they are in [PLAN-DONE.md](PLAN-DONE.md). So are 107 and 108
+(big downloads of the chat in the background; a switch that turns the
+question for downloads off), asked and answered in the run of 4.77.0,
+and 109 to 111 ("Run without asking": commands and Python, in place of
+the download switch, off at every start), asked and answered in the run
+of 4.79.0, and 112 (the ChatGPT sign-in inside the provider "OpenAI"),
+asked and answered in the run of 4.80.0.
 
 Seven choices were made while building 4.68.1 to 4.75.0 (98 to 104),
 each the smaller option; they are listed in PLAN-DONE.md with what it
@@ -341,8 +416,9 @@ the tones of the 2D picture in a PNG written by `ligand_2d` (rdkit draws
 it), and glycerol and other additives sorted out of the 2D panel's list of
 ligands. From 4.43.1 to 4.51.0: sequence length as a counted column of the
 table, and a header "Stars" in place of the property's name "stars";
-transparency and quality settings of its own for `ball_and_stick`, and a
-bond color of its own; `ball_and_stick` for ligands in the presets "simple"
+quality settings of its own for `ball_and_stick`, and a bond color of its
+own (transparency came as 34d in 4.84.0); `ball_and_stick` for
+ligands in the presets "simple"
 and "default"; settings of single states and the secondary structure in a
 scene; Undo of a step of `ligand_next`. From 4.60.1 to 4.65.0: a token of
 the agent connector that is kept between runs (today: the environment
@@ -375,43 +451,96 @@ mark is shown), and scrolling the list while a row is dragged past its
 edge; keys for A−, A+ and Reset (Tab reaches them); less padding inside
 the mouse mode button than its neighbors have; a check of the thirty
 colors for color-vision deficiencies. From 4.76.0, the grid surface:
-carving, cavity culling and cavity mode, `surface_solvent` and trimming;
-strips longer than one triangle; a grid in blocks instead of one over the
+trimming (`surface_trim_cutoff`, `surface_trim_factor`; a grid makes no
+folds to trim); strips longer than one triangle; a grid in blocks instead of one over the
 whole box (above 67 million cells the cells grow); frame times in the
-viewport; ray times on a cool machine.
+viewport; ray times on a cool machine. From 4.80.0: a provider "Codex"
+that runs the conversation through the installed Codex and its own
+sign-in, as "Claude Code" does (option A of question 112; Codex 0.163.0
+is installed and signed in on this machine, and its shell tool can only
+be put into the read-only sandbox, not switched off), the same for the
+Gemini CLI (option B; not installed here), and a way to use the API key
+while signed in to ChatGPT (today: Sign out). From 4.81.0 and 4.82.0: a
+shadow in the viewport (25a-2; options B and C of question 24); the
+light that seems to go through the edges of clay (a "wrap" term in the
+shaders and the ray tracer, option B of question 25); the blob of the
+trial picture, a Gaussian map that is rounder than a probe of 3 A makes
+the surface; a build of clay under 1 s for 1aon (measured: 1.42 s); the
+surface looks as rows of the light menu, without showing the surface
+(option B of question 115); the cavity modes of the grid closer to the
+dots than 71 to 74 % of their area. From 4.83.0 to 4.89.0: a size of
+its own for the lines of "bond shell" (they are `lines`, one pixel wide on
+this driver); transparency per atom or residue for ball and stick (option
+B of question 124) and transparency rows in the Setting menu; capital
+letters in the Presets menu; icons for its groups; the keyboard in the
+menus the viewport draws itself (the toolbar menu has it); a footer in one
+row by widening the panel; the outline in stereo and in images of another
+size, a setting for its width, and the line inside a see-through surface
+in every cell of grid mode; for the glow, a radius of its own, a halo over
+the molecule itself and labels kept clear of it; for the surface worker,
+stopping a build nobody waits for, a progress bar, the coloring of the
+vertices off the GUI thread (the 1.2 s that are left), and meshes,
+cartoons and maps in the background.
 
 The user's to do:
 
+- Read the new documentation, starting at `docs/README.md`, and say what
+  reads wrong. Nine of its guides were written by helper sessions from the
+  code and checked by running their commands; what was only read from the
+  code is listed in [plan 38](docs/plans/38-documentation.md).
+- After the branch is pushed: open `docs/appearance.md` on GitHub and click
+  the poster of the clip, to see whether the MP4 plays there.
+- Decide which of the faults found while writing (the list in plan 38,
+  "Found in the program") are to be repaired; none was touched.
+- Answer questions 128 and 129 above.
+- Look at the changes of 2026-11-26 in your own window: Presets (the
+  groups, the four new rows under "atoms and bonds" and "surface",
+  transparency), the buttons under the object list, a light with an
+  outline (figure, flat, comic, sketch), `set glow, 1`, and `show surface`
+  on a large structure. All were tried in a test window on this machine;
+  at the end of the run, with your pymolish closed, your `.venv` was
+  rebuilt to 4.90.0 with the extras `dev`, `chem`, `fix` and `ai`.
 - Look at the changes of 2026-11-25 in your own window. They were built
   and tried in a copy; at the end of the run, with pymolish closed, your
   `.venv` was rebuilt to 4.76.0 with the extras `dev`, `chem`, `fix` and
   `ai` (it had 4.67.0; the extra `ai` added `keyring` 25.7.0, which "Stay
   signed in" needs), and the suite passed there: 1121 passed, 252 skipped.
-- Judge the grid surface (question 105): the two pictures in `docs/img`,
-  and `set surface_type, 7` on a structure of your own.
 - Say where File > Get by UniProt failed (37a). On this machine the old
   plugin is not loaded (`~/.pymolpluginsrc.py` sets an empty startup
   path) and the action worked before the change; the error was
   reproduced only by putting `~/.pymol/startup` into the startup path. If
   it happened elsewhere, with another cause, it is not fixed.
-- Try the drag with the right button (4.70.0) once on Windows and on
-  macOS: there the system asks for the menu when the button is released,
-  on Linux when it is pressed. Both are handled; only Linux was tried.
-- Push `feature13` and open its pull request. Local tracking refs checked
-  2026-11-25 after 4.76.14: `origin/feature13` is at the plan commit of
-  4.66.0; including this plan commit the branch is 38 commits ahead
-  (4.67.0 to 4.76.14 with their plan commits, the decisions 91 to 97 and
-  two repairs of the tests) and contains `feature12` (itself 9 commits
-  ahead of its tracking ref). At the last remote check `feature13` had no pull
-  request; the last one was #10 (`feature11`, merged 2026-11-20). The
-  remote was not asked again in this run; no push or merge was performed.
+- The drag with the right button (4.70.0): you reported on 2026-11-26
+  that it works. If that was on Linux, Windows and macOS are still to
+  try: there the system asks for the menu when the button is released.
+- Push `feature13` again. Checked 2026-11-26 after 4.90.0: the local
+  tracking ref `origin/feature13` is at the plan commit of 4.76.14
+  (`5101e943`), and the branch is 26 commits ahead of it (4.77.0 to
+  4.90.0 and the plan commits). No fetch, push or merge was made in this
+  run; pull request #11 was not looked at again. The Windows, macOS and
+  sanitizer jobs of that CI run are the first compile there of the new
+  C++ of 4.81.0, 4.84.0 and 4.87.0 to 4.89.0, and the first try of the new
+  shaders (`fxaa.fs`, `glow.fs`) on other drivers than Mesa d3d12.
+- Look at Presets > surface look in your own window (4.82.0), and at
+  Setting > Surface > Solid (grid) with "Cavities and Pockets Only"
+  (4.81.0). Both were checked by tests and in ray-traced pictures
+  (`docs/img/surface-looks.jpg`); no window was opened in that run,
+  because your own pymolish was running and a test window takes the
+  keyboard.
 - After the push, read the CI run first for step 8: 4.76.1 to 4.76.14
   changed 60 files of the core and were compiled with GCC 13 on Linux
   only. The Windows (MSVC), macOS (Apple Clang) and `sanitize-Linux` (GCC
   11) jobs are the check that was not possible here.
-- Your `.venv` still holds 4.76.0: your own pymolish was running during
-  the run of step 8, so it was not rebuilt. The suite of 4.76.14 passed in
-  a copy (1154 passed, 250 skipped).
+- With "Run without asking" and "Trusted Python" both ticked, Python of
+  the model or of an agent runs unseen, with your rights on this
+  computer. That was your choice (109); recommended was commands only.
+  Untick one of the two before you let it read files or pages you do not
+  trust.
+- Try in the Chat tab what failed: "download EGFR structures, human, by
+  UniProt id". All 388 entries of P00533 (counted 2026-11-25) load in the
+  background; they pass 600,000 atoms (an estimate from the first five
+  entries, 28,061 atoms), and above that the chat refuses further changes
+  of the session, its Undo limit. A limit ("the first 20") avoids that.
 - Then the rest of the CI run: the Windows icon, release notes,
   `chem`/`fix` extras on three systems, and for 27c the line that
   `test_scale_change_keeps_the_window_alive` prints in the Windows and
@@ -423,9 +552,10 @@ The user's to do:
 - Try the Chat tab with your own Anthropic and OpenAI keys and a model
   ID each (`pip install 'pymolish[ai]'`): no request was ever sent by the
   Chat tab itself.
-- Sign in once with each new provider of the Chat tab (4.66.0): choose
-  ChatGPT, then "Continue with ChatGPT"; choose OpenRouter, then "Continue
-  with OpenRouter"; send one request each. No real sign-in was made: the
+- Sign in once with OpenRouter in the Chat tab (4.66.0): choose
+  OpenRouter, then "Continue with OpenRouter", and send one request. (The
+  ChatGPT sign-in, the button of "OpenAI" since 4.80.0, you reported as
+  working on 2026-11-26.) What was written before the first real try: the
   code follows the two published flows, and OpenAI's server took the first
   request up to its log-in page. Three things only a real try shows:
   whether OpenAI lets pymolish register without being asked first (its
@@ -459,16 +589,12 @@ The user's to do:
   the freeze test sent Ctrl+A, "120", Enter once, at about 10:06, to
   whatever window had the focus on the Windows desktop. The working tree
   was unchanged; an editor or a terminal that had the focus may show it.
-- Remove the pymolish plugin from `~/.pymol/startup` (still there on
-  2026-11-25). Since 4.68.1 it is no longer loaded, and the log says so
-  at every start where the startup path names that folder.
-- `plan_images/` (the pictures of the request of 2026-11-20) is ignored by
-  git. It is deleted when the last plan made from it is built: 25b
-  (22d and 24c are built). The plans name its files by path.
+- Delete `plan_images/` (the reference pictures, ignored by git) when
+  question 128 is answered: every plan made from it is built. It was left
+  in place; it is your folder.
 
-Not the user's, and not a roadmap step: the screenshot in the README
-(`docs/img/window.png`) shows the window of 4.19; it is retaken when the
-bar has stopped changing.
+The README screenshot (`docs/img/window.png`) is the window of 4.90.0
+since step 38d (2026-11-26).
 
 ## Shared completion criteria
 

@@ -198,12 +198,12 @@ static const int cSceneSettings[] = {
     cSetting_stick_ball, cSetting_stick_ball_ratio, cSetting_stick_ball_color,
     cSetting_valence, cSetting_line_width, cSetting_line_color,
     cSetting_ball_and_stick_scale, cSetting_ball_and_stick_bond_radius,
-    cSetting_ball_and_stick_color,
+    cSetting_ball_and_stick_color, cSetting_ball_and_stick_transparency,
     cSetting_dash_width, cSetting_dash_color, cSetting_dash_radius,
     cSetting_dash_gap, cSetting_dash_length, cSetting_mesh_color,
     cSetting_mesh_width, cSetting_dot_color, cSetting_surface_color,
     cSetting_surface_quality, cSetting_surface_type, cSetting_surface_mode,
-    cSetting_transparency, cSetting_ray_transparency_oblique,
+    cSetting_solvent_radius, cSetting_transparency, cSetting_ray_transparency_oblique,
     cSetting_ray_transparency_oblique_power,
 };
 

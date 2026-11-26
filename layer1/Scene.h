@@ -68,6 +68,16 @@ void SceneInvalidateStencil(PyMOLGlobals * G);
 int SceneHasImage(PyMOLGlobals * G);
 int SceneInit(PyMOLGlobals * G);
 void SceneUpdate(PyMOLGlobals * G, int force);
+
+/**
+ * SceneUpdate for the next frame of the window: what takes long to build
+ * (a large surface, "async_surface") is built on a thread of its own, and
+ * the frame is drawn without it. Every other SceneUpdate, for a picture,
+ * a ray-traced image or a thumbnail, waits for what is being built.
+ */
+void SceneUpdateForWindow(PyMOLGlobals* G);
+/// true inside SceneUpdateForWindow, with a window and "async_surface" on
+bool SceneBuildsInBackground(PyMOLGlobals* G);
 int SceneRenderCached(PyMOLGlobals * G);
 int SceneSetFog(PyMOLGlobals *G);
 void SceneSetFogUniforms(PyMOLGlobals * G, CShaderPrg *);

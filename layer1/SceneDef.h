@@ -156,6 +156,10 @@ class CScene : public Block {
   int last_grid_size{};
   int n_texture_refreshes { 0 };
   CGO *offscreenCGO { nullptr };
+  CGO *glowCGO { nullptr }; // the rectangle of the stages of glow.fs
+  // The update that runs is for the next frame of the window: a large
+  // surface may be built in the background (SceneBuildsInBackground)
+  bool BackgroundBuilds { false };
   CGO *offscreenOIT_CGO { nullptr };
   CGO *offscreenOIT_CGO_copy { nullptr };
   PrepareViewportForStereoFuncT vp_prepareViewPortForStereo = nullptr;

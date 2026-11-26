@@ -2,6 +2,416 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-26 pymolish-studio
+
+	* 4.90.0
+
+	* Sequence alignment
+	  - The secondary structure is shown only as the drawn track at
+	    the bottom (helices as cylinders, strands as arrows). The
+	    line of characters above every residue is gone, and with it
+	    their legend; a row is one line high.
+	  - The secondary structure of a single residue is in its
+	    tooltip, as before. A residue without coordinates no longer
+	    has a mark in the table; its tooltip says "No coordinates".
+
+2026-11-26 pymolish-studio
+
+	* 4.89.0
+
+	* Surface
+	  - A large surface no longer freezes the window (1b). A surface
+	    of 5000 atoms or more that the window asks for is built on a
+	    thread of its own: the view turns, menus open and commands run
+	    while it is built, and the surface appears when it is ready.
+	    The log says " Surface: building the surface of ... in the
+	    background" and " ... is ready (4.5 s)".
+	  - Whatever needs the whole scene waits for it, as before: a
+	    ray-traced picture, png, draw, a frame of a movie, an export,
+	    the thumbnail of a scene. A script therefore gets the same
+	    pictures. Without a window (pymolish -c) nothing changed.
+	  - New setting async_surface (on); "set async_surface, 0" builds
+	    in the window's own thread again.
+	  - Measured in the real window on 1aon (58,674 atoms surfaced):
+	    the window was blocked for 4.9 and 5.5 s before; now for 1.2 s
+	    at most, at the end, when the vertices are colored and drawn
+	    for the first time; the surface is on screen after 5.4 and
+	    5.7 s, as before. "Solid (grid)": blocked 0.9 s (1.7 s
+	    before), on screen after 1.8 s.
+	  - Limits: a build that is no longer wanted (the object deleted,
+	    a setting changed again) runs to its end before its thread is
+	    free; only surfaces, not meshes or cartoons; with cache_mode
+	    on, a surface is built as before.
+
+2026-11-26 pymolish-studio
+
+	* 4.88.0
+
+	* Viewport
+	  - New setting glow (0 to 1, default 0), an experiment (15p): a
+	    soft halo in the colors of what is drawn, around it, on any
+	    background. "set glow, 1" for the whole of it, 0.5 for half.
+	    There is no menu row and no preset uses it: what to ship is
+	    question 128 in PLAN.md. Pictures, with the same views
+	    without it: docs/img/glow-experiment.jpg.
+	  - How: what is drawn (found in the depth, so the background and
+	    the labels are no source) is blurred at a quarter of the size
+	    in three small stages (glow.fs) and laid on the background
+	    pixels in the pass that smooths edges (fxaa.fs). The molecule
+	    itself is not changed. The halo reaches about a twelfth of the
+	    height of the viewport.
+	  - Frame time in the window, 1436 x 702 pixels, integrated GPU
+	    through WSLg: 4hhb as spheres 4.2 ms without and 6.7 ms with;
+	    1aon as spheres 6.0 and 8.5 ms; 1aon as cartoon 4.6 and
+	    9.1 ms. Memory, computed from the sizes and not measured: the
+	    picture drawn offscreen 8.1 MB, two copies of its depth
+	    8.1 MB, the two small pictures of the halo 1.0 MB.
+	  - Limits: the viewport only. A ray-traced picture has no halo,
+	    nor has an image drawn at another size than the window (png
+	    with a width, draw), nor stereo; png without ray tracing at
+	    the size of the window has it. A label near the molecule is
+	    covered by the halo. Tried on one driver (Mesa d3d12, WSLg).
+
+2026-11-26 pymolish-studio
+
+	* 4.87.0
+
+	* Viewport
+	  - The outline of a look is drawn in the viewport too (15b). The
+	    lights figure, soft, flat, comic and sketch, and the presets
+	    "illustrated atoms" and "contour cartoon", had their outline
+	    only in ray-traced pictures. The line has the color the ray
+	    tracer uses (ray_trace_color): black on a light background,
+	    white on a dark one. With "sketch" the viewport shows lines
+	    alone, as the ray-traced picture does. Pictures:
+	    docs/img/viewport-outline.jpg.
+	  - It follows ray_trace_mode: 1 and 3 draw the line on the
+	    picture, 2 the lines alone. So a session or script that sets
+	    ray_trace_mode now has the outline in the viewport as well.
+	    New setting viewport_outline (on) turns it off there: Setting
+	    > Rendering > "Outline of a Look (Real Time)".
+	  - How: one more step in the pass that smooths edges (fxaa.fs). A
+	    line is drawn where the picture lies behind its neighbors by
+	    more than a slope explains, measured in the depth in A; the
+	    least step grows with what a pixel covers, so that atoms which
+	    touch get no line at any zoom. The depth is copied twice a
+	    frame, before and after what is see-through is drawn: the
+	    cartoon inside the surface of "contour cartoon" has its line,
+	    and so has the surface. Labels are not written into the depth
+	    while the outline is drawn; they get no frame.
+	  - Frame time in the window, 1436 x 702 pixels, integrated GPU
+	    through WSLg: 1oky as spheres 2.8 ms without and 5.7 ms with
+	    the outline; 1aon as spheres 5.2 and 8.2 ms; 1aon as cartoon
+	    11.1 and 13.1 ms. With smoothed edges as well: 6.3, 8.7 and
+	    15.8 ms.
+	  - Not drawn: in stereo; in an image drawn at another size than
+	    the window (png with a width, draw); without shaders. In grid
+	    mode the line inside a see-through surface is right only in
+	    the last cell. Tried on one driver only (Mesa d3d12 on WSLg).
+
+2026-11-26 pymolish-studio
+
+	* 4.86.0
+
+	* Objects panel
+	  - The five buttons under the object list are larger and each
+	    has a short text beside its icon: the mouse mode (Viewing,
+	    Editing, ...), SEQ, Chat, Wizard and Cmd. The icons are 20 px
+	    (16 before) and the buttons 32 px high (23 before). Chat,
+	    Wizard and Cmd showed only an icon before.
+	  - One row while the panel is wide enough (390 px of buttons,
+	    measured); in a narrower panel two rows: mouse mode and SEQ,
+	    then Chat, Wizard and Cmd. At the panel's default width of
+	    300 px it is two rows, and the object list is 34 px shorter
+	    than with one. The two rows need 222 px. Picture: docs/img/footer-rows.png.
+	  - What a click does is unchanged: the menus of the mouse mode,
+	    the AI assistant and the wizards, SEQ with its arrow, the
+	    switch for the command line. Tab walks them in the same order
+	    in both layouts. Tooltips and the names for a screen reader
+	    are the whole names: "Mouse mode: 3-Button Viewing", "Sequence
+	    tab", "AI assistant", "Command line and log".
+	  - The name of the mouse mode is no longer shortened in a narrow
+	    panel: the second row took the place of that.
+
+2026-11-26 pymolish-studio
+
+	* 4.85.0
+
+	* Presets
+	  - The Presets menu is in groups (15o). At the top "default" and
+	    "classified"; then four submenus by what a preset draws:
+	    cartoon (pretty, publication, technical, b factor putty, wire,
+	    spring, cylinders, contour cartoon), atoms and bonds (space
+	    filling, illustrated atoms, ball and stick, licorice), surface
+	    (glossy, candy glass, frosted, clay, glass, balls in glass,
+	    bond shell) and binding (ligands, ligand sites, protein
+	    interface, protein-protein interaction, antibody and antigen);
+	    then transparency and the solvent row. Under the caption
+	    "Scene appearance" the three that change the whole scene:
+	    light, theme (colors and background) and floor.
+	  - Every row of the flat menu is still there and runs the same
+	    command. Three have a shorter label inside their group: "wire",
+	    "spring" and "cylinders" (before: "cartoon wire" and so on).
+	    The submenu "surface look" is the first four rows of
+	    "surface"; "theme" says in its label that it colors.
+	  - The same menu in the toolbar and in the menus of the viewport
+	    and the sequence. In the toolbar every row is reached with the
+	    arrow keys, three levels deep, and each row is one step of
+	    Undo, as before.
+
+2026-11-26 pymolish-studio
+
+	* 4.84.0
+
+	* Presets
+	  - The row "cartoon transparency" of the Presets menu is now the
+	    submenu "transparency" with four rows: cartoon, spheres,
+	    surface, ball and stick, each with opaque (0%), 25%, 50% and
+	    75%. A row changes one representation of the whole objects
+	    the menu is on (from the toolbar: the objects that are switched
+	    on; from a selection: the objects it is in), on all of their
+	    atoms, also where a preset such as "glass" had set a value on
+	    the atoms. It shows, hides and colors nothing, and the four
+	    are independent of each other. As a command:
+	    preset.transparency(representation, value, selection).
+	  - The next preset takes these rows back on its objects, as it
+	    did for the cartoon. New with this: a preset now also unsets
+	    sphere_transparency, transparency and
+	    ball_and_stick_transparency where they are set on an object
+	    (not on atoms, and not for the whole scene).
+	  - preset.cartoon_transparency(value, selection) still works; it
+	    now also clears a cartoon_transparency set on atoms of the
+	    object, so that the value shows everywhere.
+
+	* Ball and stick
+	  - New setting ball_and_stick_transparency (default 0): balls and
+	    bonds of ball_and_stick see-through, in the viewport and ray
+	    traced, also a ball without bonds. One value for an object or
+	    one of its states, or for the scene; not per atom or bond.
+	    sphere_transparency and stick_transparency do not reach
+	    ball_and_stick, and this setting does not reach spheres or
+	    sticks. Scenes, sessions and Undo keep it.
+	  - PyMOL 3.2.0a loads, ray traces and saves a session that has
+	    the setting; it drops it, as it draws no ball_and_stick.
+	  - Frame time in the window, 957 x 468, 1aon with all 59,192
+	    atoms as ball_and_stick: 20.9 and 21.9 ms opaque, 19.1 ms at
+	    50 %; a ligand of 53 atoms: 0.6 to 0.7 ms either way.
+
+2026-11-26 pymolish-studio
+
+	* 4.83.0
+
+	* Presets
+	  - Four new rows in the Presets menu, after pictures the user
+	    gave as references: "space filling" (every atom as a sphere of
+	    its radius), "illustrated atoms" (the same in the look "flat":
+	    plain colors inside outlines, like the drawings of the
+	    Molecule of the Month), "licorice" (every bond as a smooth
+	    stick) and "bond shell" (the bonds of the protein as thin
+	    lines inside its half see-through surface, ligands as balls
+	    and sticks). As commands: preset.space_filling,
+	    preset.illustrated_atoms, preset.licorice, preset.bond_shell.
+	  - They keep the colors of the atoms, the camera, the background
+	    and the user's sphere and stick sizes. The next preset takes
+	    them back, and with "illustrated atoms" its light.
+	  - The row "illustration" is now called "contour cartoon". It
+	    runs the same preset; preset.illustration keeps its name.
+	  - New row "glossy (light only)" in the light menu: the light of
+	    the surface look "glossy" on whatever is shown, for polished
+	    atoms or cartoons. It shows and hides nothing.
+	  - The outlines of "illustrated atoms" and "contour cartoon" are
+	    drawn in ray-traced pictures only: in the viewport the first
+	    is a shape in plain colors until the viewport draws outlines.
+	    Pictures, ray traced and from the viewport:
+	    docs/img/reference-recipes.jpg.
+
+2026-11-26 pymolish-studio
+
+	* 4.82.0
+
+	* Presets
+	  - New submenu "surface look" in the Presets menu, four rows that
+	    show the protein as a surface in one material, with the
+	    ligands as balls and sticks: glossy (polished plastic, a small
+	    strong highlight), candy glass (see-through in the middle,
+	    dense at the rim), frosted (milk glass, nothing shines) and
+	    clay (matte, the pockets in shade). Picture:
+	    docs/img/surface-looks.jpg.
+	  - Candy glass, frosted and clay are round: the grid surface
+	    ("Solid (grid)", 4.81.0) with a probe of 3 A, set on the
+	    objects of the preset. Glossy is today's surface.
+	  - The surface keeps the colors of the carbons under it, as in
+	    every preset. The next preset takes all of it back. A row of
+	    the light menu replaces the light and leaves the surface, so
+	    clay under "studio" is two clicks.
+	  - As a command: preset.surface(selection, material).
+	  - Every preset now takes back a solvent_radius set on its
+	    objects, as it does for surface_type and surface_quality, and
+	    a scene keeps solvent_radius with the other settings of a
+	    style: a scene stored on clay comes back round.
+
+2026-11-25 pymolish-studio
+
+	* 4.81.0
+
+	* Surface
+	  - New row "Solid (grid)" in Setting > Surface: the grid surface
+	    of 4.76.0 (surface_type 7). "Solid" stays the default.
+	  - The grid surface follows the settings it ignored before:
+	    cavity_cull (on by default: a closed cavity under 25 A3, the
+	    room of one water, is not drawn), surface_cavity_mode 1 and 2
+	    with surface_cavity_radius and surface_cavity_cutoff ("Cavities
+	    and Pockets Only", "Culled"), and surface_solvent ("Solvent
+	    Accessible"). Carving (surface_carve_selection and
+	    surface_carve_cutoff) worked already and has a test now. It
+	    follows what the settings mean, not the dots one by one: 2rh1
+	    keeps 5 closed cavities where the dots keep 7, 4hhb 9 where
+	    they keep 8; with "Cavities and Pockets Only" it draws 71 %
+	    (2rh1) and 74 % (4hhb) of the area the dots draw, in the same
+	    places. Not followed: surface_trim_cutoff and
+	    surface_trim_factor, which repair folds a grid does not make.
+	  - A session saved with surface_type 7 and the default cavity_cull
+	    shows fewer small closed cavities than in 4.76.0 to 4.80.0;
+	    "set cavity_cull, 0" gives the old picture.
+	  - 1aon, fastest of two builds: 1.67 s with culling (914,220
+	    triangles; 1.70 s and 924,276 without), "Cavities and Pockets
+	    (Culled)" 0.80 s (the dots: 5.95 s), "Solvent Accessible"
+	    1.31 s; the surface of dots 5.46 s.
+
+2026-11-25 pymolish-studio
+
+	* 4.80.0
+
+	* Chat
+	  - The provider "OpenAI" of the Chat tab has both ways in now: the
+	    field for an API key, and the button "Continue with ChatGPT",
+	    the sign-in in the browser of 4.66.0 that is paid from the
+	    ChatGPT plan. While signed in, the key field is hidden, the
+	    plan is used and the models of the account are listed; "Sign
+	    out" brings the key field back.
+	  - The entry "ChatGPT" is gone from the list of providers. A
+	    sign-in kept with "Stay signed in", the model chosen for it and
+	    a saved choice of "ChatGPT" carry over to "OpenAI".
+
+2026-11-25 pymolish-studio
+
+	* 4.79.1
+
+	* Build
+	  - Fix: a build with glTF export (json=True, as in CI and the
+	    release bundles) did not compile since 4.76.2: one line of
+	    layer1/GLTF.cpp called .resize() on a plain char pointer.
+
+2026-11-25 pymolish-studio
+
+	* 4.79.0
+
+	* Chat and agent connector
+	  - New switch "Run without asking" in the Chat tab, off at every
+	    start. While it is on, nothing asks "Allow this action?": the
+	    model of the Chat tab and the agents on the connector delete,
+	    change the structure, read and write files and download
+	    without a question, and with "Trusted Python" ticked they run
+	    Python without a question too. Python is not sandboxed: text
+	    the model reads can then run code on this computer. Every
+	    call is still written to the Chat tab and the log, and Undo
+	    of the turn holds as before.
+	  - The switch "Download without asking" (4.77.0) is gone; "Run
+	    without asking" covers the downloads.
+
+	* 4.78.0
+
+	* Chat and agent connector
+	  - The model can run 286 of the 504 commands it finds, before 88.
+	    The other 416 were gone through one by one; 198 were added:
+	    - without a question, 44 queries: chains, sequence
+	      (get_fastastr), extent, symmetry, titles, phi and psi,
+	      area, center of mass, pairs, RMS without a fit, properties,
+	      colors, the state of the movie and of the window.
+	    - without a question, changes of what is shown (the turn has
+	      its Undo): distance, angle, dihedral, pi_interactions,
+	      label, spectrum, the util.cb* colors, util.chainbow, the
+	      presets pretty, publication and simple and the cartoon rows
+	      of the menu, groups (group, order, group_next, sort_group,
+	      cluster_ligands), meshes, surfaces and volumes of a map,
+	      color ramps, pseudoatom, search_sequence, views, the frames
+	      and keys of a movie, bond settings.
+	    - with a question, changes of the structure and files: h_add,
+	      bonds and valences, the builder commands, fab, fnab,
+	      fragment, translate, rotate and the matrix commands,
+	      extract, split_chains, split_states, split_types,
+	      extract_chain, join_states, copy_group, symexp, morph, the
+	      map editors, fit, intra_fit, usalign, smooth, clean,
+	      assign_stereo, mse2met, read_pdbstr, read_molstr,
+	      read_sdfstr, properties; png, multisave, multifilesave,
+	      export_objects, load_traj and load_files.
+	  - Checked on the way in, because these commands run a part of
+	    their arguments as Python or read a file named by them: a
+	    label is made of atom properties, text, + and %; spectrum takes
+	    one property; fab and fragment take letters, digits and _;
+	    load_files reads PDB, mmCIF, SDF and MOL only; the arguments
+	    key of get_fastastr and prop of assign_stereo are refused;
+	    set_bond takes the visual settings that set takes.
+	  - Left out, 218: what runs Python or commands by name (do,
+	    alter, iterate, run, system, alias, set_key, mdo and the movie
+	    programs made with it, wizards, extra_fit, alignto, copy_to,
+	    preset.from_menu); what hands the model the whole structure
+	    (get_pdbstr, get_cifstr, get_model, get_coords, get_session);
+	    what takes Python objects (load_model, load_cgo, load_coords);
+	    what loads any file (loadall, load_raw, set_session); the
+	    window, the log and the program (quit, reinitialize, undo,
+	    viewport, cd, ls, log_open, agent_server); protonate, ray and
+	    the British spellings and other second names of commands that
+	    are in the list.
+
+2026-11-25 pymolish-studio
+
+	* 4.77.1
+
+	* Core
+	  - Fix: safe_eval, which reads lists of numbers and names given as
+	    text (a color for set_color, a vector for translate, origin,
+	    set_view, pseudoatom and others), ran any Python: through an
+	    attribute of a value every loaded module could be reached.
+	    The Chat tab passed text of the model to it with set_color,
+	    without a question and with "Trusted Python" off. It now
+	    takes numbers, text, names, lists, tuples, dictionaries, sets
+	    and the signs + - /, and refuses the rest with an error.
+	    Changed for scripts: indexing ("[1,2][0]") and "*" in such a
+	    text are errors now. Present in 4.76.0 as well.
+
+2026-11-25 pymolish-studio
+
+	* 4.77.0
+
+	* Chat and agent connector
+	  - The model can run the UniProt commands: list_uniprot_structures,
+	    fetch_by_uniprot, fetch_uniprot_ligands and fetch_fold. Before,
+	    it found them and read their help, and every call was refused
+	    ("not reviewed for execution"). The list asks nothing and gives
+	    the model the table of method, resolution and chains. A
+	    download asks once per call, not once per structure.
+	  - fetch_by_uniprot and fetch_uniprot_ligands with a limit of 1
+	    to 10 are waited for, as "fetch" is. With a larger limit or
+	    none they run in the background, as File > Get by UniProt
+	    does: the window stays usable and the model is told that the
+	    download runs. Human EGFR (P00533) has 388 entries today.
+	  - New switch "Download without asking" in the Chat tab, off at
+	    every start. While it is on, fetch and the three downloads
+	    above run without the question. Deleting, loading and saving
+	    files ask as before. It holds for the agent connector too.
+	  - A text that is not a UniProt accession is refused before any
+	    request is sent.
+	  - Known limit: above 600,000 atoms in the session the chat
+	    refuses further changes (its Undo limit); all entries of a
+	    protein like EGFR pass that.
+
+	  Tried in the real window: 12 entries of P00533 through the chat's
+	  executor with the switch on: no question, the call returned in
+	  0.01 s, the 12 objects were in the group after 4.2 s, the longest
+	  pause of the window in that time was 0.17 s. The tab is as wide
+	  as before (smallest width 565 px with and without the switch).
+
 2026-11-25 pymolish-studio
 
 	* 4.76.14

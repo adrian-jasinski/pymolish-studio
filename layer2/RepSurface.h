@@ -17,10 +17,23 @@ Z* -------------------------------------------------------------------
 #ifndef _H_RepSurface
 #define _H_RepSurface
 
+#include "PyMOLGlobals.h"
+
 struct Rep;
 struct CoordSet;
 
 Rep *RepSurfaceNew(CoordSet * cset, int state);
+
+/// A surface of at least this many atoms is built on a thread of its own
+/// when it is wanted for the window (SceneBuildsInBackground)
+constexpr int cSurfaceBuildMinAtoms = 5000;
+
+/**
+ * Takes the results of the surfaces that were built in the background, on
+ * the main thread: those that are ready, or with `wait` all of them.
+ * @return true if a surface got its triangles
+ */
+bool RepSurfaceFinishBuilds(PyMOLGlobals* G, bool wait);
 
 #define cRepSurface_by_flags       0
 #define cRepSurface_all            1

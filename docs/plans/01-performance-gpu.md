@@ -1,5 +1,25 @@
 # 1 — Performance and GPU
 
+**The surface worker is built: 2026-11-26, 4.89.0.** A surface of 5000
+atoms or more that the window asks for runs `SurfaceJobRun` on a detached
+thread (`async_surface`, on); `RepSurfaceFinishBuilds` moves the result
+into the representation on the main thread, from `SceneIdle` and from every
+window frame; every other `SceneUpdate`, sized images and movie frames
+wait for running builds, so pictures, ray tracing and exports are as
+before, and so is everything without a window. Measured in the real window
+on 1aon (58,674 atoms surfaced), two runs each: the GUI thread blocked for
+1.18 and 1.24 s at most with the worker, 4.90 and 5.52 s without; the
+surface on screen after 5.42 and 5.68 s (4.90 and 5.52 s without). Grid
+surface: blocked 0.90 s (1.72 s without), on screen after 1.81 s. The
+second or so that is left is the coloring of the vertices and the first
+upload, on the GUI thread. Left out: 4v6x (its runs take 10 of 17 GB), a
+progress bar (the status is two lines in the log), stopping a build nobody
+waits for, meshes and cartoons. Found by the window test and fixed before
+the commit: the progress report of the triangulation called Python from
+the worker thread. ASan and UBSan clean, headless and in the real window.
+Whether "Solid (grid)" becomes the default is question 129 in
+[PLAN.md](../../PLAN.md).
+
 [Roadmap](../../PLAN.md) · 1a done, 1b in progress; timings are in the Status sections and the ChangeLog; comparison with upstream PyMOL 3 in [docs/benchmark.md](../benchmark.md)
 
 **Improve the operation a profile identifies.** Interactive graphics already use
@@ -52,7 +72,27 @@ Built as the answer to "Grid surface: yes, as an experiment" below:
 `set surface_type, 7`, `SurfaceJobRunGrid` in `layer2/RepSurface.cpp`.
 Two distance grids and two runs of the marching cubes that were already
 in the code; every step is a loop over grid planes, one plane a thread.
-The user judges it: question 105 in [PLAN.md](../../PLAN.md).
+
+**Decision 2026-11-25, question 105: A, recommended.** Keep it as an
+optional surface beside today's default. Reconsider the default after
+the surface worker (order 4).
+
+**Built 2026-11-25 in 4.81.0 (25b-3):** the row "Solid (grid)" in
+Setting > Surface, and in `SurfaceJobRunGrid` the settings the experiment
+ignored. `cavity_cull`: closed holes of the second field of up to 2.5 A3
+per count are filled before the last marching cubes (25 A3 at the default;
+2rh1 keeps 5 closed cavities where the dots keep 7, 4hhb 9 where they
+keep 8). `surface_cavity_mode`: a coarse grid (cells of 2 A at the default
+radius) gives the places where the large probe fits; only the places of
+the small probe's center farther than the cutoff from them make the
+surface, and of it what lies at the atoms (71 % and 74 % of the area the
+dots draw for 2rh1 and 4hhb, the grid's points 0.44 and 0.42 A from the
+dots' on average). `surface_solvent`: the first field is the surface.
+Carving worked already. 1aon, fastest of two builds: 1.67 s with culling
+and 914,220 triangles (1.70 s and 924,276 without), mode 2 in 0.80 s (the
+dots 5.95 s), the solvent surface 1.31 s, a probe of 3 A 1.42 s; the dots
+5.46 s. Left out: trimming, longer strips, a grid in blocks, frame times,
+a compile on Windows and macOS.
 
 Measured on this laptop (32 threads), mmCIF from
 `~/.cache/pymolish-compare`, one process per row; "build" is `show_as
@@ -104,7 +144,8 @@ Left out, each named in the code: carving, cavity culling and cavity
 mode, `surface_solvent`, trimming; strips of more than one triangle; a
 grid in blocks (above 67 million cells the cells grow instead); a
 smoothness setting of its own (`solvent_radius` is that value); frame
-times in the viewport.
+times in the viewport. Carving, cavity culling and cavity mode are now
+accepted work under answer 105 A; the other omissions remain deferred.
 
 ## Status 2026-11-19, later: a profile of the surface build
 
@@ -183,7 +224,7 @@ at two smoothness values next to its times.
 | --- | --- | --- |
 | A large surface freezes the window | **A, build it on a worker thread.** | The next large item of 1b. `SurfaceJob` leaves the GUI thread; the status line says "building surface"; the surface appears when it is ready. To settle while building: what happens when the atoms change during a job (drop the result and start again), and the headless path, which must still wait. Checks: 1aon and 4v6x in the real window, the suite, the sanitizer job. |
 | Idle OpenMP threads (row 4 above) | **Yes.** | `OMP_WAIT_POLICY=passive` at start, before the core loads, unless the user set the variable or `GOMP_SPINCOUNT`. One line next to the place that picks the GPU on WSL. Numbers again after the change. **Done 2026-11-20 in 4.23.1**, in `pymol/__init__.py` just before the core is imported (the GUI start is too late, and a headless run gains too). 1aon, three surface builds, three interleaved runs each: CPU 99, 101 and 93 s with the old spinning (`GOMP_SPINCOUNT=300000`, what libgomp does when nothing is set), 65, 66 and 68 s with the policy; wall time per build 5.1 to 6.1 s in both. The ray tracer has no OpenMP loop and is not touched; its times drifted from 4 to 16 s in both settings as the laptop heated up during the runs, so they are not reported. Not the same thing: `OMP_WAIT_POLICY=active` spins without end and made the builds 3 to 5 times slower here. |
-| Grid surface (row 3 above) | **Yes, as an experiment.** | A second `surface_type` with the distance grid and the marching cubes of `layer0/marching_cubes.cpp`. Table: build time, triangles, memory and ray time for 1aon and 4v6x against today's surface; pictures side by side. Then the user decides whether it stays, and for which sizes. Written from the description of the method, not from EDTSurf's code. |
+| Grid surface (row 3 above) | **Yes, as an experiment; kept as an option by answer 105 A on 2026-11-25.** | Built in 4.76.0 as `surface_type 7`, with measurements and pictures above. Today's default stays; the menu row and the cavity and solvent settings shipped in 4.81.0, clay and two more looks on it in 4.82.0. Reconsider the default after the worker, order 4. Written from the description of the method, not from EDTSurf's code. |
 
 Order: the one-line change first, the worker thread next, the experiment
 last. With a worker thread the build time matters less; the experiment

@@ -908,6 +908,10 @@ enum {
   REC_f( 798, ball_and_stick_scale                    , atom      , 0.25F ),
   REC_f( 799, ball_and_stick_bond_radius              , atom      , 0.12F ),
   REC_c( 800, ball_and_stick_color                    , atom      , "-1" ),
+  REC_f( 801, ball_and_stick_transparency             , ostate    , 0.0F ),
+  REC_b( 802, viewport_outline                        , global    , true ),
+  REC_f( 803, glow                                    , global    , 0.0F ),
+  REC_b( 804, async_surface                           , global    , true ),
 
 #ifdef SETTINGINFO_IMPLEMENTATION
 #undef SETTINGINFO_IMPLEMENTATION

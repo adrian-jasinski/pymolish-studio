@@ -211,15 +211,7 @@ class AlignmentModel(QtCore.QAbstractTableModel):
             return None
         residue = self.mapping[row][column]
         if role == Qt.ItemDataRole.DisplayRole:
-            letter = record["sequence"][column]
-            if not self.secondary:
-                return letter
-            symbol = (
-                {"H": "∿", "S": "→", "L": "─", "?": "?"}.get(residue[2], "?")
-                if residue
-                else "·"
-            )
-            return symbol + "\n" + letter
+            return record["sequence"][column]
         if role == Qt.ItemDataRole.TextAlignmentRole:
             return Qt.AlignmentFlag.AlignCenter
         if role == Qt.ItemDataRole.ToolTipRole:

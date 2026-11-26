@@ -41,6 +41,8 @@ def _written_by_presets():
         found |= set(re.findall(r"""['"]([a-z][a-z_0-9]+)['"]""", text)) & names
     for look in preset.LOOKS.values():
         found |= set(look)
+    for light, shape, _ in preset.SURFACES.values():
+        found |= set(light) | set(shape)
     return sorted(found - NOT_STYLE)
 
 

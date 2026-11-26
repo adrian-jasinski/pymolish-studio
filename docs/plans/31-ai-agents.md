@@ -1,5 +1,68 @@
 # 31 — Chat that controls this version of pymolish
 
+**Built 2026-11-25 in 4.80.0: the ChatGPT sign-in is part of the provider
+"OpenAI".** The entry "OpenAI" of the Chat tab shows its field for an API
+key and the button "Continue with ChatGPT"; while signed in, the key
+field is hidden, requests go over the plan route and the models of the
+account are listed. The entry "ChatGPT" left the list (question 112: the
+user chose this; recommended was a provider "Codex"). Only
+`chat_panel.py` changed: `signin.py` and the routes of `assistant.py`
+are those of 4.66.0, and "ChatGPT" stays the name of the route, of the
+keychain entry and of the saved model (choices 113 and 114).
+
+Measured, without a window (Qt platform "offscreen"): the smallest width
+of the tab is 565 px for "OpenAI" before a sign-in, as for "Anthropic",
+and 731 px signed in with an e-mail address of 19 characters, as the
+former entry "ChatGPT" had. 20 tests in `api/signin.py`; the suite: 1174
+passed, 250 skipped.
+
+Left out: a real sign-in to ChatGPT (still order 2 of the roadmap) and a
+look at the row in the real window; a provider "Codex" through the
+installed Codex, and one for the Gemini CLI; the API key while signed in
+(today: Sign out). The paragraphs below describe the entry "ChatGPT" as
+it was built.
+
+**Built 2026-11-25 in 4.79.0: the switch "Run without asking".** A check
+box in the Chat tab, off at every start, that holds for the model of the
+tab and for the agents on the connector. While it is on, no reviewed
+command asks "Allow this action?", and with "Trusted Python" ticked
+Python runs without the question too. It replaces "Download without
+asking" of 4.77.0 (choices 109 to 111; the user chose Python in, the
+recommendation was commands only).
+
+Measured: in the real window a `delete` through the connector asked once
+with the box off and not at all with it on, and Python ran without a
+question with both boxes ticked. The suite: 1173 passed, 250 skipped.
+
+Left out: a tick that is kept between runs (choice 111); a list of
+commands that always ask (save over an existing file, for example); a
+mark in the Chat history that a call ran unasked, beyond the line every
+call already writes there.
+
+**Built 2026-11-25 in 4.77.0, 4.77.1 and 4.78.0: the commands the model
+may run.** From a conversation in which every UniProt command was refused.
+
+- 4.77.0: `list_uniprot_structures` (a query, no question),
+  `fetch_by_uniprot`, `fetch_uniprot_ligands` and `fetch_fold` (one
+  question per call). Above ten entries the two UniProt downloads run
+  through `cmd.async_`. The switch "Download without asking" of the Chat
+  tab holds for the connector too (choices 107 and 108).
+- 4.77.1: `safe_eval` ran any Python through an attribute of a value;
+  `set_color`, reviewed and without a question, gave it text of the model.
+- 4.78.0: 286 of 504 commands are reviewed, before 88.
+
+Measured: P00533 has 388 PDB entries; the first 5 took 2.5 s and are
+28,061 atoms; 12 entries in the background of the real window took 4.2 s
+with a longest pause of 0.17 s. The suite: 1172 passed, 250 skipped.
+
+Left out: 218 commands, by kind in the `ChangeLog` of 4.78.0. Not built:
+a result for a background download (the model reads `state` to follow
+it); a limit on the atoms of a download, so all entries of a protein like
+EGFR pass the Undo limit of 600,000 atoms (an estimate) and the chat then
+refuses further changes; reading of the callees below the first call
+level was by scan for `eval`, `exec`, `open`, `getattr` and expressions,
+not line by line.
+
 **Built 2026-11-24 in 4.68.0: the provider "Claude Code", a Claude account
 in the Chat tab (31d).** Read again that day:
 

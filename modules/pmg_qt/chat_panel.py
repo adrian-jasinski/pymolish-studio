@@ -12,7 +12,8 @@ from pymol.Qt import QtCore, QtWidgets
 
 from .icons import menu_icon
 
-SIGN_IN = ("ChatGPT", "OpenRouter")  # a sign-in in the browser, no key field
+# a sign-in in the browser; that of "OpenAI" is the ChatGPT plan, next to its key
+SIGN_IN = ("ChatGPT", "OpenRouter")
 CLAUDE = "Claude Code"  # signs in by itself; nothing of it is kept here
 
 
@@ -41,8 +42,10 @@ class ChatPanel(QtWidgets.QWidget):
         self.history = QtWidgets.QPlainTextEdit()
         self.history.setReadOnly(True)
         self.provider = QtWidgets.QComboBox()
-        self.provider.addItems(list(assistant.ROUTES))
-        self.provider.setCurrentText(self.settings.value("chat/provider", "Anthropic"))
+        self.provider.addItems([p for p in assistant.ROUTES if p != "ChatGPT"])
+        chosen = self.settings.value("chat/provider", "Anthropic")
+        # an entry of its own before 4.80.0
+        self.provider.setCurrentText("OpenAI" if chosen == "ChatGPT" else chosen)
         self.provider.setToolTip("Provider that receives the conversation")
         self.model = QtWidgets.QComboBox(editable=True)
         self.model.lineEdit().setPlaceholderText("model ID")
@@ -82,6 +85,12 @@ class ChatPanel(QtWidgets.QWidget):
         self.trusted.setToolTip(
             "Allow proposed Python after your confirmation; it is not sandboxed"
         )
+        self.unasked = QtWidgets.QCheckBox("Run without asking")
+        self.unasked.setToolTip(
+            "Let the model and connected agents delete, change the structure,"
+            " read and write files, download and, with Trusted Python, run"
+            " Python without a question; off again at the next start"
+        )
         self.prompt = QtWidgets.QLineEdit(
             placeholderText="Ask about or change the session"
         )
@@ -99,6 +108,7 @@ class ChatPanel(QtWidgets.QWidget):
         for widget in (self.login, self.stay):
             access.addWidget(widget)
         access.addWidget(self.account, 1)
+        access.addWidget(self.unasked)
         entry = QtWidgets.QHBoxLayout()
         for widget in (self.prompt, self.send, self.stop, self.undo):
             entry.addWidget(widget)
@@ -111,6 +121,7 @@ class ChatPanel(QtWidgets.QWidget):
 
         self.images.toggled.connect(lambda on: setattr(self.connector, "images", on))
         self.trusted.toggled.connect(lambda on: setattr(self.connector, "trusted", on))
+        self.unasked.toggled.connect(lambda on: setattr(self.connector, "unasked", on))
         self.send.clicked.connect(self.start)
         self.prompt.returnPressed.connect(self.start)
         self.stop.clicked.connect(self.executor.cancel.set)
@@ -145,11 +156,22 @@ class ChatPanel(QtWidgets.QWidget):
         index = self.model.findText(text)
         return self.model.itemData(index) or text if index >= 0 else text
 
-    def _show_access(self):
+    def _plan(self):
+        """The sign-in the chosen provider has: for OpenAI the ChatGPT plan."""
         provider = self.provider.currentText()
+        return "ChatGPT" if provider == "OpenAI" else provider
+
+    def _route(self):
+        """Who gets the conversation: the ChatGPT plan while signed in to it."""
+        plan = self._plan()
+        return plan if plan in self.credentials else self.provider.currentText()
+
+    def _show_access(self):
+        provider = self._plan()
         credential = self.credentials.get(provider)
         self.provider.setEnabled(not self.cancel)
-        self.key.setVisible(provider not in (*SIGN_IN, CLAUDE))
+        # a key only where one is taken, and not next to a sign-in that is used
+        self.key.setVisible(provider not in ("OpenRouter", CLAUDE) and not credential)
         self.stay.setVisible(provider in SIGN_IN)
         self.account.setVisible(provider in (*SIGN_IN, CLAUDE))
         # no sign-out here: it would sign the user's Claude Code out everywhere
@@ -203,24 +225,21 @@ class ChatPanel(QtWidgets.QWidget):
     def _provider_changed(self, provider):
         self._reset()
         self.settings.setValue("chat/provider", provider)
-        self._fill_models(provider)
-        if (
-            provider in SIGN_IN
-            and provider not in self.credentials
-            and self.stay.isChecked()
-        ):
+        self._fill_models(self._route())
+        plan = self._plan()
+        if plan in SIGN_IN and plan not in self.credentials and self.stay.isChecked():
             try:
-                secret = signin.kept(provider)
+                secret = signin.kept(plan)
             except CmdException:
                 secret = ""  # said when the box is ticked, not at every start
             if secret:
-                self._sign_in(provider, secret)
+                self._sign_in(plan, secret)
         if provider == CLAUDE and not self.claude and signin.claude():
             self._sign_in(provider, "status")  # is Claude Code signed in already?
         self._show_access()
 
     def _login_clicked(self):
-        provider = self.provider.currentText()
+        provider = self._plan()
         if self.cancel:
             self.cancel.set()
         elif provider in self.credentials:
@@ -302,8 +321,9 @@ class ChatPanel(QtWidgets.QWidget):
                     )
             if self.stay.isChecked():
                 self._keep(True)
-        if found is not None and provider == self.provider.currentText():
-            self._fill_models(provider)
+        # not after a failed sign-in: a model ID typed for the key would be lost
+        if found and provider == self._plan():
+            self._fill_models(self._route())
         self._show_access()
 
     def _keep(self, stay):
@@ -311,7 +331,7 @@ class ChatPanel(QtWidgets.QWidget):
         self.settings.setValue("chat/stay", stay)
         try:
             if stay and not self.credentials:
-                signin.kept(self.provider.currentText())  # is there a keychain?
+                signin.kept(self._plan())  # is there a keychain?
             for provider in self.credentials if stay else SIGN_IN:
                 credential = self.credentials.get(provider, {})
                 secret = credential.get("refresh_token") or credential.get(
@@ -349,6 +369,7 @@ class ChatPanel(QtWidgets.QWidget):
                     )
 
             threading.Thread(target=run, daemon=True).start()
+        self._fill_models(self._route())  # of the key again, not of the plan
         self._show_access()
 
     def append(self, kind, text):
@@ -373,7 +394,7 @@ class ChatPanel(QtWidgets.QWidget):
         if self.conversation and (
             self.conversation.provider,
             self.conversation.model,
-        ) != (self.provider.currentText(), self._model()):
+        ) != (self._route(), self._model()):
             self.conversation = None
 
     def _undo(self):
@@ -384,7 +405,7 @@ class ChatPanel(QtWidgets.QWidget):
         text = self.prompt.text().strip()
         if not text or self.worker is not None:
             return
-        provider = self.provider.currentText()
+        provider = self._route()
         self._reset()  # a model picked from the list without leaving the field
         try:
             if self.conversation is None:
@@ -403,6 +424,7 @@ class ChatPanel(QtWidgets.QWidget):
             return
         self.executor.images = self.images.isChecked()
         self.executor.trusted = self.trusted.isChecked()
+        self.executor.unasked = self.unasked.isChecked()
         self.executor.begin_turn()
         self.append("you", text)
         self.prompt.clear()

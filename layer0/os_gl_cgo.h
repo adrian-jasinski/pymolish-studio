@@ -19,6 +19,7 @@ enum {
   GL_SURFACE_SHADER                     = 0xffeb,
   GL_LINE_SHADER                        = 0xffec,
 
+  GL_GLOW_SHADER                        = 0xffee,
   CGO_GL_LIGHTING                       = 0xffef,
 
   GL_SCREEN_SHADER                      = 0xfff1,

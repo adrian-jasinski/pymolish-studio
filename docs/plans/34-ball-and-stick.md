@@ -1,5 +1,75 @@
 # 34 — An independent ball-and-stick representation
 
+**34d done 2026-11-26 in 4.84.0; the step is finished again.** As built:
+setting 801, `ball_and_stick_transparency`, at the level of an object and
+its states (answer 124 A), read in `RepCylBond.cpp` where the
+representation forced opacity, also for a ball without bonds; in the scene
+list of `MovieScene.cpp`; the rows are Presets > transparency
+([15n](15-presets.md)). Measured in the real window, 957 x 468 logical
+pixels, 1aon with all 59,192 atoms: 20.9 and 21.9 ms a frame opaque,
+19.1 ms at 50 %; a ligand of 53 atoms 0.6 to 0.7 ms either way. PyMOL
+3.2.0a loads, ray traces and saves a session with the setting and drops
+it. ASan and UBSan clean on `ball_and_stick.py`. Left out: pictures of
+clipping and of multiple bonds of their own (the stick code draws both),
+ray times, memory.
+
+**Planning update 2026-11-26 at 4.82.0: reopened for 34d.** The requested
+Transparency submenu in [15n](15-presets.md) needs core support: this
+representation currently forces opacity. The original 34a–34c remain
+shipped. No renderer or benchmark was run for this update.
+
+## 34d — independent transparency
+
+Do not simulate this by changing `sphere_transparency` and
+`stick_transparency`, which would affect other representations and do not
+currently affect `ball_and_stick` at all. Reuse the existing CGO alpha path
+in `layer2/RepCylBond.cpp`; no new representation or shader framework.
+
+**Question 124, shared with 15n:** A, recommended: a single
+`ball_and_stick_transparency`, default 0, global/object scope, affecting
+both balls and bonds. Selection menu actions resolve containing objects,
+as today's Cartoon transparency does. B: atom/residue scope with half-bond
+transitions and per-atom alpha. B is a separate scope choice, not implied
+by the existing size/color controls. No independent opacity for balls
+versus bonds is requested.
+
+Under A:
+
+- Append the setting in `layer1/SettingInfo.h`; never reuse a positional
+  hole. Use the existing transparency range convention. Add invalidation
+  of `cRepBallAndStick` in `Setting.cpp`, without invalidating spheres or
+  sticks unnecessarily.
+- In `RepCylBond.cpp`, replace the forced `transp = 0.0F` for `balls`
+  with this setting. Trace bonded balls, both bond halves, multiple bonds,
+  zero-order bonds, caps and the isolated-atom path, which currently resets
+  CGO alpha to 1. Mark transparency on all affected paths and check cached
+  shader geometry, ray tracing, picking and clipping. A change must not
+  leave opaque cached geometry behind.
+- Preserve the representation's own visibility, colors, sizes and bond
+  orders. With ordinary spheres and sticks visible at the same time,
+  changing any of the three transparency settings affects only its own
+  representation. Opaque remains the default for existing sessions.
+- Include the new setting in `layer3/MovieScene.cpp`'s visual-state list;
+  verify existing PSE/PSEX serialization and snapshot Undo. Reuse the
+  established setting storage; do not introduce a new file-format layout.
+  Any required output-format change needs a separate decision under
+  `AGENTS.md`, not an assumption made by this plan.
+- Wire the menu/reset behavior through 15n. Keep S > ball and stick's
+  existing size controls and its C/H actions; do not spread duplicate
+  transparency controls across the UI for this task.
+
+Extend `testing/tests/api/ball_and_stick.py` with opaque and partial-alpha
+viewport/ray images, isolated atoms, multiple bonds, simultaneous spheres
+and sticks, setting inheritance/unset, multiple objects, clipping and
+state changes. Extend `scene_style.py`, `snapshots.py`, `preset.py` and
+`menu.py` for round trips, Undo/Redo and every requested percentage. Build
+with C++ tests, run the full suite and sanitizer checks; compare opaque
+frame time before/after and report the cost of transparency on the same
+small ligand and larger object. Timings and native-driver checks are still
+to be done. Ship with 15n as one feature slice if practical.
+
+## Earlier releases and design
+
 [Roadmap](../../PLAN.md) · Request 2026-11-23, drafts 3 and 4 · **Planned
 at 4.43.0 and built the same day, 4.48.0 and 4.49.0: see the note below.**
 The plan itself made no benchmark; its values are requested defaults or

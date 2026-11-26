@@ -146,6 +146,22 @@ public:
 /* ============================================================================
  * CShaderMgr class -- simple ShaderMgr for PyMOL
  * ============================================================================*/
+/**
+ * While one lives, and the viewport draws outlines ("viewport_outline"),
+ * nothing is written into the depth. For labels: the outline is found in
+ * the depth (fxaa.fs), and every label would get a frame.
+ * @param draws false for ray tracing and picking: nothing to do
+ */
+struct NoDepthForOutline {
+  GLboolean m_restore = GL_FALSE;
+  NoDepthForOutline(PyMOLGlobals* G, bool draws);
+  ~NoDepthForOutline()
+  {
+    if (m_restore)
+      glDepthMask(GL_TRUE);
+  }
+};
+
 class CShaderMgr {
 public:
   CShaderMgr(PyMOLGlobals * G);
@@ -187,6 +203,7 @@ public:
   void freeGPUBuffers(size_t * arr, size_t len);
 
   CShaderPrg *Enable_FXAAShader();
+  CShaderPrg *Enable_GlowShader();
 #ifndef _PYMOL_NO_AA_SHADERS
   bool Reload_SMAA_Shaders();
   int SMAAShadersPresent();
@@ -349,6 +366,31 @@ public:
   std::unique_ptr<PostProcess> smaa_pp;
 #endif
   std::unique_ptr<PostProcess> oit_pp;
+
+  // "viewport_outline": the depth of the picture as two textures, [0]
+  // before what is see-through was drawn and [1] finished. The picture's
+  // own depth is a renderbuffer, which no shader can read and which the
+  // pass for transparency_mode 3 shares.
+  GLuint outline_depth_tex[2] {};
+  GLuint outline_depth_fbo[2] {};
+  glm::ivec2 outline_depth_size { 0, 0 };
+  bool outline_opaque_copied { false };
+  /// @param finished false: before the transparent pass, and only while the
+  /// picture is being drawn offscreen; true: before it goes to the screen
+  void copyOffscreenDepth(bool finished);
+  /// ray_trace_mode (1 to 3) while the viewport draws its outline, else 0
+  int outlineMode() const;
+  /// "glow" while a halo can be drawn, else 0
+  float glow() const;
+  /// the outline or the halo is drawn: the copies of the depth are needed
+  bool readsDepth() const { return outlineMode() || glow() > 0.f; }
+
+  // "glow" (15p, an experiment): the halo is blurred in two pictures a
+  // quarter of the size, from one into the other; [0] has the result
+  std::size_t glow_rt[2] {};
+  int glow_stage { 0 };
+  /// Binds the picture that stage 0, 1 or 2 of glow.fs is drawn into
+  void bindGlow(int stage);
 
   void bindOffscreen(int width, int height, GridInfo * grid);
   void bindOffscreenOIT(int width, int height, int drawbuf = 0);

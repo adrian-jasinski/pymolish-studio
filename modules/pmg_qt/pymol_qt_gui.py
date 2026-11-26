@@ -436,8 +436,8 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.action_toolbar)
         self.action_toolbar.setVisible(bool(options.external_gui))
 
-        # toggle bar under the object list: an icon each, and a text where
-        # it says more than the drawing (the mouse mode is a state)
+        # toggle bar under the object list: an icon and a short text each;
+        # the whole name is the tooltip and the name for a screen reader
         mouse = QtWidgets.QToolButton()
         mouse.setMenu(self.menudict['Mouse'])
 
@@ -445,6 +445,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
             # "3-Button Viewing": the button says "Viewing", the tooltip all
             mouse.setText(name.split(' ', 1)[-1])
             mouse.setToolTip('Mouse mode: ' + name)
+            mouse.setAccessibleName('Mouse mode: ' + name)
 
         self.setting_callbacks[cmd.setting._get_index('button_mode_name')].append(
             show_mouse_mode)
@@ -454,6 +455,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         seq = QtWidgets.QToolButton()
         seq.setText('SEQ')
         seq.setToolTip('Sequence tab')
+        seq.setAccessibleName('Sequence tab')
         seq.clicked.connect(self.open_sequence)
         seq.setMenu(QtWidgets.QMenu(seq))
         seq.menu().addAction(
@@ -461,7 +463,8 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         seq.menu().addAction('Sequence alignment…', self.sequence_panel.open)
         # blue while the agent connector listens: show_agent_server
         self.ai_button = ai = QtWidgets.QToolButton()
-        ai.setText('AI assistant')
+        ai.setText('Chat')
+        ai.setAccessibleName('AI assistant')
         ai.setCheckable(True)
         ai.setMenu(self.ai_menu())
         wizard = QtWidgets.QToolButton()
@@ -469,8 +472,9 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         wizard.setToolTip("Wizard")
         wizard.setMenu(self.menudict["Wizard"])
         command = QtWidgets.QToolButton()
-        command.setText('Command line')
+        command.setText('Cmd')
         command.setToolTip('Command line and log')
+        command.setAccessibleName('Command line and log')
         command.setCheckable(True)
         command.setChecked(bool(options.external_gui))
         command.clicked.connect(lambda on: self.ext_window.setVisible(on))
@@ -481,21 +485,12 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
             # the SEQ button itself opens the tab
             button.setPopupMode(
                 Popup.MenuButtonPopup if button is seq else Popup.InstantPopup)
-            button.setToolButtonStyle(
-                Style.ToolButtonIconOnly if button in (ai, wizard, command)
-                else Style.ToolButtonTextBesideIcon)
+            button.setToolButtonStyle(Style.ToolButtonTextBesideIcon)
             self.object_panel.footer.addWidget(button)
-        # each button as wide as its content; the spare width stays empty
-        self.object_panel.footer.addStretch(1)
         self._footer_icons = (
             (mouse, 'mouse mode'), (seq, 'seq'), (ai, 'ai assistant'),
             (wizard, 'wizard'), (command, 'command line'))
         self._set_footer_icons()
-        # never wider than its content; in a panel too narrow for the row Qt
-        # shortens the name, down to the width of SEQ
-        mouse.setSizePolicy(QtWidgets.QSizePolicy.Policy.Maximum,
-                            QtWidgets.QSizePolicy.Policy.Fixed)
-        mouse.setMinimumWidth(seq.sizeHint().width())
 
         # extra key mappings (MacPyMOL compatible)
         QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+O'), self).activated.connect(self.file_open)
@@ -1125,11 +1120,13 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.scene_panel.list.setFocus()
 
     def _set_footer_icons(self):
+        from .object_panel import Footer
         color = self.palette().buttonText().color()
         accent = self.palette().link().color()  # while on, as in the toolbar
         # getattr: a palette change can come before the row is built
         for target, label in getattr(self, '_footer_icons', ()):
-            target.setIcon(menu_icon(label, color, accent=accent))
+            target.setIcon(menu_icon(
+                label, color, size=Footer.ICON, accent=accent))
 
     def changeEvent(self, event):
         if event.type() == QtCore.QEvent.Type.PaletteChange:

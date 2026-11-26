@@ -641,6 +641,105 @@ def test_footer_icons():
     assert seq.icon().pixmap(16, 16, Mode.Normal, State.On).toImage() != off
 
 
+def test_footer_rows():
+    """32c: the buttons under the object list have an icon of 20 px beside
+    a short text and are 32 px high. One row while it fits; in a narrower
+    panel the buttons after the second are a second row. Nothing is cut
+    off or overlaps, and the panel may be as narrow as the wider row."""
+    from pymol.Qt import QtCore, QtWidgets
+    from pmg_qt.object_panel import Footer
+
+    # inside a host, as in the panel: a window of its own could not be
+    # made narrower than one row. Laid out without a window on the screen.
+    host = QtWidgets.QWidget()
+    host.setAttribute(QtCore.Qt.WidgetAttribute.WA_DontShowOnScreen)
+    host.resize(900, 100)
+    footer = Footer()
+    footer.setParent(host)
+    buttons = []
+    for text in ("Viewing", "SEQ", "Chat", "Wizard", "Cmd"):
+        button = QtWidgets.QToolButton()
+        button.setText(text)
+        button.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        footer.addWidget(button)
+        buttons.append(button)
+    assert all(b.iconSize() == QtCore.QSize(20, 20) for b in buttons)
+    one_row = footer._width(buttons)
+    host.show()
+
+    def laid_out(width):
+        footer.resize(width, 80)
+        for _ in range(3):
+            QtWidgets.QApplication.processEvents()
+        boxes = [b.geometry() for b in buttons]
+        assert all(b.width() >= b.sizeHint().width() for b in buttons)  # not cut
+        assert all(box.right() < width and box.height() >= 32 for box in boxes)
+        assert not any(a.intersects(b) for i, a in enumerate(boxes) for b in boxes[i + 1:])
+        return [sorted({box.y() for box in boxes}).index(box.y()) for box in boxes]
+
+    try:
+        assert laid_out(one_row + 40) == [0, 0, 0, 0, 0]
+        assert laid_out(one_row) == [0, 0, 0, 0, 0]  # it just fits
+        assert laid_out(one_row - 1) == [0, 0, 1, 1, 1]
+        two_rows = footer.minimumSizeHint().width()
+        assert two_rows == max(footer._width(buttons[:2]), footer._width(buttons[2:]))
+        assert two_rows < one_row
+        assert laid_out(two_rows) == [0, 0, 1, 1, 1]  # the narrowest panel
+        assert laid_out(one_row + 40) == [0, 0, 0, 0, 0]  # and back
+        # a longer name of the mouse mode: the row no longer fits
+        footer.resize(one_row, 80)
+        buttons[0].setText("Lights Manip.")
+        assert laid_out(one_row) == [0, 0, 1, 1, 1]
+        # the keyboard walks the buttons in their order in both layouts
+        chain = [buttons[0]]
+        while len(chain) < 5:
+            chain.append(chain[-1].nextInFocusChain())
+        assert chain == buttons
+    finally:
+        host.close()
+
+
+@testing.requires("gui")
+def test_footer_in_the_window():
+    """32c, in the real window: the five buttons with their short texts,
+    their whole names for a screen reader, and their actions."""
+    import pymol
+    from pymol.Qt import QtCore, QtWidgets
+
+    window = pymol.gui.get_qtwindow()
+    footer = window.object_panel.footer
+    buttons = [target for target, _ in window._footer_icons]
+    assert buttons == footer.buttons
+    assert [b.text() for b in buttons][1:] == ["SEQ", "Chat", "Wizard", "Cmd"]
+    assert [b.accessibleName() or b.text() for b in buttons][1:] == [
+        "Sequence tab", "AI assistant", "Wizard", "Command line and log"]
+    assert buttons[0].accessibleName().startswith("Mouse mode: ")
+    Style = QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon
+    assert all(b.toolButtonStyle() == Style and not b.icon().isNull() for b in buttons)
+    assert all(b.iconSize().width() == 20 and b.height() >= 32 for b in buttons)
+    # what a click does is what it did: menus, the tab, the switch
+    mouse, seq, chat, wizard, command = buttons
+    assert mouse.menu() is window.menudict["Mouse"]
+    assert wizard.menu() is window.menudict["Wizard"]
+    assert [a.text() for a in chat.menu().actions() if a.text()][0] == "Chat"
+    assert "Show in viewport" in [a.text() for a in seq.menu().actions()]
+    seq.click()
+    assert window.command_tabs.currentWidget() is window.sequence_page
+    shown = window.ext_window.isVisible()
+    command.click()
+    QtWidgets.QApplication.processEvents()
+    assert window.ext_window.isVisible() != shown and command.isChecked() != shown
+    command.click()
+    # two rows in a narrow panel, one in a wide one, never a wider panel
+    for width, rows in ((240, 2), (footer._width(buttons) + 30, 1)):
+        window.resizeDocks([window.object_panel], [width], QtCore.Qt.Orientation.Horizontal)
+        for _ in range(5):
+            QtWidgets.QApplication.processEvents()
+        assert len({b.y() for b in buttons}) == rows, width
+        assert max(b.x() + b.width() for b in buttons) <= footer.width()
+        assert abs(window.object_panel.width() - width) <= 2
+
+
 @testing.requires("gui")
 def test_mouse_mode_button_is_as_wide_as_its_content():
     """37e, in the real window: the short name of the mode, the whole one in

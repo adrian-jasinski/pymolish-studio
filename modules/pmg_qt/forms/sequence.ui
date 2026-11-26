@@ -30,7 +30,7 @@
     <item><widget class="QPushButton" name="assignSS"><property name="text"><string>Assign SS</string></property><property name="toolTip"><string>Reassign secondary structure with dss for selected structure rows</string></property></widget></item>
     <item><widget class="QCheckBox" name="onlySelected"><property name="text"><string>Selected rows only</string></property></widget></item>
    </layout></item>
-   <item><widget class="QLabel" name="legend"><property name="text"><string>∿ Helix   → Sheet   ─ Coil   ? Unassigned   · No coordinates. Bottom track: helices (cylinders) and strands (arrows) most rows share. Select cells to select residues in 3D; Ctrl adds.</string></property></widget></item>
+   <item><widget class="QLabel" name="legend"><property name="text"><string>Bottom track: helices (cylinders) and strands (arrows) most rows share; hover a residue for its own. Select cells to select residues in 3D; Ctrl adds.</string></property></widget></item>
    <item><widget class="QTableView" name="view"><property name="selectionMode"><enum>QAbstractItemView::ExtendedSelection</enum></property><property name="editTriggers"><set>QAbstractItemView::NoEditTriggers</set></property></widget></item>
    <item><widget class="QPlainTextEdit" name="results"><property name="readOnly"><bool>true</bool></property><property name="maximumHeight"><number>110</number></property><property name="accessibleName"><string>Alignment results</string></property></widget></item>
    <item><widget class="QLabel" name="status"><property name="text"><string>Add structure chains or import FASTA. Align sequences does not move structures.</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>

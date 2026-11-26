@@ -1,5 +1,224 @@
 # 15 — Presets and looks
 
+**Built 2026-11-26, 4.83.0 to 4.88.0: 15m, 15n, 15o, 15b and 15p.** The
+section "Request 2026-11-26" below is the plan as it was written that
+morning; questions 123 to 125 were answered with their recommended options.
+
+| Slice | Version | Built | Measured, and what was left out |
+| --- | --- | --- | --- |
+| 15m | 4.83.0 | `space_filling`, `illustrated_atoms` (spheres in the light "flat"), `licorice`, `bond_shell` (lines inside a surface at transparency 0.5); the row "contour cartoon"; "glossy (light only)" in the light menu. | Sheet: [reference-recipes.jpg](../img/reference-recipes.jpg), ray traced and from the viewport, 1oky, 1aon, 1bna. Chosen from trial pictures: flat (comic too heavy, figure too dark), 0.5 (at 0.25 the lines do not show). No frame or ray times recorded. |
+| 15n (with [34d](34-ball-and-stick.md)) | 4.84.0 | Presets > transparency: cartoon, spheres, surface, ball and stick; opaque, 25, 50, 75 %; whole objects. | A row clears the value on the atoms of the object and sets it on the object; a preset now unsets all four on its objects. |
+| 15o | 4.85.0 | The groups cartoon, atoms and bonds, surface, binding; transparency, solvent; "Scene appearance" with light, theme (colors and background) and floor. | 69 leaves, one Undo snapshot each. Arrow keys tried in the toolbar menu, three levels. Labels stay in small letters. |
+| 15b | 4.87.0 | The outline in the viewport: `fxaa.fs` draws a line where the picture lies behind its neighbors, from two copies of the depth; follows `ray_trace_mode`, switch `viewport_outline`. | [viewport-outline.jpg](../img/viewport-outline.jpg). At 1436 x 702 on the integrated GPU (Mesa d3d12): 1oky spheres 2.8 to 5.7 ms a frame, 1aon spheres 5.2 to 8.2 ms, 1aon cartoon 11.1 to 13.1 ms. Not in stereo or in images of another size; grid mode: the line inside a see-through surface only in the last cell; no other driver tried. |
+| 15p | 4.88.0 | `set glow, 1`: a halo around what is drawn (`glow.fs`, composed in `fxaa.fs`). A setting only. | [glow-experiment.jpg](../img/glow-experiment.jpg), with the bright-edge baseline (spring under "x-ray"). 4hhb spheres 4.2 to 6.7 ms a frame, 1aon spheres 6.0 to 8.5 ms, 1aon cartoon 4.6 to 9.1 ms. Memory computed, not measured: 8.1 MB for the picture offscreen, 8.1 MB for two copies of its depth, 1.0 MB for the halo. No halo in ray-traced pictures, in images of another size, in stereo. The background is no source of the glow (the mask is the depth); labels are no source but are covered by it. **What to ship is question 128 in [PLAN.md](../../PLAN.md).** |
+
+Not as planned: the labels were not capitalized; "illustrated atoms" got no
+recipe values of its own (it is space filling plus an existing light); the
+outline is no pass of its own but a step of the FXAA pass; frame times were
+taken on one driver.
+
+**Planning update 2026-11-26, checked against 4.82.0 (`902f8b75`).**
+The request adds 15m–15p below; 15b stays open. All 24 PNG/JPG references
+in the local, git-ignored `plan_images/` directory were inspected. No new
+render, timing, GUI measurement or implementation was made. Recipe values
+below are trial targets, not measured results. Older sections describe the
+releases of their dates; this section governs the new work. Footer sizing
+is [32c](32-footer-icons-movie-button.md); independent ball-and-stick
+transparency is [34d](34-ball-and-stick.md).
+
+## Request 2026-11-26 — representations first, then menu organization
+
+Use the images as visual directions, grouped by appearance, not one preset
+per image. Watermarks, captions, backgrounds, photographic blur and invented
+molecular arrangements are not part of the recipes. Keep the source images
+unchanged and local; make our own molecular renders for comparisons and
+shipped previews. `motm` identifies the user's PDB Molecule of the Month
+references, not a requirement to reproduce their composition or colors.
+Use descriptive names, never “Proteinbase”, for the cartoon examples.
+
+### 15m — reference families and candidate recipes
+
+| Family and local references | Proposed entry / composition | Existing implementation and limit |
+| --- | --- | --- |
+| Space-filling atoms: `spheres1.png`, `spheres4.jpg`, `spheres6.png` | **Space filling**, new molecular preset. Soft or Glossy lighting provides matte or polished variants. | Native `spheres`, existing atom radii and sphere sizes. Preserve colors and user size overrides; no invented particles. Soft's surface ambient occlusion does not establish ambient occlusion on spheres. Deep contact shading and photographic blur are comparison limits. |
+| Illustrated atoms: `motm_5yh2.jpg`, `motm_7dtw_7dtx_3qrf.png`, `motm_x.jpg`, `motm_3JRS.png` | **Illustrated atoms**, new preset: space-filling atoms with illustrated lighting and contours. The transparent example uses the same recipe plus Spheres transparency. | Compare `comic` and `figure`, choose one restrained recipe. Ray outlines exist; viewport outlines depend on 15b. Keep chain colors. No separate preset per complex, palette or opacity. |
+| Outlined cartoon in a faint envelope: `proteinbase1.png`, `proteinbase2.png` | **Contour cartoon**, proposed display name for today's **illustration**. | Reuse `preset.illustration`: cartoon, faint surface, Flat light and `ray_trace_trans_cutoff`. Compare its current transparency before changing a value. Keep the callable `illustration` name. Refinement/relabel, not a duplicate; viewport contour follows 15b. |
+| Soft solid shape: `surface.png`, `temp1.jpg`, `spheres3.jpg` | Existing **Clay**; surface on one object plus cartoon/tube on another for the mixed view in `temp1.jpg`. | Existing grid surface, rounded probe and surface ambient occlusion. `spheres3.jpg` reads as a fused envelope despite its filename. No new Gaussian object or shader. |
+| Glossy / translucent material: `amber1.png`, `amber2.png`, `amber3.png`, `amber_sphere.png`, also `spheres6.png` | Existing **Glossy**, **Candy glass**, **Frosted**, **Balls in glass**; Space filling or Ball and stick plus Glossy light and transparency. | Expose the already callable `look('glossy')` as a light-only menu action, so polishing atoms does not invoke a surface preset. Amber is a color choice. Approximate highlights/transparency, not refraction, reflected environments, lipid construction or depth of field. |
+| Smooth bonds: `new_licorice.png` | **Licorice**, new preset entry using the existing representation. | `licorice` is already sticks plus nonbonded spheres in `constants.py`. Reuse native geometry/sizes; keep actual bonds and atom colors. No renderer, rainbow recoloring or blur. |
+| Bonds inside an envelope: `spheres2.jpg` | **Bond shell**, candidate new preset: translucent molecular surface over a thin bond network. | Reuse surface plus lines; compare against Balls in glass. Trial transparency in the existing 25/50/75% range. Show only real bonds, not a decorative network painted onto a surface. If too similar to Balls in glass, show that comparison for a decision rather than silently dropping it. |
+| Contoured surface / interior: `surface_neo.jpg` | Existing surface plus **Figure** or **Comic** and Surface transparency. | No new preset for colors or pose. A cavity/cutaway uses existing surface/clipping controls explicitly; the image does not establish an electrostatic potential or real cut plane. |
+| Bright tubes / wire: `neon1.png`, `neon2.png` | Existing **Spring** or **Wire**, trial with X-ray or strong existing highlights. | Bright edges are possible, emission is not. Do not force a black background. Compare this baseline with 15p. |
+| Glow around atoms: `glow1.png`, `glow2.jpg`, `glow3.jpg` | Space filling plus a possible **Glow** effect, shared with neon. | A halo outside the silhouette needs image processing; lighting alone cannot provide it. 15p owns the experiment. No recoloring or extra atom geometry. |
+
+**Question 123 (open):** A, recommended: four new entries, Space filling,
+Illustrated atoms, Licorice and Bond shell; relabel Illustration as Contour
+cartoon; reuse existing surface/light families for the rest. B: start with
+Space filling and Illustrated atoms only, leaving the other two as manual
+compositions. B reduces scope and needs the user's choice. For the renamed
+entry, **Contour cartoon** is recommended; **Outlined cartoon** is another
+descriptive option. Python entry points remain compatible.
+
+Start with trial scripts using current commands. Compare each family on the
+same structure, camera and colors, on light and dark backgrounds set by the
+comparison script. Include a ligand, a multichain protein and nucleic acid
+(the existing 1oky, 1aon and 1bna fixtures cover much of this). Record actual
+viewport/ray pictures and build, frame and ray times where recipes add work.
+References are resemblance targets, not pixel-exact acceptance images. Do
+not add C++ rendering to compensate for a lighting, camera or color choice.
+
+Implement selected recipes as small functions in `preset.py`, through
+`from_menu` and `_prepare`. Preserve camera, molecular data and atom colors.
+New protein presets retain established ligand/ion and solvent handling;
+whole-molecule Space filling and Licorice explicitly show the same geometry
+on ligands too, as today's Ball and stick does. Use current sphere/stick
+sizes: ordinary presets preserve those user settings since 4.49.0. Do not
+unconditionally reset them in `_prepare`; any new size override needs an
+explicit reset/ownership decision first.
+
+Lights are scene-wide even from object menus. For an automatically selected
+illustration light, reuse `_lit_by_preset`: the next representation preset
+clears it, while a manually selected light survives. Check the style list
+in `layer3/MovieScene.cpp` for each new setting; scenes, PSE/PSEX and preset
+Undo must retain it. No new style framework.
+
+### 15n — one Transparency menu
+
+Replace the top-level Cartoon transparency row with:
+
+```text
+Transparency
+  Cartoon        > Opaque (0%) / 25% / 50% / 75%
+  Spheres        > Opaque (0%) / 25% / 50% / 75%
+  Surface        > Opaque (0%) / 25% / 50% / 75%
+  Ball and stick > Opaque (0%) / 25% / 50% / 75%
+```
+
+These are the existing cartoon values; percentages mean transparency, not
+opacity. A row changes appearance only: no showing a hidden representation,
+light selection, recoloring, camera move or background change. No slider or
+“all representations” row is needed for this request.
+
+| Representation | Setting | Work |
+| --- | --- | --- |
+| Cartoon | `cartoon_transparency` | Reuse the object loop; preserve `preset.cartoon_transparency` as a callable. |
+| Spheres | `sphere_transparency` | Existing core support; menu/helper and reset coverage. |
+| Surface | `transparency` | Existing core support; test overrides from Glass and the surface recipes. |
+| Ball and stick | Proposed `ball_and_stick_transparency` | **34d required.** `RepCylBond.cpp` forces zero transparency for this representation, including isolated balls. Sphere/stick transparency cannot implement this row. |
+
+**Scope, question 124:** A, recommended: match today's cartoon control,
+one value on each whole molecular object from `get_object_list(selection)`;
+toolbar uses `enabled`, object menus their object. Selection menus must
+state that these controls affect containing objects. B: atom/residue scope,
+including a defined half-bond transition; more core work and a deliberate
+change from cartoon's behavior. One ball-and-stick value covers both balls
+and bonds independently of ordinary spheres/sticks. Do not expose an inert
+row before 34d passes.
+
+Under A, make the chosen value effective throughout each target object,
+including lower-level overrides of that representation's transparency;
+never clear another representation's settings or global user defaults.
+Use an object loop for multi-object selections. The next molecular preset
+resets these menu overrides on its target objects to inherited defaults,
+following cartoon's lifetime; Light and solvent actions leave them alone.
+Document this extension of reset behavior. Test nonzero global defaults,
+existing atom overrides, multiple objects and disabled/unrelated objects.
+
+### 15o — organize Presets after choosing recipes
+
+Recommended hierarchy (question 125 A); all current actions remain:
+
+```text
+Presets
+  Default
+  Classified
+  Cartoon > Pretty / Publication / Technical / B factor putty /
+            Wire / Spring / Cylinders / Contour cartoon
+  Atoms and bonds > Space filling / Illustrated atoms / Ball and stick /
+                    Licorice
+  Surface > Glossy / Candy glass / Frosted / Clay / Glass /
+            Balls in glass / Bond shell
+  Binding > Ligands / Ligand sites > [all current variants] /
+            Protein interface / Protein-protein interaction /
+            Antibody and antigen
+  Transparency > [the four representations above]
+  Show solvent / Hide solvent
+  ── Scene appearance ──
+  Light > [all current lights, Glossy (light only), Fog / No fog]
+  Theme (colors and background) > [existing themes]
+  Floor > [existing floor actions]
+```
+
+The last three remain direct submenus under a caption, not another nested
+menu. Question 125 B: group only Cartoon and Transparency now, keeping the
+other sections flat. A is recommended to accommodate the new families.
+Grouping removes or renames no callable API.
+
+**Background rule:** all new representation, light and transparency actions
+leave solid/gradient/image backgrounds and export alpha unchanged. Existing
+`preset.theme` deliberately sets colors and background (earlier answer 32).
+Keep that separate feature with an explicit menu label; never invoke it
+inside a new recipe. Ignoring example backgrounds does not require deleting
+themes, floor or their APIs. Do not recreate amber/neon backgrounds.
+
+Toolbar Presets and the existing viewport object/selection and sequence
+popups share `menu.presets`; the current object A menu has no preset row.
+Keep these entry points, without adding another. Recursive `_undoable` must
+wrap each leaf exactly once, including deeper ligand-site and alpha rows.
+Update tests matching flat labels or `theme > ...` without weakening their
+assertions. Existing light/floor actions remain scene-wide. Use native Qt
+keyboard navigation and accessible names.
+
+### 15p — measured neon/glow experiment
+
+**Question 122 answered 2026-11-26: existing rendering recipes first, then
+a measured experiment for true glow.** The settings-only alternative was
+not selected. This expands the historical “glow and blur left out” note
+for glow alone; photographic blur/depth of field remain outside this task.
+
+After recipe comparisons and 15b, test one optional halo effect through the
+existing offscreen/FXAA path in `Scene.cpp`, `ShaderMgr` and `data/shaders/`.
+Compare a source-colored silhouette glow with highlight bloom on atoms and
+cartoon tubes, choosing the smallest convincing method. A molecular coverage
+or emission mask must exclude background, labels and overlays: blurring
+bright final-image pixels would make a white background glow. No compute
+framework, new dependency or duplicate molecular objects; keep the existing
+GLSL and platform constraints.
+
+Record before/after frame time and GPU memory at the same viewport size,
+on small and large structures with alpha and overlapping objects. Compare
+FXAA on/off, transparent PNG, high-resolution Draw and Ray. Check Linux/WSLg,
+Windows and macOS before promising parity. Ray output does not inherit a
+viewport pass: shared image postprocessing versus an explicitly limited
+first release is a choice to present with pictures and costs. No release
+promise until the experiment establishes scope. If shipped, the effect is
+off by default, survives scene/session/Undo, and preset switching clears
+only effects selected by the preset. Background state stays unchanged;
+an intentional halo may cover pixels around the molecule.
+
+### Delivery and acceptance
+
+| Slice | Deliverable | Required check |
+| --- | --- | --- |
+| 15m | Compare families, settle question 123, add selected recipes and the descriptive illustration label. | `testing/tests/api/preset.py`: visibility, colors, camera, background, disabled objects; A → B → Default; manual light survives. Viewport/ray comparisons with the current outline limitation stated. |
+| 34d + 15n | Independent ball-and-stick alpha, then the common submenu; may ship as one feature slice. | `ball_and_stick.py`, `preset.py`, `menu.py`, `scene_style.py`, `snapshots.py`: all choices, independence, reset, isolated atoms, scene/session, Undo/Redo and viewport/ray images. |
+| 15o | Group menus without losing actions. | `menu.py`, `action_toolbar.py`: each old/new action reachable and runnable, correct scope and one snapshot per leaf; keyboard walk in both entry points. |
+| 15b | Approved viewport outline, also tested on illustrated spheres and transparent cartoon envelopes. | Pictures and frame times on black/white, including transparency; compare ray output. |
+| 15p | Glow experiment and a decision from its pictures/costs. | Reproducible script and measurements before shipping a rendering option. |
+
+For implementation, run targeted files with the existing test runner, then
+the full suite. Core changes need a build, sanitizer checks and native-driver
+validation. This planning update needs documentation consistency checks only;
+it takes no version. Each shipped feature slice follows the version and
+ChangeLog rules.
+
+Skipped: a gallery/editor, palettes per image, copied artwork or watermark
+removal, synthetic molecular arrangements, physical material/refraction
+frameworks, and background changes hidden inside recipes. Glow remains a
+planned experiment, not a skipped request.
+
+## Earlier releases and decisions
+
 **Built 2026-11-24 in 4.62.0: 15e.** Presets `balls_in_glass` ("balls in
 glass": `ball_and_stick` in the atoms' colors inside a surface at
 `ray_transparency_oblique_power` 20) and `cylinders` ("cartoon cylinders":
@@ -15,7 +234,8 @@ there: `ray_trace_mode` 3 switches `ray_trace_mode_3` on in
 `anaglyph_header.fs` (45 colors counted in the viewport under "comic", 8436
 under the standard light), so the table row "One new setting and a few
 lines" below was wrong. Also left out: ambient occlusion in other looks,
-glow and blur. 15b is the only open slice.
+glow and blur. At that date 15b was the only open slice; the request above
+adds the new work.
 
 **Plan revision 2026-11-23, drafts 3, 4 and 6, at 4.43.0 (not built):**
 [34c](34-ball-and-stick.md) replaces the shared sticks/spheres ligand
@@ -28,7 +248,7 @@ still applies. Scene storage precedes the preset switch.
 
 [Roadmap](../../PLAN.md) · Request 2026-11-16 · **15a done 2026-11-16 in
 4.14.0, 15d in 4.14.3, 15f in 4.14.4.** 15b and 15e were approved on
-2026-11-20 and remain open; 15c shipped in 4.22.0. **15g and 15h done 2026-11-18 in 4.14.5, 15i (visible objects, two
+2026-11-20; 15b stays open, 15e shipped in 4.62.0 and 15c in 4.22.0. **15g and 15h done 2026-11-18 in 4.14.5, 15i (visible objects, two
 presets for complexes) in 4.19.1, 15j (the light after "illustration") in
 4.19.2, 15k (publication green) in 4.19.3, 15l (cartoon spring, colors kept,
 two-color interaction surface) in 4.19.29** (the last sections before "Skipped"). They change three decisions below: the looks are part of the

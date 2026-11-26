@@ -66,12 +66,13 @@ def testKeepsCartoonAndSurfaceColors(request):
 
     ran = surfaces = 0
     for label, command in _menuRows(menu.presets(cmd, 'all')):
-        if label.startswith('theme > '):
+        if label.startswith('theme (colors and background) > '):
             continue
         before = surface()
         cmd.do(command, echo=0)
         assert _colors('guide | (dna & polymer)') == {yellow}, label
-        if label in ('protein-protein interaction', 'antibody and antigen'):
+        if label in ('binding > protein-protein interaction',
+                     'binding > antibody and antigen'):
             assert surface() == {yellow, orange}, label  # not the whole surface
         elif 'from_menu' in command:  # a preset: it draws everything anew
             assert surface() <= {yellow}, label
@@ -175,10 +176,61 @@ def testEnabledOnly(request):
     for label, command in _menuRows(menu.presets(cmd, 'enabled')):
         cmd.do(command, echo=0)
         assert reps('hidden') == before, label
-    rows = dict((r[1], r[2]) for r in menu.cartoon_transparency(cmd, 'enabled'))
-    cmd.do(rows['50%'], echo=0)
-    assert cmd.get_setting_float('cartoon_transparency', 'shown') == 0.5
-    assert cmd.get_setting_float('cartoon_transparency', 'hidden') == 0
+    rows = dict(_menuRows(menu.transparency(cmd, 'enabled')))
+    for rep, name in preset.TRANSPARENCY.items():
+        cmd.do(rows[rep + ' > 50%'], echo=0)
+        assert cmd.get_setting_float(name, 'shown') == 0.5, rep
+        assert cmd.get_setting_float(name, 'hidden') == 0, rep
+
+
+def testTransparencyMenu(request):
+    """15n: Presets > transparency sets one representation of whole
+    objects. The four are independent, a value set on atoms by a preset
+    gives way, the value of the scene stays, and the next preset takes
+    the rows back."""
+    from pymol import menu
+    request.addfinalizer(cmd.reinitialize)
+    cmd.load(testing.datafile('1oky.pdb.gz'), 'm')
+    cmd.fab('ACDEFG', 'other')
+    cmd.set('sphere_transparency', 0.1)  # the user's, of the whole scene
+    names = preset.TRANSPARENCY
+    assert list(names) == ['cartoon', 'spheres', 'surface', 'ball and stick']
+    rows = dict(_menuRows(menu.presets(cmd, 'm & resi 100')))  # a selection
+    preset.glass('m')  # transparency 0.6 on the atoms
+    reps = cmd.count_atoms('m & rep cartoon'), cmd.count_atoms('m & rep surface')
+    colors = _colors('all')
+
+    def seen(name, selection='m'):  # what is drawn: the atoms', else above
+        stored.seen = set()
+        cmd.iterate(selection, 'stored.seen.add(round(s.%s, 2))' % name)
+        return stored.seen
+
+    for rep, name in names.items():
+        for label, value in (('25%', 0.25), ('75%', 0.75), ('opaque (0%)', 0), ('50%', 0.5)):
+            others = {n: (seen(n), seen(n, 'other')) for n in names.values() if n != name}
+            cmd.do(rows['transparency > %s > %s' % (rep, label)], echo=0)
+            if rep == 'ball and stick':  # no atom level: the object's
+                assert cmd.get_setting_float(name, 'm') == value, label
+            else:
+                assert seen(name) == {value}, (rep, label)  # the whole object
+            assert seen(name, 'other') != {value} or not value, (rep, label)
+            # the other three, and the other object, keep theirs
+            assert others == {n: (seen(n), seen(n, 'other')) for n in others}, (rep, label)
+    assert seen('sphere_transparency', 'other') == {0.1}
+    assert cmd.get_setting_float('sphere_transparency') == pytest.approx(0.1)
+    # nothing shown, hidden or colored
+    assert reps == (cmd.count_atoms('m & rep cartoon'), cmd.count_atoms('m & rep surface'))
+    assert cmd.count_atoms('rep spheres') == 0 and _colors('all') == colors
+
+    # two objects at once; the next preset takes the rows back on its own
+    preset.transparency('spheres', 0.25, 'all')
+    assert seen('sphere_transparency', 'other') == {0.25}
+    preset.pretty('m')
+    for name in names.values():
+        assert name not in {s[0] for s in cmd.get_object_settings('m') or ()}, name
+    assert seen('sphere_transparency') == {0.1}  # the scene's again
+    assert seen('sphere_transparency', 'other') == {0.25}
+    assert seen('transparency') == {0}
 
 
 def testTechnical():
@@ -314,6 +366,129 @@ def testEffects(request):
     preset.depth_fog(1)
     assert cmd.get_setting_int('depth_cue')
     assert cmd.get_setting_int('ray_trace_mode') == 1
+
+
+def testSurfaceLooks(request):
+    """25b: the rows "surface look" show the protein as a surface in one
+    material. The next preset takes all of it back; a row of the light
+    menu replaces the light and leaves the surface."""
+    from pymol import menu
+    request.addfinalizer(cmd.reinitialize)  # the light
+    cmd.load(testing.datafile('1oky.pdb.gz'))
+    cmd.set('transparency', 0.2)  # the user's, of the whole scene: it stays
+    rows = dict(_menuRows(menu.presets(cmd, '1oky')))
+    names = [label[10:] for label in rows if label.startswith('surface > ')][:4]
+    assert names == list(preset.SURFACES) == ['glossy', 'candy glass', 'frosted', 'clay']
+
+    def see_through():  # of the atoms, else that of the scene
+        stored.found = set()
+        cmd.iterate('polymer', 'stored.found.add(round(s.transparency, 2))')
+        return stored.found
+
+    for name in names:
+        cmd.do(rows['surface > ' + name], echo=0)
+        light, shape, transparency = preset.SURFACES[name]
+        assert cmd.count_atoms('rep surface') == cmd.count_atoms('polymer'), name
+        assert cmd.count_atoms('rep cartoon') == 0, name
+        assert cmd.count_atoms('rep ball_and_stick & organic') == cmd.count_atoms('organic')
+        for key, value in light.items():
+            assert cmd.get_setting_float(key) == pytest.approx(value), (name, key)
+        # round is the grid surface with a large probe, on the object only
+        round_ = name != 'glossy'
+        assert cmd.get_setting_int('surface_type', '1oky') == (7 if round_ else 0), name
+        assert cmd.get_setting_float('solvent_radius', '1oky') == pytest.approx(
+            3.0 if round_ else 1.4), name
+        assert cmd.get_setting_int('surface_type') == 0
+        assert see_through() == {transparency or 0.2}, name
+        assert cmd.get_setting_int('ray_transparency_oblique') == bool(transparency)
+        assert cmd.get_setting_float('transparency') == pytest.approx(0.2)
+    assert cmd.get_setting_int('ambient_occlusion_mode') == 1  # clay, the last
+
+    preset.look('studio')  # another light on the same clay
+    assert cmd.get_setting_int('ambient_occlusion_mode') == 0
+    assert cmd.get_setting_int('light_count') == 4
+    assert cmd.get_setting_int('surface_type', '1oky') == 7
+    assert cmd.count_atoms('rep surface') == cmd.count_atoms('polymer')
+
+    preset.surface('1oky', 'candy glass')
+    preset.pretty('1oky')  # the next preset: nothing of it is left
+    assert cmd.count_atoms('rep surface') == 0 and see_through() == {0.2}
+    assert cmd.get_setting_int('surface_type', '1oky') == 0
+    assert cmd.get_setting_float('solvent_radius', '1oky') == pytest.approx(1.4)
+    assert cmd.get_setting_float('spec_reflect') == -1  # the default light
+    assert cmd.get_setting_int('two_sided_lighting') == 0
+    assert cmd.get_setting_int('ray_transparency_oblique') == 0
+    assert cmd.get_setting_float('transparency') == pytest.approx(0.2)
+
+
+def testReferenceRecipes(request):
+    """15m: space filling, illustrated atoms, licorice and bond shell, and
+    "contour cartoon", the row that runs "illustration". They keep colors,
+    camera and background and leave a hidden object alone; the next preset
+    takes all of it back; a scene and Undo bring the picture before."""
+    from pymol import menu
+    request.addfinalizer(cmd.reinitialize)  # the light, the steps of undo
+    cmd.load(testing.datafile('1oky.pdb.gz'), 'm')
+    cmd.fab('ACDEFG', 'hidden')
+    cmd.disable('hidden')
+    cmd.bg_color('grey30')
+    cmd.set('sphere_scale', 0.8, 'm')  # the user's sizes stay
+    rows = dict(_menuRows(menu.presets(cmd, 'enabled')))
+    assert 'preset.from_menu("illustration"' in rows['cartoon > contour cartoon']
+    assert not [label for label in rows if 'illustration' in label]
+    count = cmd.count_atoms
+    n, lig, polymer = count('m & !solvent'), count('m & organic'), count('m & polymer')
+
+    def state():
+        return (_colors('all'), cmd.get_view(), cmd.get('bg_rgb'),
+                count('hidden & rep lines'), count('hidden & !rep lines & visible'),
+                cmd.get_setting_float('sphere_scale', 'm'))
+
+    before, spheres = state(), count('m & rep spheres')
+    cmd.scene('start', 'store')
+    reps = {  # what is drawn, and of how many atoms
+        'atoms and bonds > space filling': {'spheres': n},
+        'atoms and bonds > illustrated atoms': {'spheres': n},
+        'atoms and bonds > licorice': {'sticks': n},
+        'surface > bond shell': {'lines': polymer, 'surface': polymer, 'ball_and_stick': lig,
+                       'sticks': count('m & inorganic')},  # the sulfates
+    }
+    for label, shown in reps.items():
+        cmd.do(rows[label], echo=0)
+        for rep in ('spheres', 'sticks', 'lines', 'surface', 'ball_and_stick', 'cartoon'):
+            assert count('m & rep ' + rep) == shown.get(rep, 0), (label, rep)
+        assert count('m & solvent & visible') == 0, label
+        assert state() == before, label
+        # only "illustrated atoms" picks a light: flat colors in outlines
+        flat = label.endswith('illustrated atoms')
+        assert cmd.get_setting_int('ray_trace_mode') == flat, label
+        assert cmd.get_setting_float('ambient') == pytest.approx(1 if flat else 0.14), label
+    stored.seen = set()
+    cmd.iterate('m & polymer', 'stored.seen.add(round(s.transparency, 2))')
+    assert stored.seen == {0.5}  # of the shell, on its atoms
+
+    # illustrated atoms -> pretty -> default: light and spheres are gone
+    cmd.do(rows['atoms and bonds > illustrated atoms'], echo=0)
+    cmd.do(rows['cartoon > pretty'], echo=0)
+    assert cmd.get_setting_int('ray_trace_mode') == 0 and count('rep spheres') == 0
+    cmd.do(rows['default'], echo=0)
+    assert count('m & rep lines') == count('m')
+    # a light picked by hand stays through the recipes that pick none
+    cmd.do(rows['light > studio'], echo=0)
+    cmd.do(rows['atoms and bonds > space filling'], echo=0)
+    assert cmd.get_setting_int('light_count') == 4
+    # the light of the surface look "glossy" alone: nothing is shown or hidden
+    cmd.do(rows['light > glossy (light only)'], echo=0)
+    assert cmd.get_setting_float('spec_power') == 300
+    assert count('m & rep spheres') == n and count('rep surface') == 0
+
+    # one step of Undo per row, and the scene of the start
+    cmd.do(rows['surface > bond shell'], echo=0)
+    cmd.undo()
+    assert count('m & rep spheres') == n and count('rep surface') == 0
+    cmd.scene('start', 'recall', animate=0)
+    assert count('m & rep spheres') == spheres and state() == before
+    assert cmd.get_setting_float('spec_power') == -1
 
 
 def testWire():
@@ -454,7 +629,7 @@ LIGAND_PRESETS = (
     'publication_green', 'glass', 'wire', 'spring', 'illustration',
     'ligands', 'ligand_sites', 'ligand_sites_hq', 'ligand_sites_trans',
     'ligand_sites_trans_hq', 'ligand_sites_mesh', 'ligand_sites_dots',
-    'ligand_cartoon', 'classified', 'interaction',
+    'ligand_cartoon', 'classified', 'interaction', 'surface', 'bond_shell',
 )
 
 

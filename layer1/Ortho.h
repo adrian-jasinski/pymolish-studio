@@ -103,6 +103,13 @@ void OrthoFakeDrag(PyMOLGlobals * G);
 void OrthoBusyMessage(PyMOLGlobals * G, const char *message);
 void OrthoBusySlow(PyMOLGlobals * G, int progress, int total);
 void OrthoBusyFast(PyMOLGlobals * G, int progress, int total);
+/**
+ * OrthoBusyFast does nothing on the calling thread from now on. For a
+ * thread that Python does not know (a surface built in the background):
+ * the progress report takes a lock of the Python side, which such a thread
+ * must not touch, and nobody waits for it.
+ */
+void OrthoBusyMuteThread();
 void OrthoBusyPrime(PyMOLGlobals * G);
 void OrthoCommandSetBusy(PyMOLGlobals * G, int busy);
 void OrthoCommandIn(COrtho&, const char *buffer);

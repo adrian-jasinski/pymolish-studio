@@ -1683,6 +1683,7 @@ void RepLabel::render(RenderInfo* info)
   if (I->MaxInvalid >= cRepInvRep) {
     return;
   }
+  NoDepthForOutline no_frame(G, !(ray || pick));
   font_id = SettingCheckFontID(
       G, I->cs->Setting.get(), I->obj->Setting.get(), font_id);
 
