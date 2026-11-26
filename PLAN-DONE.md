@@ -3,7 +3,7 @@
 Steps of the [roadmap](PLAN.md) whose last milestone has shipped. Open work
 stays in `PLAN.md`; the detailed plans stay in `docs/plans/`. Step numbers and
 order numbers in the finished-work table are historical. “Open, order N”
-references below follow the current roadmap (updated 2026-11-25).
+references below follow the current roadmap (updated 2026-11-26).
 
 **Planning update 2026-11-23 at 4.43.0:** no milestone shipped. Step 11 is
 reopened for CPK (11c); its existing palette releases remain recorded below.
@@ -38,6 +38,12 @@ a Claude account through the installed Claude Code; its row is the first of
 "Finished milestones of open steps", under step 31. The open orders keep
 their numbers; the trial of 31 (order 2) now also covers this provider.
 
+**Built 2026-11-25 and 2026-11-26, 4.81.0 and 4.82.0:** 25b, the grid
+surface as a menu row with its cavity settings and the four surface
+looks; their two rows are the first of "Finished milestones of open
+steps". Step 25 moved to "Finished steps". The open orders moved up by
+one: 15b 3, the surface worker 4, 21g 5.
+
 **Built 2026-11-25, 4.76.0:** the grid surface experiment of 1b; its row
 is the first of "Finished milestones of open steps". Question 105 was
 answered the same day: keep it as an option (A, recorded below).
@@ -62,6 +68,24 @@ option. Say so if another one is wanted:
 | 102 | The five buttons under the object list stand at the left and the spare width is at the right. The other way: the three icon buttons at the right edge. | 4.73.0. | `footer.addStretch` in `pymol_qt_gui.py`. |
 | 103 | The three lists of the Sequence tab have a word before each (Mode, Labels, Gaps) and no key of their own: Tab reaches them. | 4.74.0. | `Options` in `sequence_tab.py`. |
 | 104 | A−, A+ and Reset change the text by one point per click, between 6 and 40 points, and keep the difference to the start size of each tab, so every widget keeps its font and its distance to the others. | 4.75.0. | `TabFontButtons` in `pymol_qt_gui.py`; the keys `fonts/<tab>` in the settings. |
+
+Decided by the user on 2026-11-25, in the run of 4.81.0 and 4.82.0 (25b,
+the surface looks):
+
+| Question | Decision | State |
+| --- | --- | --- |
+| 115 | Option A, recommended: a row of "surface look" shows the surface of the protein itself, with the ligands as balls and sticks, in a submenu of its own in the Presets menu. B was the plan as written: four more rows in the light menu that change the material of whatever is shown. | 4.82.0. `surface` and `SURFACES` in `modules/pymol/preset.py`; the submenu in `menu.presets`. |
+
+Chosen while building 4.81.0 and 4.82.0, without asking. Say so if
+another one is wanted:
+
+| No. | Choice | Built | To change it |
+| --- | --- | --- | --- |
+| 116 | Candy glass and frosted use the grid surface with a probe of 3 A, as clay does; answer 105 named clay only. At that probe the surface of dots has triangles one can see under a highlight (1aon: 195,556 triangles, measured in 4.76.0, against 668,588 now). Glossy stays on today's surface. | 4.82.0. | `_round` in `SURFACES`, `preset.py`. |
+| 117 | A surface look sets its light for the whole scene, through `look`, and the round shape on the objects of the preset; transparency on the atoms, as "glass" does. The next preset takes all of it back, a row of the light menu only the light. The rows hide the cartoon and set no colors. | 4.82.0. | `preset.surface`; the three parts of an entry of `SURFACES`. |
+| 118 | `cavity_cull` on the grid goes by volume: a closed cavity under 2.5 A3 per count is not drawn, 25 A3 at the default of 10. One water makes a cavity of 12 to 16 A3. Of the values tried this came closest to the dots: 2rh1 keeps 5 closed cavities (the dots 7), 4hhb 9 (the dots 8). It is on by default, as for the dots, so a grid surface shows fewer small cavities than in 4.76.0 to 4.80.0. | 4.81.0. | `CULL_VOLUME` in `SurfaceJobRunGrid`, `layer2/RepSurface.cpp`. |
+| 119 | The cavity modes on the grid decide on a second, coarse grid (cells of 2 A at the default radius of 7 A) where the large probe fits, and keep the rims of a pocket as the dots do. They draw 71 % (2rh1) and 74 % (4hhb) of the area the dots draw, in the same places. | 4.81.0. | `GridPockets` in `layer2/RepSurface.cpp`; the cell is `radius / 3.5`. |
+| 120 | "Solvent Accessible" works on the grid too, though answer 105 named carving and cavities only: the row sits next to "Solid (grid)" in the same menu. Trimming is not followed: a grid makes no folds. Carving worked already and only got a test. | 4.81.0. | The branch `I->surfaceSolvent` in `SurfaceJobRunGrid`. |
 
 Decided by the user on 2026-11-25, in the run of 4.80.0, on the request
 "add OAuth option to other chats like OpenAI like current claude code
@@ -114,7 +138,7 @@ Decided by the user on 2026-11-25, after the grid surface experiment
 
 | Question | Decision | State |
 | --- | --- | --- |
-| 105 — Does the grid surface stay, and for what? | Option A, recommended: keep it beside today's surface, which remains the default; add "Solid (grid)" in Setting > Surface and support carving and cavities. Use the grid with a probe of about 3 A for the rounded clay surface. Reconsider the default after the surface worker. | Grid surface available as `surface_type 7` since 4.76.0. Menu row, carving/cavities and looks open under 25b, order 3; the worker is order 5. B (default above a size) and C (remove it) were not selected. |
+| 105 — Does the grid surface stay, and for what? | Option A, recommended: keep it beside today's surface, which remains the default; add "Solid (grid)" in Setting > Surface and support carving and cavities. Use the grid with a probe of about 3 A for the rounded clay surface. Reconsider the default after the surface worker. | Grid surface available as `surface_type 7` since 4.76.0. Menu row, cavities and the solvent surface in 4.81.0 (carving worked already); clay and two more looks on it in 4.82.0. The default is decided again after the worker, order 4. B (default above a size) and C (remove it) were not selected. |
 
 Decided by the user on 2026-11-25, choices 91–97 from the GUI request of
 2026-11-24, and built the same day.
@@ -182,7 +206,7 @@ recommendation and still waited for a word:
 | 37 | The contact area of "protein-protein interaction" is orange. | Step 30, 4.36.0 to 4.40.0. |
 | 38 | "remove crystallization additives" is one row, sugars and NAD(P) included. | Step 30, 4.36.0 to 4.40.0. |
 | 39 | No preset leaves the preset menu. | Step 30, 4.36.0 to 4.40.0. |
-| 40 | Undo of a preset takes back everything done after it, until 21g builds one stack. | 4.40.0; 21g open, order 6. |
+| 40 | Undo of a preset takes back everything done after it, until 21g builds one stack. | 4.40.0; 21g open, order 5. |
 | 41 | Shared tools, then the chat, then the connector. | 4.58.0 and 4.61.0. |
 | 43 | Reviewed operations; a concrete confirmation for destructive, file and network actions; a separate trusted Python mode. | 4.58.0; the connector uses the same executor (4.61.0). |
 | 44 | A Chat tab in the command area. | 4.58.0. |
@@ -237,6 +261,7 @@ on 2026-11-24 (table above):
 
 | Step | Detailed plan | Recommendation |
 | --- | --- | --- |
+| 25 | [Studio effects: floor, lights, surface looks](docs/plans/25-studio-effects.md) | Requested 2026-11-20. 25a-1, 4.34.0: the command `stage` (a floor that takes the ray-traced shadow, a mirror image) and the lights studio, top light and soft shadow. 25b-2, 4.35.0: five color themes. 25b-3, 4.81.0: the grid surface of 1b (4.76.0) as "Solid (grid)" in Setting > Surface, with cavity culling, the cavity modes and the solvent surface. 25b-1, 4.82.0: Presets > surface look with glossy, candy glass, frosted and clay, the last three on the grid surface with a probe of 3 A. Not built, and only if asked for: a shadow in the viewport (25a-2), the "wrap" light of clay in the shaders, the Gaussian blob of the trial. |
 | 8 | [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | Closed 2026-11-25 at 4.76.14 by the user's answer to question 106, "finish here"; not finished as planned. Done: the sanitizer job (8a), bounded strings (8b, 408 of 475 calls), Catch2 under the sanitizers (8h), the dead `#ifdef` branches (8i), the `malloc` half of 8c (230 of 297 allocation sites), the mechanical part of 8d (215 of 829 macro calls). Not done and no longer planned: raw `new` / `delete` (181 / 109, with 64 `DeleteP`), 611 VLA macro calls on raw pointers, the error chains of 8e (`ok_assert` 197, `goto` 24, `CHECKOK` 198), 8f, `ov/` (8g, 72 users, never measured), 60 string calls through a pointer. The macro layer of `MemoryDebug.h` and the directory `ov/` stay. Never checked for 4.76.1 to 4.76.14: MSVC, Apple Clang, GCC 11, `compare.py`, a window. |
 | 37 | [GUI follow-ups of 2026-11-24](docs/plans/37-gui-followups.md) | Requested 2026-11-24, answered and built 2026-11-25, 4.68.1 to 4.75.0, seven slices: the old plugin no longer takes the names of the fetch commands (37a); Delete in the Objects list (37b); thirty colors a palette, ten in the preview (37c); colors dragged in the palette dialog (37d); a compact mouse mode button (37e); Mode, Labels and Gaps lists and the alignment button in the Sequence tab (37f); A−, A+ and Reset beside the tabs (37g). |
 | 23 | [Rename and move rows in the Objects panel](docs/plans/23-rename-in-panel.md) | Requested 2026-11-20. 23a, 4.24.0: F2 or "rename" edits the name on the row. 23b, 4.70.0: a row is moved by a drag with the right button or with Alt and the arrow keys, between rows, into a group and out of it; the order and the groups are the core's and are kept in a session. |
@@ -323,17 +348,17 @@ where the decision shipped, "open" with its order where it has not.
 
 | # | Decision | Where it goes |
 | --- | --- | --- |
-| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 5. |
+| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 4. |
 | 3 | The icon and the logo were generated with ChatGPT; the user owns them. They get "a license that is good for trade marks". | Done in 4.19.43: `data/pymol/icons/LICENSE`, a notice outside the two code licenses (unchanged copies travel with the program and may refer to it; a changed version needs its own). `docs/licenses.md`, plan 9. |
 | 4 | The release builds stay on GitHub Actions for now. | 5c is shelved; nothing was built for it. Plan 5. |
-| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 4; the FXAA pass it follows shipped in 4.65.0. |
+| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 3; the FXAA pass it follows shipped in 4.65.0. |
 | 6 | The ChimeraX object colors become a palette. | 15c. Done in 4.22.0. |
 | 7 | All five effects of 15e. | Done in 4.62.0: two presets, the fog row, shade in the soft look; the fifth, color steps in the viewport, was already there (choice 71). |
 | 13 | "Decide by yourself." Decided as recommended: the shot list goes into the session file; the 58 Program rows of the Movie menu go; the keyframe strip of the core stays for now. | Step 19. Done in 4.63.0. The rows counted in the menu were 116 (49, 43 and 24), not 58. |
 | 15 | As recommended: blue hover in every menu; Orient acts only on what is visible. | Step 20. Done in 4.23.0. |
 | 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Done in 4.63.1 (sphere modes), 4.64.0 (background picture) and 4.65.0 (FXAA, off by default: choice 73). |
 | 18 | As recommended: idle OpenMP threads sleep at once. | 1b. Done in 4.23.1. |
-| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 7. |
+| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 5. |
 | 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Built as an experiment in 4.76.0 (`surface_type 7`); kept as an option by answer 105 A. Moved up by the answer to question 25. |
 
 14 was answered by "release 17" (4.19.42).
@@ -349,7 +374,7 @@ applicable, the 2026-11-23 follow-up.
 | 22 | As recommended: the rename wizard stays as the fallback without a window. | [Plan 23](docs/plans/23-rename-in-panel.md). Done in 4.24.0. |
 | 23 | The 2D ligand drawing is our own code, rdkit allowed; interactive: selecting a residue in 2D selects it in 3D. | [Plan 24](docs/plans/24-ligand-2d.md); the selection goes both ways. Done in 4.32.0 (command) and 4.33.0 (panel). |
 | 24 | Shadows ray traced only at first. | [Plan 25](docs/plans/25-studio-effects.md), 25a. Done in 4.34.0. |
-| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up and was built in 4.76.0, then kept by answer 105 A. Replan the surface looks and blob with that result and choice; open, order 3. |
+| 25 | "Start with 1b then plan further. Do not add to settings yet." | The grid surface of 1b moved up and was built in 4.76.0, then kept by answer 105 A. The surface looks were built on it: 4.81.0 (the grid as a menu row with its cavity settings) and 4.82.0 (glossy, candy glass, frosted, clay). |
 | 26 | As recommended: one row, icons. The same day: Builder and Scenes show only the icon, the name on mouse-over; "Draw/Ray" becomes "Draw". | Builder, Scenes and Draw done in 4.20.0; the rest in 4.30.0. |
 | 27 | The paint roller. (The answer ends "rest", cut off.) | Done in 4.20.0 with "Bg". |
 | 28 | As recommended: live scale through Qt's private function, the "next start" message as fallback. | [Plan 27](docs/plans/27-ui-scale.md). Done in 4.31.0 on Linux; 27d investigates the new freeze report before platform verification in 27c, open at order 1. |
@@ -396,10 +421,11 @@ ones, the new ones win.
 
 ## Finished milestones of open steps
 
-Steps 1, 8, 15, 21, 25, 27 and 31 stay in the roadmap.
+Steps 1, 8, 15, 21, 27 and 31 stay in the roadmap.
 These parts of them have shipped. The rows of steps 3, 11, 17, 18, 19, 20, 22, 26,
-23, 24, 28, 30, 32, 34, 35, 36 and 37, which are finished, are kept here as the record of
+23, 24, 25, 28, 30, 32, 34, 35, 36 and 37, which are finished, are kept here as the record of
 their milestones. The rows are not in order of time: the newest, the
+surface looks (4.82.0) and the grid surface as a menu row (4.81.0), the
 ChatGPT sign-in inside "OpenAI" (4.80.0), the
 switch "Run without asking" (4.79.0), the
 commands of the chat (4.77.0 to 4.78.0), the
@@ -417,6 +443,8 @@ the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
+| 25 | 25b-1 — surface looks | Done 2026-11-26 (4.82.0): [docs/plans/25-studio-effects.md](docs/plans/25-studio-effects.md). `preset.surface(selection, material)` and the table `SURFACES` in `preset.py`; the submenu "surface look" of the Presets menu. Each row shows the surface of the protein and the ligands as balls and sticks, sets the light through `look` and, for candy glass, frosted and clay, `surface_type 7` with `solvent_radius 3` on the objects; transparency 0.55 and 0.3 on the atoms. `_prepare` now unsets `solvent_radius` on its objects, and a scene keeps it (`cSceneSettings`). Picture `docs/img/surface-looks.jpg`: 2rh1 without the lysozyme, ray traced at 400 x 340 on white and on black, 0.14 to 0.27 s each. One test more in `api/preset.py`, three extended (`menu.py`, `scene_style.py`, the ligand presets); the suite: 1178 passed, 250 skipped. Differs from the plan: the plan had four looks that only set settings; the rows show the surface themselves (question 115); glossy has no rounder surface; no viewport look and no real window in this run. |
+| 25 | 25b-3 — the grid surface as a choice | Done 2026-11-25 (4.81.0): [docs/plans/01-performance-gpu.md](docs/plans/01-performance-gpu.md). "Solid (grid)" in Setting > Surface. In `SurfaceJobRunGrid`: `GridFieldFillHoles` (a flood over the second field) for `cavity_cull`, `GridPockets` (a coarse grid of the places where a probe of the cavity radius fits) for `surface_cavity_mode` 1 and 2, the first field as the surface for `surface_solvent`. Carving worked already. 1aon, fastest of two builds: 1.67 s with culling (914,220 triangles), 1.70 s without (924,276), mode 2 in 0.80 s (361,657; the dots 5.95 s and 402,726), mode 1 in 0.88 s, the solvent surface 1.31 s, a probe of 3 A 1.42 s (668,588); the dots 5.46 s. Against the dots on 2rh1 and 4hhb: 5 and 9 closed cavities kept (dots 7 and 8); mode 1 draws 71 % and 74 % of their area, the grid's points 0.44 and 0.42 A from the dots' on average; the solvent surface 0.33 and 0.35 A. Two tests more in `api/surface_grid.py` (4 now); the suite: 1176 passed, 250 skipped. The tests of `surface_grid.py`, `preset.py` and `scene_style.py` also pass in a build with the address and undefined-behavior sanitizers (the flags of the CI job, at 4.82.0). Differs from the plan: the target of a clay surface for 1aon under 1 s is not met (1.42 s); trimming is not followed. Compiled with GCC on Linux only. |
 | 31 | The ChatGPT sign-in inside "OpenAI" (a request, not a plan slice) | Done 2026-11-25 (4.80.0): [docs/plans/31-ai-agents.md](docs/plans/31-ai-agents.md). In `chat_panel.py` the list of providers leaves "ChatGPT" out; `_plan` names the sign-in of the chosen entry (for "OpenAI" the ChatGPT plan) and `_route` who gets the conversation (the plan while signed in to it, else the key). `signin.py` and the routes of `assistant.py` are unchanged. A failed sign-in no longer resets the model field. Measured without a window (Qt platform "offscreen"): the smallest width of the tab is 565 px for "OpenAI" before a sign-in, as for "Anthropic", and 731 px signed in with an e-mail address of 19 characters, the same as the former entry "ChatGPT" had; Tab reaches the key field, the button and "Stay signed in" in that order. One test more and one extended in `api/signin.py` (20 now); the suite: 1174 passed, 250 skipped. Differs from the plan: 31d named a provider per sign-in; the user chose one entry for both ways in (question 112). No real sign-in to ChatGPT was made (order 2), and no real window was opened in this run. |
 | 31 | The commands the model may run (a request, not a plan slice) | Done 2026-11-25 (4.77.0, 4.77.1, 4.78.0): [docs/plans/31-ai-agents.md](docs/plans/31-ai-agents.md). 4.77.0: the four UniProt and fold commands are reviewed; `fetch_by_uniprot` and `fetch_uniprot_ligands` above ten entries go through `cmd.async_`; the switch "Download without asking". Real window: 12 entries of P00533 with the switch on, no question, the call back in 0.01 s, the group complete after 4.2 s, longest pause of the window 0.17 s; the tab's smallest width 565 px with and without the switch. 4.77.1: `safe_eval` parses first and lets constants, names, containers and + - / through; before, an attribute walk reached `os` from `set_color` in the chat. 4.78.0: 198 of the 416 other commands added after a source scan and a reading of each one with Python logic, 286 of 504 in all; arguments that reach Python or a file are checked in `_policy` (`label`, `spectrum`, `fab`, `fragment`, `load_files`, `set_bond`, `png`, `REFUSED`). 18 tests more, all in `api/agent.py` (30 now); the two of `api/constants.py` were extended. Differs from the plan of 31: the plan asked a question for every network action; the list of entries asks none and the switch can turn the question for downloads off (choice 108). |
 | 31 | "Run without asking" (a request, not a plan slice) | Done 2026-11-25 (4.79.0): one check box in the Chat tab, off at every start, in place of "Download without asking". `Executor.unasked` skips the question for every reviewed command and, with "Trusted Python", for Python; the Chat tab sets it on its own executor and on the connector's. Real window: the box is off at the start and reached by Tab; with it off a `delete` through the connector asked once and was declined; with it on the same call ran with no question and the turn kept its Undo snapshot; with "Trusted Python" ticked too, Python ran with no question. One test more in `api/agent.py` (31 now); the suite: 1173 passed, 250 skipped. Differs from the plan of 31 and from decision 43: the plan asked a question for every file, network and destructive action and for all Python; the user can now turn that off for a run (choices 109 to 111). |

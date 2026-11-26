@@ -2,7 +2,7 @@
 
 [Back to the roadmap](PLAN.md).
 
-**Shipped state, checked 2026-11-25: 4.80.0.** Built since 4.19.43,
+**Shipped state, checked 2026-11-26: 4.82.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
 | Version | What |
@@ -54,13 +54,14 @@ with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 | 4.78.0 | The model runs 286 of the 504 commands it finds, before 88: measurements, labels, spectrum, presets, groups, maps, movie frames without a question; builder, fit, split and file commands with one. |
 | 4.79.0 | A switch "Run without asking" in the Chat tab, off at every start: while it is on, the model and the agents on the connector run every reviewed command, and Python with "Trusted Python" ticked, without the question. It replaces "Download without asking" (4.77.0). |
 | 4.80.0 | The provider "OpenAI" of the Chat tab has the button "Continue with ChatGPT" next to its field for an API key; while signed in the ChatGPT plan is used and the key field is hidden. The entry "ChatGPT" left the list of providers. The sign-in is that of 4.66.0: stand-in tests only, no real sign-in yet. |
+| 4.81.0 | "Solid (grid)" in Setting > Surface: the grid surface of 4.76.0 with cavity culling (on by default, closed cavities under 25 A3), "Cavities and Pockets Only" and "(Culled)", and "Solvent Accessible". "Solid" stays the default. |
+| 4.82.0 | Presets > surface look: glossy, candy glass, frosted, clay. A row shows the protein as a surface in that material with the ligands as balls and sticks; the three round ones use the grid surface with a probe of 3 A. Ray-traced pictures on white and black; not yet looked at in the viewport. |
 
-Of the ten features requested on 2026-11-20, nine have a working version.
-The tenth, the surface looks, remains open at order 3. Question 105 was
-answered on 2026-11-25: keep the grid surface of 1b (4.76.0) as an option
-and use it for clay; today's default stays. The menu row, carving and
-cavity support, and surface looks are not built yet. Steps 19, 20,
-26, 29 and 32 are finished. Of the eleven drafts of 2026-11-23, all eleven have a working version;
+Of the ten features requested on 2026-11-20, all ten have a working
+version: the tenth, the surface looks, shipped in 4.82.0 on the grid
+surface of 1b (4.76.0, a menu row with its cavity settings since
+4.81.0; today's surface stays the default, answer 105 A). Steps 19, 20,
+25, 26, 29 and 32 are finished. Of the eleven drafts of 2026-11-23, all eleven have a working version;
 the chat (31a, 31c) shipped in 4.58.0, its external connector 31b in 4.61.0,
 the sign-in in the browser 31d in 4.66.0 (its ChatGPT half sits in the
 provider "OpenAI" since 4.80.0), the provider "Claude Code" in

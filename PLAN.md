@@ -154,6 +154,16 @@ of 4.66.0, moved; no new sign-in was built. Three options were offered
 "Codex" that works like "Claude Code". Two choices were made while
 building (113 and 114). Still no real sign-in to ChatGPT was made: order 2.
 
+Built 2026-11-25 and 2026-11-26, 4.81.0 and 4.82.0, from the request
+"implement order 3: 25b, surface looks and blob": the grid surface as a
+row "Solid (grid)" in Setting > Surface, with cavity culling, the two
+cavity modes and "Solvent Accessible" (4.81.0), and the submenu "surface
+look" of the Presets menu: glossy, candy glass, frosted and clay, the
+last three on the grid surface with a probe of 3 A (4.82.0). One
+question was asked and answered in the run (115: a row shows the surface
+itself); five choices were made while building (116 to 120). Step 25 is
+finished and left this file; the open orders moved up by one.
+
 See [Shipped state](PLAN-STATE.md) for the shipped versions and their summary.
 
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
@@ -177,15 +187,12 @@ implementation task/PR, with an `X` feature or `Y` fix version under
 | --- | --- | --- | --- |
 | 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Needs the pushed branch: the last CI run is older than the repair. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
 | 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; one real sign-in and one conversation each with ChatGPT (since 4.80.0 the button of the provider "OpenAI") and with OpenRouter (31d, shipped in 4.66.0 on stand-ins), which needs the user's accounts; for the provider "Claude Code" (4.68.0, two turns tried on WSLg with a Team plan) the same five tasks, the button "Continue with Claude Code" with a signed-out Claude Code, and one turn on Windows or macOS; and one call through the connector from Codex, whose account had no credits on 2026-11-24. | Live trial recorded for Anthropic, OpenAI and Claude Code; a sign-in and a conversation recorded for ChatGPT, OpenRouter and Claude Code, on WSL and on one other system; one Codex call through the connector. |
-| 3 | **25b** — [Surface looks and blob](docs/plans/25-studio-effects.md) | Replan with the grid surface experiment (4.76.0) and answer 105 A: keep today's default, offer "Solid (grid)" in Setting > Surface, add carving and cavity support, and use the grid with a probe of about 3 A for clay. The judgment is complete; the menu row, support and looks remain to build. Reconsider the default after the surface worker (order 5). | New detailed section grounded in the experiment and the accepted choice. |
-| 4 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. A second pass over the texture that FXAA reads since 4.65.0 (`SceneRenderAA`, `fxaa.fs`). | Frame times and pictures on black/white. |
-| 5 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. | Real-window responsiveness, suite and sanitizer checks. |
-| 6 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
+| 3 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. A second pass over the texture that FXAA reads since 4.65.0 (`SceneRenderAA`, `fxaa.fs`). | Frame times and pictures on black/white. |
+| 4 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. With it built, decide again whether "Solid (grid)" becomes the default (answer 105 A). | Real-window responsiveness, suite and sanitizer checks. |
+| 5 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 
-The earlier surface dependency is satisfied: the grid experiment (tried in
-4.76.0) was accepted in answer 105 A before the surface looks. FXAA shipped
-in 4.65.0, so the outline can follow it. MAFFT stays
+FXAA shipped in 4.65.0, so the outline can follow it. MAFFT stays
 separately installed and the provider SDKs are the lazy extra `ai`. 5c stays
 shelved; builds stay on GitHub Actions.
 
@@ -246,10 +253,20 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-No unanswered question remains. Question 105 was answered on 2026-11-25:
-option A, recommended. The grid surface stays as an optional choice;
-today's surface remains the default. The decision and the work still to
-build are recorded in [PLAN-DONE.md](PLAN-DONE.md) and order 3 above.
+No unanswered question remains. Question 105 (the grid surface stays as
+an option, today's surface the default) was answered on 2026-11-25 and
+built in 4.81.0 and 4.82.0; question 115 (a row of "surface look" shows
+the surface itself) was asked and answered in that run. Both are in
+[PLAN-DONE.md](PLAN-DONE.md), with the five choices made while building
+(116 to 120). Two of those are worth a look:
+
+- 118: the grid surface now leaves out closed cavities under 25 A3, as
+  the surface of dots leaves out its smallest ones (`cavity_cull`, on by
+  default). A session of 4.76.0 to 4.80.0 with `surface_type 7` shows
+  fewer of them; `set cavity_cull, 0` gives the old picture.
+- 117: a surface look sets its light for the whole scene, as a row of
+  the light menu does, and the round shape on the objects of the preset.
+  A light row afterwards replaces the light and leaves the surface.
 
 Choices 91–97 were answered on 2026-11-25 and built the same day (4.69.0
 to 4.75.0); they are in [PLAN-DONE.md](PLAN-DONE.md). So are 107 and 108
@@ -351,10 +368,9 @@ Objects list at once; Esc to give up a drag of a row (release it where no
 mark is shown), and scrolling the list while a row is dragged past its
 edge; keys for A−, A+ and Reset (Tab reaches them); less padding inside
 the mouse mode button than its neighbors have; a check of the thirty
-colors for color-vision deficiencies. From 4.76.0, the grid surface
-(carving, cavity culling and cavity mode are now accepted work under
-answer 105 A, order 3): `surface_solvent` and trimming;
-strips longer than one triangle; a grid in blocks instead of one over the
+colors for color-vision deficiencies. From 4.76.0, the grid surface:
+trimming (`surface_trim_cutoff`, `surface_trim_factor`; a grid makes no
+folds to trim); strips longer than one triangle; a grid in blocks instead of one over the
 whole box (above 67 million cells the cells grow); frame times in the
 viewport; ray times on a cool machine. From 4.80.0: a provider "Codex"
 that runs the conversation through the installed Codex and its own
@@ -362,7 +378,15 @@ sign-in, as "Claude Code" does (option A of question 112; Codex 0.163.0
 is installed and signed in on this machine, and its shell tool can only
 be put into the read-only sandbox, not switched off), the same for the
 Gemini CLI (option B; not installed here), and a way to use the API key
-while signed in to ChatGPT (today: Sign out).
+while signed in to ChatGPT (today: Sign out). From 4.81.0 and 4.82.0: a
+shadow in the viewport (25a-2; options B and C of question 24); the
+light that seems to go through the edges of clay (a "wrap" term in the
+shaders and the ray tracer, option B of question 25); the blob of the
+trial picture, a Gaussian map that is rounder than a probe of 3 A makes
+the surface; a build of clay under 1 s for 1aon (measured: 1.42 s); the
+surface looks as rows of the light menu, without showing the surface
+(option B of question 115); the cavity modes of the grid closer to the
+dots than 71 to 74 % of their area.
 
 The user's to do:
 
@@ -379,12 +403,21 @@ The user's to do:
 - Try the drag with the right button (4.70.0) once on Windows and on
   macOS: there the system asks for the menu when the button is released,
   on Linux when it is pressed. Both are handled; only Linux was tried.
-- Push `feature13` again. Checked 2026-11-25 after 4.80.0:
+- Push `feature13` again. Checked 2026-11-26 after 4.82.0:
   `origin/feature13` is at the plan commit of 4.76.14 (`5101e943`), so
   what was listed here before is pushed, and pull request #11 ("Feature13")
-  is open. Including this plan commit the branch is 10 commits ahead:
-  4.77.0, 4.77.1, 4.78.0, 4.79.0, 4.79.1, 4.80.0 and four plan commits.
-  No push or merge was performed in this run.
+  is open. Including this plan commit the branch is 14 commits ahead:
+  4.77.0, 4.77.1, 4.78.0, 4.79.0, 4.79.1, 4.80.0, 4.81.0, 4.82.0 and six
+  plan commits. No push or merge was performed in this run. 4.81.0
+  changed `layer2/RepSurface.cpp` and was compiled with GCC on Linux
+  only: the Windows and macOS jobs of the CI run are its first compile
+  there.
+- Look at Presets > surface look in your own window (4.82.0), and at
+  Setting > Surface > Solid (grid) with "Cavities and Pockets Only"
+  (4.81.0). Both were checked by tests and in ray-traced pictures
+  (`docs/img/surface-looks.jpg`); no window was opened in that run,
+  because your own pymolish was running and a test window takes the
+  keyboard.
 - After the push, read the CI run first for step 8: 4.76.1 to 4.76.14
   changed 60 files of the core and were compiled with GCC 13 on Linux
   only. The Windows (MSVC), macOS (Apple Clang) and `sanitize-Linux` (GCC
@@ -450,9 +483,9 @@ The user's to do:
 - Remove the pymolish plugin from `~/.pymol/startup` (still there on
   2026-11-25). Since 4.68.1 it is no longer loaded, and the log says so
   at every start where the startup path names that folder.
-- `plan_images/` (the pictures of the request of 2026-11-20) is ignored by
-  git. It is deleted when the last plan made from it is built: 25b
-  (22d and 24c are built). The plans name its files by path.
+- Delete `plan_images/` (the pictures of the request of 2026-11-20,
+  ignored by git): 25b, the last plan made from it, is built since
+  4.82.0. It was left in place; it is your folder.
 
 Not the user's, and not a roadmap step: the screenshot in the README
 (`docs/img/window.png`) shows the window of 4.19; it is retaken when the
