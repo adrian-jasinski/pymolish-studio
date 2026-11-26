@@ -4,6 +4,30 @@ CHANGE LOG
 
 2026-11-26 pymolish-studio
 
+	* 4.86.0
+
+	* Objects panel
+	  - The five buttons under the object list are larger and each
+	    has a short text beside its icon: the mouse mode (Viewing,
+	    Editing, ...), SEQ, Chat, Wizard and Cmd. The icons are 20 px
+	    (16 before) and the buttons 32 px high (23 before). Chat,
+	    Wizard and Cmd showed only an icon before.
+	  - One row while the panel is wide enough (390 px of buttons,
+	    measured); in a narrower panel two rows: mouse mode and SEQ,
+	    then Chat, Wizard and Cmd. At the panel's default width of
+	    300 px it is two rows, and the object list is 34 px shorter
+	    than with one. The two rows need 222 px. Picture: docs/img/footer-rows.png.
+	  - What a click does is unchanged: the menus of the mouse mode,
+	    the AI assistant and the wizards, SEQ with its arrow, the
+	    switch for the command line. Tab walks them in the same order
+	    in both layouts. Tooltips and the names for a screen reader
+	    are the whole names: "Mouse mode: 3-Button Viewing", "Sequence
+	    tab", "AI assistant", "Command line and log".
+	  - The name of the mouse mode is no longer shortened in a narrow
+	    panel: the second row took the place of that.
+
+2026-11-26 pymolish-studio
+
 	* 4.85.0
 
 	* Presets
