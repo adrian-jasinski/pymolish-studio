@@ -65,9 +65,9 @@ probe).
 surface as a choice beside today's default. Add "Solid (grid)" in
 Setting > Surface and support carving, cavity culling and cavity mode.
 Clay uses `surface_type 7` with `solvent_radius` about 3 A, instead of a
-Gaussian map in a second object. Reconsider the default after the surface
-worker (order 4 since 2026-11-26). Built in 4.81.0 and 4.82.0, see the
-note at the top.
+Gaussian map in a second object. Reconsidered after the surface worker
+(4.89.0): answer 129 A on 2026-11-26 keeps Solid as the default and the
+grid optional. Built in 4.81.0 and 4.82.0, see the note at the top.
 Question 32: the color themes are built, as a group of their own.
 
 **25a-1 done 2026-11-20 in 4.34.0:** the command `stage` and three light

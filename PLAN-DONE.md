@@ -5,13 +5,28 @@ stays in `PLAN.md`; the detailed plans stay in `docs/plans/`. Step numbers and
 order numbers in the finished-work table are historical. “Open, order N”
 references below follow the current roadmap (updated 2026-11-26).
 
+## Decisions 128 and 129
+
+Answered by the user on **2026-11-26**, both with **A, recommended**.
+This is a planning update at 4.90.0; no feature shipped and no new
+measurement was made. [Review history and background](docs/plans/roadmap-background.md)
+and [detailed user checks](docs/plans/roadmap-checks.md) now live outside
+the main roadmap.
+
+| No. | Decision | State |
+| --- | --- | --- |
+| 128 | Keep the existing glow setting and add "glow" / "no glow" to the light menu, as for fog, for the viewport only. Leaving it setting-only, extending it to ray/sized images, and removing it were not selected. | The setting shipped in 4.88.0. The [15p menu follow-up](docs/plans/15-presets.md#question-128-a-glow-menu-follow-up) is open, order 3; it has not shipped. |
+| 129 | "Solid" stays the default after the surface worker; "Solid (grid)" stays optional. Neither a size-dependent default nor grid everywhere was selected. | Decision complete; existing behavior retained, no code change or version. [Plan 1](docs/plans/01-performance-gpu.md). |
+
+## Earlier decisions and implementation record
+
 **Built 2026-11-26, 4.83.0 to 4.89.0:** orders 3 to 9 of the planning
 update below, in that order: 15m, 34d with 15n, 15o, 32c, 15b, 15p and the
 surface worker of 1b. Steps 32 and 34 are finished again; step 15 has every
-slice built and waits for question 128 (what becomes of the glow
-experiment); step 1 keeps its two measured items. The open orders are now:
-27c 1, the trial of 31 2, general undo 3, the rest of the documentation
-(step 38, planned and written the same day by other sessions) 4. The rows are under "Finished
+original slice built; answer 128 A leaves the glow menu follow-up open.
+Step 1 keeps its two measured items. The current open orders are:
+27c 1, the trial of 31 2, the glow menu 3, general undo 4, the rest of the
+documentation (step 38) 5. The rows are under "Finished
 milestones of open steps"; the decisions and choices follow here.
 
 Decided by the user on 2026-11-26, in the request that started the run
@@ -23,7 +38,7 @@ Decided by the user on 2026-11-26, in the request that started the run
 | 124 | A: transparency for whole objects, one value for the balls and bonds of ball and stick. B was atoms and residues with half bonds. | 4.84.0. `ball_and_stick_transparency` (setting 801, object and state level); `preset.transparency`; `menu.transparency`. |
 | 125 | A: the groups cartoon, atoms and bonds, surface, binding, then transparency; light, theme and floor under a caption. B was two groups only. | 4.85.0. `menu.presets`. |
 | 126 | A: the documentation is Markdown in this repository, with a docs home and task and command indexes. B was a separate website with full-text search. Answered in the run that built step 38. | Built 2026-11-26 at 4.90.0, no version. `docs/README.md` and the pages it links. |
-| 127 | A: short videos opened from static posters. B was inline GIF loops. Answered in the same run. | Built 2026-11-26. Four MP4 files in `docs/media/`, posters `docs/img/demo-*.jpg`; how GitHub plays them is open, order 4. |
+| 127 | A: short videos opened from static posters. B was inline GIF loops. Answered in the same run. | Built 2026-11-26. Four MP4 files in `docs/media/`, posters `docs/img/demo-*.jpg`; how GitHub plays them is open, order 5. |
 
 Reported by the user in the same message, not checked here: the drag with
 the right button of 4.70.0 works; the Chat tab works with Claude Code and
@@ -61,7 +76,7 @@ Decided by the user during this planning update, and built later that day:
 | No. | Decision | State |
 | --- | --- | --- |
 | 121 | Larger icons with Viewing, SEQ, Chat, Wizard and Cmd labels beside them; two rows when narrow. Larger icons without the extra labels, and a wider single-row panel, were not selected. | [32c](docs/plans/32-footer-icons-movie-button.md), built in 4.86.0. |
-| 122 | Existing rendering recipes first, then a measured experiment for true neon/glow. A settings-only endpoint was not selected. | [15m and 15p](docs/plans/15-presets.md), built in 4.83.0 and 4.88.0; what becomes of the experiment is question 128. |
+| 122 | Existing rendering recipes first, then a measured experiment for true neon/glow. A settings-only endpoint was not selected. | [15m and 15p](docs/plans/15-presets.md), built in 4.83.0 and 4.88.0; answer 128 A adds the viewport-only menu entry, open, order 3. |
 
 **Planning update 2026-11-23 at 4.43.0:** no milestone shipped. Step 11 is
 reopened for CPK (11c); its existing palette releases remain recorded below.
@@ -196,7 +211,7 @@ Decided by the user on 2026-11-25, after the grid surface experiment
 
 | Question | Decision | State |
 | --- | --- | --- |
-| 105 — Does the grid surface stay, and for what? | Option A, recommended: keep it beside today's surface, which remains the default; add "Solid (grid)" in Setting > Surface and support carving and cavities. Use the grid with a probe of about 3 A for the rounded clay surface. Reconsider the default after the surface worker. | Grid surface available as `surface_type 7` since 4.76.0. Menu row, cavities and the solvent surface in 4.81.0 (carving worked already); clay and two more looks on it in 4.82.0. The worker is built (4.89.0); the default is question 129. B (default above a size) and C (remove it) were not selected. |
+| 105 — Does the grid surface stay, and for what? | Option A, recommended: keep it beside today's surface, which remains the default; add "Solid (grid)" in Setting > Surface and support carving and cavities. Use the grid with a probe of about 3 A for the rounded clay surface. Reconsider the default after the surface worker. | Grid surface available as `surface_type 7` since 4.76.0. Menu row, cavities and the solvent surface in 4.81.0 (carving worked already); clay and two more looks on it in 4.82.0. The worker is built (4.89.0); answer 129 A keeps Solid as the default. B (default above a size) and C (remove it) were not selected. |
 
 Decided by the user on 2026-11-25, choices 91–97 from the GUI request of
 2026-11-24, and built the same day.
@@ -264,7 +279,7 @@ recommendation and still waited for a word:
 | 37 | The contact area of "protein-protein interaction" is orange. | Step 30, 4.36.0 to 4.40.0. |
 | 38 | "remove crystallization additives" is one row, sugars and NAD(P) included. | Step 30, 4.36.0 to 4.40.0. |
 | 39 | No preset leaves the preset menu. | Step 30, 4.36.0 to 4.40.0. |
-| 40 | Undo of a preset takes back everything done after it, until 21g builds one stack. | 4.40.0; 21g open, order 3. |
+| 40 | Undo of a preset takes back everything done after it, until 21g builds one stack. | 4.40.0; 21g open, order 4. |
 | 41 | Shared tools, then the chat, then the connector. | 4.58.0 and 4.61.0. |
 | 43 | Reviewed operations; a concrete confirmation for destructive, file and network actions; a separate trusted Python mode. | 4.58.0; the connector uses the same executor (4.61.0). |
 | 44 | A Chat tab in the command area. | 4.58.0. |
@@ -421,7 +436,7 @@ where the decision shipped, "open" with its order where it has not.
 | 15 | As recommended: blue hover in every menu; Orient acts only on what is visible. | Step 20. Done in 4.23.0. |
 | 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Done in 4.63.1 (sphere modes), 4.64.0 (background picture) and 4.65.0 (FXAA, off by default: choice 73). |
 | 18 | As recommended: idle OpenMP threads sleep at once. | 1b. Done in 4.23.1. |
-| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 3. |
+| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 4. |
 | 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Built as an experiment in 4.76.0 (`surface_type 7`); kept as an option by answer 105 A. Moved up by the answer to question 25. |
 
 14 was answered by "release 17" (4.19.42).
@@ -484,7 +499,7 @@ ones, the new ones win.
 
 ## Finished milestones of open steps
 
-Steps 1, 8, 15, 21, 27 and 31 stay in the roadmap (15 for question 128 alone).
+Steps 1, 15, 21, 27, 31 and 38 stay in the roadmap (15 for the glow menu follow-up).
 These parts of them have shipped. The rows of steps 3, 11, 17, 18, 19, 20, 22, 26,
 23, 24, 25, 28, 30, 32, 34, 35, 36 and 37, which are finished, are kept here as the record of
 their milestones. The rows are not in order of time: the newest, the
@@ -508,10 +523,10 @@ the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
-| 38 | 38a to 38d — current documentation and real demos | Done 2026-11-26 at 4.90.0, no version (docs only): [docs/plans/38-documentation.md](docs/plans/38-documentation.md). Answers 126 A (Markdown in the repository) and 127 A (MP4 behind a poster). `docs/README.md` (home), nine task guides (`structures`, `appearance`, `ligands`, `sequences`, `properties`, `scenes-movies`, `editing-analysis`, `saving`, `assistant`), `reference.md`, `troubleshooting.md`; `commands.md` by task with an index of all 350 registered commands; README, Getting started and the overview rewritten; package metadata points at the docs home. 14 pictures of the real window, 3 sheets of rendered pictures, 4 clips of 19 to 31 s (401 to 996 KB) with posters; recipes and capture scripts in `docs/media/`. `license_docs.py` also checks anchors (207 links), the way from the home to every page, and that every command has an entry. Differs from the plan: nine guides were written by five helper sessions from the code, with every printed command run headless, and reviewed here; the window steps were done by Qt mouse events in capture scripts, not by hand; WSLg cannot grab the screen, so menus are laid on the window picture and the clips have 3.7 to 6.7 real pictures per second; two pictures are over 500 KB (530 and 567 KB); no picture of the Builder, a measurement or the two surface types; the Chat picture is the set-up row only; playback on GitHub, Windows, macOS and a reader new to the window are open (order 4). Faults found in the program on the way are listed in the plan and were not repaired. |
+| 38 | 38a to 38d — current documentation and real demos | Done 2026-11-26 at 4.90.0, no version (docs only): [docs/plans/38-documentation.md](docs/plans/38-documentation.md). Answers 126 A (Markdown in the repository) and 127 A (MP4 behind a poster). `docs/README.md` (home), nine task guides (`structures`, `appearance`, `ligands`, `sequences`, `properties`, `scenes-movies`, `editing-analysis`, `saving`, `assistant`), `reference.md`, `troubleshooting.md`; `commands.md` by task with an index of all 350 registered commands; README, Getting started and the overview rewritten; package metadata points at the docs home. 14 pictures of the real window, 3 sheets of rendered pictures, 4 clips of 19 to 31 s (401 to 996 KB) with posters; recipes and capture scripts in `docs/media/`. `license_docs.py` also checks anchors (207 links), the way from the home to every page, and that every command has an entry. Differs from the plan: nine guides were written by five helper sessions from the code, with every printed command run headless, and reviewed here; the window steps were done by Qt mouse events in capture scripts, not by hand; WSLg cannot grab the screen, so menus are laid on the window picture and the clips have 3.7 to 6.7 real pictures per second; two pictures are over 500 KB (530 and 567 KB); no picture of the Builder, a measurement or the two surface types; the Chat picture is the set-up row only; playback on GitHub, Windows, macOS and a reader new to the window are open (order 5). Faults found in the program on the way are listed in the plan and were not repaired. |
 | 33 | The secondary structure only as the drawn track (a request, not a plan slice) | Done 2026-11-26 (4.90.0): [docs/plans/33-sequence-window.md](docs/plans/33-sequence-window.md). In the Sequence alignment window the line of characters above every residue (helix, sheet, coil, unassigned, no coordinates) and its legend are gone; the consensus track at the bottom, drawn since 4.60.0, is the one place that shows secondary structure, and the check box "Secondary structure" switches that track. A row is one line high: measured offscreen with the four chains of 4hhb, 18 px for a sequence row and 35 px for the track (two lines before; that height was not measured). The tooltip of a residue still names its own secondary structure. Against the plan: plan 33 had "graphical symbols on the structure rows" as not done; the request goes the other way and takes the characters out. A residue without coordinates has no mark in the table any more, only its tooltip. Not tried in the real window on WSLg, on Windows or macOS. Suite 1185 passed, 254 skipped. |
-| 1 | 1b — the surface worker | Done 2026-11-26 (4.89.0): [docs/plans/01-performance-gpu.md](docs/plans/01-performance-gpu.md). A surface of 5000 atoms or more that the window asks for is built on a thread of its own (`async_surface`, on); the result is taken on the main thread from the idle loop and from every window frame; every other scene update, sized images and movie frames wait for running builds. Against the plan: The plan named a status line: it is two lines in the log. Measured in the real window on 1aon: the GUI thread blocked 1.2 s at most (4.9 and 5.5 s before); grid surface 0.9 s (1.7 s). 4v6x not run (10 of 17 GB). A crash found by the window test and fixed before the commit: the progress report of the triangulation called Python from the worker thread. Suite 1185 passed, 254 skipped; ASan and UBSan clean on the worker, grid, preset and ball-and-stick tests and on the two window tests. Whether the grid becomes the default is question 129. |
-| 15 | 15p — the glow experiment | Done 2026-11-26 (4.88.0): [docs/plans/15-presets.md](docs/plans/15-presets.md). `set glow, 1`: what is drawn, masked by the depth, blurred at a quarter of the size in three stages (`glow.fs`) and laid on the background in `fxaa.fs`. No menu row, no preset. Against the plan: An experiment, as planned; the shipping scope is question 128. Measured: about 2.5 ms a frame at 1436 x 702 (4hhb spheres 4.2 to 6.7 ms, 1aon spheres 6.0 to 8.5 ms). GPU memory computed from sizes, not measured. Not in ray-traced pictures, sized images or stereo; one driver. Found on the way: the helper that reads the viewport in the window tests returned freed memory. |
+| 1 | 1b — the surface worker | Done 2026-11-26 (4.89.0): [docs/plans/01-performance-gpu.md](docs/plans/01-performance-gpu.md). A surface of 5000 atoms or more that the window asks for is built on a thread of its own (`async_surface`, on); the result is taken on the main thread from the idle loop and from every window frame; every other scene update, sized images and movie frames wait for running builds. Against the plan: The plan named a status line: it is two lines in the log. Measured in the real window on 1aon: the GUI thread blocked 1.2 s at most (4.9 and 5.5 s before); grid surface 0.9 s (1.7 s). 4v6x not run (10 of 17 GB). A crash found by the window test and fixed before the commit: the progress report of the triangulation called Python from the worker thread. Suite 1185 passed, 254 skipped; ASan and UBSan clean on the worker, grid, preset and ball-and-stick tests and on the two window tests. Answer 129 A keeps Solid as the default; the grid stays optional. |
+| 15 | 15p — the glow experiment | Done 2026-11-26 (4.88.0): [docs/plans/15-presets.md](docs/plans/15-presets.md). `set glow, 1`: what is drawn, masked by the depth, blurred at a quarter of the size in three stages (`glow.fs`) and laid on the background in `fxaa.fs`. No menu row, no preset. Against the plan: An experiment, as planned; answer 128 A keeps it viewport-only and schedules the menu entry (open, order 3). Measured: about 2.5 ms a frame at 1436 x 702 (4hhb spheres 4.2 to 6.7 ms, 1aon spheres 6.0 to 8.5 ms). GPU memory computed from sizes, not measured. Not in ray-traced pictures, sized images or stereo; one driver. Found on the way: the helper that reads the viewport in the window tests returned freed memory. |
 | 15 | 15b — the outline in the viewport | Done 2026-11-26 (4.87.0): [docs/plans/15-presets.md](docs/plans/15-presets.md). With `ray_trace_mode` 1 to 3 the pass that smooths edges draws lines found in the depth; two copies of the depth a frame, so that the cartoon inside a see-through surface has its line; the setting `viewport_outline` (on) and a row in Setting > Rendering. Against the plan: The plan of 2026-11-20 named a pass of its own: it is one more step of the FXAA pass. Measured at 1436 x 702: 2 to 3 ms a frame (1oky spheres 2.8 to 5.7 ms, 1aon spheres 5.2 to 8.2 ms, 1aon cartoon 11.1 to 13.1 ms). Pictures on white and black in `docs/img/viewport-outline.jpg`. Not in stereo or sized images; in grid mode the inner line is right only in the last cell; one driver. |
 | 32 | 32c — larger buttons under the object list | Done 2026-11-26 (4.86.0): [docs/plans/32-footer-icons-movie-button.md](docs/plans/32-footer-icons-movie-button.md). Five buttons with an icon of 20 px and a short text, 32 px high; two rows when one does not fit. Against the plan: As answer 121. Measured in the real window, dark and light theme, 100, 150 and 200 %: one row needs 390 px, two rows 222 px; the footer is 32 or 66 px high; at the default width of 300 px it is two rows and the list is 34 px shorter. Windows and macOS not seen. |
 | 15 | 15o — the Presets menu in groups | Done 2026-11-26 (4.85.0): [docs/plans/15-presets.md](docs/plans/15-presets.md). cartoon, atoms and bonds, surface, binding; transparency and solvent; light, theme and floor under "Scene appearance". Against the plan: As answer 125 A. 69 leaves, each with one Undo snapshot; the set of presets is the one of the flat menu. The toolbar menu was walked with the arrow keys in the real window, three levels deep. The menus the viewport draws itself take no keys, as before. |
@@ -608,7 +623,7 @@ the one from "25b-2" to "17f".
 ## Validation of the original draft, closed rows
 
 As written on 2026-11-08. The steps these rows belong to are finished; the rows
-that still steer open work are in the roadmap.
+that still steer open work are in the [roadmap background](docs/plans/roadmap-background.md#validation-of-the-original-draft).
 
 | Original idea or claim | Verdict and correction |
 | --- | --- |

@@ -7,7 +7,10 @@ that day from the planning update of the morning (15m to 15p, 32c, 34d and
 the surface worker of 1b): 4.83.0 to 4.89.0; an eighth, 4.90.0, from a
 request of the same day (the alignment window shows the secondary
 structure only as the drawn track). Questions 121 to 125 are
-answered and built; 128 and 129 are open in [PLAN.md](PLAN.md). The
+answered and built; 128 and 129 were answered **A** on 2026-11-26.
+The glow menu entry is pending (15p, order 3); Solid stays the default,
+with no code change. See [the decisions](PLAN-DONE.md#decisions-128-and-129)
+and [current work](PLAN.md). The
 documentation (step 38a to 38d, answers 126 A and 127 A) was written and
 captured on 2026-11-26 at 4.90.0: it changed no program code and has no
 version. Built since
@@ -70,17 +73,17 @@ version. Built since
 | 4.85.0 | The Presets menu in groups: cartoon, atoms and bonds, surface, binding; then transparency and solvent; light, theme and floor under "Scene appearance" (15o). |
 | 4.86.0 | The five buttons under the object list are larger and have a short text each: mouse mode, SEQ, Chat, Wizard, Cmd; two rows in a narrow panel (32c). |
 | 4.87.0 | The outline of a look in the viewport: figure, soft, flat, comic, sketch, illustrated atoms and contour cartoon; the setting `viewport_outline` (15b). |
-| 4.88.0 | An experiment: `set glow, 1` lays a halo in the colors of what is drawn around it, in the viewport. No menu row (15p, question 128). |
+| 4.88.0 | An experiment: `set glow, 1` lays a halo in the colors of what is drawn around it, in the viewport. No menu row in this release (15p; answer 128 A schedules it). |
 | 4.89.0 | A large surface is built in the background: the window stays in use and the surface appears when it is ready; pictures and exports wait for it; the setting `async_surface` (1b). |
 | 4.90.0 | The Sequence alignment window shows the secondary structure only as the drawn track at the bottom; the line of characters above every residue and its legend are gone, a row is one line high (a request, step 33). |
 
 Of the ten features requested on 2026-11-20, all ten have a working
 version: the tenth, the surface looks, shipped in 4.82.0 on the grid
 surface of 1b (4.76.0, a menu row with its cavity settings since
-4.81.0; today's surface stays the default, answer 105 A). Steps 19, 20,
+4.81.0; today's surface stays the default, answers 105 A and 129 A). Steps 19, 20,
 25, 26 and 29 are finished, and so are steps 32 and 34 with 32c (4.86.0)
-and 34d (4.84.0). Of step 15 all slices are built; its glow experiment
-waits for question 128. Of the
+and 34d (4.84.0). Of step 15 the original slices are built; the glow menu
+follow-up chosen in answer 128 A is open, order 3. Of the
 eleven drafts of 2026-11-23, all eleven have a working version;
 the chat (31a, 31c) shipped in 4.58.0, its external connector 31b in 4.61.0,
 the sign-in in the browser 31d in 4.66.0 (its ChatGPT half sits in the
