@@ -182,7 +182,7 @@ def test_window_selection_restore_and_resize(panel):
         )
         is not None
     )
-    assert window.model.data(window.model.index(1, 1)) == "·\n-"
+    assert window.model.data(window.model.index(1, 1)) == "-"
     saved = cmd.get_session()
     window.model.rows.clear()
     window.refresh()

@@ -4,6 +4,19 @@ CHANGE LOG
 
 2026-11-26 pymolish-studio
 
+	* 4.90.0
+
+	* Sequence alignment
+	  - The secondary structure is shown only as the drawn track at
+	    the bottom (helices as cylinders, strands as arrows). The
+	    line of characters above every residue is gone, and with it
+	    their legend; a row is one line high.
+	  - The secondary structure of a single residue is in its
+	    tooltip, as before. A residue without coordinates no longer
+	    has a mark in the table; its tooltip says "No coordinates".
+
+2026-11-26 pymolish-studio
+
 	* 4.89.0
 
 	* Surface
