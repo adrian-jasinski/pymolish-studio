@@ -59,7 +59,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/adrian-jasinski/pymolish-studio"
-Documentation = "https://github.com/adrian-jasinski/pymolish-studio/blob/master/docs/features.md"
+Documentation = "https://github.com/adrian-jasinski/pymolish-studio/blob/master/docs/README.md"
 Repository = "https://github.com/adrian-jasinski/pymolish-studio"
 "Bug Tracker" = "https://github.com/adrian-jasinski/pymolish-studio/issues"
 Changelog = "https://github.com/adrian-jasinski/pymolish-studio/blob/master/ChangeLog"
