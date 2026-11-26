@@ -1,5 +1,16 @@
 # 25 — Studio effects: floor, lights, surface looks
 
+**Planning cross-reference, 2026-11-26 at 4.82.0:** step 25 stays finished.
+The new image review and menu work are [15m–15p](15-presets.md). Reuse
+Glossy, Candy glass, Frosted and Clay for the amber/soft-surface references;
+do not rebuild them or add one preset per image. The proposed light-only
+Glossy action already has a callable implementation in `preset.look`.
+New recipes leave backgrounds unchanged and never invoke a theme. Existing
+themes remain explicitly labeled as changing colors and background. Glow
+gets a measured experiment under 15p; it does not reopen the deferred
+physical-material, Gaussian-blob or floor-shadow work here. No new
+measurement or implementation in this planning update.
+
 [Roadmap](../../PLAN.md) · Request 2026-11-20 · Finished 2026-11-26 with
 4.82.0. Eight trial pictures were ray traced; two sheets are below.
 

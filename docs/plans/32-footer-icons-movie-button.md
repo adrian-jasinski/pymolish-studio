@@ -1,5 +1,45 @@
 # 32 — Icons in the row under the object list, and a Movie button
 
+**Planning update 2026-11-26 at 4.82.0: reopened for 32c.** The request
+is the row below Objects in the supplied screenshot, not the main action
+toolbar or the state controls. No GUI measurements were made today; sizes
+below are proposed targets. Historical 32a/32b remain shipped.
+
+## 32c — larger icons with short labels
+
+**Question 121, answered 2026-11-26:** larger icons with Viewing, SEQ,
+Chat, Wizard and Cmd labels beside them; use two rows when narrow.
+Alternatives offered: larger icons but only today's Viewing/SEQ labels,
+or all labels in one row by widening Objects. Neither was selected.
+
+| Item | Planned behavior |
+| --- | --- |
+| Icon size | Start with **20 logical px**, matching the action toolbar, versus the footer's current `menu_icon` default of 16. This is a proposed target, not a new measurement. Set both `menu_icon(..., size=...)` and `QToolButton.setIconSize`, so Qt does not draw a larger bitmap in the old small slot. Use the existing device-pixel-ratio handling; do not multiply by UI scale twice. |
+| Button height | Trial target: at least **32 logical px**, or the native font/icon size hint plus padding if larger. One common height and padding. Verify with actual fonts at each scale before fixing a value. |
+| Labels | Current mouse-mode short name (Viewing, Editing, etc.), SEQ, Chat, Wizard, Cmd, in that order. Full tooltips/accessible names: mouse mode including its complete name, Sequence tab, AI assistant, Wizard, Command line and log. |
+| One row | Use it when the natural widths, arrows, margins and spacing fit. Keep the short mouse-mode name readable; do not force the panel wider or consume empty space by stretching that button. |
+| Narrow panel | First row: mouse mode and SEQ. Second row: Chat, Wizard and Cmd. Move the same widgets into a small native Qt grid; no duplicate actions or generic flow-layout framework. Use current size hints for the breakpoint, not a guessed width from the screenshot. The narrowest supported width must fit both rows. |
+| Interaction | Preserve each current click/menu/toggle behavior, especially SEQ's split arrow, the AI menu and connector indicator, Wizard's menu, and Command's visibility switch. Text “Chat” does not change what clicking the AI menu does. |
+| Accessibility | Tab order stays mouse mode → SEQ → Chat → Wizard → Cmd in either layout; Space/Enter and arrow keys retain native button/menu behavior. Accessible names stay complete when the visible label is abbreviated. |
+| Theme and scale | Keep Lucide icons, text tint and active accent. Regenerate on palette/scale changes, retain focus/checked state through layout changes, and use the existing next-start scale fallback where required. No independent footer-scale preference. |
+
+Files: `modules/pmg_qt/pymol_qt_gui.py` (footer construction and
+`_set_footer_icons`), `object_panel.py` (footer layout), existing
+`icons.py` helper only if needed. No new icon artwork or dependency.
+
+Checks in `testing/tests/api/object_panel.py`: labels and actual icon size,
+one/two-row transitions, no overlap/clipping or panel growth, mouse-mode
+name change, and preservation of existing actions. Extend the current
+footer/mouse-width tests rather than making a second GUI harness. Check
+`sequence_tab.py` for SEQ behavior. Measure the real footer's width/height
+and lost object-list height at the default and narrow panel widths, dark
+and light themes, and UI scales 100%, 150%, 200% (test targets, not results).
+Walk the keyboard order and check icons on Windows/macOS too. Do not claim
+the historical widths below describe the new layout. Leave the main toolbar,
+states row and command-tab font controls alone.
+
+## Earlier releases and decisions
+
 **2026-11-24, 4.67.0, from a request and not from this plan:** the row has
 five buttons: mouse mode, SEQ, AI assistant (moved here from the action
 toolbar, Lucide's `bot`), Wizard, command line. SEQ opens the Sequence tab

@@ -166,6 +166,17 @@ finished and left this file; the open orders moved up by one.
 
 See [Shipped state](PLAN-STATE.md) for the shipped versions and their summary.
 
+**Planning update 2026-11-26 at 4.82.0:** the reference images and the
+request for larger buttons below Objects add 15m–15p, 32c and 34d. All
+24 local PNG/JPG references were reviewed and grouped into visual families
+in [plan 15](docs/plans/15-presets.md), with descriptive names and reuse of
+existing rendering first. Steps 32 and 34 reopen for these additions; their
+earlier releases remain shipped. No program changes, version bump, new
+render or GUI/performance measurement in this update. The user chose larger
+icons with short labels and two rows when narrow (121), and existing recipes
+followed by a measured true-glow experiment (122). Choices 123–125 remain
+open below; recommendations are not recorded as answers.
+
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
 bindings does not move molecular computation to the GPU. Follow
@@ -187,12 +198,22 @@ implementation task/PR, with an `X` feature or `Y` fix version under
 | --- | --- | --- | --- |
 | 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | 27d shipped in 4.43.1: on WSLg the scale waits for the next start. Left: read what `test_scale_change_keeps_the_window_alive` prints in the Windows and macOS CI jobs (live, with the time until the window is back, or "unsupported"), and try the change once by hand on each. Needs the pushed branch: the last CI run is older than the repair. | Both systems either change the scale in the running window within two seconds, or are added to `theme.live_scale_blocker`. |
 | 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | 31a and 31c shipped in 4.58.0, the connector 31b in 4.61.0 (tried with Claude Code 2.1.322 in the real window). Left: the consented live trial of the Chat tab with each provider (a ligand figure, ball-and-stick color only, a scene, a native fork command, an unavailable optional feature; commands, errors, time and tokens recorded), which needs the user's API keys; one real sign-in and one conversation each with ChatGPT (since 4.80.0 the button of the provider "OpenAI") and with OpenRouter (31d, shipped in 4.66.0 on stand-ins), which needs the user's accounts; for the provider "Claude Code" (4.68.0, two turns tried on WSLg with a Team plan) the same five tasks, the button "Continue with Claude Code" with a signed-out Claude Code, and one turn on Windows or macOS; and one call through the connector from Codex, whose account had no credits on 2026-11-24. | Live trial recorded for Anthropic, OpenAI and Claude Code; a sign-in and a conversation recorded for ChatGPT, OpenRouter and Claude Code, on WSL and on one other system; one Codex call through the connector. |
-| 3 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background. A second pass over the texture that FXAA reads since 4.65.0 (`SceneRenderAA`, `fxaa.fs`). | Frame times and pictures on black/white. |
-| 4 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. With it built, decide again whether "Solid (grid)" becomes the default (answer 105 A). | Real-window responsiveness, suite and sanitizer checks. |
-| 5 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
+| 3 | **15m** — [Reference-inspired presets](docs/plans/15-presets.md) | Compare the image families using current rendering before building the menu. Proposed new entries: Space filling, Illustrated atoms, Licorice, Bond shell; Illustration gets a descriptive label, Contour cartoon. Reuse existing surface/material looks. Question 123 chooses the entry set/name. | Viewport/ray comparison sheet; selected recipes tested for colors, background, camera, hidden objects, reset and scene/Undo behavior. State the existing viewport-outline limit. |
+| 4 | **34d + 15n** — [Transparency](docs/plans/34-ball-and-stick.md) | One Presets > Transparency menu for Cartoon, Spheres, Surface and Ball and stick, with the existing percentage choices. Add independent ball-and-stick alpha in the existing core path first; question 124 chooses scope. | All four work in viewport/ray, independently of each other; isolated balls, inheritance, reset, scene/session, Undo/Redo and disabled objects covered. |
+| 5 | **15o** — [Preset organization](docs/plans/15-presets.md) | Group cartoon variants, atoms/bonds, surfaces and binding presets after choosing the new recipes. Keep every current action; label existing Themes as changing colors/background. Question 125 chooses grouping depth. | Shared toolbar/object menu, no missing actions, keyboard navigation, correct scope and one Undo snapshot per leaf. |
+| 6 | **32c** — [Larger footer icons and short text](docs/plans/32-footer-icons-movie-button.md) | Viewing, SEQ, Chat, Wizard, Cmd with larger icons and adjacent labels; two rows when narrow (answer 121). Reuse current icons/actions. | Actual footer widths/heights at normal/narrow widths, both themes and multiple scales; no clipping/panel growth, preserved actions and keyboard order. |
+| 7 | **15b** — [Viewport outline](docs/plans/15-presets.md) | Edge pass for figure/soft/flat/comic/sketch, contrasting with the background; include illustrated spheres and transparent envelopes from 15m. Reuse the offscreen path that FXAA reads since 4.65.0 (`SceneRenderAA`, `fxaa.fs`). | Frame times and pictures on black/white, transparent overlaps and native drivers. |
+| 8 | **15p** — [Neon/glow experiment](docs/plans/15-presets.md) | After the existing-renderer comparisons and outline, compare one optional true-glow pass with the bright-edge baseline (answer 122). Reuse offscreen rendering; no new rendering dependency. | Pictures, frame time and memory; background excluded from the glow source; transparent PNG/Draw/Ray and driver limitations documented before choosing shipping scope. |
+| 9 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. With it built, decide again whether "Solid (grid)" becomes the default (answer 105 A). | Real-window responsiveness, suite and sanitizer checks. |
+| 10 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
 
-FXAA shipped in 4.65.0, so the outline can follow it. MAFFT stays
+The new recipes precede menu organization; they can be compared with ray
+outlines while 15b is pending. The footer is independent of rendering work.
+The glow experiment follows both the settings-only comparisons and 15b.
+The former orders 3–5 are now 7, 9 and 10; earlier dated release notes keep
+their historical order numbers. FXAA shipped in 4.65.0, so the outline can
+reuse its path. MAFFT stays
 separately installed and the provider SDKs are the lazy extra `ai`. 5c stays
 shelved; builds stay on GitHub Actions.
 
@@ -253,7 +274,21 @@ recommended direction, not a claim that an implementation has passed tests.
 
 ## Waiting for the user
 
-No unanswered question remains. Question 105 (the grid surface stays as
+New choices from the 2026-11-26 planning request, before implementation:
+
+| No. | Choice | Options and recommendation |
+| --- | --- | --- |
+| 123 | New recipe set and the cartoon illustration name ([15m](docs/plans/15-presets.md), order 3) | **A, recommended:** Space filling, Illustrated atoms, Licorice and Bond shell, with comparisons against existing recipes; reuse surface/light styles for the other images. **B:** Space filling and Illustrated atoms only, the rest as manual compositions. For the existing Illustration row, **Contour cartoon** is recommended; **Outlined cartoon** is the alternative. No Proteinbase-branded name. |
+| 124 | Transparency scope ([34d](docs/plans/34-ball-and-stick.md), order 4) | **A, recommended:** whole objects, as today's cartoon control, one independent value for ball-and-stick balls and bonds; selection menus identify that scope. **B:** atom/residue scope with defined half-bond transitions, requiring more core work and a change from cartoon's current behavior. |
+| 125 | Menu grouping ([15o](docs/plans/15-presets.md), order 5) | **A, recommended:** Cartoon, Atoms and bonds, Surface, Binding, Transparency; Light, explicitly labeled Themes, and Floor below a Scene appearance separator. **B:** group Cartoon and Transparency only, keep the remaining list mostly flat. All existing actions remain available. |
+
+Answered during this planning run: **121**, larger icons with Viewing,
+SEQ, Chat, Wizard and Cmd beside them, two rows when narrow; **122**,
+existing rendering recipes first, then a measured true-glow experiment.
+Recorded in the detailed plans and [PLAN-DONE.md](PLAN-DONE.md) as decisions,
+not shipped features. There is no need to answer them again.
+
+Earlier decisions: question 105 (the grid surface stays as
 an option, today's surface the default) was answered on 2026-11-25 and
 built in 4.81.0 and 4.82.0; question 115 (a row of "surface look" shows
 the surface itself) was asked and answered in that run. Both are in
@@ -335,8 +370,9 @@ the tones of the 2D picture in a PNG written by `ligand_2d` (rdkit draws
 it), and glycerol and other additives sorted out of the 2D panel's list of
 ligands. From 4.43.1 to 4.51.0: sequence length as a counted column of the
 table, and a header "Stars" in place of the property's name "stars";
-transparency and quality settings of its own for `ball_and_stick`, and a
-bond color of its own; `ball_and_stick` for ligands in the presets "simple"
+quality settings of its own for `ball_and_stick`, and a bond color of its
+own (transparency is now requested as 34d, order 4); `ball_and_stick` for
+ligands in the presets "simple"
 and "default"; settings of single states and the secondary structure in a
 scene; Undo of a step of `ligand_next`. From 4.60.1 to 4.65.0: a token of
 the agent connector that is kept between runs (today: the environment
@@ -390,6 +426,9 @@ dots than 71 to 74 % of their area.
 
 The user's to do:
 
+- Review choices 123–125 above. The image-family table and proposed menu
+  are in plan 15; the confirmed footer layout is in plan 32. These are
+  plans, not new controls in the installed application.
 - Look at the changes of 2026-11-25 in your own window. They were built
   and tried in a copy; at the end of the run, with pymolish closed, your
   `.venv` was rebuilt to 4.76.0 with the extras `dev`, `chem`, `fix` and
@@ -403,12 +442,15 @@ The user's to do:
 - Try the drag with the right button (4.70.0) once on Windows and on
   macOS: there the system asks for the menu when the button is released,
   on Linux when it is pressed. Both are handled; only Linux was tried.
-- Push `feature13` again. Checked 2026-11-26 after 4.82.0:
+- Push `feature13` again. Local tracking ref checked 2026-11-26 after 4.82.0:
   `origin/feature13` is at the plan commit of 4.76.14 (`5101e943`), so
-  what was listed here before is pushed, and pull request #11 ("Feature13")
-  is open. Including this plan commit the branch is 14 commits ahead:
+  what was listed here before is in that tracking ref. Pull request #11
+  ("Feature13") was previously recorded as open; remote status was not
+  rechecked in this planning run. Including this plan commit the branch is
+  15 commits ahead of the local tracking ref:
   4.77.0, 4.77.1, 4.78.0, 4.79.0, 4.79.1, 4.80.0, 4.81.0, 4.82.0 and six
-  plan commits. No push or merge was performed in this run. 4.81.0
+  plan commits plus this reference-image planning commit. No fetch, push
+  or merge was performed in this run. 4.81.0
   changed `layer2/RepSurface.cpp` and was compiled with GCC on Linux
   only: the Windows and macOS jobs of the CI run are its first compile
   there.

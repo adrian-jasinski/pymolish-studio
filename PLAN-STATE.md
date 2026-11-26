@@ -2,6 +2,14 @@
 
 [Back to the roadmap](PLAN.md).
 
+**Planning-only update, 2026-11-26:** 15m–15p cover reference-inspired
+presets, grouped transparency/menus and a measured glow experiment; 32c
+adds larger labeled footer buttons, and 34d adds independent ball-and-stick
+transparency. Steps 32 and 34 reopen for those additions. No feature shipped
+and no GUI/render/performance result was measured in this update; the
+checked program version remains 4.82.0. Questions 121/122 are answered,
+123–125 are open in [PLAN.md](PLAN.md).
+
 **Shipped state, checked 2026-11-26: 4.82.0.** Built since 4.19.43,
 with the tests and GUI checks recorded in [PLAN-DONE.md](PLAN-DONE.md):
 
@@ -61,7 +69,9 @@ Of the ten features requested on 2026-11-20, all ten have a working
 version: the tenth, the surface looks, shipped in 4.82.0 on the grid
 surface of 1b (4.76.0, a menu row with its cavity settings since
 4.81.0; today's surface stays the default, answer 105 A). Steps 19, 20,
-25, 26, 29 and 32 are finished. Of the eleven drafts of 2026-11-23, all eleven have a working version;
+25, 26 and 29 are finished. Step 32's original scope is finished; 32c is
+new open work, as is 34d after the original ball-and-stick scope. Of the
+eleven drafts of 2026-11-23, all eleven have a working version;
 the chat (31a, 31c) shipped in 4.58.0, its external connector 31b in 4.61.0,
 the sign-in in the browser 31d in 4.66.0 (its ChatGPT half sits in the
 provider "OpenAI" since 4.80.0), the provider "Claude Code" in

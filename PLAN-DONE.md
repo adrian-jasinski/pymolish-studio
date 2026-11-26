@@ -5,6 +5,21 @@ stays in `PLAN.md`; the detailed plans stay in `docs/plans/`. Step numbers and
 order numbers in the finished-work table are historical. “Open, order N”
 references below follow the current roadmap (updated 2026-11-26).
 
+**Planning update 2026-11-26 at 4.82.0:** no milestone shipped. Steps 32
+and 34 reopen for 32c (larger labeled footer buttons) and 34d (independent
+ball-and-stick transparency); their earlier completed scopes remain
+recorded below. Step 15 adds 15m–15p for the reference-image recipes,
+transparency menu, grouping and glow experiment. Current open orders:
+15m 3, 34d/15n 4, 15o 5, 32c 6, 15b 7, 15p 8, surface worker 9,
+general undo 10. Dated descriptions of past runs retain historical orders.
+
+Decided by the user during this planning update; neither item is built:
+
+| No. | Decision | State |
+| --- | --- | --- |
+| 121 | Larger icons with Viewing, SEQ, Chat, Wizard and Cmd labels beside them; two rows when narrow. Larger icons without the extra labels, and a wider single-row panel, were not selected. | [32c](docs/plans/32-footer-icons-movie-button.md), open, order 6. Sizes still need a real-window comparison. |
+| 122 | Existing rendering recipes first, then a measured experiment for true neon/glow. A settings-only endpoint was not selected. | [15m and 15p](docs/plans/15-presets.md), open, orders 3 and 8. No glow implementation or performance claim yet. |
+
 **Planning update 2026-11-23 at 4.43.0:** no milestone shipped. Step 11 is
 reopened for CPK (11c); its existing palette releases remain recorded below.
 New steps 33–36 and follow-ups 22f/24d/27d are open in `PLAN.md`. The unbuilt
@@ -138,7 +153,7 @@ Decided by the user on 2026-11-25, after the grid surface experiment
 
 | Question | Decision | State |
 | --- | --- | --- |
-| 105 — Does the grid surface stay, and for what? | Option A, recommended: keep it beside today's surface, which remains the default; add "Solid (grid)" in Setting > Surface and support carving and cavities. Use the grid with a probe of about 3 A for the rounded clay surface. Reconsider the default after the surface worker. | Grid surface available as `surface_type 7` since 4.76.0. Menu row, cavities and the solvent surface in 4.81.0 (carving worked already); clay and two more looks on it in 4.82.0. The default is decided again after the worker, order 4. B (default above a size) and C (remove it) were not selected. |
+| 105 — Does the grid surface stay, and for what? | Option A, recommended: keep it beside today's surface, which remains the default; add "Solid (grid)" in Setting > Surface and support carving and cavities. Use the grid with a probe of about 3 A for the rounded clay surface. Reconsider the default after the surface worker. | Grid surface available as `surface_type 7` since 4.76.0. Menu row, cavities and the solvent surface in 4.81.0 (carving worked already); clay and two more looks on it in 4.82.0. The default is decided again after the worker, order 9. B (default above a size) and C (remove it) were not selected. |
 
 Decided by the user on 2026-11-25, choices 91–97 from the GUI request of
 2026-11-24, and built the same day.
@@ -206,7 +221,7 @@ recommendation and still waited for a word:
 | 37 | The contact area of "protein-protein interaction" is orange. | Step 30, 4.36.0 to 4.40.0. |
 | 38 | "remove crystallization additives" is one row, sugars and NAD(P) included. | Step 30, 4.36.0 to 4.40.0. |
 | 39 | No preset leaves the preset menu. | Step 30, 4.36.0 to 4.40.0. |
-| 40 | Undo of a preset takes back everything done after it, until 21g builds one stack. | 4.40.0; 21g open, order 5. |
+| 40 | Undo of a preset takes back everything done after it, until 21g builds one stack. | 4.40.0; 21g open, order 10. |
 | 41 | Shared tools, then the chat, then the connector. | 4.58.0 and 4.61.0. |
 | 43 | Reviewed operations; a concrete confirmation for destructive, file and network actions; a separate trusted Python mode. | 4.58.0; the connector uses the same executor (4.61.0). |
 | 44 | A Chat tab in the command area. | 4.58.0. |
@@ -272,11 +287,9 @@ on 2026-11-24 (table above):
 | 24 | [Ligand in 2D with its contacts](docs/plans/24-ligand-2d.md) | Requested 2026-11-20; 4.32.0 and 4.33.0 (the command `ligand_2d` and the panel), 4.43.2 (the picture fits, 24d) and 4.56.0 (24c: the pocket's outline, solvent halos, metal contacts, Show in 3D, distances in tooltips, Tab through the residues). Water bridges, halogen bonds and dragging residues were left out on purpose. |
 | 36 | [Next ligand with polar contacts](docs/plans/36-ligand-navigation.md) | Requested, planned and built on 2026-11-23, 4.51.0, one slice: `ligand_next` walks the ligands of the 2D panel, shows each as `ball_and_stick` with the site as sticks and the polar contacts as dashes, zooms, and takes back at the next step only what it turned on. Ctrl+Shift+M and Ctrl+Shift+H; Ctrl+L stays zoom only (question 58). |
 | 35 | [Scenes recall appearance, one click](docs/plans/35-scene-appearance.md) | Requested, planned and built on 2026-11-23, 4.44.0 and 4.47.0, two slices. A click or Enter recalls a scene. A scene keeps the cartoon type, the settings of atoms, bonds and objects, the light and background settings and the definitions of the colors it uses, and takes away overrides that were not there. Its session record has a seventh item (question 62). |
-| 34 | [An independent ball-and-stick representation](docs/plans/34-ball-and-stick.md) | Requested, planned and built on 2026-11-23, 4.48.0 and 4.49.0, three slices. Representation 21 with its own visibility bit and three settings, built by the stick code; bonds show their order; the presets and the view at load draw ligands with it and write no sphere or stick setting. Settings of atoms that PyMOL does not know go under their own session key, because PyMOL 3.2 ends when it saves them. |
 | 28 | [Session format](docs/plans/28-session-format.md) | `.psex` in 4.26.0 (28a); the one session key `pymolish` for what the fork adds in 4.45.0 (28b), with the table columns as its first user and the walk of `ligand_next` as its second. The shot list of step 19 goes under it when that slice is built. |
 | 22 | [Property table](docs/plans/22-property-table.md) | 4.27.0 to 4.29.0 (the window, editing, import and export), 4.45.0 (columns in the session, counted columns, Follow, the row of a picked atom, the size between starts) and 4.46.0 (stars). Not built: sequence length as a counted column, coloring rows by a column, a 2D structure column. |
 | 11 | [Color palettes](docs/plans/11-color-palettes.md) | Five palettes and the toolbar button in 4.10.0, `halo` in 4.41.0, `color_cpk` in 4.50.0 (11c). The CPK table was written from what is known of the RasMol manual and not compared with it in that run (question 64). |
-| 32 | [Icons under the object list, a Movie button](docs/plans/32-footer-icons-movie-button.md) | Requested, planned and built on 2026-11-20, 4.42.0 and 4.43.0, two slices. The four buttons under the object list have an icon: the mouse mode with its name, SEQ with its letters, Wizard and the command line as the icon alone. A Movie button after Scenes in the action toolbar opens and closes the Timeline panel. Changed in 4.67.0: five buttons, the AI assistant after SEQ; SEQ opens the Sequence tab. |
 | 30 | [Eight repairs after a first look at 4.35.0](docs/plans/30-polish.md) | Requested, planned and built on 2026-11-20, 4.36.0 to 4.40.0, six slices: the 2D picture, the property table, the live UI scale, the preset menu and what a preset may color, a clean row for crystallization additives, Undo and Redo for a row of the preset menu. Questions 36 to 40 have built answers. |
 | 29 | [Version numbers](docs/plans/29-versioning.md) | The first number stays 4. The second goes up when something a user can see ships, the third for every other change to the program; plans, docs, CI and tests take no number. In `AGENTS.md` §5 since 2026-11-20; 4.20.0 is the first version under it. |
 | 26 | [Action toolbar: Bg, Open, quick select, layout](docs/plans/26-toolbar-buttons.md) | "Bg" with a paint roller; an Open button with the rows of File that bring something in; chips P, L, S, a menu with chains and more, All and "nothing", with Shift to add and Ctrl to take away; one row, 1154 px at 150 %, with a text only on Residues, Presets, Bg, Draw and the scale. 4.20.0, 4.21.0, 4.30.0. |
@@ -294,6 +307,13 @@ on 2026-11-24 (table above):
 | 17 | [Legacy menu rows and the old internal GUI](docs/plans/17-legacy-ui.md) | Menu rows that led nowhere, the Tk stand-ins, then the C++ code of the old panel and of the GL menus: 316 lines of Tk stand-ins and 4,160 lines of panel and menu code deleted in five slices, each a working program. A sixth slice, 17f (4.25.0): the scene buttons of the viewport, 498 lines. |
 | 16 | [Background menu and palette caption](docs/plans/16-background.md) | A toolbar button with 13 backgrounds, plain and gradient, remembered only when asked; the palette menu says what it colors. |
 | 14 | [Action and right-click menus](docs/plans/14-menus.md) | One builder for objects and groups, one for selections; the A menu of an object has 10 rows, the rest under "more"; right click on a row gives rename, duplicate and delete at once. `menu.py` 1,869 to 1,745 lines. 14d (4.19.2): "select" and "split" rows by chain and by kind of molecule, new command `split_types`; presets left the A menus; "split by state" moved there in 4.19.3. 14e (4.19.31, 4.19.32): one list in Show, cartoon styles and hydrogens as hover menus, Show 21 to 15 rows, Hide 22 to 17. |
+
+## Earlier completed scopes, reopened by the 2026-11-26 request
+
+| Step | Completed scope | New work |
+| --- | --- | --- |
+| 34 | [Independent ball-and-stick](docs/plans/34-ball-and-stick.md), 34a–34c in 4.48.0/4.49.0: representation 21, its own visibility and three settings, native bond orders, ligand defaults without changing sphere/stick settings, and compatible storage of fork-specific atom settings. | 34d, transparency; open, order 4. Earlier milestones and measurements remain below. |
+| 32 | [Footer icons and Movie button](docs/plans/32-footer-icons-movie-button.md), 32a/32b in 4.42.0/4.43.0: mouse mode/SEQ with text, Wizard/Command as icons, Movie opens/closes Timeline. In 4.67.0 AI moved after SEQ and SEQ opens its tab; 4.73.0 shortened the mouse-mode label. | 32c, larger icons and short labels with a second row when narrow; open, order 6. |
 
 ## Finished work, in execution order
 
@@ -348,17 +368,17 @@ where the decision shipped, "open" with its order where it has not.
 
 | # | Decision | Where it goes |
 | --- | --- | --- |
-| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 4. |
+| 1 | A large surface is built on a worker thread (option A). | 1b. Open, order 9. |
 | 3 | The icon and the logo were generated with ChatGPT; the user owns them. They get "a license that is good for trade marks". | Done in 4.19.43: `data/pymol/icons/LICENSE`, a notice outside the two code licenses (unchanged copies travel with the program and may refer to it; a changed version needs its own). `docs/licenses.md`, plan 9. |
 | 4 | The release builds stay on GitHub Actions for now. | 5c is shelved; nothing was built for it. Plan 5. |
-| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 3; the FXAA pass it follows shipped in 4.65.0. |
+| 5 | The outline of the looks is drawn in the viewport too: black, or a color that shows on the chosen background. | 15b. Open, order 7; the FXAA pass it follows shipped in 4.65.0. |
 | 6 | The ChimeraX object colors become a palette. | 15c. Done in 4.22.0. |
 | 7 | All five effects of 15e. | Done in 4.62.0: two presets, the fog row, shade in the soft look; the fifth, color steps in the viewport, was already there (choice 71). |
 | 13 | "Decide by yourself." Decided as recommended: the shot list goes into the session file; the 58 Program rows of the Movie menu go; the keyframe strip of the core stays for now. | Step 19. Done in 4.63.0. The rows counted in the menu were 116 (49, 43 and 24), not 58. |
 | 15 | As recommended: blue hover in every menu; Orient acts only on what is visible. | Step 20. Done in 4.23.0. |
 | 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Done in 4.63.1 (sphere modes), 4.64.0 (background picture) and 4.65.0 (FXAA, off by default: choice 73). |
 | 18 | As recommended: idle OpenMP threads sleep at once. | 1b. Done in 4.23.1. |
-| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 5. |
+| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 10. |
 | 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Built as an experiment in 4.76.0 (`surface_type 7`); kept as an option by answer 105 A. Moved up by the answer to question 25. |
 
 14 was answered by "release 17" (4.19.42).
@@ -464,7 +484,7 @@ the one from "25b-2" to "17f".
 | 21 | 21f, item 3 — background picture in the session | Done 2026-11-24 (4.64.0). A session save task writes the picture as "data:image/png;base64" text into `bg_image_filename`; the core read that form already. Real window: drawn from the file, from the text, and from a session whose file was deleted. PyMOL 3.2.0a loads, ray traces and saves such a session. Test `api/bg_image_session.py`; `jira/PYMOL-1571.py` lost its mark. |
 | 21 | 21f, item 2 — sphere modes 10 and 11 | Done 2026-11-24 (4.63.1). `sphere_mode` stops at 9; the warning, the test and its two reference images are deleted. Of the five test files that carried the mark `incentive`, two are left, both for 21g. |
 | 19 | The rest of step 19 | Done 2026-11-24 (4.63.0): [docs/plans/19-movie-timeline.md](docs/plans/19-movie-timeline.md). The shot list under `session_extra` entry "timeline", with the starts and the length of the movie it built; a session whose movie still has that length brings it back. The strip: a ruler of seconds for the playhead, a drag moves a shot, a drag of its right end changes its length (`move_shot_to`, `set_seconds`, which the test calls). Movie > Program: 116 rows removed. Checked in the real window on WSLg: drag, stretch, save, reinitialize, load. Differs from the plan: the count of rows; State Sweep stays. |
-| 15 | 15e — effects | Done 2026-11-24 (4.62.0): [docs/plans/15-presets.md](docs/plans/15-presets.md). Presets "balls in glass" and "cartoon cylinders"; a fog row in the light menu; `ambient_occlusion_mode` 1 at scale 16 in the look "soft", off for the objects of glass, balls in glass and illustration. Scenes keep `ambient_occlusion_mode`, `ambient_occlusion_scale` and `ray_transparency_oblique_power`. Measured: a surface build of 1aon (58 996 atoms) took 6.0 and 6.7 s without ambient occlusion and 7.4 and 10.5 s with it; on 4v6x the noise was larger than the difference (52 and 110 s without, 81 and 81 s with). Differs from the plan: color steps needed no code (45 colors in the viewport under "comic", 8436 under the standard light). 15b is open, order 5. |
+| 15 | 15e — effects | Done 2026-11-24 (4.62.0): [docs/plans/15-presets.md](docs/plans/15-presets.md). Presets "balls in glass" and "cartoon cylinders"; a fog row in the light menu; `ambient_occlusion_mode` 1 at scale 16 in the look "soft", off for the objects of glass, balls in glass and illustration. Scenes keep `ambient_occlusion_mode`, `ambient_occlusion_scale` and `ray_transparency_oblique_power`. Measured: a surface build of 1aon (58 996 atoms) took 6.0 and 6.7 s without ambient occlusion and 7.4 and 10.5 s with it; on 4v6x the noise was larger than the difference (52 and 110 s without, 81 and 81 s with). Differs from the plan: color steps needed no code (45 colors in the viewport under "comic", 8436 under the standard light). 15b is open, order 7. |
 | 31 | 31b — agent connector, toolbar button | Done 2026-11-24 (4.61.0): [docs/plans/31-ai-agents.md](docs/plans/31-ai-agents.md). `modules/pymol/agent_server.py`: MCP over Streamable HTTP with the standard library, 127.0.0.1 only, bearer token, Host and Origin checks, requests of at most 1 MB, nothing listening before `agent_server on`; one tool, the operations of `agent.Executor`, each call a turn on the GUI thread with its own Undo snapshot. Toolbar: AI assistant (`bot`), blue while the connector listens. Tests `api/agent_server.py` (5: refused strangers, handshake, calls against the session, simultaneous calls). Real window: Claude Code 2.1.322 listed the tool and called it (the state of the session, then a color change); Codex 0.163.0 was not tried beyond its configuration (no credits). Differs from the plan: no client's file is edited, the helper is a line to copy; the revision 2026-07-28 without a handshake is not answered. |
 | 26 | Rock > Random | Done 2026-11-24 (4.60.1). The turn stopped the timer that had started it, so the spin changed once and stayed. Now a single-shot timer set after each turn, for the time a random 15 to 180 degrees take at the current `sweep_speed`. Real window: four changes in nine seconds with the range set to 15 to 20 degrees, still turning. |
 | 24, 26, 33 | Follow-up request 2026-11-24 | Done 2026-11-24 (4.58.1 to 4.60.0). 4.58.1: ligand 2D residues keyed by their own object; a ligand extracted from 1OKY selected nothing and warned on zoom before (test added). 4.59.0: Sequence alignment button after 2D (Lucide `text-align-start`); Zoom and Rock open their menus from the whole button; Rock menu uses `sweep_mode` and `sweep_angle` 0 for spins, Random a 3 s timer; Bg and Draw icon only; spacing 8 → 10 px; bar 1236 → 1254 px measured at 150 %, no overflow. 4.60.0: consensus secondary-structure track drawn by a delegate, colors Zappo / Kyte-Doolittle / percent identity, kept in QSettings. Different from a Jalview copy: no Clustal scheme; the structure rows keep their text symbols. Suite: 1069 passed, one timing test failed under load and passed alone. |
