@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-26 pymolish-studio
 
+	* 4.93.0
+
+	* Ray-traced pictures (15r)
+	  - glow lays its halo on ray-traced pictures too, made on the CPU
+	    from the ray tracer's depth: the colors of what a ray hit,
+	    blurred like in the window, on the pixels where no ray hit. On
+	    a transparent background the halo goes into the alpha.
+	  - Measured, red tryptophan on black at 1435 x 702: the halo is
+	    12.96 % of the ray-traced picture and 13.42 % of the window.
+	    It adds 17 ms to a 2000 x 1500 picture, 68 ms with antialias 2.
+	  - With glow 0 nothing changes. POV-Ray, glTF and the other
+	    exports have no halo.
+
+2026-11-26 pymolish-studio
+
 	* 4.92.0
 
 	* Pictures without ray tracing (15q)

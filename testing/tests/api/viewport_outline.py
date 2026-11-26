@@ -172,3 +172,39 @@ def test_glow_and_outline_in_sized_pictures(request, tmp_path):
     sized = _png_pixels(tmp_path / "outline.png", width=2 * width)
     white = (sized.min(axis=2) > 200).sum()
     assert white > 2000, "no outline in a sized picture"
+
+
+def test_glow_in_ray_traced_pictures():
+    """15r: the ray tracer lays the same halo on the background, from its
+    own depth; on a transparent background the halo goes into the alpha."""
+    cmd.fragment("trp", "m")
+    cmd.color("red")
+    cmd.bg_color("black")
+    cmd.orient()
+    cmd.zoom("m", 12)
+    cmd.set("antialias", 0)
+    cmd.set("ray_opaque_background", 1)
+
+    def ray():
+        return testing.get_imagearray(width=320, height=240, ray=1).astype(int)
+
+    def halo(img):
+        r, g, b = img[..., 0], img[..., 1], img[..., 2]
+        return (r > 40) & (r <= 240) & (g < 30) & (b < 30)
+
+    plain = ray()
+    molecule = plain[..., :3].max(axis=2) > 8
+    cmd.set("glow", 1)
+    glow = ray()
+    assert (glow[molecule] == plain[molecule]).all()  # the atoms as they were
+    share = (halo(glow) & ~molecule).mean()
+    assert 0.01 < share < 0.4, share
+    assert glow[:8, :8, :3].max() == 0  # not everywhere
+
+    cmd.set("ray_opaque_background", 0)
+    clear = ray()
+    alpha = clear[..., 3]
+    assert alpha[:8, :8].max() == 0
+    assert ((alpha > 0) & (alpha < 255) & ~molecule).mean() > share / 2
+    cmd.set("glow", 0)
+    assert (ray()[..., 3][~molecule] == 0).all()

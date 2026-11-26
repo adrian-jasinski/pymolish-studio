@@ -714,8 +714,8 @@ def depth_fog(on, _self=cmd):
 def glow(on, _self=cmd):
     '''
     The glow row of the light menu: a halo in the colors of what is drawn,
-    on top of any look. In the viewport and in pictures drawn without ray
-    tracing, at any size; not in ray-traced pictures.
+    on top of any look. In the viewport and in saved pictures, drawn or ray
+    traced, at any size.
     '''
     _self.set('glow', int(on))
 

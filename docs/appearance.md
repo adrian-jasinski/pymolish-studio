@@ -426,9 +426,10 @@ The last two rows of the menu read no fog or fog, and no glow or glow.
 Fog switches the fading of what is far away; the rows with an outline
 switch fog off. Glow lays a soft halo in the colors of what is drawn
 around it, on top of any light. It is off at the start. It shows in the
-viewport and in every picture drawn without ray tracing (Draw (fast),
-`png` at any size), as the same share of the picture; a ray-traced
-picture and stereo have no halo.
+viewport and in every saved picture, drawn or ray traced, at any size, as
+the same share of the picture; on a transparent background the halo is
+part of the picture's alpha. Stereo and the 3D exports (POV-Ray, glTF)
+have no halo.
 
 **The outline** is a line around every shape, black on a light background
 and white on a dark one. A ray-traced picture has it, and so has the
