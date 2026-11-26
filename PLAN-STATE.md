@@ -9,13 +9,14 @@ request of the same day (the alignment window shows the secondary
 structure only as the drawn track); 4.90.1 repaired three faults found
 by CI on Windows and macOS. Questions 121 to 125 are answered and built;
 128 and 129 were answered **A** on 2026-11-26. The glow menu entry of
-answer 128 A shipped in 4.91.0, which finishes step 15; Solid stays the
-default, with no code change. See [the decisions](PLAN-DONE.md#decisions-128-and-129)
+answer 128 A shipped in 4.91.0; the glow in saved pictures (15q, 15r,
+question 139 open) is planned, order 3, so step 15 is open again. Solid
+stays the default, with no code change. See [the decisions](PLAN-DONE.md#decisions-128-and-129)
 and [current work](PLAN.md). The
 documentation (step 38a to 38d, answers 126 A and 127 A) was written and
 captured on 2026-11-26 at 4.90.0: it changed no program code and has no
 version. The Windows workflow still produces an unsigned portable ZIP;
-an unsigned per-user Inno Setup installer is planned in **5d, order 5**
+an unsigned per-user Inno Setup installer is planned in **5d, order 6**
 (answer 137 A, 2026-11-26); signing (138) is deferred. No installer was
 built or tested in this planning update. Built since
 4.19.43, with the tests and GUI checks recorded in
@@ -88,8 +89,8 @@ version: the tenth, the surface looks, shipped in 4.82.0 on the grid
 surface of 1b (4.76.0, a menu row with its cavity settings since
 4.81.0; today's surface stays the default, answers 105 A and 129 A). Steps 19, 20,
 25, 26 and 29 are finished, and so are steps 32 and 34 with 32c (4.86.0)
-and 34d (4.84.0). Step 15 is finished: its last piece, the glow menu
-chosen in answer 128 A, shipped in 4.91.0. Of the
+and 34d (4.84.0). Of step 15 the glow menu of answer 128 A shipped in
+4.91.0; the glow in saved pictures (15q, 15r) is planned, order 3. Of the
 eleven drafts of 2026-11-23, all eleven have a working version;
 the chat (31a, 31c) shipped in 4.58.0, its external connector 31b in 4.61.0,
 the sign-in in the browser 31d in 4.66.0 (its ChatGPT half sits in the

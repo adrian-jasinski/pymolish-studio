@@ -6,7 +6,7 @@ order numbers in the finished-work table are historical. “Open, order N”
 references below follow the current roadmap (updated 2026-11-26).
 
 Step 5 is reopened by the Windows installer and signing request of
-2026-11-26: **5d, order 5** is planned. Question 137 is answered A with
+2026-11-26: **5d, order 6** is planned. Question 137 is answered A with
 signing skipped for now; 138 is deferred. Its earlier build and bundle
 milestones remain complete; 5c stays shelved.
 
@@ -18,7 +18,7 @@ nothing measured.
 
 | No. | Decision | State |
 | --- | --- | --- |
-| 137 | Per-user Inno Setup `.exe` plus the portable ZIP. Inno Setup is agreed as a pinned CI build tool. Signing is skipped for now; MSIX through the Store (B) was not selected. | Open, order 5 ([5d](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing)). |
+| 137 | Per-user Inno Setup `.exe` plus the portable ZIP. Inno Setup is agreed as a pinned CI build tool. Signing is skipped for now; MSIX through the Store (B) was not selected. | Open, order 6 ([5d](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing)). |
 | 138 | Signing provider. | Deferred until the user asks for signing; not an open question. |
 
 ## Decisions 128 and 129
@@ -41,9 +41,9 @@ update below, in that order: 15m, 34d with 15n, 15o, 32c, 15b, 15p and the
 surface worker of 1b. Steps 32 and 34 are finished again; step 15 has every
 original slice built; answer 128 A added the glow menu follow-up in 4.91.0.
 Step 1 keeps its two measured items. The current open orders are:
-27c 1, the trial of 31 2, general undo 3, the rest of the documentation
-(step 38) 4, Windows installer, unsigned for now (5d) 5; the glow menu
-shipped in 4.91.0.
+27c 1, the trial of 31 2, glow in saved pictures (15q, 15r) 3, general
+undo 4, the rest of the documentation (step 38) 5, Windows installer,
+unsigned for now (5d) 6; the glow menu shipped in 4.91.0.
 The rows are under "Finished
 milestones of open steps"; the decisions and choices follow here.
 
@@ -297,7 +297,7 @@ recommendation and still waited for a word:
 | 37 | The contact area of "protein-protein interaction" is orange. | Step 30, 4.36.0 to 4.40.0. |
 | 38 | "remove crystallization additives" is one row, sugars and NAD(P) included. | Step 30, 4.36.0 to 4.40.0. |
 | 39 | No preset leaves the preset menu. | Step 30, 4.36.0 to 4.40.0. |
-| 40 | Undo of a preset takes back everything done after it, until 21g builds one stack. | 4.40.0; 21g open, order 3. |
+| 40 | Undo of a preset takes back everything done after it, until 21g builds one stack. | 4.40.0; 21g open, order 4. |
 | 41 | Shared tools, then the chat, then the connector. | 4.58.0 and 4.61.0. |
 | 43 | Reviewed operations; a concrete confirmation for destructive, file and network actions; a separate trusted Python mode. | 4.58.0; the connector uses the same executor (4.61.0). |
 | 44 | A Chat tab in the command area. | 4.58.0. |
@@ -352,7 +352,6 @@ on 2026-11-24 (table above):
 
 | Step | Detailed plan | Recommendation |
 | --- | --- | --- |
-| 15 | [Presets and looks](docs/plans/15-presets.md) | Finished 2026-11-26 at 4.91.0. 15a to 15l (4.14.0 to 4.62.0), then the reference recipes, transparency, the grouped menu, the viewport outline and the glow experiment (15m to 15p, 4.83.0 to 4.88.0), and the glow row of the light menu (answer 128 A, 4.91.0). The glow stays viewport-only. |
 | 25 | [Studio effects: floor, lights, surface looks](docs/plans/25-studio-effects.md) | Requested 2026-11-20. 25a-1, 4.34.0: the command `stage` (a floor that takes the ray-traced shadow, a mirror image) and the lights studio, top light and soft shadow. 25b-2, 4.35.0: five color themes. 25b-3, 4.81.0: the grid surface of 1b (4.76.0) as "Solid (grid)" in Setting > Surface, with cavity culling, the cavity modes and the solvent surface. 25b-1, 4.82.0: Presets > surface look with glossy, candy glass, frosted and clay, the last three on the grid surface with a probe of 3 A. Not built, and only if asked for: a shadow in the viewport (25a-2), the "wrap" light of clay in the shaders, the Gaussian blob of the trial. |
 | 8 | [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | Closed 2026-11-25 at 4.76.14 by the user's answer to question 106, "finish here"; not finished as planned. Done: the sanitizer job (8a), bounded strings (8b, 408 of 475 calls), Catch2 under the sanitizers (8h), the dead `#ifdef` branches (8i), the `malloc` half of 8c (230 of 297 allocation sites), the mechanical part of 8d (215 of 829 macro calls). Not done and no longer planned: raw `new` / `delete` (181 / 109, with 64 `DeleteP`), 611 VLA macro calls on raw pointers, the error chains of 8e (`ok_assert` 197, `goto` 24, `CHECKOK` 198), 8f, `ov/` (8g, 72 users, never measured), 60 string calls through a pointer. The macro layer of `MemoryDebug.h` and the directory `ov/` stay. Never checked for 4.76.1 to 4.76.14: MSVC, Apple Clang, GCC 11, `compare.py`, a window. |
 | 37 | [GUI follow-ups of 2026-11-24](docs/plans/37-gui-followups.md) | Requested 2026-11-24, answered and built 2026-11-25, 4.68.1 to 4.75.0, seven slices: the old plugin no longer takes the names of the fetch commands (37a); Delete in the Objects list (37b); thirty colors a palette, ten in the preview (37c); colors dragged in the palette dialog (37d); a compact mouse mode button (37e); Mode, Labels and Gaps lists and the alignment button in the Sequence tab (37f); A−, A+ and Reset beside the tabs (37g). |
@@ -389,6 +388,7 @@ on 2026-11-24 (table above):
 | Step | Completed scope | New work |
 | --- | --- | --- |
 | 5 | [Builds and test binaries](docs/plans/05-builds-binaries.md): 5a build iteration and 5b downloadable bundles; archives published since 4.5.1. | [5d — Windows installer and code signing](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing), open, order 6. Requested 2026-11-26; installer and provider choices are pending. 5c stays shelved. |
+| 15 | [Presets and looks](docs/plans/15-presets.md): 15a to 15p (4.14.0 to 4.88.0) and the glow row of the light menu (answer 128 A, 4.91.0). | [15q and 15r — glow in saved pictures](docs/plans/15-presets.md#request-2026-11-26-evening-glow-in-saved-pictures-15q-15r), open, order 3; question 139 is open. |
 | 34 | [Independent ball-and-stick](docs/plans/34-ball-and-stick.md), 34a–34c in 4.48.0/4.49.0: representation 21, its own visibility and three settings, native bond orders, ligand defaults without changing sphere/stick settings, and compatible storage of fork-specific atom settings. | 34d, transparency: done 2026-11-26 in 4.84.0. The step is finished again. |
 | 32 | [Footer icons and Movie button](docs/plans/32-footer-icons-movie-button.md), 32a/32b in 4.42.0/4.43.0: mouse mode/SEQ with text, Wizard/Command as icons, Movie opens/closes Timeline. In 4.67.0 AI moved after SEQ and SEQ opens its tab; 4.73.0 shortened the mouse-mode label. | 32c, larger icons and short labels with a second row when narrow: done 2026-11-26 in 4.86.0. The step is finished again. |
 
@@ -518,8 +518,8 @@ ones, the new ones win.
 
 ## Finished milestones of open steps
 
-Steps 1, 21, 27, 31 and 38 stay in the roadmap.
-These parts of them have shipped. The rows of steps 3, 11, 15, 17, 18, 19, 20, 22, 26,
+Steps 1, 15, 21, 27, 31 and 38 stay in the roadmap (15 for 15q and 15r).
+These parts of them have shipped. The rows of steps 3, 11, 17, 18, 19, 20, 22, 26,
 23, 24, 25, 28, 30, 32, 34, 35, 36 and 37, which are finished, are kept here as the record of
 their milestones. The rows are not in order of time: the newest, the glow menu (4.91.0), the
 alignment window without the line of characters (4.90.0), the

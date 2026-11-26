@@ -9,7 +9,7 @@ deliverables. Build speed, launch speed and download size also need separate dat
 ## Status 2026-11-26
 
 At **4.90.0**, the user's request adds [5d](#5d--windows-installer-and-code-signing),
-order 6 (order 5 since 4.91.0): a Windows installer and trusted signatures for the downloaded
+order 6: a Windows installer and trusted signatures for the downloaded
 installer and the installed executable. This is a documentation-only update;
 no version, build, signing trial, size or timing measurement. The workflow
 and packaging spec were inspected; no remote CI/release status was checked.
