@@ -242,9 +242,10 @@ def testPresets(request):
     labels = [row[1] for row in m if row[0] == 1]
     assert labels == [
         'default', 'classified', 'technical', 'ball and stick',
+        'space filling', 'illustrated atoms', 'licorice',
         'b factor putty', 'pretty', 'publication',
-        'glass', 'balls in glass', 'cartoon wire', 'cartoon spring',
-        'cartoon cylinders', 'illustration', 'ligands',
+        'glass', 'balls in glass', 'bond shell', 'cartoon wire',
+        'cartoon spring', 'cartoon cylinders', 'contour cartoon', 'ligands',
         'ligand sites', 'protein interface', 'protein-protein interaction',
         'antibody and antigen', 'cartoon transparency',
         'show solvent',
@@ -258,7 +259,8 @@ def testPresets(request):
     assert sub('theme') == ['clay', 'blue', 'sage', 'mint', 'night']
     assert sub('light') == [
         'standard light', 'figure', 'soft', 'flat', 'comic', 'sketch',
-        'x-ray', 'studio', 'top light', 'soft shadow', 'no fog']
+        'x-ray', 'studio', 'top light', 'soft shadow',
+        'glossy (light only)', 'no fog']
     assert sub('floor') == ['floor', 'floor with mirror image', 'no floor']
     lights = _to_dict(d['light'])
     from pymol import preset

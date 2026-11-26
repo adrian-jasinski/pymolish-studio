@@ -4,6 +4,34 @@ CHANGE LOG
 
 2026-11-26 pymolish-studio
 
+	* 4.83.0
+
+	* Presets
+	  - Four new rows in the Presets menu, after pictures the user
+	    gave as references: "space filling" (every atom as a sphere of
+	    its radius), "illustrated atoms" (the same in the look "flat":
+	    plain colors inside outlines, like the drawings of the
+	    Molecule of the Month), "licorice" (every bond as a smooth
+	    stick) and "bond shell" (the bonds of the protein as thin
+	    lines inside its half see-through surface, ligands as balls
+	    and sticks). As commands: preset.space_filling,
+	    preset.illustrated_atoms, preset.licorice, preset.bond_shell.
+	  - They keep the colors of the atoms, the camera, the background
+	    and the user's sphere and stick sizes. The next preset takes
+	    them back, and with "illustrated atoms" its light.
+	  - The row "illustration" is now called "contour cartoon". It
+	    runs the same preset; preset.illustration keeps its name.
+	  - New row "glossy (light only)" in the light menu: the light of
+	    the surface look "glossy" on whatever is shown, for polished
+	    atoms or cartoons. It shows and hides nothing.
+	  - The outlines of "illustrated atoms" and "contour cartoon" are
+	    drawn in ray-traced pictures only: in the viewport the first
+	    is a shape in plain colors until the viewport draws outlines.
+	    Pictures, ray traced and from the viewport:
+	    docs/img/reference-recipes.jpg.
+
+2026-11-26 pymolish-studio
+
 	* 4.82.0
 
 	* Presets

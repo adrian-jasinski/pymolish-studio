@@ -818,6 +818,9 @@ def presets(self_cmd, sele):
               [ 0, '', '' ],
               _preset('technical', 'technical', sele),
               _preset('ball and stick', 'ball_and_stick', sele),
+              _preset('space filling', 'space_filling', sele),
+              _preset('illustrated atoms', 'illustrated_atoms', sele),
+              _preset('licorice', 'licorice', sele),
               _preset('b factor putty', 'b_factor_putty', sele),
               [ 0, '', '' ],
               # the variants with solvent: from_menu decides whether it shows
@@ -825,10 +828,11 @@ def presets(self_cmd, sele):
               _preset('publication', 'pub_solv', sele),
               _preset('glass', 'glass', sele),
               _preset('balls in glass', 'balls_in_glass', sele),
+              _preset('bond shell', 'bond_shell', sele),
               _preset('cartoon wire', 'wire', sele),
               _preset('cartoon spring', 'spring', sele),
               _preset('cartoon cylinders', 'cylinders', sele),
-              _preset('illustration', 'illustration', sele),
+              _preset('contour cartoon', 'illustration', sele),
               [ 0, '', '' ],
               _preset('ligands', 'ligands', sele),
               [ 1, 'ligand sites'   , preset_ligand_sites(self_cmd, sele)         ],
@@ -853,6 +857,8 @@ def presets(self_cmd, sele):
               [ 1, 'light', [[ 2, 'Light:', '' ]] + [
                   [ 1, 'standard light' if name == 'default' else name,
                     'preset.look("%s",_self=cmd)' % name ] for name in preset.LOOKS ] + [
+                  # the light of the surface look, for atoms and cartoons too
+                  [ 1, 'glossy (light only)', 'preset.look("glossy",_self=cmd)' ],
                   [ 0, '', '' ],
                   [ 1, 'no fog' if self_cmd.get_setting_int('depth_cue') else 'fog',
                     'preset.depth_fog(%d,_self=cmd)'

@@ -369,6 +369,76 @@ def testSurfaceLooks(request):
     assert cmd.get_setting_float('transparency') == pytest.approx(0.2)
 
 
+def testReferenceRecipes(request):
+    """15m: space filling, illustrated atoms, licorice and bond shell, and
+    "contour cartoon", the row that runs "illustration". They keep colors,
+    camera and background and leave a hidden object alone; the next preset
+    takes all of it back; a scene and Undo bring the picture before."""
+    from pymol import menu
+    request.addfinalizer(cmd.reinitialize)  # the light, the steps of undo
+    cmd.load(testing.datafile('1oky.pdb.gz'), 'm')
+    cmd.fab('ACDEFG', 'hidden')
+    cmd.disable('hidden')
+    cmd.bg_color('grey30')
+    cmd.set('sphere_scale', 0.8, 'm')  # the user's sizes stay
+    rows = dict(_menuRows(menu.presets(cmd, 'enabled')))
+    assert 'preset.from_menu("illustration"' in rows['contour cartoon']
+    assert 'illustration' not in rows
+    count = cmd.count_atoms
+    n, lig, polymer = count('m & !solvent'), count('m & organic'), count('m & polymer')
+
+    def state():
+        return (_colors('all'), cmd.get_view(), cmd.get('bg_rgb'),
+                count('hidden & rep lines'), count('hidden & !rep lines & visible'),
+                cmd.get_setting_float('sphere_scale', 'm'))
+
+    before, spheres = state(), count('m & rep spheres')
+    cmd.scene('start', 'store')
+    reps = {  # what is drawn, and of how many atoms
+        'space filling': {'spheres': n},
+        'illustrated atoms': {'spheres': n},
+        'licorice': {'sticks': n},
+        'bond shell': {'lines': polymer, 'surface': polymer, 'ball_and_stick': lig,
+                       'sticks': count('m & inorganic')},  # the sulfates
+    }
+    for label, shown in reps.items():
+        cmd.do(rows[label], echo=0)
+        for rep in ('spheres', 'sticks', 'lines', 'surface', 'ball_and_stick', 'cartoon'):
+            assert count('m & rep ' + rep) == shown.get(rep, 0), (label, rep)
+        assert count('m & solvent & visible') == 0, label
+        assert state() == before, label
+        # only "illustrated atoms" picks a light: flat colors in outlines
+        flat = label == 'illustrated atoms'
+        assert cmd.get_setting_int('ray_trace_mode') == flat, label
+        assert cmd.get_setting_float('ambient') == pytest.approx(1 if flat else 0.14), label
+    stored.seen = set()
+    cmd.iterate('m & polymer', 'stored.seen.add(round(s.transparency, 2))')
+    assert stored.seen == {0.5}  # of the shell, on its atoms
+
+    # illustrated atoms -> pretty -> default: light and spheres are gone
+    cmd.do(rows['illustrated atoms'], echo=0)
+    cmd.do(rows['pretty'], echo=0)
+    assert cmd.get_setting_int('ray_trace_mode') == 0 and count('rep spheres') == 0
+    cmd.do(rows['default'], echo=0)
+    assert count('m & rep lines') == count('m')
+    # a light picked by hand stays through the recipes that pick none
+    cmd.do(rows['light > studio'], echo=0)
+    cmd.do(rows['space filling'], echo=0)
+    assert cmd.get_setting_int('light_count') == 4
+    # the light of the surface look "glossy" alone: nothing is shown or hidden
+    cmd.do(rows['light > glossy (light only)'], echo=0)
+    assert cmd.get_setting_float('spec_power') == 300
+    assert count('m & rep spheres') == n and count('rep surface') == 0
+
+    # one step of Undo per row, and the scene of the start
+    cmd.do(rows['bond shell'], echo=0)
+    cmd.undo()
+    assert count('m & rep spheres') == n and count('rep surface') == 0
+    cmd.scene('start', 'recall', animate=0)
+    assert count('m & rep spheres') == spheres and state() == before
+    assert cmd.get_setting_float('spec_power') == -1
+
+
 def testWire():
     cmd.load(testing.datafile('1oky.pdb.gz'))
     preset.wire('all')
@@ -507,7 +577,7 @@ LIGAND_PRESETS = (
     'publication_green', 'glass', 'wire', 'spring', 'illustration',
     'ligands', 'ligand_sites', 'ligand_sites_hq', 'ligand_sites_trans',
     'ligand_sites_trans_hq', 'ligand_sites_mesh', 'ligand_sites_dots',
-    'ligand_cartoon', 'classified', 'interaction', 'surface',
+    'ligand_cartoon', 'classified', 'interaction', 'surface', 'bond_shell',
 )
 
 

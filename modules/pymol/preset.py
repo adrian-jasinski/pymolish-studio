@@ -194,6 +194,56 @@ def ball_and_stick(selection="(all)",mode=1,_self=cmd):
         cmd.show("ball_and_stick",s)
     cmd.delete(s)
 
+def space_filling(selection='*', _self=cmd):
+    '''
+    Every atom as a sphere of its van der Waals radius, ligands too, in
+    the colors the atoms have and at the user's sphere sizes.
+    '''
+    s = _prepare(selection, _self=_self)[0]
+    _self.show('spheres', '?' + s)
+    _self.delete(s)
+
+
+def illustrated_atoms(selection='*', _self=cmd):
+    '''
+    "space filling" in the look "flat": plain colors inside outlines, like
+    the drawings of the Molecule of the Month. The outlines are drawn when
+    ray traced.
+    '''
+    space_filling(selection, _self=_self)
+    look('flat', _self=_self)
+    global _lit_by_preset
+    _lit_by_preset = True
+
+
+def licorice(selection='*', _self=cmd):
+    '''
+    Every bond as a smooth stick and every atom without a bond as a small
+    ball, ligands too, at the user's stick sizes.
+    '''
+    s = _prepare(selection, _self=_self)[0]
+    _self.show('licorice', '?' + s)
+    _self.delete(s)
+
+
+def bond_shell(selection='*', _self=cmd):
+    '''
+    The bonds of the protein as thin lines inside its half see-through
+    surface, and the ligands as balls and sticks. The surface has the
+    colors of the carbons under it.
+    '''
+    s, selection = _prepare(selection, _self=_self)[:2]
+
+    _self.show('lines', 'polymer & ?' + s)
+    _show_hetero(s, _self)
+    _self.show('surface', 'polymer & ?' + s)
+    _surface_like_carbons('?' + s, _self)
+    _self.set('transparency', 0.5, s)
+    _self.set('ambient_occlusion_mode', 0, selection)
+
+    _self.delete(s)
+
+
 def b_factor_putty(selection="(name CA+P)",_self=cmd):
     cmd=_self
     s, selection = _prepare(selection, _self=cmd)[:2]
