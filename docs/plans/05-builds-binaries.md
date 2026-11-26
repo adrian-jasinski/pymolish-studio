@@ -1,10 +1,20 @@
 # 5 — Fast builds and downloadable test binaries
 
-[Roadmap](../../PLAN.md) · Draft; no build timings or bundle results yet
+[Roadmap](../../PLAN.md) · 5a/5b complete; 5c shelved; 5d planned
 
 **Shorten the edit/build/test loop, then provide applications testers can launch
 without Python.** An installable wheel and a standalone application are separate
 deliverables. Build speed, launch speed and download size also need separate data.
+
+## Status 2026-11-26
+
+At **4.90.0**, the user's request adds [5d](#5d--windows-installer-and-code-signing),
+order 6: a Windows installer and trusted signatures for the downloaded
+installer and the installed executable. This is a documentation-only update;
+no version, build, signing trial, size or timing measurement. The workflow
+and packaging spec were inspected; no remote CI/release status was checked.
+Installer/provider choices are open (137/138). Builds stay on GitHub Actions;
+the earlier status entries and baseline below are historical.
 
 ## Status 2026-11-08
 
@@ -18,7 +28,7 @@ deliverables. Build speed, launch speed and download size also need separate dat
 
 2026-11-16: 5c proposed below (builds without GitHub Actions). CI was red on one test, not on size; the test is fixed in 4.12.7, not yet confirmed by a CI run. Nothing in the workflow was changed.
 
-## Current state and risks to verify
+## Original baseline and risks to verify (2026-11-08)
 
 - [Build backend](../../_custom_build/backend.py) supports wheels and editable
   builds; [setup.py](../../setup.py) invokes CMake per extension and already uses
@@ -252,6 +262,154 @@ Ways to get the macOS bundle, cheapest first:
    `packaging/build_local.sh` (Linux in podman, Windows on the host). No script
    before the commands have run once.
 3. macOS stays on Actions until a Mac is available.
+
+## 5d — Windows installer and code signing
+
+**Requested 2026-11-26; not implemented.** Reuse the Windows build and
+PyInstaller one-folder bundle. Deliver an installer that installs, upgrades
+and uninstalls pymolish, with a verifiable publisher and working signatures
+on the app as well as the installer. Keep the portable ZIP available.
+
+### What exists
+
+- [build.yml](../../.github/workflows/build.yml) tests `py313` and `py314` on
+  Windows; only `py313` produces the bundle and ZIP. No installer or signing
+  step exists. Preserve both test jobs and the current Qt/ICU workaround.
+- [pyinstaller.spec](../../packaging/pyinstaller.spec) collects the executable,
+  Python, Qt plugins, native libraries, resources and license texts in
+  `dist/pymolish`. The executable needs that whole folder. It has an icon
+  but no Windows version resource configured; UPX is not explicitly disabled.
+- The release job publishes archives and wheels, labels them unsigned and
+  writes `SHA256SUMS`. Its upload/checksum lists omit `.exe`; uploads currently
+  replace same-name assets on an existing version.
+
+### What Windows checks
+
+An installer is packaging, not a trust grant. Authenticode identifies the
+publisher and detects changes to signed files. SmartScreen also evaluates
+download reputation: a newly signed build can still warn, including one
+signed with an EV certificate. Microsoft Store distribution is an alternative
+for avoiding those download prompts; it does not make a GitHub download
+automatically trusted. [Microsoft signing options](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/code-signing-options).
+
+Defender antivirus detections, Smart App Control and organization policies
+are separate from SmartScreen and UAC elevation. Signing does not override
+them. Smart App Control checks binaries as they load, so test DLLs and Python
+extensions as well as installation and uninstallation.
+[Microsoft's test guidance](https://learn.microsoft.com/en-us/windows/apps/develop/smart-app-control/test-your-app-with-smart-app-control).
+The target is installation and launch with protection enabled, without a
+manual unblock, exclusion or disabled security setting. Record any remaining
+warning accurately; do not promise universal acceptance.
+
+### Choices before implementation
+
+**137 — Delivery route:**
+
+- **A, recommended: Inno Setup `.exe`, per-user, plus the portable ZIP.**
+  Wrap the existing bundle in an offline installer. Start-menu shortcut,
+  Installed apps entry, upgrade and uninstall; no administrator requirement
+  for the normal install. Inno Setup is a proposed build tool: agree to it
+  before adding it, pin its version and verify its download in CI. No new
+  runtime Python dependency.
+- **B: MSIX distributed through Microsoft Store.** Microsoft handles MSIX
+  signing after certification. Prefer this if avoiding SmartScreen prompts
+  matters more than direct GitHub installation. First prove frozen Python,
+  Qt/OpenGL, external plugins, writable settings and CLI integrations under
+  MSIX; include Store enrollment and certification. Rework this slice if B
+  is selected rather than building both installer systems.
+
+**138 — Signing for A:**
+
+| Option | Fit and prerequisites |
+| --- | --- |
+| **A — Azure Artifact Signing, recommended if eligible** | Managed public-trust signing with GitHub OIDC; requires an Azure subscription and verified publisher identity. Organizations in the EU are eligible geographically; individual developers currently must be in the US or Canada. A Polish individual must not be assumed eligible. Confirm the actual applicant and current price before provisioning. [Eligibility](https://learn.microsoft.com/en-us/azure/artifact-signing/quickstart). |
+| **B — Publicly trusted CA with CI-compatible signing** | Fallback if Azure is unavailable; confirm individual/organization eligibility, cost and cloud/HSM or token integration. Do not pay for EV on the assumption it removes SmartScreen warnings. No self-signed certificate for public downloads. |
+| **C — SignPath Foundation OSS application** | Free if accepted; publisher is the Foundation, with manual release approvals and limits on signing third-party binaries. Check this fork, bundled licenses/assets and native-library coverage against the terms before relying on it. Acceptance and support for signing the installer/uninstaller are prerequisites. [Conditions](https://signpath.org/terms). |
+
+Needed from the user: 137 A/B, 138 A/B/C if applicable, publisher's legal
+name, individual or organization, country, and signing budget. These are
+choices for implementation, not a reason to stop writing this plan. No
+account purchase or certificate enrollment is part of this planning update.
+
+### Implementation after the choices
+
+1. **Package the existing folder.** Add `packaging/windows.iss` for A.
+   Use a stable application ID and derive installer/file versions from
+   `layer0/Version.h`. Install under the user's local Programs directory;
+   use `PrivilegesRequired=lowest`, standard keyboard-accessible wizard
+   controls and a Start-menu shortcut. Keep application files together and
+   retain the existing notices unchanged. Handle an app still running during
+   upgrade; remove obsolete installer-owned files without deleting user
+   sessions, plugins, `.pymolrc` or settings. No auto-updater, PATH edits or
+   file associations in this slice.
+   [Inno privilege settings](https://jrsoftware.org/ishelp/topic_setup_privilegesrequired.htm).
+2. **Prepare and sign the payload.** Add Windows product/publisher/version
+   metadata to the executable before signing. Explicitly disable UPX in the
+   Windows EXE and COLLECT stages; keep one-folder packaging. Inventory
+   shipped `.exe`, `.dll` and `.pyd` files: preserve valid vendor signatures,
+   sign project binaries and resolve unsigned dependencies with the selected
+   provider. Do not silently skip blocked libraries or assume a signed
+   installer covers them. Sign final bytes with SHA-256 and an RFC 3161
+   timestamp; fail on a missing or invalid timestamp/signature.
+   [SignTool](https://learn.microsoft.com/en-us/windows/win32/seccrypto/signtool).
+3. **Sign the installer and uninstaller.** Use Inno's `SignTool` integration
+   with `SignedUninstaller=yes`, covering temporary setup copies too.
+   Merely signing the outer setup after compilation leaves an installation
+   path that security software can block. Prove this integration with the
+   chosen provider before treating it as available.
+   [Inno signing](https://jrsoftware.org/ishelp/topic_setup_signtool.htm).
+4. **Integrate trusted release signing.** Build an unsigned installer for PR
+   smoke tests with no signing credentials. Signing runs only for trusted
+   release commits, behind a restricted GitHub environment; use OIDC where
+   supported, otherwise protected provider credentials, never private keys
+   in the repository or logs. Sign the payload before creating both the ZIP
+   and installer. Required signing failures stop publication of the Windows
+   release; no silent fallback to unsigned files.
+5. **Verify and publish final bytes.** Require the installer asset explicitly,
+   for example `pymolish-<version>-Windows-X64-setup.exe`, alongside the ZIP
+   and wheel. Verify Authenticode chains, publisher and timestamps using
+   `signtool verify /pa /all /v /tw` and reject warnings/missing timestamps;
+   check the installed files too. Extend artifact upload, release upload and
+   `SHA256SUMS` to include the installer, with hashes computed after signing.
+   Re-download and verify those exact assets. Do not re-sign or replace a
+   published signed Windows version on a documentation-only rerun; changed
+   release bytes require a new version. State signing status per artifact
+   and platform instead of calling every download signed.
+6. **Document the actual installation.** Update `README.md`, `docs/install.md`
+   and `docs/troubleshooting.md` with the installer, publisher check, portable
+   alternative and observed security results. For an incorrect Defender
+   detection, retain the final file/hash and submit it through Microsoft's
+   [software-developer submission](https://www.microsoft.com/en-us/wdsi/filesubmission);
+   record the result and retest. No security-disable instructions.
+
+### Checks and completion
+
+- Keep the Windows Python suite. Add a runnable Windows packaging smoke check
+  under `testing/tests/`: unattended install, installed headless launch from
+  another directory, upgrade and uninstall, with exit codes checked and user
+  data preserved. Exercise the check in CI; verify that tampering with a
+  signed test copy fails verification and a missing installer fails delivery.
+- On clean Windows 11 x64 without Python or a compiler, use a standard user
+  and download the final release through a browser, retaining Mark-of-the-Web.
+  Keep Defender and SmartScreen enabled; also test a machine with Smart App
+  Control enforcing. Test the installer and ZIP independently, not just files
+  copied from a CI workspace. Record OS/security versions, protection modes,
+  file hashes, publisher, prompts and detection names.
+- Install with spaces/non-ASCII paths; launch from Start; open a real Qt/OpenGL
+  window; load/save PDB, mmCIF, SDF/MOL and PSE; export PNG. Exercise bundled
+  `chem`/`fix` libraries and supported plugins, then upgrade and uninstall.
+  Record unsupported external-plugin signatures separately. Test keyboard
+  navigation and cancellation. Measure download/installed size and install
+  and first-launch time here; no performance numbers are claimed in advance.
+- Completion requires verified signed artifacts and successful protected
+  download/install/launch/upgrade/uninstall trials. A local signature check
+  or a clean antivirus scan alone is insufficient. If a reputation warning
+  remains, record the packaging as built but keep the no-warning trial open;
+  seek review or reconsider 137 B. Never call an untested download unblocked.
+
+No macOS signing/notarization, Windows ARM build or MSI in this slice. At
+shipment apply the repository version rules and reconcile this plan and the
+three roadmap files with the measured results and any remaining limitation.
 
 ## Additional ideas and acceptance
 

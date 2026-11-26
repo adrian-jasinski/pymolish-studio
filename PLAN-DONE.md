@@ -5,6 +5,10 @@ stays in `PLAN.md`; the detailed plans stay in `docs/plans/`. Step numbers and
 order numbers in the finished-work table are historical. “Open, order N”
 references below follow the current roadmap (updated 2026-11-26).
 
+Step 5 is reopened by the Windows installer and signing request of
+2026-11-26: **5d, order 6** is planned, with questions 137 and 138 open.
+Its earlier build and bundle milestones remain complete; 5c stays shelved.
+
 ## Decisions 128 and 129
 
 Answered by the user on **2026-11-26**, both with **A, recommended**.
@@ -26,7 +30,8 @@ surface worker of 1b. Steps 32 and 34 are finished again; step 15 has every
 original slice built; answer 128 A leaves the glow menu follow-up open.
 Step 1 keeps its two measured items. The current open orders are:
 27c 1, the trial of 31 2, the glow menu 3, general undo 4, the rest of the
-documentation (step 38) 5. The rows are under "Finished
+documentation (step 38) 5, Windows installer and signing (5d) 6.
+The rows are under "Finished
 milestones of open steps"; the decisions and choices follow here.
 
 Decided by the user on 2026-11-26, in the request that started the run
@@ -353,7 +358,6 @@ on 2026-11-24 (table above):
 | 26 | [Action toolbar: Bg, Open, quick select, layout](docs/plans/26-toolbar-buttons.md) | "Bg" with a paint roller; an Open button with the rows of File that bring something in; chips P, L, S, a menu with chains and more, All and "nothing", with Shift to add and Ctrl to take away; one row, 1154 px at 150 %, with a text only on Residues, Presets, Bg, Draw and the scale. 4.20.0, 4.21.0, 4.30.0. |
 | 2 | [Code and dependencies](docs/plans/02-cleanup-dependencies.md) | One feature removal per PR; trace dependencies before deleting. |
 | 4 | [Features and external libraries](docs/plans/04-extensibility.md) | Preserve `cmd` and the existing loader; document small integration patterns. |
-| 5 | [Builds and test binaries](docs/plans/05-builds-binaries.md) | Improve incremental builds and deliver test artifacts before large changes. |
 | 6 | [States panel](docs/plans/06-states-panel.md) | First, previous, play/stop, next, last, jump and speed in the Objects dock; replaces the state label and the toolbar's movie buttons. |
 | 7 | [Toolbar icons and UI scale](docs/plans/07-toolbar-icons-scale.md) | Line icons on every action toolbar button, Undo and Redo icon-only, 150 % default scale, scale button in the toolbar; replaces Display > UI Scale. |
 | 9 | [Own icon and logo](docs/plans/09-icons-logo.md) | Allowed and asked for by the license. One master PNG; window title and About box stop saying PyMOL. New art (blue, green and violet ribbon) in 4.19.27. |
@@ -370,6 +374,7 @@ on 2026-11-24 (table above):
 
 | Step | Completed scope | New work |
 | --- | --- | --- |
+| 5 | [Builds and test binaries](docs/plans/05-builds-binaries.md): 5a build iteration and 5b downloadable bundles; archives published since 4.5.1. | [5d — Windows installer and code signing](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing), open, order 6. Requested 2026-11-26; installer and provider choices are pending. 5c stays shelved. |
 | 34 | [Independent ball-and-stick](docs/plans/34-ball-and-stick.md), 34a–34c in 4.48.0/4.49.0: representation 21, its own visibility and three settings, native bond orders, ligand defaults without changing sphere/stick settings, and compatible storage of fork-specific atom settings. | 34d, transparency: done 2026-11-26 in 4.84.0. The step is finished again. |
 | 32 | [Footer icons and Movie button](docs/plans/32-footer-icons-movie-button.md), 32a/32b in 4.42.0/4.43.0: mouse mode/SEQ with text, Wizard/Command as icons, Movie opens/closes Timeline. In 4.67.0 AI moved after SEQ and SEQ opens its tab; 4.73.0 shortened the mouse-mode label. | 32c, larger icons and short labels with a second row when narrow: done 2026-11-26 in 4.86.0. The step is finished again. |
 
