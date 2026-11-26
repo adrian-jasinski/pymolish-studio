@@ -815,58 +815,63 @@ def _undoable(rows):
     return rows
 
 def presets(self_cmd, sele):
-    from . import preset, snapshots
+    from . import preset
+
+    def group(caption, *rows):
+        return [[ 2, caption, '' ]] + [
+            _preset(*row, sele) if isinstance(row, tuple) else row for row in rows ]
+
     return _undoable([[ 2, 'Preset:'       ,''                        ],
               _preset('default', 'default', sele),
               _preset('classified', 'classified', sele),
               [ 0, '', '' ],
-              _preset('technical', 'technical', sele),
-              _preset('ball and stick', 'ball_and_stick', sele),
-              _preset('space filling', 'space_filling', sele),
-              _preset('illustrated atoms', 'illustrated_atoms', sele),
-              _preset('licorice', 'licorice', sele),
-              _preset('b factor putty', 'b_factor_putty', sele),
-              [ 0, '', '' ],
-              # the variants with solvent: from_menu decides whether it shows
-              _preset('pretty', 'pretty_solv', sele),
-              _preset('publication', 'pub_solv', sele),
-              _preset('glass', 'glass', sele),
-              _preset('balls in glass', 'balls_in_glass', sele),
-              _preset('bond shell', 'bond_shell', sele),
-              _preset('cartoon wire', 'wire', sele),
-              _preset('cartoon spring', 'spring', sele),
-              _preset('cartoon cylinders', 'cylinders', sele),
-              _preset('contour cartoon', 'illustration', sele),
-              [ 0, '', '' ],
-              _preset('ligands', 'ligands', sele),
-              [ 1, 'ligand sites'   , preset_ligand_sites(self_cmd, sele)         ],
-              _preset('protein interface', 'interface', sele),
-              _preset('protein-protein interaction', 'interaction', sele),
-              _preset('antibody and antigen', 'antibody', sele),
+              # by what is drawn. The variants with solvent: from_menu
+              # decides whether it shows
+              [ 1, 'cartoon', group('Cartoon:',
+                  ('pretty', 'pretty_solv'), ('publication', 'pub_solv'),
+                  ('technical', 'technical'), ('b factor putty', 'b_factor_putty'),
+                  ('wire', 'wire'), ('spring', 'spring'), ('cylinders', 'cylinders'),
+                  ('contour cartoon', 'illustration')) ],
+              [ 1, 'atoms and bonds', group('Atoms and Bonds:',
+                  ('space filling', 'space_filling'),
+                  ('illustrated atoms', 'illustrated_atoms'),
+                  ('ball and stick', 'ball_and_stick'), ('licorice', 'licorice')) ],
+              # the protein as a surface in one material, then the
+              # surfaces one sees through
+              [ 1, 'surface', group('Surface:', *[
+                  [ 1, name, 'preset.from_menu("surface","%s","%s",_self=cmd)'
+                    % (sele, name) ] for name in preset.SURFACES ],
+                  [ 0, '', '' ],
+                  ('glass', 'glass'), ('balls in glass', 'balls_in_glass'),
+                  ('bond shell', 'bond_shell')) ],
+              [ 1, 'binding', group('Binding:',
+                  ('ligands', 'ligands'),
+                  [ 1, 'ligand sites', preset_ligand_sites(self_cmd, sele) ],
+                  ('protein interface', 'interface'),
+                  ('protein-protein interaction', 'interaction'),
+                  ('antibody and antigen', 'antibody')) ],
               [ 0, '', '' ],
               [ 1, 'transparency', transparency(self_cmd, sele) ],
               [ 1, 'hide solvent' if preset.solvent else 'show solvent',
                 'preset.show_solvent(%d,"%s",_self=cmd)' % (not preset.solvent, sele) ],
               [ 0, '', '' ],
-              # the protein as a surface in one material
-              [ 1, 'surface look', [[ 2, 'Surface Look:', '' ]] + [
-                  [ 1, name, 'preset.from_menu("surface","%s","%s",_self=cmd)'
-                    % (sele, name) ] for name in preset.SURFACES ]],
-              # colors of protein and ligand, and the background: the only
-              # rows that color a cartoon or a surface
-              [ 1, 'theme', [[ 2, 'Theme:', '' ]] + [
-                  [ 1, name, 'preset.theme("%s","%s",_self=cmd)' % (name, sele) ]
-                  for name in preset.THEMES ]],
-              # light and outline of the whole scene, whatever the menu is on
+              # for the whole scene, whatever the menu is on
+              [ 2, 'Scene appearance:', '' ],
+              # light and outline
               [ 1, 'light', [[ 2, 'Light:', '' ]] + [
                   [ 1, 'standard light' if name == 'default' else name,
                     'preset.look("%s",_self=cmd)' % name ] for name in preset.LOOKS ] + [
-                  # the light of the surface look, for atoms and cartoons too
+                  # the light of the surface "glossy", for atoms and cartoons too
                   [ 1, 'glossy (light only)', 'preset.look("glossy",_self=cmd)' ],
                   [ 0, '', '' ],
                   [ 1, 'no fog' if self_cmd.get_setting_int('depth_cue') else 'fog',
                     'preset.depth_fog(%d,_self=cmd)'
                     % (not self_cmd.get_setting_int('depth_cue')) ]]],
+              # colors of protein and ligand, and the background: the only
+              # rows that color a cartoon or a surface
+              [ 1, 'theme (colors and background)', [[ 2, 'Theme:', '' ]] + [
+                  [ 1, name, 'preset.theme("%s","%s",_self=cmd)' % (name, sele) ]
+                  for name in preset.THEMES ]],
               # a floor under what is shown: its shadow when ray traced
               [ 1, 'floor', [
                   [ 2, 'Floor:', '' ],

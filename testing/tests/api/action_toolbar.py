@@ -127,11 +127,21 @@ def test_toolbar():
 
     bar.presets.menu().aboutToShow.emit()
     rows = [a.text() for a in bar.presets.menu().actions()]
-    assert "technical" in rows
+    assert "classified" in rows
     assert "simple" not in rows
-    # 30d: themes, lights and the floor each in a submenu, filled when opened
+    # 15o: the presets in groups, and themes, lights and the floor, each
+    # in a submenu that is filled when opened
     subs = {a.text(): a.menu() for a in bar.presets.menu().actions() if a.menu()}
-    assert {"theme", "light", "floor"} <= set(subs) and "figure" not in rows
+    assert list(subs) == [
+        "cartoon", "atoms and bonds", "surface", "binding", "transparency",
+        "light", "theme (colors and background)", "floor",
+    ] and "figure" not in rows and "technical" not in rows
+    subs["cartoon"].aboutToShow.emit()
+    assert "technical" in [a.text() for a in subs["cartoon"].actions()]
+    subs["binding"].aboutToShow.emit()
+    sites = {a.text(): a.menu() for a in subs["binding"].actions() if a.menu()}
+    sites["ligand sites"].aboutToShow.emit()  # a third level
+    assert "mesh surface" in [a.text() for a in sites["ligand sites"].actions()]
     subs["light"].aboutToShow.emit()
     assert "figure" in [a.text() for a in subs["light"].actions()]
 

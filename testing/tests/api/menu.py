@@ -236,27 +236,53 @@ def testPresets(request):
     cmd.load(testing.datafile('1rx1.pdb'), sele)
     m = menu.presets(cmd, sele)
     d = _to_dict(m)
-    _eval_first(d['technical'])
-    # 15: ordered, one solvent row instead of twin rows, glass.
-    # 15g, 15h: no "simple"; the looks are the last group of the one list
+    _eval_first(_to_dict(d['cartoon'])['technical'])
+    # 15o: the presets in groups by what is drawn, one solvent row, and
+    # under a caption what changes the whole scene. No "simple".
     labels = [row[1] for row in m if row[0] == 1]
     assert labels == [
-        'default', 'classified', 'technical', 'ball and stick',
-        'space filling', 'illustrated atoms', 'licorice',
-        'b factor putty', 'pretty', 'publication',
-        'glass', 'balls in glass', 'bond shell', 'cartoon wire',
-        'cartoon spring', 'cartoon cylinders', 'contour cartoon', 'ligands',
-        'ligand sites', 'protein interface', 'protein-protein interaction',
-        'antibody and antigen', 'transparency',
-        'show solvent',
-        'surface look', 'theme', 'light', 'floor']
-    assert [row[1] for row in m if row[0] == 2] == ['Preset:']
-    # 30d: themes, lights and the floor each have a submenu
+        'default', 'classified', 'cartoon', 'atoms and bonds', 'surface',
+        'binding', 'transparency', 'show solvent',
+        'light', 'theme (colors and background)', 'floor']
+    assert [row[1] for row in m if row[0] == 2] == ['Preset:', 'Scene appearance:']
+    assert [row[1] for row in m].index('Scene appearance:') == \
+        [row[1] for row in m].index('light') - 1
     def sub(name):
         assert d[name][0][0] == 2  # under a caption
         return [row[1] for row in d[name] if row[0] == 1]
-    assert sub('surface look') == ['glossy', 'candy glass', 'frosted', 'clay']
-    assert sub('theme') == ['clay', 'blue', 'sage', 'mint', 'night']
+    assert sub('cartoon') == [
+        'pretty', 'publication', 'technical', 'b factor putty', 'wire',
+        'spring', 'cylinders', 'contour cartoon']
+    assert sub('atoms and bonds') == [
+        'space filling', 'illustrated atoms', 'ball and stick', 'licorice']
+    assert sub('surface') == ['glossy', 'candy glass', 'frosted', 'clay',
+                              'glass', 'balls in glass', 'bond shell']
+    assert sub('binding') == [
+        'ligands', 'ligand sites', 'protein interface',
+        'protein-protein interaction', 'antibody and antigen']
+    assert sub('theme (colors and background)') == ['clay', 'blue', 'sage', 'mint', 'night']
+    # every action the flat menu of 4.84 had is still there, and each
+    # leaf, however deep, keeps one step for Undo
+    leaves = []
+    def walk(rows):
+        for row in rows:
+            if row[0] == 1 and isinstance(row[2], str):
+                leaves.append(row[2])
+            elif row[0] == 1:
+                walk(row[2])
+    walk(m)
+    assert all(c.count('pymol.snapshots.keep(_self=cmd);') == 1 for c in leaves)
+    import re
+    assert set(re.findall(r'from_menu\("(\w+)"', ' '.join(leaves))) == {
+        'default', 'classified', 'technical', 'ball_and_stick', 'space_filling',
+        'illustrated_atoms', 'licorice', 'b_factor_putty', 'pretty_solv',
+        'pub_solv', 'glass', 'balls_in_glass', 'bond_shell', 'wire', 'spring',
+        'cylinders', 'illustration', 'ligands', 'ligand_cartoon', 'ligand_sites',
+        'ligand_sites_hq', 'ligand_sites_trans', 'ligand_sites_trans_hq',
+        'ligand_sites_dots', 'ligand_sites_mesh', 'interface', 'interaction',
+        'antibody', 'surface'}
+    assert len(leaves) == 29 + 3 + 16 + 1 + 12 + 5 + 3  # presets, 3 more
+    # surface looks, transparency, solvent, light, themes, floor
     assert sub('light') == [
         'standard light', 'figure', 'soft', 'flat', 'comic', 'sketch',
         'x-ray', 'studio', 'top light', 'soft shadow',
@@ -267,7 +293,7 @@ def testPresets(request):
     request.addfinalizer(lambda: setattr(preset, 'solvent', False))
     cmd.do(d['show solvent'], echo=0)
     assert 'hide solvent' in [row[1] for row in menu.presets(cmd, sele)]
-    cmd.do(d['glass'], echo=0)
+    cmd.do(_to_dict(d['surface'])['glass'], echo=0)
     assert cmd.count_atoms('rep surface') > 0
     request.addfinalizer(lambda: preset.look('default'))
     cmd.do(lights['comic'], echo=0)
@@ -290,7 +316,7 @@ def testPresets(request):
             'opaque (0%)', '25%', '50%', '75%'], rep
     cmd.do(_to_dict(_to_dict(d['transparency'])['cartoon'])['50%'], echo=0)
     assert cmd.get_setting_float('cartoon_transparency', sele) == 0.5
-    cmd.do(d['pretty'], echo=0)
+    cmd.do(_to_dict(d['cartoon'])['pretty'], echo=0)
     assert cmd.get_setting_float('cartoon_transparency', sele) == 0
 
 

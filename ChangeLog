@@ -4,6 +4,32 @@ CHANGE LOG
 
 2026-11-26 pymolish-studio
 
+	* 4.85.0
+
+	* Presets
+	  - The Presets menu is in groups (15o). At the top "default" and
+	    "classified"; then four submenus by what a preset draws:
+	    cartoon (pretty, publication, technical, b factor putty, wire,
+	    spring, cylinders, contour cartoon), atoms and bonds (space
+	    filling, illustrated atoms, ball and stick, licorice), surface
+	    (glossy, candy glass, frosted, clay, glass, balls in glass,
+	    bond shell) and binding (ligands, ligand sites, protein
+	    interface, protein-protein interaction, antibody and antigen);
+	    then transparency and the solvent row. Under the caption
+	    "Scene appearance" the three that change the whole scene:
+	    light, theme (colors and background) and floor.
+	  - Every row of the flat menu is still there and runs the same
+	    command. Three have a shorter label inside their group: "wire",
+	    "spring" and "cylinders" (before: "cartoon wire" and so on).
+	    The submenu "surface look" is the first four rows of
+	    "surface"; "theme" says in its label that it colors.
+	  - The same menu in the toolbar and in the menus of the viewport
+	    and the sequence. In the toolbar every row is reached with the
+	    arrow keys, three levels deep, and each row is one step of
+	    Undo, as before.
+
+2026-11-26 pymolish-studio
+
 	* 4.84.0
 
 	* Presets

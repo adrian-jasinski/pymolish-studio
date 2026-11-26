@@ -66,12 +66,13 @@ def testKeepsCartoonAndSurfaceColors(request):
 
     ran = surfaces = 0
     for label, command in _menuRows(menu.presets(cmd, 'all')):
-        if label.startswith('theme > '):
+        if label.startswith('theme (colors and background) > '):
             continue
         before = surface()
         cmd.do(command, echo=0)
         assert _colors('guide | (dna & polymer)') == {yellow}, label
-        if label in ('protein-protein interaction', 'antibody and antigen'):
+        if label in ('binding > protein-protein interaction',
+                     'binding > antibody and antigen'):
             assert surface() == {yellow, orange}, label  # not the whole surface
         elif 'from_menu' in command:  # a preset: it draws everything anew
             assert surface() <= {yellow}, label
@@ -376,7 +377,7 @@ def testSurfaceLooks(request):
     cmd.load(testing.datafile('1oky.pdb.gz'))
     cmd.set('transparency', 0.2)  # the user's, of the whole scene: it stays
     rows = dict(_menuRows(menu.presets(cmd, '1oky')))
-    names = [label[15:] for label in rows if label.startswith('surface look > ')]
+    names = [label[10:] for label in rows if label.startswith('surface > ')][:4]
     assert names == list(preset.SURFACES) == ['glossy', 'candy glass', 'frosted', 'clay']
 
     def see_through():  # of the atoms, else that of the scene
@@ -385,7 +386,7 @@ def testSurfaceLooks(request):
         return stored.found
 
     for name in names:
-        cmd.do(rows['surface look > ' + name], echo=0)
+        cmd.do(rows['surface > ' + name], echo=0)
         light, shape, transparency = preset.SURFACES[name]
         assert cmd.count_atoms('rep surface') == cmd.count_atoms('polymer'), name
         assert cmd.count_atoms('rep cartoon') == 0, name
@@ -433,8 +434,8 @@ def testReferenceRecipes(request):
     cmd.bg_color('grey30')
     cmd.set('sphere_scale', 0.8, 'm')  # the user's sizes stay
     rows = dict(_menuRows(menu.presets(cmd, 'enabled')))
-    assert 'preset.from_menu("illustration"' in rows['contour cartoon']
-    assert 'illustration' not in rows
+    assert 'preset.from_menu("illustration"' in rows['cartoon > contour cartoon']
+    assert not [label for label in rows if 'illustration' in label]
     count = cmd.count_atoms
     n, lig, polymer = count('m & !solvent'), count('m & organic'), count('m & polymer')
 
@@ -446,10 +447,10 @@ def testReferenceRecipes(request):
     before, spheres = state(), count('m & rep spheres')
     cmd.scene('start', 'store')
     reps = {  # what is drawn, and of how many atoms
-        'space filling': {'spheres': n},
-        'illustrated atoms': {'spheres': n},
-        'licorice': {'sticks': n},
-        'bond shell': {'lines': polymer, 'surface': polymer, 'ball_and_stick': lig,
+        'atoms and bonds > space filling': {'spheres': n},
+        'atoms and bonds > illustrated atoms': {'spheres': n},
+        'atoms and bonds > licorice': {'sticks': n},
+        'surface > bond shell': {'lines': polymer, 'surface': polymer, 'ball_and_stick': lig,
                        'sticks': count('m & inorganic')},  # the sulfates
     }
     for label, shown in reps.items():
@@ -459,7 +460,7 @@ def testReferenceRecipes(request):
         assert count('m & solvent & visible') == 0, label
         assert state() == before, label
         # only "illustrated atoms" picks a light: flat colors in outlines
-        flat = label == 'illustrated atoms'
+        flat = label.endswith('illustrated atoms')
         assert cmd.get_setting_int('ray_trace_mode') == flat, label
         assert cmd.get_setting_float('ambient') == pytest.approx(1 if flat else 0.14), label
     stored.seen = set()
@@ -467,14 +468,14 @@ def testReferenceRecipes(request):
     assert stored.seen == {0.5}  # of the shell, on its atoms
 
     # illustrated atoms -> pretty -> default: light and spheres are gone
-    cmd.do(rows['illustrated atoms'], echo=0)
-    cmd.do(rows['pretty'], echo=0)
+    cmd.do(rows['atoms and bonds > illustrated atoms'], echo=0)
+    cmd.do(rows['cartoon > pretty'], echo=0)
     assert cmd.get_setting_int('ray_trace_mode') == 0 and count('rep spheres') == 0
     cmd.do(rows['default'], echo=0)
     assert count('m & rep lines') == count('m')
     # a light picked by hand stays through the recipes that pick none
     cmd.do(rows['light > studio'], echo=0)
-    cmd.do(rows['space filling'], echo=0)
+    cmd.do(rows['atoms and bonds > space filling'], echo=0)
     assert cmd.get_setting_int('light_count') == 4
     # the light of the surface look "glossy" alone: nothing is shown or hidden
     cmd.do(rows['light > glossy (light only)'], echo=0)
@@ -482,7 +483,7 @@ def testReferenceRecipes(request):
     assert count('m & rep spheres') == n and count('rep surface') == 0
 
     # one step of Undo per row, and the scene of the start
-    cmd.do(rows['bond shell'], echo=0)
+    cmd.do(rows['surface > bond shell'], echo=0)
     cmd.undo()
     assert count('m & rep spheres') == n and count('rep surface') == 0
     cmd.scene('start', 'recall', animate=0)
