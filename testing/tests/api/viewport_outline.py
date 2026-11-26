@@ -84,3 +84,38 @@ def test_outline_in_the_viewport(request):
     cmd.hide("labels")
     assert red_only[1] == pytest.approx(count(_pixels())[1], abs=20)
     assert before > 0
+
+
+@testing.requires("gui")
+def test_glow_in_the_viewport(request):
+    """15p, an experiment: "glow" lays a halo in the colors of what is
+    drawn around it. The background far from the molecule stays, the
+    molecule itself stays, and 0 (the default) draws none."""
+    request.addfinalizer(cmd.reinitialize)
+    assert cmd.get_setting_float("glow") == 0
+    cmd.set("use_shaders", 1)
+    cmd.fragment("trp", "m")
+    cmd.color("red")
+    cmd.bg_color("black")
+    preset.space_filling("m")
+    cmd.orient()
+    cmd.zoom("m", 12)  # room for the halo
+    preset.look("flat")
+    cmd.set("viewport_outline", 0)
+
+    def count(image):
+        r, g, b = image.transpose(2, 0, 1)
+        red = (r > 240) & (g < 30) & (b < 30)
+        halo = (r > 40) & (r <= 240) & (g < 30) & (b < 30)  # dimmer reds
+        return int(red.sum()), int(halo.sum()), image[:8, :8].max()
+
+    red, halo, corner = count(_pixels())
+    assert red > 2000 and halo < red / 20 and corner == 0
+    cmd.set("glow", 1)
+    red_glow, halo, corner = count(_pixels())
+    assert red_glow == pytest.approx(red, rel=0.06)  # the atoms as they were
+    assert halo > red / 2 and corner == 0  # around them, not everywhere
+    cmd.set("glow", 0.5)
+    assert red / 8 < count(_pixels())[1] < halo
+    cmd.set("glow", 0)
+    assert count(_pixels())[1] < red / 20

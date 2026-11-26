@@ -570,8 +570,24 @@ void SceneRender(PyMOLGlobals* G, const SceneRenderInfo& renderInfo)
 void SceneRenderAA(PyMOLGlobals* G, const GLFramebufferConfig& fbConfig)
 {
   CScene* I = G->Scene;
-  if (G->ShaderMgr->outlineMode()) {
-    G->ShaderMgr->copyOffscreenDepth(true); // the outline is found in the depth
+  if (G->ShaderMgr->readsDepth()) {
+    // outline and halo are found in the depth
+    G->ShaderMgr->copyOffscreenDepth(true);
+  }
+  if (G->ShaderMgr->glow() > 0.f) {
+    // the halo: what is drawn, blurred, in three stages (glow.fs)
+    if (!I->glowCGO && (I->glowCGO = GenerateUnitScreenCGO(G))) {
+      CGOChangeShadersTo(
+          I->glowCGO, GL_DEFAULT_SHADER_WITH_SETTINGS, GL_GLOW_SHADER);
+      I->glowCGO->use_shader = true;
+    }
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    for (int stage = 0; I->glowCGO && stage < 3; ++stage) {
+      G->ShaderMgr->bindGlow(stage);
+      CGORender(I->glowCGO, nullptr, nullptr, nullptr, nullptr, nullptr);
+    }
+    glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
   }
   G->ShaderMgr->setDrawBuffer(fbConfig);
   if (!I->offscreenCGO) {
@@ -881,7 +897,7 @@ static void DoRendering(PyMOLGlobals* G, CScene* I, GridInfo* grid, int times,
         break;
       }
       if (t_mode_3 && pass == RenderPass::Transparent) {
-        if (G->ShaderMgr->outlineMode()) {
+        if (G->ShaderMgr->readsDepth()) {
           G->ShaderMgr->copyOffscreenDepth(false); // as below
         }
         G->ShaderMgr->Disable_Current_Shader();
@@ -948,7 +964,7 @@ static void DoRendering(PyMOLGlobals* G, CScene* I, GridInfo* grid, int times,
                                  pymol::to_underlying(SceneRenderWhich::All);
               auto allFilter = static_cast<SceneRenderWhich>(allFilter_i);
               if (pass2 == RenderPass::Transparent &&
-                  G->ShaderMgr->outlineMode()) {
+                  G->ShaderMgr->readsDepth()) {
                 // the depth so far: for the outline of what lies inside a
                 // see-through surface
                 G->ShaderMgr->copyOffscreenDepth(false);
@@ -1620,7 +1636,7 @@ CGO* GenerateUnitScreenCGO(PyMOLGlobals* G)
 static bool NeedsOffscreenTextureForPP(PyMOLGlobals* G)
 {
   return (SettingGet<int>(G, cSetting_antialias_shader) != 0 ||
-             G->ShaderMgr->outlineMode()) &&
+             G->ShaderMgr->readsDepth()) &&
          SettingGet<bool>(G, cSetting_use_shaders) &&
          G->ShaderMgr->ShaderPrgExists("fxaa"); // gone if it did not compile
 }

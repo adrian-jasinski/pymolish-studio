@@ -1438,6 +1438,9 @@ static void CGO_gl_enable(CCGORenderer* I, CGO_op_data pc)
       case GL_FXAA_SHADER:
         shaderMgr->Enable_FXAAShader();
         break;
+      case GL_GLOW_SHADER:
+        shaderMgr->Enable_GlowShader();
+        break;
 #ifndef _PYMOL_NO_AA_SHADERS
       case GL_SMAA1_SHADER:
         shaderMgr->Enable_SMAA1Shader();

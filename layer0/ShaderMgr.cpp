@@ -631,6 +631,7 @@ void CShaderMgr::Config() {
   make_program("oit", "oit.vs", "oit.fs");
   make_program("copy", "copy.vs", "copy.fs");
   make_program("fxaa", "copy.vs", "fxaa.fs");
+  make_program("glow", "copy.vs", "glow.fs");
   make_program("trilines", "trilines.vs", "trilines.fs");
 
   Reload_Shader_Variables();
@@ -677,6 +678,9 @@ void CShaderMgr::Config() {
   check_program("sphere", cSetting_sphere_mode, 0);
   }
   check_program("fxaa", cSetting_antialias_shader, 0);
+  if (!programs["glow"]->reload()) { // without it "glow" does nothing
+    programs.erase("glow");
+  }
 
 #ifndef _PYMOL_NO_AA_SHADERS
 #endif
@@ -796,6 +800,8 @@ CShaderMgr::~CShaderMgr() {
     glDeleteTextures(2, outline_depth_tex);
     glDeleteFramebuffers(2, outline_depth_fbo);
   }
+  freeGPUBuffer(glow_rt[0]);
+  freeGPUBuffer(glow_rt[1]);
   freeGPUBuffer(offscreen_rt);
   freeGPUBuffer(offscreen_ortho_rt);
   freeGPUBuffer(offscreen_sized_image_rt);
@@ -1128,7 +1134,7 @@ CShaderPrg *CShaderMgr::Enable_OITCopyShader() {
 
 NoDepthForOutline::NoDepthForOutline(PyMOLGlobals* G, bool draws)
 {
-  if (draws && G->HaveGUI && G->ValidContext && G->ShaderMgr->outlineMode()) {
+  if (draws && G->HaveGUI && G->ValidContext && G->ShaderMgr->readsDepth()) {
     glGetBooleanv(GL_DEPTH_WRITEMASK, &m_restore);
     glDepthMask(GL_FALSE);
   }
@@ -1141,6 +1147,67 @@ int CShaderMgr::outlineMode() const
              SettingGet<bool>(G, cSetting_viewport_outline))
              ? mode
              : 0;
+}
+
+float CShaderMgr::glow() const
+{
+  return programs.count("glow") && programs.count("fxaa")
+             ? std::clamp(SettingGet<float>(G, cSetting_glow), 0.f, 1.f)
+             : 0.f;
+}
+
+void CShaderMgr::bindGlow(int stage)
+{
+  using namespace tex;
+  auto size = getGPUBuffer<RenderTargetGL>(offscreen_rt)->size() / 4;
+  size = glm::max(size, glm::ivec2(1));
+  for (auto& id : glow_rt) {
+    auto rt = getGPUBuffer<RenderTargetGL>(id);
+    if (rt && rt->size() != size) {
+      freeGPUBuffer(id);
+      rt = nullptr;
+    }
+    if (!rt) {
+      rt = newGPUBuffer<RenderTargetGL>(size);
+      rt->layout({{4, rt_layout_t::UBYTE}});
+      id = rt->get_hash_id();
+    }
+  }
+  glow_stage = stage;
+  getGPUBuffer<RenderTargetGL>(glow_rt[stage == 1])->bind(false);
+  glViewport(0, 0, size.x, size.y);
+}
+
+CShaderPrg* CShaderMgr::Enable_GlowShader()
+{
+  CShaderPrg* shaderPrg = GetShaderPrg("glow");
+  if (!shaderPrg)
+    return shaderPrg;
+  shaderPrg->Enable();
+  constexpr GLuint colorTexUnit = 2;
+  constexpr GLuint depthTexUnit = 3;
+  shaderPrg->Set1i("stage", glow_stage);
+  shaderPrg->Set1i("colorTex", colorTexUnit);
+  if (glow_stage == 0) {
+    auto size = getGPUBuffer<RenderTargetGL>(offscreen_rt)->size();
+    glActiveTexture(GL_TEXTURE0 + depthTexUnit);
+    glBindTexture(GL_TEXTURE_2D, outline_depth_tex[1]);
+    shaderPrg->Set1i("depthTex", depthTexUnit);
+    activateOffscreenTexture(colorTexUnit);
+    shaderPrg->Set2f("reach", 1.f / size.x, 1.f / size.y);
+  } else {
+    auto from = getGPUBuffer<RenderTargetGL>(glow_rt[glow_stage == 2]);
+    glActiveTexture(GL_TEXTURE0 + colorTexUnit);
+    from->textures()[0]->bind();
+    // 13 points, as far apart as gives a halo of a twelfth of the height
+    float apart = 1.5f / (glow_stage == 1 ? from->size().x : from->size().y);
+    shaderPrg->Set2f("reach", glow_stage == 1 ? apart : 0.f,
+        glow_stage == 2 ? apart : 0.f);
+  }
+  glDisable(GL_BLEND);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_ALPHA_TEST);
+  return shaderPrg;
 }
 
 void CShaderMgr::copyOffscreenDepth(bool finished)
@@ -1229,8 +1296,18 @@ CShaderPrg *CShaderMgr::Enable_FXAAShader() {
         ColorGet(G, SettingGet_color(G, nullptr, nullptr, cSetting_bg_rgb)));
     // as wide as in a ray-traced picture of that size, roughly
     shaderPrg->Set1f("line_width", std::clamp(size.y / 500.f, 1.f, 3.f));
-    glActiveTexture(GL_TEXTURE0 + colorTexUnit);
   }
+  float halo = outline_depth_tex[0] && glow_rt[0] ? glow() : 0.f;
+  shaderPrg->Set1f("glow", halo);
+  if (halo > 0.f) {
+    glActiveTexture(GL_TEXTURE0 + depthTexUnit + 1);
+    glBindTexture(GL_TEXTURE_2D, outline_depth_tex[1]);
+    shaderPrg->Set1i("depthTex", depthTexUnit + 1);
+    glActiveTexture(GL_TEXTURE0 + depthTexUnit + 2);
+    getGPUBuffer<RenderTargetGL>(glow_rt[0])->textures()[0]->bind();
+    shaderPrg->Set1i("glowTex", depthTexUnit + 2);
+  }
+  glActiveTexture(GL_TEXTURE0 + colorTexUnit);
   glDisable(GL_BLEND);
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_ALPHA_TEST);

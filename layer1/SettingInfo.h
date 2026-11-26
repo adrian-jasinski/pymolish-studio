@@ -910,6 +910,7 @@ enum {
   REC_c( 800, ball_and_stick_color                    , atom      , "-1" ),
   REC_f( 801, ball_and_stick_transparency             , ostate    , 0.0F ),
   REC_b( 802, viewport_outline                        , global    , true ),
+  REC_f( 803, glow                                    , global    , 0.0F ),
 
 #ifdef SETTINGINFO_IMPLEMENTATION
 #undef SETTINGINFO_IMPLEMENTATION

@@ -156,6 +156,7 @@ class CScene : public Block {
   int last_grid_size{};
   int n_texture_refreshes { 0 };
   CGO *offscreenCGO { nullptr };
+  CGO *glowCGO { nullptr }; // the rectangle of the stages of glow.fs
   CGO *offscreenOIT_CGO { nullptr };
   CGO *offscreenOIT_CGO_copy { nullptr };
   PrepareViewportForStereoFuncT vp_prepareViewPortForStereo = nullptr;

@@ -30,6 +30,9 @@ uniform vec3 line_color;
 uniform vec3 fill_color;
 uniform float line_width; // pixels
 
+uniform float glow; // "glow": how much of the halo, 0 none
+uniform sampler2D glowTex; // what is drawn, blurred (glow.fs)
+
 varying vec2 texcoordAttr;
 
 float brightness(vec2 at)
@@ -136,6 +139,14 @@ void main()
       lines = max(lines, drawn(opaqueTex, at));
     color = mix(color, line_color, lines);
     alpha = max(alpha, lines); // on a see-through background too
+  }
+  // a halo in the colors of what is drawn, around it: on the background
+  // only, so the molecule itself stays as it is
+  if (glow > 0. && texture2D(depthTex, at).r == 1.) {
+    vec4 halo = texture2D(glowTex, at);
+    float much = glow * min(1., 2. * halo.a);
+    color = mix(color, halo.rgb / max(halo.a, 0.004), much);
+    alpha = max(alpha, much);
   }
   gl_FragColor = vec4(color, alpha);
 }

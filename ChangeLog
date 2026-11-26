@@ -4,6 +4,35 @@ CHANGE LOG
 
 2026-11-26 pymolish-studio
 
+	* 4.88.0
+
+	* Viewport
+	  - New setting glow (0 to 1, default 0), an experiment (15p): a
+	    soft halo in the colors of what is drawn, around it, on any
+	    background. "set glow, 1" for the whole of it, 0.5 for half.
+	    There is no menu row and no preset uses it: what to ship is
+	    question 126 in PLAN.md. Pictures, with the same views
+	    without it: docs/img/glow-experiment.jpg.
+	  - How: what is drawn (found in the depth, so the background and
+	    the labels are no source) is blurred at a quarter of the size
+	    in three small stages (glow.fs) and laid on the background
+	    pixels in the pass that smooths edges (fxaa.fs). The molecule
+	    itself is not changed. The halo reaches about a twelfth of the
+	    height of the viewport.
+	  - Frame time in the window, 1436 x 702 pixels, integrated GPU
+	    through WSLg: 4hhb as spheres 4.2 ms without and 6.7 ms with;
+	    1aon as spheres 6.0 and 8.5 ms; 1aon as cartoon 4.6 and
+	    9.1 ms. Memory, computed from the sizes and not measured: the
+	    picture drawn offscreen 8.1 MB, two copies of its depth
+	    8.1 MB, the two small pictures of the halo 1.0 MB.
+	  - Limits: the viewport only. A ray-traced picture has no halo,
+	    nor has an image drawn at another size than the window (png
+	    with a width, draw), nor stereo; png without ray tracing at
+	    the size of the window has it. A label near the molecule is
+	    covered by the halo. Tried on one driver (Mesa d3d12, WSLg).
+
+2026-11-26 pymolish-studio
+
 	* 4.87.0
 
 	* Viewport

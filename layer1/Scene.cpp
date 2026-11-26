@@ -3729,6 +3729,7 @@ void SceneFree(PyMOLGlobals * G)
 
   CGOFree(I->AlphaCGO);
   CGOFree(I->offscreenCGO);
+  CGOFree(I->glowCGO);
   CGOFree(I->offscreenOIT_CGO);
   CGOFree(I->offscreenOIT_CGO_copy);
   I->m_slots.clear();

@@ -23,7 +23,8 @@ def viewport_pixels():
     image = image.convertToFormat(QtGui.QImage.Format.Format_RGB888)
     rows = numpy.frombuffer(image.constBits(), numpy.uint8)
     rows = rows.reshape(image.height(), image.bytesPerLine())
-    return rows[:, : image.width() * 3].reshape(image.height(), image.width(), 3)
+    # a copy: the image, and with it the memory under `rows`, ends here
+    return rows[:, : image.width() * 3].reshape(image.height(), image.width(), 3).copy()
 
 
 @testing.requires("gui")

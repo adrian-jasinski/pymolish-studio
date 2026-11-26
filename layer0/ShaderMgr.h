@@ -203,6 +203,7 @@ public:
   void freeGPUBuffers(size_t * arr, size_t len);
 
   CShaderPrg *Enable_FXAAShader();
+  CShaderPrg *Enable_GlowShader();
 #ifndef _PYMOL_NO_AA_SHADERS
   bool Reload_SMAA_Shaders();
   int SMAAShadersPresent();
@@ -379,6 +380,17 @@ public:
   void copyOffscreenDepth(bool finished);
   /// ray_trace_mode (1 to 3) while the viewport draws its outline, else 0
   int outlineMode() const;
+  /// "glow" while a halo can be drawn, else 0
+  float glow() const;
+  /// the outline or the halo is drawn: the copies of the depth are needed
+  bool readsDepth() const { return outlineMode() || glow() > 0.f; }
+
+  // "glow" (15p, an experiment): the halo is blurred in two pictures a
+  // quarter of the size, from one into the other; [0] has the result
+  std::size_t glow_rt[2] {};
+  int glow_stage { 0 };
+  /// Binds the picture that stage 0, 1 or 2 of glow.fs is drawn into
+  void bindGlow(int stage);
 
   void bindOffscreen(int width, int height, GridInfo * grid);
   void bindOffscreenOIT(int width, int height, int drawbuf = 0);
