@@ -4,6 +4,43 @@ CHANGE LOG
 
 2026-11-26 pymolish-studio
 
+	* 4.87.0
+
+	* Viewport
+	  - The outline of a look is drawn in the viewport too (15b). The
+	    lights figure, soft, flat, comic and sketch, and the presets
+	    "illustrated atoms" and "contour cartoon", had their outline
+	    only in ray-traced pictures. The line has the color the ray
+	    tracer uses (ray_trace_color): black on a light background,
+	    white on a dark one. With "sketch" the viewport shows lines
+	    alone, as the ray-traced picture does. Pictures:
+	    docs/img/viewport-outline.jpg.
+	  - It follows ray_trace_mode: 1 and 3 draw the line on the
+	    picture, 2 the lines alone. So a session or script that sets
+	    ray_trace_mode now has the outline in the viewport as well.
+	    New setting viewport_outline (on) turns it off there: Setting
+	    > Rendering > "Outline of a Look (Real Time)".
+	  - How: one more step in the pass that smooths edges (fxaa.fs). A
+	    line is drawn where the picture lies behind its neighbors by
+	    more than a slope explains, measured in the depth in A; the
+	    least step grows with what a pixel covers, so that atoms which
+	    touch get no line at any zoom. The depth is copied twice a
+	    frame, before and after what is see-through is drawn: the
+	    cartoon inside the surface of "contour cartoon" has its line,
+	    and so has the surface. Labels are not written into the depth
+	    while the outline is drawn; they get no frame.
+	  - Frame time in the window, 1436 x 702 pixels, integrated GPU
+	    through WSLg: 1oky as spheres 2.8 ms without and 5.7 ms with
+	    the outline; 1aon as spheres 5.2 and 8.2 ms; 1aon as cartoon
+	    11.1 and 13.1 ms. With smoothed edges as well: 6.3, 8.7 and
+	    15.8 ms.
+	  - Not drawn: in stereo; in an image drawn at another size than
+	    the window (png with a width, draw); without shaders. In grid
+	    mode the line inside a see-through surface is right only in
+	    the last cell. Tried on one driver only (Mesa d3d12 on WSLg).
+
+2026-11-26 pymolish-studio
+
 	* 4.86.0
 
 	* Objects panel

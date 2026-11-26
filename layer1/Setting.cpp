@@ -2862,6 +2862,8 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
     SceneChanged(G);
     break;    
   case cSetting_antialias_shader:
+  case cSetting_viewport_outline:
+  case cSetting_ray_trace_color: // the color of the outline in the viewport
     SceneInvalidate(G);
     break;
   case cSetting_atom_type_format:

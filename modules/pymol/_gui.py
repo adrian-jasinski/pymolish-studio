@@ -597,6 +597,7 @@ class PyMOLDesktopGUI(object):
                     ('separator',),
                     ('check', 'Antialias (Ray Tracing)', 'antialias', 1),
                     ('check', 'Antialias (Real Time)', 'antialias_shader', 1),
+                    ('check', 'Outline of a Look (Real Time)', 'viewport_outline', 1),
                     ('separator',),
                     ('command', 'Modernize', lambda: cmd.util.modernize_rendering(1, cmd)),
                     ('separator',),

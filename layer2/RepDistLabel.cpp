@@ -27,6 +27,7 @@ Z* -------------------------------------------------------------------
 #include "RepLabel.h"
 #include "Scene.h"
 #include "Setting.h"
+#include "ShaderMgr.h"
 #include "Text.h"
 #include "Vector.h"
 #include "main.h"
@@ -89,6 +90,7 @@ void RepDistLabel::render(RenderInfo* info)
   short use_shader = SettingGetGlobal_b(G, cSetting_use_shaders);
   if (I->MaxInvalid >= cRepInvRep)
     return;
+  NoDepthForOutline no_frame(G, !(ray || pick));
   font_id = SettingCheckFontID(G, nullptr, obj->Setting.get(), font_id);
 
   if (I->shaderCGO && font_size < 0.f) {

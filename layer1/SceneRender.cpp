@@ -563,12 +563,16 @@ void SceneRender(PyMOLGlobals* G, const SceneRenderInfo& renderInfo)
 
 /**
  * @brief Draws the picture of I->offscreen_texture into fbConfig through the
- * smoothing shader ("antialias_shader" 1, fxaa.fs).
+ * shader fxaa.fs: smoothed ("antialias_shader" 1), with outlines
+ * ("ray_trace_mode" 1 to 3 while "viewport_outline" is on), or both.
  * @param fbConfig Framebuffer config (currently represents target and parent image)
  */
 void SceneRenderAA(PyMOLGlobals* G, const GLFramebufferConfig& fbConfig)
 {
   CScene* I = G->Scene;
+  if (G->ShaderMgr->outlineMode()) {
+    G->ShaderMgr->copyOffscreenDepth(true); // the outline is found in the depth
+  }
   G->ShaderMgr->setDrawBuffer(fbConfig);
   if (!I->offscreenCGO) {
     I->offscreenCGO = GenerateUnitScreenCGO(G);
@@ -877,6 +881,9 @@ static void DoRendering(PyMOLGlobals* G, CScene* I, GridInfo* grid, int times,
         break;
       }
       if (t_mode_3 && pass == RenderPass::Transparent) {
+        if (G->ShaderMgr->outlineMode()) {
+          G->ShaderMgr->copyOffscreenDepth(false); // as below
+        }
         G->ShaderMgr->Disable_Current_Shader();
         int drawbuf = 1;
         if (TM3_IS_ONEBUF) {
@@ -940,6 +947,12 @@ static void DoRendering(PyMOLGlobals* G, CScene* I, GridInfo* grid, int times,
               auto allFilter_i = pymol::to_underlying(which_objects) &
                                  pymol::to_underlying(SceneRenderWhich::All);
               auto allFilter = static_cast<SceneRenderWhich>(allFilter_i);
+              if (pass2 == RenderPass::Transparent &&
+                  G->ShaderMgr->outlineMode()) {
+                // the depth so far: for the outline of what lies inside a
+                // see-through surface
+                G->ShaderMgr->copyOffscreenDepth(false);
+              }
               SceneRenderAll(G, context, normal, nullptr, pass2, false,
                   width_scale, grid, times, allFilter, SceneRenderOrder::GadgetsLast);
             }
@@ -1606,7 +1619,8 @@ CGO* GenerateUnitScreenCGO(PyMOLGlobals* G)
  */
 static bool NeedsOffscreenTextureForPP(PyMOLGlobals* G)
 {
-  return SettingGet<int>(G, cSetting_antialias_shader) != 0 &&
+  return (SettingGet<int>(G, cSetting_antialias_shader) != 0 ||
+             G->ShaderMgr->outlineMode()) &&
          SettingGet<bool>(G, cSetting_use_shaders) &&
          G->ShaderMgr->ShaderPrgExists("fxaa"); // gone if it did not compile
 }

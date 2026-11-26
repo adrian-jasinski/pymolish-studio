@@ -209,8 +209,8 @@ def space_filling(selection='*', _self=cmd):
 def illustrated_atoms(selection='*', _self=cmd):
     '''
     "space filling" in the look "flat": plain colors inside outlines, like
-    the drawings of the Molecule of the Month. The outlines are drawn when
-    ray traced.
+    the drawings of the Molecule of the Month. The outlines are drawn in
+    the viewport (viewport_outline) and when ray traced.
     '''
     space_filling(selection, _self=_self)
     look('flat', _self=_self)
@@ -815,8 +815,9 @@ def show_solvent(show, selection='*', _self=cmd):
 
 # Looks: light and outline of the whole scene (global settings). They are
 # the last group of the preset menu. The outline is drawn in ray-traced
-# images only; its color is the default "front", which contrasts with the
-# background, so a look works on any background and sets none.
+# images and, while viewport_outline is on, in the viewport; its color is
+# the default "front", which contrasts with the background, so a look
+# works on any background and sets none.
 _outline = dict(depth_cue=0, ray_trace_mode=1, antialias=2)
 LOOKS = {
     'default': {},
