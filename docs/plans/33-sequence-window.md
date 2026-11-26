@@ -1,5 +1,14 @@
 # 33 — Multiple sequences and structures in a separate window
 
+**2026-11-26, 4.90.0, from a request and not from this plan:** the
+alignment window shows the secondary structure only as the drawn track at
+the bottom. The line of characters above every residue and its legend are
+gone; the tooltip of a residue still names its own. Measured offscreen
+with the four chains of 4hhb: a sequence row is 18 px high, the track
+35 px; 8 tests of the window, the suite 1185 passed and 254 skipped. Left
+out: a mark in the table for a residue without coordinates (its tooltip
+says so), and a look at the real window on WSLg, Windows and macOS.
+
 **2026-11-24, 4.67.0, from a request and not from this plan:** the sequence
 of the loaded objects has a tab, Sequence, between Command and Chat
 (`modules/pmg_qt/sequence_tab.py`). It is the sequence viewer of the core

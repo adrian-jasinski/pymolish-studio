@@ -2,9 +2,11 @@
 
 [Back to the roadmap](PLAN.md).
 
-**Shipped state, checked 2026-11-26: 4.89.0.** Seven versions were built
+**Shipped state, checked 2026-11-26: 4.90.0.** Seven versions were built
 that day from the planning update of the morning (15m to 15p, 32c, 34d and
-the surface worker of 1b): 4.83.0 to 4.89.0. Questions 121 to 125 are
+the surface worker of 1b): 4.83.0 to 4.89.0; an eighth, 4.90.0, from a
+request of the same day (the alignment window shows the secondary
+structure only as the drawn track). Questions 121 to 125 are
 answered and built; 128 and 129 are open in [PLAN.md](PLAN.md), with 126
 and 127 of the documentation plan (step 38, planning only). Built since
 4.19.43, with the tests and GUI checks recorded in
@@ -68,6 +70,7 @@ and 127 of the documentation plan (step 38, planning only). Built since
 | 4.87.0 | The outline of a look in the viewport: figure, soft, flat, comic, sketch, illustrated atoms and contour cartoon; the setting `viewport_outline` (15b). |
 | 4.88.0 | An experiment: `set glow, 1` lays a halo in the colors of what is drawn around it, in the viewport. No menu row (15p, question 128). |
 | 4.89.0 | A large surface is built in the background: the window stays in use and the surface appears when it is ready; pictures and exports wait for it; the setting `async_surface` (1b). |
+| 4.90.0 | The Sequence alignment window shows the secondary structure only as the drawn track at the bottom; the line of characters above every residue and its legend are gone, a row is one line high (a request, step 33). |
 
 Of the ten features requested on 2026-11-20, all ten have a working
 version: the tenth, the surface looks, shipped in 4.82.0 on the grid

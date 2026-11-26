@@ -192,6 +192,11 @@ right button works, that the Chat tab works with Claude Code and with
 ChatGPT, signed in and with "Run without asking", and that the old
 pymolish plugin is removed.
 
+Built 2026-11-26, 4.90.0, from a request with a picture of the Sequence
+alignment window ("show only this bottom secondary structure"): the line
+of characters above every residue and its legend are gone; the drawn
+track at the bottom stays. No row of the table and no question changed.
+
 **Documentation plan, 2026-11-26:** step 38 adds a current-function coverage
 audit, plain task guides, clear front pages and deeper reference, and real
 screenshots plus short demonstrations. Initial source snapshot: 4.84.0
@@ -481,7 +486,7 @@ The user's to do:
   outline (figure, flat, comic, sketch), `set glow, 1`, and `show surface`
   on a large structure. All were tried in a test window on this machine;
   at the end of the run, with your pymolish closed, your `.venv` was
-  rebuilt to 4.89.0 with the extras `dev`, `chem`, `fix` and `ai`.
+  rebuilt to 4.90.0 with the extras `dev`, `chem`, `fix` and `ai`.
 - Look at the changes of 2026-11-25 in your own window. They were built
   and tried in a copy; at the end of the run, with pymolish closed, your
   `.venv` was rebuilt to 4.76.0 with the extras `dev`, `chem`, `fix` and
@@ -495,10 +500,10 @@ The user's to do:
 - The drag with the right button (4.70.0): you reported on 2026-11-26
   that it works. If that was on Linux, Windows and macOS are still to
   try: there the system asks for the menu when the button is released.
-- Push `feature13` again. Checked 2026-11-26 after 4.89.0: the local
+- Push `feature13` again. Checked 2026-11-26 after 4.90.0: the local
   tracking ref `origin/feature13` is at the plan commit of 4.76.14
-  (`5101e943`), and the branch is 24 commits ahead of it (4.77.0 to
-  4.89.0 and the plan commits). No fetch, push or merge was made in this
+  (`5101e943`), and the branch is 26 commits ahead of it (4.77.0 to
+  4.90.0 and the plan commits). No fetch, push or merge was made in this
   run; pull request #11 was not looked at again. The Windows, macOS and
   sanitizer jobs of that CI run are the first compile there of the new
   C++ of 4.81.0, 4.84.0 and 4.87.0 to 4.89.0, and the first try of the new
