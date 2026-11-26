@@ -177,6 +177,14 @@ icons with short labels and two rows when narrow (121), and existing recipes
 followed by a measured true-glow experiment (122). Choices 123–125 remain
 open below; recommendations are not recorded as answers.
 
+**Documentation plan, 2026-11-26:** step 38 adds a current-function coverage
+audit, plain task guides, clear front pages and deeper reference, and real
+screenshots plus short demonstrations. Initial source snapshot: 4.84.0
+(`6a76b605`); menu grouping landed in 4.85.0 during planning. Refresh the
+baseline when writing/recording. Planning only: no user docs
+rewritten, media captured or program version changed. Destination and demo
+format are choices 126–127 below.
+
 **Keep Qt Widgets with PySide6, simplify the supported product, measure performance,
 modernize the existing window, and deliver downloadable builds early.** Changing
 bindings does not move molecular computation to the GPU. Follow
@@ -206,7 +214,12 @@ implementation task/PR, with an `X` feature or `Y` fix version under
 | 8 | **15p** — [Neon/glow experiment](docs/plans/15-presets.md) | After the existing-renderer comparisons and outline, compare one optional true-glow pass with the bright-edge baseline (answer 122). Reuse offscreen rendering; no new rendering dependency. | Pictures, frame time and memory; background excluded from the glow source; transparent PNG/Draw/Ray and driver limitations documented before choosing shipping scope. |
 | 9 | **1b** — [Surface worker](docs/plans/01-performance-gpu.md) | Build large surfaces off the GUI thread with status; headless commands still wait. With it built, decide again whether "Solid (grid)" becomes the default (answer 105 A). | Real-window responsiveness, suite and sanitizer checks. |
 | 10 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend the existing preset snapshots to add/remove/edit commands, retain coordinate ring; toolbar labels and remaining tests. Remove incentive error/mark and `-n` afterwards (two test files still carry the mark: `jira/PYMOL-1276.py`, `jira/PYMOL-1697.py`). | Existing undo/jira cases pass before their marks are removed. |
+| 11 | **38a–d** — [Current documentation and real demos](docs/plans/38-documentation.md) | Audit current functions; correct stale docs; write a docs home, short task guides and deeper reference; capture the real window and focused screenshots, plus short appearance/ligand/sequence/movie demos. Choices 126–127 cover destination and format. | Coverage checklist complete; examples/menu paths checked; front-page routes, links and media work; version and capture recipes recorded. |
 | any time | **1b** — [Other measured items](docs/plans/01-performance-gpu.md) | The triangulation, a third of a surface build and one thread. Draw cost of sticks and lines as triangles on every driver: both need frame times on a quiet machine, the second also on Windows and macOS drivers. | Each change has before and after numbers. |
+
+Step 38's inventory and text can start independently of the earlier orders;
+only final screenshots of changing menus/footer wait for their implementation.
+Its slices are docs-only and get no program version or ChangeLog entry.
 
 The new recipes precede menu organization; they can be compared with ray
 outlines while 15b is pending. The footer is independent of rendering work.
@@ -281,6 +294,8 @@ New choices from the 2026-11-26 planning request, before implementation:
 | 123 | New recipe set and the cartoon illustration name ([15m](docs/plans/15-presets.md), order 3) | **A, recommended:** Space filling, Illustrated atoms, Licorice and Bond shell, with comparisons against existing recipes; reuse surface/light styles for the other images. **B:** Space filling and Illustrated atoms only, the rest as manual compositions. For the existing Illustration row, **Contour cartoon** is recommended; **Outlined cartoon** is the alternative. No Proteinbase-branded name. |
 | 124 | Transparency scope ([34d](docs/plans/34-ball-and-stick.md), order 4) | **A, recommended:** whole objects, as today's cartoon control, one independent value for ball-and-stick balls and bonds; selection menus identify that scope. **B:** atom/residue scope with defined half-bond transitions, requiring more core work and a change from cartoon's current behavior. |
 | 125 | Menu grouping ([15o](docs/plans/15-presets.md), order 5) | **A, recommended:** Cartoon, Atoms and bonds, Surface, Binding, Transparency; Light, explicitly labeled Themes, and Floor below a Scene appearance separator. **B:** group Cartoon and Transparency only, keep the remaining list mostly flat. All existing actions remain available. |
+| 126 | Documentation destination ([38](docs/plans/38-documentation.md), order 11) | **A, recommended:** Markdown in this repository, a docs home and task/command indexes. **B:** a separate documentation website with full-text search, using the same source; choose its tooling before adding dependencies. |
+| 127 | Short demonstrations ([38](docs/plans/38-documentation.md), order 11) | **A, recommended:** short videos opened from static screenshot posters; GIF only where useful. **B:** small inline GIF-style loops in guides, with static/written equivalents and controllable videos. |
 
 Answered during this planning run: **121**, larger icons with Viewing,
 SEQ, Chat, Wizard and Cmd beside them, two rows when narrow; **122**,
@@ -426,6 +441,9 @@ dots than 71 to 74 % of their area.
 
 The user's to do:
 
+- Choose the documentation destination and demo format, 126–127 above.
+  [Plan 38](docs/plans/38-documentation.md) specifies front pages, deeper
+  guides, current-function coverage and the screenshot/clip list.
 - Review choices 123–125 above. The image-family table and proposed menu
   are in plan 15; the confirmed footer layout is in plan 32. These are
   plans, not new controls in the installed application.
@@ -529,9 +547,9 @@ The user's to do:
   ignored by git): 25b, the last plan made from it, is built since
   4.82.0. It was left in place; it is your folder.
 
-Not the user's, and not a roadmap step: the screenshot in the README
-(`docs/img/window.png`) shows the window of 4.19; it is retaken when the
-bar has stopped changing.
+The README screenshot (`docs/img/window.png`) shows the window of 4.19.
+Replacing it is now part of step 38d, with the other documentation captures;
+it is not a task for the user.
 
 ## Shared completion criteria
 
