@@ -7851,7 +7851,7 @@ static CoordSet *ObjectMoleculeMOLStr2CoordSet(PyMOLGlobals * G, const char *buf
         np = nextline(np);
         if (np == ptmp)
           break;
-        nchs = (np - ptmp - 1);
+        nchs = strcspn(ptmp, "\r\n");
         if (nchs) {
           VLACheck(cctmp, char, nchs + 1);
           ncopy(cctmp, ptmp, nchs);

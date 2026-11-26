@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-26 pymolish-studio
 
+	* 4.90.1
+
+	* Cross-platform fixes
+	  - F2 renames a scene on macOS as well as Windows and Linux.
+	  - Tab font buttons use the requested point size and preserve
+	    fractional size offsets when settings are saved and restored.
+	  - Loading SDF properties handles Windows and Unix line endings
+	    alike, without inserting extra blank lines on Windows.
+
+2026-11-26 pymolish-studio
+
 	* 4.90.0
 
 	* Sequence alignment

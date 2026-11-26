@@ -1325,16 +1325,22 @@ class TabFontButtons(QtWidgets.QWidget):
         self.settings = QtCore.QSettings("pymolish", "pymolish-studio")
         # what the widgets start with: Reset goes back to it
         self.defaults = {
-            title: [QtGui.QFontInfo(w.font()).pointSizeF() for w in widgets]
+            title: [
+                w.font().pointSizeF()
+                if w.font().pointSizeF() > 0
+                else QtGui.QFontInfo(w.font()).pointSizeF()
+                for w in widgets
+            ]
             for title, widgets in targets.items()
         }
         row = QtWidgets.QHBoxLayout(self)
         row.setContentsMargins(0, 0, 2, 0)
         row.setSpacing(2)
         for text, tip, step in (
-                ("A\u2212", "Smaller text in this tab", -1),
-                ("A+", "Larger text in this tab", 1),
-                ("Reset", "The text size this tab starts with", 0)):
+            ("A\u2212", "Smaller text in this tab", -1),
+            ("A+", "Larger text in this tab", 1),
+            ("Reset", "The text size this tab starts with", 0),
+        ):
             button = QtWidgets.QToolButton()
             button.setText(text)
             button.setToolTip(tip)
@@ -1348,7 +1354,7 @@ class TabFontButtons(QtWidgets.QWidget):
     def step(self, title):
         """Points added to the text of that tab."""
         try:
-            return int(self.settings.value("fonts/" + title, 0))
+            return float(self.settings.value("fonts/" + title, 0))
         except (TypeError, ValueError):
             return 0
 
@@ -1368,7 +1374,7 @@ class TabFontButtons(QtWidgets.QWidget):
         new = self.step(title) + step if step else 0
         new = max(self.SMALLEST - min(sizes), min(self.LARGEST - max(sizes), new))
         if new:
-            self.settings.setValue("fonts/" + title, int(new))
+            self.settings.setValue("fonts/" + title, new)
         else:
             self.settings.remove("fonts/" + title)
         self._apply(title, new)

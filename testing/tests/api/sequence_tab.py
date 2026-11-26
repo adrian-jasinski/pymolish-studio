@@ -171,7 +171,8 @@ def test_options_row():
     assert rows == expected[1:] and len(rows) == 14
 
 
-def test_tab_font_buttons(monkeypatch, tmp_path):
+@pytest.mark.parametrize("point_size", [None, 9.25])
+def test_tab_font_buttons(monkeypatch, tmp_path, point_size):
     """37g: A-, A+ and Reset beside the tabs size the text of the tab that
     is shown, each tab for itself, and the sizes come back at the next start."""
     from pmg_qt.pymol_qt_gui import TabFontButtons
@@ -188,6 +189,10 @@ def test_tab_font_buttons(monkeypatch, tmp_path):
 
     def window():
         tabs = QtWidgets.QTabWidget()
+        if point_size is not None:
+            font = tabs.font()
+            font.setPointSizeF(point_size)
+            tabs.setFont(font)
         log, entry = (
             QtWidgets.QPlainTextEdit("a long line " * 40),
             QtWidgets.QLineEdit(),
@@ -231,6 +236,8 @@ def test_tab_font_buttons(monkeypatch, tmp_path):
             button.toolTip() and button.focusPolicy() & QtCore.Qt.FocusPolicy.TabFocus
         )
     assert start["Command"][0] == 9
+    if point_size is not None:
+        assert start["Chat"] == [point_size, point_size]
 
     larger.click()
     larger.click()  # the Command tab is shown: its log and its entry

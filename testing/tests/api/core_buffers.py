@@ -3,6 +3,8 @@ Testing: commands whose scratch buffers changed in step 8c and that no
 other test reached (coverage run of 2026-11-25).
 """
 
+import pytest
+
 from pymol import cmd, testing
 
 
@@ -59,7 +61,8 @@ def test_discrete_session(tmp_path):
     assert [cmd.count_atoms("m1", state=s) for s in range(1, 11)] == before
 
 
-def test_sdf_property_names(tmp_path):
+@pytest.mark.parametrize("newline", ["\n", "\r\n", "\r"])
+def test_sdf_property_names(tmp_path, newline):
     with open(testing.datafile("ligs3d.sdf")) as handle:
         molblock = handle.read().split("M  END")[0] + "M  END\n"
     data = (
@@ -70,7 +73,7 @@ def test_sdf_property_names(tmp_path):
         "$$$$\n"
     )
     filename = str(tmp_path / "props.sdf")
-    with open(filename, "w") as handle:
+    with open(filename, "w", newline=newline) as handle:
         handle.write(molblock + data)
     cmd.load(filename, "m1", object_props="*")
     assert cmd.get_property_list("m1") == ["plain", "strip"]
