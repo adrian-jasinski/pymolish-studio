@@ -4,6 +4,21 @@ CHANGE LOG
 
 2026-11-26 pymolish-studio
 
+	* 4.92.0
+
+	* Pictures without ray tracing (15q)
+	  - Draw (fast) and png at another size than the window get the
+	    post-process of the window: the halo of glow, the outline of a
+	    look and the smoothing of antialias_shader. Before, these
+	    pictures had none of the three.
+	  - The halo is the same share of the picture at any size: 13.4 %
+	    of the window (1435 x 702) and of a picture twice that size,
+	    red tryptophan on black. Its buffer is 176 rows high at any
+	    size; a window of another height than 702 px now gets a halo
+	    of the same share of its height instead of the same pixels.
+
+2026-11-26 pymolish-studio
+
 	* 4.91.0
 
 	* Presets > light

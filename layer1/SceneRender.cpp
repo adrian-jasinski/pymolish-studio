@@ -446,10 +446,17 @@ void SceneRender(PyMOLGlobals* G, const SceneRenderInfo& renderInfo)
 
       auto fog_active = SceneSetFog(G);
 
-      // The whole window, one eye: the picture goes into a texture and
-      // from there, smoothed, to the screen (SceneRenderAA).
-      render_to_texture_for_pp = !renderInfo.viewportOverride &&
-                                 !must_render_stereo &&
+      // The whole window or picture, one eye: the picture goes into a
+      // texture and from there, smoothed, to its target (SceneRenderAA).
+      // A sized picture (SceneMakeSizedImage) is one tile of the scene's
+      // extent, drawn offscreen, so it gets the same post-process.
+      const auto& over = renderInfo.viewportOverride;
+      bool whole = !over ||
+                   (!over->offset.x && !over->offset.y &&
+                       !renderInfo.mousePos.x && !renderInfo.mousePos.y &&
+                       over->extent.width == unsigned(I->Width) &&
+                       over->extent.height == unsigned(I->Height));
+      render_to_texture_for_pp = whole && !must_render_stereo &&
                                  NeedsOffscreenTextureForPP(G);
       if (render_to_texture_for_pp) {
         G->ShaderMgr->bindOffscreen(I->Width, I->Height, &I->grid);

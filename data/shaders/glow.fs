@@ -5,9 +5,10 @@ precision highp float;
 #endif
 
 /*
- * The halo of "glow", an experiment (15p): what is drawn, blurred, at a
- * quarter of the size of the picture. Three stages, each one screen-filling
- * rectangle (SceneRenderGlow); fxaa.fs lays the result around the molecule.
+ * The halo of "glow" (15p): what is drawn, blurred, in a buffer 176 rows
+ * high at any size of the picture (CShaderMgr::bindGlow). Three stages,
+ * each one screen-filling rectangle (SceneRenderAA); fxaa.fs lays the
+ * result around the molecule.
  *
  * 0: the picture times its cover, and the cover: 1 where something was
  *    drawn, found in the depth, so the background does not glow.
@@ -17,7 +18,7 @@ precision highp float;
 uniform sampler2D colorTex;
 uniform sampler2D depthTex;
 uniform int stage;
-uniform vec2 reach; // 0: a pixel of the picture; 1, 2: from point to point
+uniform vec2 reach; // 0: a quarter of a halo texel; 1, 2: point to point
 
 varying vec2 texcoordAttr;
 
@@ -26,7 +27,7 @@ void main()
   vec2 at = texcoordAttr;
   vec4 sum = vec4(0.);
   if (stage == 0) {
-    // the four corners between its sixteen pixels: each read is four of them
+    // the centres of the four quarters of this texel of the halo
     for (int i = 0; i < 4; ++i) {
       vec2 p = at + reach * (vec2(mod(float(i), 2.), float(i / 2)) * 2. - 1.);
       float cover = texture2D(depthTex, p).r < 1. ? 1. : 0.;

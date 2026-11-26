@@ -1159,8 +1159,10 @@ float CShaderMgr::glow() const
 void CShaderMgr::bindGlow(int stage)
 {
   using namespace tex;
-  auto size = getGPUBuffer<RenderTargetGL>(offscreen_rt)->size() / 4;
-  size = glm::max(size, glm::ivec2(1));
+  // 176 rows at any size (a quarter of a 702 px window), so the halo is the
+  // same share of the height in the window and in a picture of any size
+  auto full = glm::vec2(getGPUBuffer<RenderTargetGL>(offscreen_rt)->size());
+  auto size = glm::max(glm::ivec2(full * (176.f / full.y) + 0.5f), 1);
   for (auto& id : glow_rt) {
     auto rt = getGPUBuffer<RenderTargetGL>(id);
     if (rt && rt->size() != size) {
@@ -1189,17 +1191,18 @@ CShaderPrg* CShaderMgr::Enable_GlowShader()
   shaderPrg->Set1i("stage", glow_stage);
   shaderPrg->Set1i("colorTex", colorTexUnit);
   if (glow_stage == 0) {
-    auto size = getGPUBuffer<RenderTargetGL>(offscreen_rt)->size();
+    auto size = getGPUBuffer<RenderTargetGL>(glow_rt[0])->size();
     glActiveTexture(GL_TEXTURE0 + depthTexUnit);
     glBindTexture(GL_TEXTURE_2D, outline_depth_tex[1]);
     shaderPrg->Set1i("depthTex", depthTexUnit);
     activateOffscreenTexture(colorTexUnit);
-    shaderPrg->Set2f("reach", 1.f / size.x, 1.f / size.y);
+    // the centres of the four quarters of a halo texel
+    shaderPrg->Set2f("reach", .25f / size.x, .25f / size.y);
   } else {
     auto from = getGPUBuffer<RenderTargetGL>(glow_rt[glow_stage == 2]);
     glActiveTexture(GL_TEXTURE0 + colorTexUnit);
     from->textures()[0]->bind();
-    // 13 points, as far apart as gives a halo of a twelfth of the height
+    // 13 points 1.5 texels apart: the halo reaches 9 of the 176 rows
     float apart = 1.5f / (glow_stage == 1 ? from->size().x : from->size().y);
     shaderPrg->Set2f("reach", glow_stage == 1 ? apart : 0.f,
         glow_stage == 2 ? apart : 0.f);
