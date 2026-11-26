@@ -203,7 +203,7 @@ static const int cSceneSettings[] = {
     cSetting_dash_gap, cSetting_dash_length, cSetting_mesh_color,
     cSetting_mesh_width, cSetting_dot_color, cSetting_surface_color,
     cSetting_surface_quality, cSetting_surface_type, cSetting_surface_mode,
-    cSetting_transparency, cSetting_ray_transparency_oblique,
+    cSetting_solvent_radius, cSetting_transparency, cSetting_ray_transparency_oblique,
     cSetting_ray_transparency_oblique_power,
 };
 

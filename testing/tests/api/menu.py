@@ -248,12 +248,13 @@ def testPresets(request):
         'ligand sites', 'protein interface', 'protein-protein interaction',
         'antibody and antigen', 'cartoon transparency',
         'show solvent',
-        'theme', 'light', 'floor']
+        'surface look', 'theme', 'light', 'floor']
     assert [row[1] for row in m if row[0] == 2] == ['Preset:']
     # 30d: themes, lights and the floor each have a submenu
     def sub(name):
         assert d[name][0][0] == 2  # under a caption
         return [row[1] for row in d[name] if row[0] == 1]
+    assert sub('surface look') == ['glossy', 'candy glass', 'frosted', 'clay']
     assert sub('theme') == ['clay', 'blue', 'sage', 'mint', 'night']
     assert sub('light') == [
         'standard light', 'figure', 'soft', 'flat', 'comic', 'sketch',

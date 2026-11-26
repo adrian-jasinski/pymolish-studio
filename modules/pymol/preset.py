@@ -76,6 +76,7 @@ def _prepare(selection,polar_contacts=None,_self=cmd):
     cmd.unset("surface_color", s) # per atom: interaction
     cmd.unset("surface_quality", selection)
     cmd.unset("surface_type",selection)
+    cmd.unset("solvent_radius",selection)
     # Not sphere_scale, stick_radius or stick_color: since 4.49 no preset
     # sets them (ligands are "ball_and_stick"), so they are the user's.
     cmd.unset("cartoon_highlight_color",selection)
@@ -684,10 +685,38 @@ def illustration(selection='*', _self=cmd):
     _self.delete(s)
 
 
+def surface(selection='*', material='clay', _self=cmd):
+    '''
+    The protein as a surface in one of the materials of SURFACES, with the
+    ligands as balls and sticks. The surface keeps the colors of the
+    carbons under it. The next preset takes all of it back; a row of the
+    light menu replaces the light and leaves the surface.
+    '''
+    s, selection = _prepare(selection, _self=_self)[:2]
+    light, shape, transparency = SURFACES[material]
+
+    _self.show('surface', 'polymer & ?' + s)
+    _surface_like_carbons('?' + s, _self)
+    _show_hetero(s, _self)
+    for key, value in shape.items():
+        _self.set(key, value, selection)
+    if transparency:
+        _self.set('transparency', transparency, s)
+        # denser where it turns away from the eye, and lit from inside too
+        _self.set('ray_transparency_oblique', 1) # global
+        _self.set('ray_transparency_oblique_power', 3) # global
+        _self.set('two_sided_lighting', 1) # global
+    look(material, _self=_self)
+    global _lit_by_preset
+    _lit_by_preset = True
+
+    _self.delete(s)
+
+
 solvent = False  # the solvent row of the preset menu
 
 
-def from_menu(name, selection='*', _self=cmd):
+def from_menu(name, selection='*', *args, _self=cmd):
     '''
     A row of the preset menu: preset `name`, without the solvent unless the
     menu's "show solvent" row was used. "default" shows everything.
@@ -695,7 +724,7 @@ def from_menu(name, selection='*', _self=cmd):
     if not solvent and name != 'default':
         _self.hide('everything', '(%s) & solvent' % (selection))
         selection = '(%s) & !solvent' % (selection)
-    globals()[name](selection, _self=_self)
+    globals()[name](selection, *args, _self=_self)
 
 
 def show_solvent(show, selection='*', _self=cmd):
@@ -760,6 +789,29 @@ LOOKS = {
 }
 
 
+# Surface looks, the rows "surface look" of the preset menu: a material for
+# the surface of the protein. name: (light of the whole scene, settings of
+# the objects, transparency of the surface). The rounded ones are the grid
+# surface with a probe of 3 A: at that probe the surface of dots has
+# triangles one can see.
+_round = dict(surface_type=7, solvent_radius=3.0)
+SURFACES = {
+    # polished plastic: a small, strong highlight
+    'glossy': (dict(spec_reflect=2, spec_power=300, shininess=90,
+                    ambient=0.3, ray_shadow=0), {}, 0),
+    # tinted glass: see-through in the middle, dense at the rim
+    'candy glass': (dict(ambient=0.45, spec_reflect=1.5, spec_power=200,
+                         ray_shadow=0), _round, 0.55),
+    # milk glass: the ligand is a shape behind it, and nothing shines
+    'frosted': (dict(ambient=0.45, specular=0, ray_shadow=0), _round, 0.3),
+    # matte and soft, its pockets in shade
+    'clay': (dict(specular=0.15, ambient=0.5, direct=0.5, ray_shadow=0,
+                  ambient_occlusion_mode=1, ambient_occlusion_scale=16),
+             _round, 0),
+}
+_LIGHTS = dict(LOOKS, **{name: s[0] for name, s in SURFACES.items()})
+
+
 # Color themes: one soft color for the protein, one that stands out for the
 # carbons of the ligands, and a two-color background that goes with them.
 # Unlike a look or a preset, a theme sets colors and the background, and
@@ -789,12 +841,12 @@ def theme(name, selection='*', _self=cmd):
 
 def look(name, _self=cmd):
     '''
-    Give the whole scene the light and outline of LOOKS[name]. The
-    background stays as it is.
+    Give the whole scene the light and outline of LOOKS[name], or the
+    light of a surface look. The background stays as it is.
     '''
     global _lit_by_preset
     _lit_by_preset = False
-    for key in {key for settings in LOOKS.values() for key in settings}:
+    for key in {key for settings in _LIGHTS.values() for key in settings}:
         _self.unset(key)
-    for key, value in LOOKS[name].items():
+    for key, value in _LIGHTS[name].items():
         _self.set(key, value)

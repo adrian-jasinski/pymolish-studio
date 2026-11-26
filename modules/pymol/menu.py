@@ -840,6 +840,10 @@ def presets(self_cmd, sele):
               [ 1, 'hide solvent' if preset.solvent else 'show solvent',
                 'preset.show_solvent(%d,"%s",_self=cmd)' % (not preset.solvent, sele) ],
               [ 0, '', '' ],
+              # the protein as a surface in one material
+              [ 1, 'surface look', [[ 2, 'Surface Look:', '' ]] + [
+                  [ 1, name, 'preset.from_menu("surface","%s","%s",_self=cmd)'
+                    % (sele, name) ] for name in preset.SURFACES ]],
               # colors of protein and ligand, and the background: the only
               # rows that color a cartoon or a surface
               [ 1, 'theme', [[ 2, 'Theme:', '' ]] + [

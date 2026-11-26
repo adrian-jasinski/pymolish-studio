@@ -2,6 +2,31 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-26 pymolish-studio
+
+	* 4.82.0
+
+	* Presets
+	  - New submenu "surface look" in the Presets menu, four rows that
+	    show the protein as a surface in one material, with the
+	    ligands as balls and sticks: glossy (polished plastic, a small
+	    strong highlight), candy glass (see-through in the middle,
+	    dense at the rim), frosted (milk glass, nothing shines) and
+	    clay (matte, the pockets in shade). Picture:
+	    docs/img/surface-looks.jpg.
+	  - Candy glass, frosted and clay are round: the grid surface
+	    ("Solid (grid)", 4.81.0) with a probe of 3 A, set on the
+	    objects of the preset. Glossy is today's surface.
+	  - The surface keeps the colors of the carbons under it, as in
+	    every preset. The next preset takes all of it back. A row of
+	    the light menu replaces the light and leaves the surface, so
+	    clay under "studio" is two clicks.
+	  - As a command: preset.surface(selection, material).
+	  - Every preset now takes back a solvent_radius set on its
+	    objects, as it does for surface_type and surface_quality, and
+	    a scene keeps solvent_radius with the other settings of a
+	    style: a scene stored on clay comes back round.
+
 2026-11-25 pymolish-studio
 
 	* 4.81.0

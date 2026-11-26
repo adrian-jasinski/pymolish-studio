@@ -316,6 +316,59 @@ def testEffects(request):
     assert cmd.get_setting_int('ray_trace_mode') == 1
 
 
+def testSurfaceLooks(request):
+    """25b: the rows "surface look" show the protein as a surface in one
+    material. The next preset takes all of it back; a row of the light
+    menu replaces the light and leaves the surface."""
+    from pymol import menu
+    request.addfinalizer(cmd.reinitialize)  # the light
+    cmd.load(testing.datafile('1oky.pdb.gz'))
+    cmd.set('transparency', 0.2)  # the user's, of the whole scene: it stays
+    rows = dict(_menuRows(menu.presets(cmd, '1oky')))
+    names = [label[15:] for label in rows if label.startswith('surface look > ')]
+    assert names == list(preset.SURFACES) == ['glossy', 'candy glass', 'frosted', 'clay']
+
+    def see_through():  # of the atoms, else that of the scene
+        stored.found = set()
+        cmd.iterate('polymer', 'stored.found.add(round(s.transparency, 2))')
+        return stored.found
+
+    for name in names:
+        cmd.do(rows['surface look > ' + name], echo=0)
+        light, shape, transparency = preset.SURFACES[name]
+        assert cmd.count_atoms('rep surface') == cmd.count_atoms('polymer'), name
+        assert cmd.count_atoms('rep cartoon') == 0, name
+        assert cmd.count_atoms('rep ball_and_stick & organic') == cmd.count_atoms('organic')
+        for key, value in light.items():
+            assert cmd.get_setting_float(key) == pytest.approx(value), (name, key)
+        # round is the grid surface with a large probe, on the object only
+        round_ = name != 'glossy'
+        assert cmd.get_setting_int('surface_type', '1oky') == (7 if round_ else 0), name
+        assert cmd.get_setting_float('solvent_radius', '1oky') == pytest.approx(
+            3.0 if round_ else 1.4), name
+        assert cmd.get_setting_int('surface_type') == 0
+        assert see_through() == {transparency or 0.2}, name
+        assert cmd.get_setting_int('ray_transparency_oblique') == bool(transparency)
+        assert cmd.get_setting_float('transparency') == pytest.approx(0.2)
+    assert cmd.get_setting_int('ambient_occlusion_mode') == 1  # clay, the last
+
+    preset.look('studio')  # another light on the same clay
+    assert cmd.get_setting_int('ambient_occlusion_mode') == 0
+    assert cmd.get_setting_int('light_count') == 4
+    assert cmd.get_setting_int('surface_type', '1oky') == 7
+    assert cmd.count_atoms('rep surface') == cmd.count_atoms('polymer')
+
+    preset.surface('1oky', 'candy glass')
+    preset.pretty('1oky')  # the next preset: nothing of it is left
+    assert cmd.count_atoms('rep surface') == 0 and see_through() == {0.2}
+    assert cmd.get_setting_int('surface_type', '1oky') == 0
+    assert cmd.get_setting_float('solvent_radius', '1oky') == pytest.approx(1.4)
+    assert cmd.get_setting_float('spec_reflect') == -1  # the default light
+    assert cmd.get_setting_int('two_sided_lighting') == 0
+    assert cmd.get_setting_int('ray_transparency_oblique') == 0
+    assert cmd.get_setting_float('transparency') == pytest.approx(0.2)
+
+
 def testWire():
     cmd.load(testing.datafile('1oky.pdb.gz'))
     preset.wire('all')
@@ -454,7 +507,7 @@ LIGAND_PRESETS = (
     'publication_green', 'glass', 'wire', 'spring', 'illustration',
     'ligands', 'ligand_sites', 'ligand_sites_hq', 'ligand_sites_trans',
     'ligand_sites_trans_hq', 'ligand_sites_mesh', 'ligand_sites_dots',
-    'ligand_cartoon', 'classified', 'interaction',
+    'ligand_cartoon', 'classified', 'interaction', 'surface',
 )
 
 
