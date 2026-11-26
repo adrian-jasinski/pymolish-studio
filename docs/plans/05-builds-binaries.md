@@ -1,6 +1,6 @@
 # 5 — Fast builds and downloadable test binaries
 
-[Roadmap](../../PLAN.md) · 5a/5b complete; 5c shelved; 5d planned
+[Roadmap](../../PLAN.md) · 5a/5b complete; 5c shelved; 5d planned (unsigned installer)
 
 **Shorten the edit/build/test loop, then provide applications testers can launch
 without Python.** An installable wheel and a standalone application are separate
@@ -13,8 +13,10 @@ order 6: a Windows installer and trusted signatures for the downloaded
 installer and the installed executable. This is a documentation-only update;
 no version, build, signing trial, size or timing measurement. The workflow
 and packaging spec were inspected; no remote CI/release status was checked.
-Installer/provider choices are open (137/138). Builds stay on GitHub Actions;
-the earlier status entries and baseline below are historical.
+Later the same day the user answered **137 A** and skipped signing for
+now: build the unsigned per-user Inno Setup installer; 138 is deferred.
+Builds stay on GitHub Actions; the earlier status entries and baseline
+below are historical.
 
 ## Status 2026-11-08
 
@@ -303,6 +305,14 @@ warning accurately; do not promise universal acceptance.
 
 ### Choices before implementation
 
+**Answered 2026-11-26: 137 A, signing skipped for now ("we add that
+later").** Build 5d unsigned: steps 1, the metadata/UPX part of 2, 5
+without the signature checks, and 6, with the checks below minus the
+signature items. Steps 2 (signing), 3 and 4 and every signature check wait
+for question 138, which is deferred until the user asks for signing. The
+unsigned installer will show SmartScreen's "unknown publisher" prompt;
+document that in `docs/install.md` and record it, do not hide it.
+
 **137 — Delivery route:**
 
 - **A, recommended: Inno Setup `.exe`, per-user, plus the portable ZIP.**
@@ -326,8 +336,8 @@ warning accurately; do not promise universal acceptance.
 | **B — Publicly trusted CA with CI-compatible signing** | Fallback if Azure is unavailable; confirm individual/organization eligibility, cost and cloud/HSM or token integration. Do not pay for EV on the assumption it removes SmartScreen warnings. No self-signed certificate for public downloads. |
 | **C — SignPath Foundation OSS application** | Free if accepted; publisher is the Foundation, with manual release approvals and limits on signing third-party binaries. Check this fork, bundled licenses/assets and native-library coverage against the terms before relying on it. Acceptance and support for signing the installer/uninstaller are prerequisites. [Conditions](https://signpath.org/terms). |
 
-Needed from the user: 137 A/B, 138 A/B/C if applicable, publisher's legal
-name, individual or organization, country, and signing budget. These are
+Needed from the user when signing is taken up: 138 A/B/C, publisher's
+legal name, individual or organization, country, and signing budget. These are
 choices for implementation, not a reason to stop writing this plan. No
 account purchase or certificate enrollment is part of this planning update.
 

@@ -6,8 +6,20 @@ order numbers in the finished-work table are historical. “Open, order N”
 references below follow the current roadmap (updated 2026-11-26).
 
 Step 5 is reopened by the Windows installer and signing request of
-2026-11-26: **5d, order 6** is planned, with questions 137 and 138 open.
-Its earlier build and bundle milestones remain complete; 5c stays shelved.
+2026-11-26: **5d, order 6** is planned. Question 137 is answered A with
+signing skipped for now; 138 is deferred. Its earlier build and bundle
+milestones remain complete; 5c stays shelved.
+
+## Decision 137
+
+Answered by the user on **2026-11-26**: "A, recommended ... Skip Signing
+for now - we add that later". A planning update at 4.90.0; nothing built,
+nothing measured.
+
+| No. | Decision | State |
+| --- | --- | --- |
+| 137 | Per-user Inno Setup `.exe` plus the portable ZIP. Inno Setup is agreed as a pinned CI build tool. Signing is skipped for now; MSIX through the Store (B) was not selected. | Open, order 6 ([5d](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing)). |
+| 138 | Signing provider. | Deferred until the user asks for signing; not an open question. |
 
 ## Decisions 128 and 129
 
@@ -30,7 +42,7 @@ surface worker of 1b. Steps 32 and 34 are finished again; step 15 has every
 original slice built; answer 128 A leaves the glow menu follow-up open.
 Step 1 keeps its two measured items. The current open orders are:
 27c 1, the trial of 31 2, the glow menu 3, general undo 4, the rest of the
-documentation (step 38) 5, Windows installer and signing (5d) 6.
+documentation (step 38) 5, Windows installer, unsigned for now (5d) 6.
 The rows are under "Finished
 milestones of open steps"; the decisions and choices follow here.
 

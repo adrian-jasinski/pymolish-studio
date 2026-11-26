@@ -2,8 +2,10 @@
 
 Updated 2026-11-26 at **4.90.0**. Questions **128 A** and **129 A** are
 recorded: add a viewport-only glow menu entry; keep Solid as the default
-surface. The Windows installer and signing request adds **5d**, order 6,
-with questions **137 and 138** open. This update changes plans only.
+surface. The Windows installer request adds **5d**, order 6. Question
+**137 A** is recorded: a per-user Inno Setup `.exe` plus the portable ZIP,
+**unsigned for now**; signing (question 138) is deferred until the user
+asks for it. This update changes plans only.
 
 Keep Qt Widgets with PySide6. Follow [AGENTS.md](AGENTS.md): smaller,
 faster, simpler, prettier.
@@ -29,7 +31,7 @@ in `AGENTS.md`; documentation alone takes no version.
 | 3 | **15p follow-up** — [Glow in the light menu](docs/plans/15-presets.md#question-128-a-glow-menu-follow-up) | Apply answer 128 A: add "glow" / "no glow" beside fog in Presets > light, using the existing setting. Viewport only. | Both actions work by keyboard and Undo; scene/session checks pass; the viewport-only limit is documented. |
 | 4 | **21g** — [General undo](docs/plans/21-commercial-features.md) | Extend preset snapshots to add/remove/edit commands, retain the coordinate ring, finish toolbar labels and tests. Then remove the incentive error/mark and `-n`. | Existing undo/jira cases pass before removing the marks in `jira/PYMOL-1276.py` and `jira/PYMOL-1697.py`. |
 | 5 | **38 rest** — [Documentation and demos](docs/plans/38-documentation.md) | Verify MP4 playback from GitHub posters after pushing; add a finished Chat turn picture/clip after order 2; complete the checklist's manual, platform and new-reader checks. | Clips play or fallback links are documented; the Chat picture is in `docs/assistant.md`; outstanding checks are recorded. |
-| 6 | **5d** — [Windows installer and code signing](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing) | Choose installer and signing provider, then package the existing Windows bundle with installation, upgrade and uninstall; sign the app and installer and publish verified downloads. | Downloaded installer and app pass clean-Windows checks with protections enabled; signatures, timestamps and checksums verify. Any remaining SmartScreen warning stays an open result. |
+| 6 | **5d** — [Windows installer and code signing](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing) | Answer 137 A: package the existing Windows bundle as an unsigned per-user Inno Setup `.exe` with installation, upgrade and uninstall, beside the ZIP, and publish it with checksums. Signing waits for question 138. | The downloaded installer installs, launches, upgrades and uninstalls on clean Windows with protections on; checksums verify. The expected "unknown publisher" SmartScreen prompt is recorded, not hidden. |
 | any time | **1b** — [Measured performance work](docs/plans/01-performance-gpu.md) | Profile surface triangulation and sticks/lines drawn as triangles on a quiet machine; driver comparisons also need Windows/macOS. | Each change has before/after measurements. |
 
 The glow follow-up is the next local task. General undo and the remaining
@@ -38,26 +40,25 @@ the menu entry ships. Answer 129 needs no code change: Solid stays the
 default and Solid (grid) remains optional.
 
 The Windows request reopens step 5 after its completed bundle work; 5c
-stays shelved. An installer alone cannot establish Windows trust. Signing
-and tests must cover the installed program too; no plan can guarantee that
-SmartScreen, Defender or a managed-device policy will never block a build.
+stays shelved. An installer alone cannot establish Windows trust: until
+signing is added, SmartScreen will show an "unknown publisher" prompt for
+the downloaded installer. No plan can guarantee that SmartScreen, Defender
+or a managed-device policy will never block a build.
 
 ## Waiting for the user
 
-**Questions 137 and 138 are open** for order 6; recommendations are not
-accepted decisions. [Answers 128 and 129](PLAN-DONE.md#decisions-128-and-129)
-remain recorded. Details and sources are in [5d](docs/plans/05-builds-binaries.md#choices-before-implementation).
-
-| No. | Choice | Recommendation and alternatives |
-| --- | --- | --- |
-| 137 | Windows installation route | **A, recommended:** signed Inno Setup `.exe`, per-user installation, plus the portable ZIP. **B:** MSIX through Microsoft Store, with certification and separate compatibility work, if avoiding download-reputation prompts is the priority. |
-| 138 | Signing provider for A | **A, recommended if eligible:** Azure Artifact Signing. **B:** a publicly trusted CA with signing usable from CI if Azure is unavailable. **C:** apply to SignPath Foundation for free OSS signing, subject to acceptance, signing restrictions and manual release approvals. Supply the publisher name, individual/organization status, country and budget; credentials belong in the provider/GitHub settings. |
+No question is open. [Answer 137 A](PLAN-DONE.md#decision-137) is recorded
+with signing skipped for now; question 138 (signing provider) is
+**deferred**, not open: it comes back when the user asks for signing.
+[Answers 128 and 129](PLAN-DONE.md#decisions-128-and-129) remain recorded.
+Details are in [5d](docs/plans/05-builds-binaries.md#choices-before-implementation).
 
 The following checks remain:
 
-- Push `feature15` (currently no upstream configured) and inspect Windows,
-  macOS and sanitizer CI; try UI scale, right-button dragging and FXAA on
-  those systems. No remote status was checked in this update.
+- `feature15` is pushed; CI run 45834660395 on `25238548` passed every
+  job (Linux, sanitizer, Windows and macOS). PR #12 (`feature14`) does not
+  contain that fix yet and stays red until it does. Try UI scale,
+  right-button dragging and FXAA on Windows and macOS by hand.
 - Complete the account and task trials for order 2; record commands,
   errors, time, tokens and the system used.
 - Read the [documentation](docs/README.md), test the video posters after

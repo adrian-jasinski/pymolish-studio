@@ -14,8 +14,8 @@ and [current work](PLAN.md). The
 documentation (step 38a to 38d, answers 126 A and 127 A) was written and
 captured on 2026-11-26 at 4.90.0: it changed no program code and has no
 version. The Windows workflow still produces an unsigned portable ZIP;
-an installer and code signing are planned in **5d, order 6**, requested
-2026-11-26, with questions 137 and 138 open. No installer or signing was
+an unsigned per-user Inno Setup installer is planned in **5d, order 6**
+(answer 137 A, 2026-11-26); signing (138) is deferred. No installer was
 built or tested in this planning update. Built since
 4.19.43, with the tests and GUI checks recorded in
 [PLAN-DONE.md](PLAN-DONE.md):
