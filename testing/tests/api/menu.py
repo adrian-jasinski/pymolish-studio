@@ -247,7 +247,7 @@ def testPresets(request):
         'glass', 'balls in glass', 'bond shell', 'cartoon wire',
         'cartoon spring', 'cartoon cylinders', 'contour cartoon', 'ligands',
         'ligand sites', 'protein interface', 'protein-protein interaction',
-        'antibody and antigen', 'cartoon transparency',
+        'antibody and antigen', 'transparency',
         'show solvent',
         'surface look', 'theme', 'light', 'floor']
     assert [row[1] for row in m if row[0] == 2] == ['Preset:']
@@ -280,8 +280,15 @@ def testPresets(request):
     assert cmd.get_setting_int('ray_trace_mode') == 3  # the look stays
     cmd.do(lights['standard light'], echo=0)
     assert cmd.get_setting_int('ray_trace_mode') == 0
-    # cartoon transparency lasts until the next preset
-    cmd.do(_to_dict(d['cartoon transparency'])['50%'], echo=0)
+    # 15n: one submenu per representation, under a caption that names the
+    # scope; cartoon transparency lasts until the next preset
+    assert d['transparency'][0][:2] == [2, 'Transparency (whole objects):']
+    assert sub('transparency') == ['cartoon', 'spheres', 'surface', 'ball and stick']
+    for rep in sub('transparency'):
+        rows = _to_dict(d['transparency'])[rep]
+        assert [row[1] for row in rows if row[0] == 1] == [
+            'opaque (0%)', '25%', '50%', '75%'], rep
+    cmd.do(_to_dict(_to_dict(d['transparency'])['cartoon'])['50%'], echo=0)
     assert cmd.get_setting_float('cartoon_transparency', sele) == 0.5
     cmd.do(d['pretty'], echo=0)
     assert cmd.get_setting_float('cartoon_transparency', sele) == 0

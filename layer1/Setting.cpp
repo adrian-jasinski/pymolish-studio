@@ -2155,6 +2155,7 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
   case cSetting_ball_and_stick_scale:
   case cSetting_ball_and_stick_bond_radius:
   case cSetting_ball_and_stick_color:
+  case cSetting_ball_and_stick_transparency:
     ExecutiveInvalidateRep(G, inv_sele, cRepBallAndStick, cRepInvRep);
     SceneChanged(G);
     break;

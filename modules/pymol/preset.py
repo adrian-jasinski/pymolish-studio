@@ -71,7 +71,9 @@ def _prepare(selection,polar_contacts=None,_self=cmd):
     cmd.unset("cartoon_cylindrical_helices", selection)
     cmd.unset("transparency",s)
     cmd.unset("cartoon_transparency",s)
-    cmd.unset("cartoon_transparency",selection)
+    # the rows of the Transparency menu: what they set on the objects
+    for name in TRANSPARENCY.values():
+        cmd.unset(name,selection)
     cmd.unset("surface_color", selection)
     cmd.unset("surface_color", s) # per atom: interaction
     cmd.unset("surface_quality", selection)
@@ -585,13 +587,34 @@ def antibody(selection='*', _self=cmd):
     _self.delete(s)
 
 
+# The rows of the Transparency menu. representation: its setting
+TRANSPARENCY = {
+    'cartoon': 'cartoon_transparency',
+    'spheres': 'sphere_transparency',
+    'surface': 'transparency',
+    'ball and stick': 'ball_and_stick_transparency',
+}
+
+
+def transparency(representation, value, selection='*', _self=cmd):
+    '''
+    A row of the Transparency menu: one representation of every object
+    the selection is in gets the transparency `value` (0 is opaque), on
+    all of its atoms. Nothing is shown, hidden or colored, and the other
+    representations keep theirs. The next preset takes it back.
+    '''
+    name = TRANSPARENCY[representation]
+    for obj in _self.get_object_list(selection) or ():
+        if representation != 'ball and stick':  # that one has no atom level
+            _self.unset(name, '(%' + obj + ')')  # what a preset set on atoms
+        _self.set(name, value, obj)
+
+
 def cartoon_transparency(value, selection='*', _self=cmd):
     '''
-    The cartoon transparency rows of the preset menu: for every object of
-    the selection. The next preset makes the cartoon opaque again.
+    transparency('cartoon', value, selection): the name it had until 4.83.
     '''
-    for name in _self.get_object_list(selection) or ():
-        _self.set('cartoon_transparency', value, name)
+    transparency('cartoon', value, selection, _self=_self)
 
 
 def cartoon_style(style, selection='*', _self=cmd):

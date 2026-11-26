@@ -175,10 +175,61 @@ def testEnabledOnly(request):
     for label, command in _menuRows(menu.presets(cmd, 'enabled')):
         cmd.do(command, echo=0)
         assert reps('hidden') == before, label
-    rows = dict((r[1], r[2]) for r in menu.cartoon_transparency(cmd, 'enabled'))
-    cmd.do(rows['50%'], echo=0)
-    assert cmd.get_setting_float('cartoon_transparency', 'shown') == 0.5
-    assert cmd.get_setting_float('cartoon_transparency', 'hidden') == 0
+    rows = dict(_menuRows(menu.transparency(cmd, 'enabled')))
+    for rep, name in preset.TRANSPARENCY.items():
+        cmd.do(rows[rep + ' > 50%'], echo=0)
+        assert cmd.get_setting_float(name, 'shown') == 0.5, rep
+        assert cmd.get_setting_float(name, 'hidden') == 0, rep
+
+
+def testTransparencyMenu(request):
+    """15n: Presets > transparency sets one representation of whole
+    objects. The four are independent, a value set on atoms by a preset
+    gives way, the value of the scene stays, and the next preset takes
+    the rows back."""
+    from pymol import menu
+    request.addfinalizer(cmd.reinitialize)
+    cmd.load(testing.datafile('1oky.pdb.gz'), 'm')
+    cmd.fab('ACDEFG', 'other')
+    cmd.set('sphere_transparency', 0.1)  # the user's, of the whole scene
+    names = preset.TRANSPARENCY
+    assert list(names) == ['cartoon', 'spheres', 'surface', 'ball and stick']
+    rows = dict(_menuRows(menu.presets(cmd, 'm & resi 100')))  # a selection
+    preset.glass('m')  # transparency 0.6 on the atoms
+    reps = cmd.count_atoms('m & rep cartoon'), cmd.count_atoms('m & rep surface')
+    colors = _colors('all')
+
+    def seen(name, selection='m'):  # what is drawn: the atoms', else above
+        stored.seen = set()
+        cmd.iterate(selection, 'stored.seen.add(round(s.%s, 2))' % name)
+        return stored.seen
+
+    for rep, name in names.items():
+        for label, value in (('25%', 0.25), ('75%', 0.75), ('opaque (0%)', 0), ('50%', 0.5)):
+            others = {n: (seen(n), seen(n, 'other')) for n in names.values() if n != name}
+            cmd.do(rows['transparency > %s > %s' % (rep, label)], echo=0)
+            if rep == 'ball and stick':  # no atom level: the object's
+                assert cmd.get_setting_float(name, 'm') == value, label
+            else:
+                assert seen(name) == {value}, (rep, label)  # the whole object
+            assert seen(name, 'other') != {value} or not value, (rep, label)
+            # the other three, and the other object, keep theirs
+            assert others == {n: (seen(n), seen(n, 'other')) for n in others}, (rep, label)
+    assert seen('sphere_transparency', 'other') == {0.1}
+    assert cmd.get_setting_float('sphere_transparency') == pytest.approx(0.1)
+    # nothing shown, hidden or colored
+    assert reps == (cmd.count_atoms('m & rep cartoon'), cmd.count_atoms('m & rep surface'))
+    assert cmd.count_atoms('rep spheres') == 0 and _colors('all') == colors
+
+    # two objects at once; the next preset takes the rows back on its own
+    preset.transparency('spheres', 0.25, 'all')
+    assert seen('sphere_transparency', 'other') == {0.25}
+    preset.pretty('m')
+    for name in names.values():
+        assert name not in {s[0] for s in cmd.get_object_settings('m') or ()}, name
+    assert seen('sphere_transparency') == {0.1}  # the scene's again
+    assert seen('sphere_transparency', 'other') == {0.25}
+    assert seen('transparency') == {0}
 
 
 def testTechnical():

@@ -520,15 +520,16 @@ static int RepValence(RepCylBond *I, CGO *cgo, bool s1, bool s2, bool isRamped,
 /**
  * Sticks, or with rep == cRepBallAndStick the same bonds with a ball on
  * every atom. Ball-and-stick has its own visibility bit and reads its own
- * settings (ball_and_stick_scale, _bond_radius, _color); stick_radius,
- * stick_color, stick_ball*, stick_transparency, stick_h_scale and valence
- * do not reach it. Its bonds always show their order, each half in the
- * color of its atom's ball.
+ * settings (ball_and_stick_scale, _bond_radius, _color, _transparency);
+ * stick_radius, stick_color, stick_ball*, stick_transparency, stick_h_scale
+ * and valence do not reach it. Its bonds always show their order, each half
+ * in the color of its atom's ball. Its transparency is one value for the
+ * balls and bonds of an object (or of a state), not of an atom or a bond.
  *
  * ponytail: the quality settings of sticks (stick_quality, stick_use_shader,
  * stick_as_cylinders, stick_round_nub, half_bonds, valence_zero_*,
- * hide_long_bonds, the side chain helpers) are shared, and ball-and-stick
- * is never transparent. Settings of its own when someone needs them.
+ * hide_long_bonds, the side chain helpers) are shared. Settings of its own
+ * when someone needs them.
  */
 static Rep* RepCylBondNewImpl(CoordSet* cs, int state, cRep_t rep)
 {
@@ -638,10 +639,11 @@ static Rep* RepCylBondNewImpl(CoordSet* cs, int state, cRep_t rep)
   }
   radius = SettingGet_f(G, cs->Setting.get(), obj->Setting.get(), radius_setting);
   if (balls) {
-    // not the stick's: sizes and colors of its own, no transparency
+    // not the stick's: sizes, colors and transparency of its own
     valence_flag = true;
     stick_color = cColorDefault;
-    transp = 0.0F;
+    transp = SettingGet_f(G, cs->Setting.get(), obj->Setting.get(),
+        cSetting_ball_and_stick_transparency);
     ball_scale = SettingGet_f(G, cs->Setting.get(), obj->Setting.get(),
         cSetting_ball_and_stick_scale);
     ball_color = SettingGet_color(G, cs->Setting.get(), obj->Setting.get(),
@@ -960,9 +962,11 @@ static Rep* RepCylBondNewImpl(CoordSet* cs, int state, cRep_t rep)
       float rgb[3];
       const float* v = cs->coordPtr(idx);
       ColorGetCheckRamped(G, color, v, rgb, state);
-      if (prev_transp != 0.0F) {
-        prev_transp = 0.0F;
-        CGOAlpha(I->primitiveCGO, 1.0F);
+      if (prev_transp != transp) {
+        prev_transp = transp;
+        CGOAlpha(I->primitiveCGO, 1.0F - transp);
+        if (transp > 0.0F)
+          I->setHasTransparency();
       }
       CGOColorv(I->primitiveCGO, rgb);
       CGOPickColor(I->primitiveCGO, atm, ati->masked ? cPickableNoPick : cPickableAtom);

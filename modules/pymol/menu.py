@@ -794,12 +794,16 @@ def preset_ligand_sites(self_cmd, sele):
               [ 0, '', ''],
               _preset('mesh surface', 'ligand_sites_mesh', sele)]
 
-def cartoon_transparency(self_cmd, sele):
-    # the next preset resets it (preset._prepare)
-    return [[ 2, 'Cartoon Transparency:', '' ]] + [
-        [ 1, '%d%%' % (t * 100) if t else 'off',
-          'preset.cartoon_transparency(%s,"%s",_self=cmd)' % (t, sele) ]
-        for t in (0, 0.25, 0.5, 0.75) ]
+def transparency(self_cmd, sele):
+    # one representation of the objects the selection is in; the next
+    # preset resets it (preset._prepare)
+    from . import preset
+    return [[ 2, 'Transparency (whole objects):', '' ]] + [
+        [ 1, rep, [[ 2, rep.capitalize() + ' Transparency:', '' ]] + [
+            [ 1, '%d%%' % (t * 100) if t else 'opaque (0%)',
+              'preset.transparency("%s",%s,"%s",_self=cmd)' % (rep, t, sele) ]
+            for t in (0, 0.25, 0.5, 0.75) ]]
+        for rep in preset.TRANSPARENCY ]
 
 def _undoable(rows):
     # every row of the preset menu is one step of "undo"
@@ -840,7 +844,7 @@ def presets(self_cmd, sele):
               _preset('protein-protein interaction', 'interaction', sele),
               _preset('antibody and antigen', 'antibody', sele),
               [ 0, '', '' ],
-              [ 1, 'cartoon transparency', cartoon_transparency(self_cmd, sele) ],
+              [ 1, 'transparency', transparency(self_cmd, sele) ],
               [ 1, 'hide solvent' if preset.solvent else 'show solvent',
                 'preset.show_solvent(%d,"%s",_self=cmd)' % (not preset.solvent, sele) ],
               [ 0, '', '' ],

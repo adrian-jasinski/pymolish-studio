@@ -308,3 +308,93 @@ def test_scene_keeps_it():
     assert cmd.count_atoms("rep ball_and_stick") == 0
     cmd.show("ball_and_stick")
     assert 0.3 in _bonds()
+
+
+def _drawn(color):
+    """Ray traced without shading on white: how many pixels have exactly
+    `color`, and how many have a lighter tone of it (seen through)."""
+    import numpy
+
+    for name, value in (("ambient", 1), ("direct", 0), ("reflect", 0), ("specular", 0)):
+        cmd.set(name, value)
+    for name in ("ray_shadow", "antialias", "depth_cue"):
+        cmd.set(name, 0)
+    cmd.set("ray_opaque_background", 1)
+    cmd.bg_color("white")
+    img = testing.get_imagearray(width=240, height=180, ray=1)
+    img = img[..., :3].reshape((-1, 3)).astype(int)
+    rgb = numpy.array([int(c * 255) for c in cmd.get_color_tuple(color)])
+    low = rgb.argmin()  # the channel white adds most to
+    full = (abs(img - rgb) <= 2).all(1).sum()
+    pale = ((img[:, low] > rgb[low] + 20) & (img[:, low] < 235)).sum()
+    return int(full), int(pale)
+
+
+def test_transparency_is_its_own(tmp_path):
+    """34d: ball_and_stick_transparency is one value for the balls and
+    bonds of an object, also for an atom without bonds. Spheres and
+    sticks keep theirs, and theirs do not reach it."""
+    cmd.fragment("ala", "m")
+    cmd.pseudoatom("ion", pos=[6, 0, 0], elem="Zn", name="ZN")
+    cmd.hide("everything")
+    cmd.color("red")
+    cmd.orient()
+    cmd.show("ball_and_stick")
+    full, pale = _drawn("red")
+    assert full > 1000 and pale == 0  # opaque
+    assert cmd.get_setting_float("ball_and_stick_transparency") == 0
+
+    cmd.set("sphere_transparency", 0.5)  # not its settings
+    cmd.set("stick_transparency", 0.5)
+    assert _drawn("red")[0] == full
+
+    cmd.set("ball_and_stick_transparency", 0.5, "m")
+    half, pale = _drawn("red")
+    assert 0 < half < full / 4 and pale > full / 2  # the ion is opaque
+    cmd.set("ball_and_stick_transparency", 0.5, "ion")  # a ball without bonds
+    assert _drawn("red")[0] == 0
+    cmd.unset("ball_and_stick_transparency", "m")
+    cmd.unset("ball_and_stick_transparency", "ion")
+    assert _drawn("red")[0] == full
+
+    # spheres and sticks beside it stay opaque, in their own colors
+    cmd.set("sphere_transparency", 0)
+    cmd.set("stick_transparency", 0)
+    cmd.show("spheres", "name CA")
+    cmd.show("sticks", "name C+O")
+    cmd.color("blue", "name CA")
+    cmd.set("ball_and_stick_color", "red", "m")
+    opaque = _drawn("blue")[0]
+    cmd.set("ball_and_stick_transparency", 0.75)  # of everything
+    assert _drawn("blue")[0] == opaque > 50
+    assert _drawn("red")[0] > 0  # the stick between C and O
+
+    # an object level beats the global one, a state the object
+    cmd.hide("spheres")
+    cmd.hide("sticks")
+    cmd.set("ball_and_stick_transparency", 0, "m")
+    cmd.disable("ion")
+    assert _drawn("red")[1] == 0
+    cmd.set("ball_and_stick_transparency", 0.5, "m", state=1)
+    assert _drawn("red")[0] < full / 4
+
+    # a scene keeps the value of the scene and of an object (not of a
+    # single state: no scene keeps those), a session all three
+    cmd.enable("ion")
+    cmd.unset("ball_and_stick_transparency", "m", state=1)
+    cmd.set("ball_and_stick_transparency", 0.25, "m")
+    cmd.scene("see", "store")
+    cmd.unset("ball_and_stick_transparency", "m")
+    cmd.set("ball_and_stick_transparency", 0)
+    cmd.scene("solid", "store")
+    cmd.scene("see", "recall", animate=0)
+    assert cmd.get_setting_float("ball_and_stick_transparency") == 0.75
+    assert cmd.get_setting_float("ball_and_stick_transparency", "m") == 0.25
+    cmd.set("ball_and_stick_transparency", 0.5, "m", state=1)
+    path = str(tmp_path / "t.pse")
+    cmd.save(path)
+    cmd.reinitialize()
+    cmd.load(path)
+    assert cmd.get_setting_float("ball_and_stick_transparency") == 0.75
+    assert cmd.get_setting_float("ball_and_stick_transparency", "m") == 0.25
+    assert cmd.get_setting_float("ball_and_stick_transparency", "m", 1) == 0.5

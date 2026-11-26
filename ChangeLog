@@ -4,6 +4,44 @@ CHANGE LOG
 
 2026-11-26 pymolish-studio
 
+	* 4.84.0
+
+	* Presets
+	  - The row "cartoon transparency" of the Presets menu is now the
+	    submenu "transparency" with four rows: cartoon, spheres,
+	    surface, ball and stick, each with opaque (0%), 25%, 50% and
+	    75%. A row changes one representation of the whole objects
+	    the menu is on (from the toolbar: the objects that are switched
+	    on; from a selection: the objects it is in), on all of their
+	    atoms, also where a preset such as "glass" had set a value on
+	    the atoms. It shows, hides and colors nothing, and the four
+	    are independent of each other. As a command:
+	    preset.transparency(representation, value, selection).
+	  - The next preset takes these rows back on its objects, as it
+	    did for the cartoon. New with this: a preset now also unsets
+	    sphere_transparency, transparency and
+	    ball_and_stick_transparency where they are set on an object
+	    (not on atoms, and not for the whole scene).
+	  - preset.cartoon_transparency(value, selection) still works; it
+	    now also clears a cartoon_transparency set on atoms of the
+	    object, so that the value shows everywhere.
+
+	* Ball and stick
+	  - New setting ball_and_stick_transparency (default 0): balls and
+	    bonds of ball_and_stick see-through, in the viewport and ray
+	    traced, also a ball without bonds. One value for an object or
+	    one of its states, or for the scene; not per atom or bond.
+	    sphere_transparency and stick_transparency do not reach
+	    ball_and_stick, and this setting does not reach spheres or
+	    sticks. Scenes, sessions and Undo keep it.
+	  - PyMOL 3.2.0a loads, ray traces and saves a session that has
+	    the setting; it drops it, as it draws no ball_and_stick.
+	  - Frame time in the window, 957 x 468, 1aon with all 59,192
+	    atoms as ball_and_stick: 20.9 and 21.9 ms opaque, 19.1 ms at
+	    50 %; a ligand of 53 atoms: 0.6 to 0.7 ms either way.
+
+2026-11-26 pymolish-studio
+
 	* 4.83.0
 
 	* Presets
