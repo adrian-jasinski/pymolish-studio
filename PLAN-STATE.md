@@ -2,7 +2,15 @@
 
 [Back to the roadmap](PLAN.md).
 
-**Shipped state, checked 2026-11-27: 4.94.1.** On 2026-11-26/27, after
+**Shipped state, checked 2026-11-27: 4.96.1.** Source-install scripts now
+detect the system, offer required dependencies and optional extras,
+build locally and print the launch command. Linux build, dependency and
+headless/Qt checks passed; suite: 1257 passed, 206 skipped. Windows cmd
+preview passed; complete clean-machine installations remain open in
+[step 39](docs/plans/39-source-install.md). The existing 4.95.0 neon
+palette and 4.96.0 footer changes are recorded below.
+
+On 2026-11-26/27, after
 answer 139 A: 4.92.0 (15q), 4.93.0 (15r), 4.94.0 (21g) and 4.94.1 (the
 commercial-build leftovers removed); steps 15 and 21 are finished. Before
 that, at 4.91.0: Seven versions were built
@@ -20,8 +28,8 @@ documentation (step 38a to 38d, answers 126 A and 127 A) was written and
 captured on 2026-11-26 at 4.90.0: it changed no program code and has no
 version. The Windows workflow still produces an unsigned portable ZIP;
 an unsigned per-user Inno Setup installer is planned in **5d, order 4**
-(answer 137 A, 2026-11-26); signing (138) is deferred. No installer was
-built or tested in this planning update. Built since
+(answer 137 A, 2026-11-26); signing (138) is deferred. No Windows bundle
+installer was built or tested in this run. Built since
 4.19.43, with the tests and GUI checks recorded in
 [PLAN-DONE.md](PLAN-DONE.md):
 
@@ -90,6 +98,9 @@ built or tested in this planning update. Built since
 | 4.93.0 | Ray-traced pictures get the glow halo, made on the CPU from the ray depth; into the alpha on a transparent background (15r). |
 | 4.94.0 | Undo and Redo of every step: a typed line or script, a menu row, a command that adds, removes or edits, a move of atoms; the toolbar buttons name the step; `undo_enable`, `undo_disable`, capability `multi_undo` (21g). |
 | 4.94.1 | No feature: `-n`, `IncentiveOnlyException` and the test marks `incentive`/`properties` removed (21g). |
+| 4.95.0 | Palette `neon`, already present before the source-install work; twelve neon tones extended to thirty colors. |
+| 4.96.0 | Buttons under the object list in one row, icons except SEQ, with equal gaps; already present before the source-install work. |
+| 4.96.1 | Build tooling: `./install` and `install.cmd`, apt/dnf or existing Pixi, local environments, optional extras, preview, checks and launch instructions (39a). |
 
 Of the ten features requested on 2026-11-20, all ten have a working
 version: the tenth, the surface looks, shipped in 4.82.0 on the grid

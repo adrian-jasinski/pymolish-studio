@@ -1,6 +1,13 @@
 # pymolish-studio — current roadmap
 
-Updated 2026-11-27 at **4.94.1**. The user's request to implement 15q,
+Updated 2026-11-27 at **4.96.1**. Step **39a** adds source-install scripts;
+the user's choices are recorded: Linux system packages, Pixi on Windows /
+macOS and as a Python fallback, core with a prompt for extras. The local
+build and suite passed (1257 passed, 206 skipped); clean-machine platform
+trials remain in order 5. The existing neon palette (4.95.0) and one-row
+footer (4.96.0) are now recorded in the shipped-state files too.
+
+The user's request to implement 15q,
 15r and 21g answered **question 139** with A (both slices). Shipped: the
 glow, outline and smoothing in pictures of any size (15q, 4.92.0), the
 glow in ray-traced pictures (15r, 4.93.0), undo of every step (21g,
@@ -34,12 +41,12 @@ in `AGENTS.md`; documentation alone takes no version.
 | 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | Claude Code and ChatGPT work according to the user's 2026-11-26 report. Complete the [remaining provider, task and connector trials](docs/plans/roadmap-checks.md#completion-requirements-for-the-open-trials). | Five tasks recorded for one API-key provider and Claude Code; OpenRouter sign-in and conversation; one other system; one Codex connector call. |
 | 3 | **38 rest** — [Documentation and demos](docs/plans/38-documentation.md) | Verify MP4 playback from GitHub posters after pushing; add a finished Chat turn picture/clip after order 2; complete the checklist's manual, platform and new-reader checks. | Clips play or fallback links are documented; the Chat picture is in `docs/assistant.md`; outstanding checks are recorded. |
 | 4 | **5d** — [Windows installer and code signing](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing) | Answer 137 A: package the existing Windows bundle as an unsigned per-user Inno Setup `.exe` with installation, upgrade and uninstall, beside the ZIP, and publish it with checksums. Signing waits for question 138. | The downloaded installer installs, launches, upgrades and uninstalls on clean Windows with protections on; checksums verify. The expected "unknown publisher" SmartScreen prompt is recorded, not hidden. |
-| 5 | **39** — [Install after cloning](docs/plans/39-source-install.md) | Current request: plan first, then implement `./install` and `install.cmd`, OS detection, dependency setup and actionable fallback instructions. | Preview and failure checks pass; local build verified; native platform trials recorded honestly. |
+| 5 | **39 trials** — [Install after cloning](docs/plans/39-source-install.md) | Scripts implemented in 4.96.1. Try complete installations on clean Debian/Ubuntu, Fedora, Windows x64 and Apple silicon, including the Linux Pixi fallback. | Record actual system-package installation, compiler/Pixi bootstrap, core/extras, rerun and a real Qt window on each system. Command simulations and a local Linux build already pass. |
 | any time | **1b** — [Measured performance work](docs/plans/01-performance-gpu.md) | Profile surface triangulation and sticks/lines drawn as triangles on a quiet machine; driver comparisons also need Windows/macOS. | Each change has before/after measurements. |
 
-The remaining documentation and the Windows installer are orders 3 and
-4. Answer 129 needs no code change: Solid stays the default and Solid
-(grid) remains optional.
+The remaining documentation, Windows installer and source-install trials
+are orders 3, 4 and 5. Answer 129 needs no code change: Solid stays the
+default and Solid (grid) remains optional.
 
 The Windows request reopens step 5 after its completed bundle work; 5c
 stays shelved. An installer alone cannot establish Windows trust: until
@@ -49,10 +56,9 @@ or a managed-device policy will never block a build.
 
 ## Waiting for the user
 
-Step 39 choices were offered on 2026-11-27: Linux system packages with
-Pixi on Windows/macOS and as a Python fallback (recommended), or Pixi
-everywhere; core with an extras prompt (recommended), or all user extras.
-The recommended defaults apply unless the user selects otherwise.
+Step 39 choices were answered on 2026-11-27: Linux system packages with
+Pixi on Windows/macOS and as a Python fallback; core with an extras prompt.
+Both recommended options are implemented in 4.96.1; no choice is pending.
 
 No numbered question is open.
 [Answer 139 A](PLAN-DONE.md#decision-139) is recorded and built.
@@ -64,12 +70,16 @@ Details are in [5d](docs/plans/05-builds-binaries.md#choices-before-implementati
 
 The following checks remain:
 
-- `feature15` is pushed up to `10f87ea9`; CI run 45834660395 on
-  `25238548` passed every job (Linux, sanitizer, Windows and macOS).
-  4.91.0 to 4.94.1 and their plan updates are committed locally, not
-  pushed; CI has not seen them. PR #12 (`feature14`) does not
-  contain that fix yet and stays red until it does. Try UI scale,
-  right-button dragging and FXAA on Windows and macOS by hand.
+- `feature15` is pushed through `4c366c1f` (4.96.0), verified with
+  `git ls-remote` on 2026-11-27. The source-install plan, 4.96.1 and
+  this plan update are committed locally, not pushed. CI run 45834660395
+  on `25238548` was the last green run recorded here; current CI and
+  PR #12 status were not rechecked. Try UI scale, right-button dragging
+  and FXAA on Windows and macOS by hand.
+- Try the source installer on clean systems (order 5), including its
+  optional extras, refusal/retry path and the printed launch command.
+  Windows cmd preview was checked here, not a compiler installation;
+  macOS/Fedora routes were simulated, not run on those systems.
 - Try the new Undo in your own window: a few typed lines and menu rows,
   a drag of atoms in Editing mode, then Undo/Redo and their tooltips
   (checked here only by a script in the real window under WSLg, without

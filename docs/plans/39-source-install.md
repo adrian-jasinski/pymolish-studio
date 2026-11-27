@@ -2,6 +2,43 @@
 
 [Roadmap](../../PLAN.md) · requested 2026-11-27
 
+## Result 2026-11-27 — 4.96.1
+
+**39a implemented; clean-machine trials remain open, order 5.** The user
+selected both recommended options below. `install` and `install.cmd` use
+only existing dependencies and platform tools. This is a build-tooling
+change, so the patch version advances under the repository version rule.
+
+Measured/checked in this run:
+
+- Standalone installer checks: 11 passed; the Windows-only case was skipped
+  on Linux. They cover routing, packages, preview, extras, refusal, EOF,
+  failed setup/pip, paths with spaces and environment reuse.
+- A real Linux C++ build installed 4.96.1 with `json=True`,
+  `use-msgpackc=c++11`, `testing=True`, `jobs=6`. It reused the existing
+  development virtualenv, used installed dependencies without build
+  isolation, and found already-available nlohmann headers via a temporary
+  `PREFIX_PATH`. This did not exercise apt or a fresh environment.
+- `pip check`, Qt imports and headless glycine creation passed. The full
+  suite: **1257 passed, 206 skipped, 17 subtests passed**, one existing
+  Biopython deprecation warning. Ruff and shell syntax checks passed.
+- Real Windows `cmd.exe` ran preview through WSL, including extras and a
+  UNC checkout; no compiler, Pixi or Python was installed on Windows.
+  The preview exposed and fixed a batch argument-parsing directory bug.
+
+No timing or download-size claim. Left to try: complete setup from clean
+Debian/Ubuntu and Fedora, Linux Pixi fallback, Windows x64 and Apple silicon;
+compiler installation, extras, rerun and a real Qt window. macOS/Fedora
+command tests use stand-ins. Other architectures/distributions receive
+manual instructions. No system packages or vendor installers were changed
+on the development machine in this run.
+
+The Windows extras spelling is `--extras "chem,fix,ai"`, or `--extras ""`
+for core only; cmd treats unquoted equals and commas as argument separators.
+Unix retains `--extras=chem,fix,ai`. The Windows launch instructions show
+both PowerShell's call operator and the cmd form. No release/CI push was
+made; the implementation commit is `2574f54c`.
+
 ## Plan recorded 2026-11-27, before implementation
 
 Starting version: **4.96.0**. This is a source installer, separate from the
@@ -23,8 +60,8 @@ Keep the scripts in the repository root so those commands need no setup.
    and `ai` extras. Alternative: install all three by default. Development
    tools and MAFFT remain separate.
 
-These are implementation defaults if the user does not select otherwise,
-not recorded user answers. Command names are the recommendation above;
+**Accepted by the user on 2026-11-27:** both recommended options.
+Command names follow the recommendation above;
 the alternative is explicit interpreter commands with longer filenames.
 
 ## Implementation

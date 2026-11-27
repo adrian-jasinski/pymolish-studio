@@ -3,12 +3,25 @@
 Steps of the [roadmap](PLAN.md) whose last milestone has shipped. Open work
 stays in `PLAN.md`; the detailed plans stay in `docs/plans/`. Step numbers and
 order numbers in the finished-work table are historical. “Open, order N”
-references below follow the current roadmap (updated 2026-11-26).
+references below follow the current roadmap (updated 2026-11-27).
 
 Step 5 is reopened by the Windows installer and signing request of
 2026-11-26: **5d, order 4** is planned. Question 137 is answered A with
 signing skipped for now; 138 is deferred. Its earlier build and bundle
 milestones remain complete; 5c stays shelved.
+
+## Source-install choices (step 39)
+
+Answered by the user on **2026-11-27**, both recommended options:
+
+| Choice | State |
+| --- | --- |
+| System packages on Linux; existing Pixi on Windows/macOS and when Linux lacks suitable Python. | Implemented in 4.96.1. |
+| Core by default, with a prompt for chemistry, structure repair and Chat extras. | Implemented in 4.96.1; explicit extras flags also supported. |
+
+The plan was committed before implementation (`27a8ab62`), followed by
+the installer (`2574f54c`). Native clean-machine trials remain open,
+order 5; these are separate from the Windows bundle installer in 5d.
 
 ## Decision 139
 
@@ -67,7 +80,7 @@ Decided by the user on 2026-11-26, in the request that started the run
 | 124 | A: transparency for whole objects, one value for the balls and bonds of ball and stick. B was atoms and residues with half bonds. | 4.84.0. `ball_and_stick_transparency` (setting 801, object and state level); `preset.transparency`; `menu.transparency`. |
 | 125 | A: the groups cartoon, atoms and bonds, surface, binding, then transparency; light, theme and floor under a caption. B was two groups only. | 4.85.0. `menu.presets`. |
 | 126 | A: the documentation is Markdown in this repository, with a docs home and task and command indexes. B was a separate website with full-text search. Answered in the run that built step 38. | Built 2026-11-26 at 4.90.0, no version. `docs/README.md` and the pages it links. |
-| 127 | A: short videos opened from static posters. B was inline GIF loops. Answered in the same run. | Built 2026-11-26. Four MP4 files in `docs/media/`, posters `docs/img/demo-*.jpg`; how GitHub plays them is open, order 5. |
+| 127 | A: short videos opened from static posters. B was inline GIF loops. Answered in the same run. | Built 2026-11-26. Four MP4 files in `docs/media/`, posters `docs/img/demo-*.jpg`; how GitHub plays them is open, order 3. |
 
 Reported by the user in the same message, not checked here: the drag with
 the right button of 4.70.0 works; the Chat tab works with Claude Code and
@@ -530,10 +543,12 @@ ones, the new ones win.
 
 ## Finished milestones of open steps
 
-Steps 1, 27, 31 and 38 stay in the roadmap.
+Steps 1, 5, 27, 31, 38 and 39 stay in the roadmap.
 These parts of them have shipped. The rows of steps 3, 11, 15, 17, 18, 19, 20, 21, 22, 26,
 23, 24, 25, 28, 30, 32, 34, 35, 36 and 37, which are finished, are kept here as the record of
-their milestones. The rows are not in order of time: the newest, 21g and its removal (4.94.0, 4.94.1), 15r and 15q (4.93.0, 4.92.0), the glow menu (4.91.0), the
+their milestones. The rows are not in order of time: the source installer
+(39a, 4.96.1), one-row footer (4.96.0) and neon palette (4.95.0) precede
+21g and its removal (4.94.0, 4.94.1), 15r and 15q (4.93.0, 4.92.0), the glow menu (4.91.0), the
 alignment window without the line of characters (4.90.0), the
 seven rows of 2026-11-26 (4.83.0 to 4.89.0, the last built first), the
 surface looks (4.82.0) and the grid surface as a menu row (4.81.0), the
@@ -554,6 +569,9 @@ the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
+| 39 | 39a — install from a clone | Done 2026-11-27 (4.96.1): `./install` and `install.cmd`; system detection, apt/dnf, existing Pixi fallback, compiler/bootstrap instructions, optional extras, preview, local environments, checks and launch commands. Standalone checks: 11 passed, 1 Windows-only case skipped on Linux. Full suite: 1257 passed, 206 skipped, 17 subtests passed, 1 existing Biopython warning. Real Linux build with JSON and msgpack C++ enabled, pip check and headless/Qt checks passed; Windows cmd preview also ran. Difference from the plan: Windows extras use `--extras "chem,fix,ai"` because cmd splits equals and commas. Clean-machine installations and GUI launch on target systems remain open, order 5. |
+| 32 | One-row footer follow-up | Shipped 2026-11-27 (4.96.0), recorded during the source-install run: mouse mode, Chat, Wizard and Cmd use icons; SEQ keeps text; one row with equal gaps. No new UI measurements in this run. |
+| 11 | Neon palette follow-up | Shipped 2026-11-27 (4.95.0), recorded during the source-install run: twelve neon tones extended to thirty named colors. No new palette measurements in this run. |
 | 21 | 21g — undo of every step, and the removal of the commercial leftovers | Done 2026-11-27 (4.94.0, 4.94.1): [docs/plans/21-commercial-features.md](docs/plans/21-commercial-features.md). `modules/pymol/snapshots.py` keeps one stack of session snapshots and moves of the core's coordinate ring, in the order done; `ExecutiveUndo(0)` reports the ring saves. A step is a parser line (a script is one), a menu row, a command of the list CHANGE outside a step, or the builder's `undocontext`; set/unset count only inside a step, names starting with "_" never. Toolbar Undo/Redo greyed out without a step, tooltip "Undo color". `undo_enable`, `undo_disable`, `UndoPauseCM`, `suspend_undo` working, capability `multi_undo`; startup steps (pymolrc, files) cleared. Found on the way: an alignment set from a session was no selection until the next redraw (fixed in `ExecutiveSetSession`). Measured: a step 3 ms on 1oky (2,475 atoms), 0.14 s on 1aon (59,192); undo on 1aon 0.39 s. 20 steps instead of the 5 of 30f. Against the plan: moves keep the core ring, so a move that came before a step is lost when that step is undone or redone; `set` from Python outside a step and `suspend_undo_atom_count` are not used. 4.94.1 removed `-n`, `IncentiveOnlyException`, `Error::INCENTIVE_ONLY`, a stub that only raised it, the test flags `incentive`, `properties`, `undo`. Checked: the 26 cases of `testing/tests/undo/api` (28 with parameters), `jira/PYMOL-1276.py` and `PYMOL-1697.py` (with `-n --with-undo` before the marks came off, plainly after), four new cases in `snapshots.py`, a script in the real window under WSLg. Suite 1227 passed, 224 skipped. Not done: a real mouse drag, Windows and macOS. |
 | 15 | 15r — glow in ray-traced pictures | Done 2026-11-26 (4.93.0): [docs/plans/15-presets.md](docs/plans/15-presets.md#request-2026-11-26-evening-glow-in-saved-pictures-15q-15r). At the end of `RayRender`, before the oversampled image is shrunk: cover-weighted colors in a grid 176 rows high, the bell curve of `glow.fs` along x and y, laid on the pixels no ray hit with the formula of `fxaa.fs`; built before the outline pass so outline looks keep their colors. Into the alpha on a transparent background. Measured (red tryptophan on black): halo 12.96 % of a ray-traced picture at 1435 x 702 against 13.42 % of the window, within the planned 20 %; 17 ms for 2000 x 1500, 68 ms with antialias 2 (4004 x 3004 inside), on one thread, so the planned threads were left out. Suite 1192 passed. |
 | 15 | 15q — glow, outline and smoothing in pictures of any size | Done 2026-11-26 (4.92.0). `SceneRender` now runs the post-process for a sized picture, which is always one tile of the scene's extent. The halo buffer is 176 rows high at any size (before, a quarter of the picture with taps a fixed 1.5 texels apart made the halo thinner in bigger pictures); a window of another height than 702 px now gets the same share of its height. Measured: halo 13.42 % of the window (1435 x 702), 13.44 % of a png 2870 x 1403, within the planned 10 %; the window's own halo 135,188 pixels against 136,066 before. Not done: the planned message for pictures over the GPU's largest texture (they are clamped to it, never tiled); memory not measured. Suite 1191 passed. |
