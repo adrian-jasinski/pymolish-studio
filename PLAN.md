@@ -34,6 +34,7 @@ in `AGENTS.md`; documentation alone takes no version.
 | 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | Claude Code and ChatGPT work according to the user's 2026-11-26 report. Complete the [remaining provider, task and connector trials](docs/plans/roadmap-checks.md#completion-requirements-for-the-open-trials). | Five tasks recorded for one API-key provider and Claude Code; OpenRouter sign-in and conversation; one other system; one Codex connector call. |
 | 3 | **38 rest** — [Documentation and demos](docs/plans/38-documentation.md) | Verify MP4 playback from GitHub posters after pushing; add a finished Chat turn picture/clip after order 2; complete the checklist's manual, platform and new-reader checks. | Clips play or fallback links are documented; the Chat picture is in `docs/assistant.md`; outstanding checks are recorded. |
 | 4 | **5d** — [Windows installer and code signing](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing) | Answer 137 A: package the existing Windows bundle as an unsigned per-user Inno Setup `.exe` with installation, upgrade and uninstall, beside the ZIP, and publish it with checksums. Signing waits for question 138. | The downloaded installer installs, launches, upgrades and uninstalls on clean Windows with protections on; checksums verify. The expected "unknown publisher" SmartScreen prompt is recorded, not hidden. |
+| 5 | **39** — [Install after cloning](docs/plans/39-source-install.md) | Current request: plan first, then implement `./install` and `install.cmd`, OS detection, dependency setup and actionable fallback instructions. | Preview and failure checks pass; local build verified; native platform trials recorded honestly. |
 | any time | **1b** — [Measured performance work](docs/plans/01-performance-gpu.md) | Profile surface triangulation and sticks/lines drawn as triangles on a quiet machine; driver comparisons also need Windows/macOS. | Each change has before/after measurements. |
 
 The remaining documentation and the Windows installer are orders 3 and
@@ -47,6 +48,11 @@ the downloaded installer. No plan can guarantee that SmartScreen, Defender
 or a managed-device policy will never block a build.
 
 ## Waiting for the user
+
+Step 39 choices were offered on 2026-11-27: Linux system packages with
+Pixi on Windows/macOS and as a Python fallback (recommended), or Pixi
+everywhere; core with an extras prompt (recommended), or all user extras.
+The recommended defaults apply unless the user selects otherwise.
 
 No numbered question is open.
 [Answer 139 A](PLAN-DONE.md#decision-139) is recorded and built.
