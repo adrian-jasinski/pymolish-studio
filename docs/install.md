@@ -1,9 +1,70 @@
-# Install from source
+# Install pymolish-studio
 
-Most people do not need this page: the
+Download ready-to-run applications from the
 [Releases page](https://github.com/adrian-jasinski/pymolish-studio/releases)
-has ready-to-run bundles. Build from source when you want to change the code
-or need a system the bundles do not cover.
+or build from source when you want to change the code or need a system the
+bundles do not cover.
+
+## Windows installer
+
+On Windows 10/11 x64, download `pymolish-<version>-Windows-X64-setup.exe`
+and `SHA256SUMS` from the same release. In PowerShell, check the downloaded
+file and compare the hash with its line in `SHA256SUMS`:
+
+```powershell
+Get-FileHash .\pymolish-<version>-Windows-X64-setup.exe -Algorithm SHA256
+```
+
+Replace `<version>` with the downloaded version. Double-click the installer
+and follow the wizard. It installs for your Windows account, normally in
+`%LOCALAPPDATA%\Programs\pymolish-studio`, and adds **pymolish-studio** to
+Start and **Settings > Apps > Installed apps**. Python, Qt and the `chem`
+and `fix` libraries are included; installation needs no network connection,
+administrator or compiler. The first installer release is **4.97.0**.
+
+Close pymolish after saving your work, then run a newer installer to update.
+It remembers the installation directory and removes obsolete bundled files.
+Uninstall through **Installed apps**; your added sessions, user plugins and
+settings remain. Keep your work in Documents or another personal folder;
+bundled application files are replaced during updates.
+
+These previews are **unsigned**. Windows may show an **unknown publisher**
+or SmartScreen warning; a checksum checks the download, not publisher trust.
+Signing is deferred. If Windows or an organization policy blocks the file,
+record the exact message and report it; do not disable security protection.
+Clean-machine download and desktop trials are tracked in
+[plan 5d](plans/05-builds-binaries.md#checks-and-completion).
+
+For portable use, download `pymolish-Windows-X64.zip`, extract the whole
+folder and run `pymolish.exe` beside `_internal`. It does not register an
+uninstaller or Start entry. The wheel is for an existing Python environment.
+
+### Generate the installer on Windows
+
+After the Windows wheel is built and installed with the existing `dev`,
+`chem` and `fix` extras, run from the repository root:
+
+```powershell
+pixi run -e py313 pyinstaller --noconfirm packaging/pyinstaller.spec
+.\packaging\build_windows_installer.ps1
+```
+
+The script verifies that the bundle's version matches `layer0/Version.h`,
+downloads SHA-256-verified Inno Setup 6.7.1 into `build/windows-installer`,
+installs this build tool there for your account and compiles the `.exe` in
+`dist`. The target computer needs none of these build tools. The Windows
+CI job does this after its existing Qt/ICU workaround, runs an installation,
+upgrade, installed-launch and uninstall check, and uploads the installer
+as a required artifact. The release job includes it in `SHA256SUMS`.
+
+To repeat that check on an unused Windows test account (it refuses an
+existing installation):
+
+```powershell
+pixi run -e py313 python testing/tests/system/windows_installer.py dist/pymolish-<version>-Windows-X64-setup.exe build/windows-installer/InnoSetup-6.7.1/ISCC.exe
+```
+
+## Build from source
 
 The build compiles the C++ core with CMake and installs the Python package
 with `pip`. It takes a few minutes the first time.
