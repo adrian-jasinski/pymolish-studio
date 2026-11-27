@@ -130,6 +130,7 @@ nav .links a:hover { color: var(--text); text-decoration: none; }
 .grid button { width: 100%; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
 .grid img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; transition: transform 0.3s; }
 .grid button:hover img { transform: scale(1.04); }
+.grid.small { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 .grid figcaption { font-size: 14px; color: var(--muted); padding: 6px 2px 0; }
 
 /* download */
@@ -160,6 +161,7 @@ dialog .close { position: fixed; top: 14px; right: 20px; font-size: 32px; line-h
     <a class="brand" href="#top"><img src="img/logo-mark.png" alt="">pymolish-studio</a>
     <div class="links">
       <a class="opt" href="#features">Features</a>
+      <a class="opt" href="#presets">Presets</a>
       <a href="#gallery">Gallery</a>
       <a class="opt" href="#download">Download</a>
       <a class="opt" href="https://github.com/adrian-jasinski/pymolish-studio/blob/master/docs/README.md">Docs</a>
@@ -321,6 +323,69 @@ dialog .close { position: fixed; top: 14px; right: 20px; font-size: 32px; line-h
   </div>
 </section>
 
+<section id="presets">
+  <div class="wrap">
+    <h2>Presets</h2>
+    <p class="muted">One click in the Presets menu. Same molecule, same colors: only the preset changes.</p>
+
+    <div class="chips" role="group" aria-label="Filter the presets">
+      <button aria-pressed="true" data-f="all">All</button>
+      <button aria-pressed="false" data-f="cartoon">Cartoon</button>
+      <button aria-pressed="false" data-f="atoms">Atoms</button>
+      <button aria-pressed="false" data-f="surface">Surface</button>
+      <button aria-pressed="false" data-f="binding">Binding</button>
+      <button aria-pressed="false" data-f="light">Light</button>
+      <button aria-pressed="false" data-f="theme">Theme</button>
+      <button aria-pressed="false" data-f="floor">Floor</button>
+    </div>
+
+    <div class="grid small">
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-pretty.webp" data-cap="Presets › cartoon › pretty — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-pretty.webp" width="800" height="600" alt="Presets › cartoon › pretty — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> pretty</figcaption></figure>
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-publication.webp" data-cap="Presets › cartoon › publication — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-publication.webp" width="800" height="600" alt="Presets › cartoon › publication — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> publication</figcaption></figure>
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-technical.webp" data-cap="Presets › cartoon › technical — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-technical.webp" width="800" height="600" alt="Presets › cartoon › technical — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> technical</figcaption></figure>
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-b-factor-putty.webp" data-cap="Presets › cartoon › b factor putty — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-b-factor-putty.webp" width="800" height="600" alt="Presets › cartoon › b factor putty — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> b factor putty</figcaption></figure>
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-wire.webp" data-cap="Presets › cartoon › wire — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-wire.webp" width="800" height="600" alt="Presets › cartoon › wire — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> wire</figcaption></figure>
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-spring.webp" data-cap="Presets › cartoon › spring — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-spring.webp" width="800" height="600" alt="Presets › cartoon › spring — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> spring</figcaption></figure>
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-cylinders.webp" data-cap="Presets › cartoon › cylinders — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-cylinders.webp" width="800" height="600" alt="Presets › cartoon › cylinders — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> cylinders</figcaption></figure>
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-contour.webp" data-cap="Presets › cartoon › contour cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-contour.webp" width="800" height="600" alt="Presets › cartoon › contour cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> contour cartoon</figcaption></figure>
+      <figure data-tags="atoms"><button data-full="img/presets/atoms-space-filling.webp" data-cap="Presets › atoms and bonds › space filling — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/atoms-space-filling.webp" width="800" height="600" alt="Presets › atoms and bonds › space filling — hemoglobin (4hhb)"></button><figcaption><span class="muted">atoms and bonds ›</span> space filling</figcaption></figure>
+      <figure data-tags="atoms"><button data-full="img/presets/atoms-illustrated.webp" data-cap="Presets › atoms and bonds › illustrated atoms — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/atoms-illustrated.webp" width="800" height="600" alt="Presets › atoms and bonds › illustrated atoms — hemoglobin (4hhb)"></button><figcaption><span class="muted">atoms and bonds ›</span> illustrated atoms</figcaption></figure>
+      <figure data-tags="atoms"><button data-full="img/presets/atoms-ball-and-stick.webp" data-cap="Presets › atoms and bonds › ball and stick — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/atoms-ball-and-stick.webp" width="800" height="600" alt="Presets › atoms and bonds › ball and stick — hemoglobin (4hhb)"></button><figcaption><span class="muted">atoms and bonds ›</span> ball and stick</figcaption></figure>
+      <figure data-tags="atoms"><button data-full="img/presets/atoms-licorice.webp" data-cap="Presets › atoms and bonds › licorice — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/atoms-licorice.webp" width="800" height="600" alt="Presets › atoms and bonds › licorice — hemoglobin (4hhb)"></button><figcaption><span class="muted">atoms and bonds ›</span> licorice</figcaption></figure>
+      <figure data-tags="surface"><button data-full="img/presets/surface-glossy.webp" data-cap="Presets › surface › glossy — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/surface-glossy.webp" width="800" height="600" alt="Presets › surface › glossy — hemoglobin (4hhb)"></button><figcaption><span class="muted">surface ›</span> glossy</figcaption></figure>
+      <figure data-tags="surface"><button data-full="img/presets/surface-candy-glass.webp" data-cap="Presets › surface › candy glass — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/surface-candy-glass.webp" width="800" height="600" alt="Presets › surface › candy glass — hemoglobin (4hhb)"></button><figcaption><span class="muted">surface ›</span> candy glass</figcaption></figure>
+      <figure data-tags="surface"><button data-full="img/presets/surface-frosted.webp" data-cap="Presets › surface › frosted — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/surface-frosted.webp" width="800" height="600" alt="Presets › surface › frosted — hemoglobin (4hhb)"></button><figcaption><span class="muted">surface ›</span> frosted</figcaption></figure>
+      <figure data-tags="surface"><button data-full="img/presets/surface-clay.webp" data-cap="Presets › surface › clay — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/surface-clay.webp" width="800" height="600" alt="Presets › surface › clay — hemoglobin (4hhb)"></button><figcaption><span class="muted">surface ›</span> clay</figcaption></figure>
+      <figure data-tags="surface"><button data-full="img/presets/surface-glass.webp" data-cap="Presets › surface › glass — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/surface-glass.webp" width="800" height="600" alt="Presets › surface › glass — hemoglobin (4hhb)"></button><figcaption><span class="muted">surface ›</span> glass</figcaption></figure>
+      <figure data-tags="surface"><button data-full="img/presets/surface-balls-in-glass.webp" data-cap="Presets › surface › balls in glass — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/surface-balls-in-glass.webp" width="800" height="600" alt="Presets › surface › balls in glass — hemoglobin (4hhb)"></button><figcaption><span class="muted">surface ›</span> balls in glass</figcaption></figure>
+      <figure data-tags="surface"><button data-full="img/presets/surface-bond-shell.webp" data-cap="Presets › surface › bond shell — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/surface-bond-shell.webp" width="800" height="600" alt="Presets › surface › bond shell — hemoglobin (4hhb)"></button><figcaption><span class="muted">surface ›</span> bond shell</figcaption></figure>
+      <figure data-tags="binding"><button data-full="img/presets/binding-ligands.webp" data-cap="Presets › binding › ligands — kinase with staurosporine (1oky)"><img loading="lazy" src="img/presets/binding-ligands.webp" width="800" height="600" alt="Presets › binding › ligands — kinase with staurosporine (1oky)"></button><figcaption><span class="muted">binding ›</span> ligands</figcaption></figure>
+      <figure data-tags="binding"><button data-full="img/presets/binding-site-solid.webp" data-cap="Presets › binding › ligand sites › solid surface — kinase with staurosporine (1oky)"><img loading="lazy" src="img/presets/binding-site-solid.webp" width="800" height="600" alt="Presets › binding › ligand sites › solid surface — kinase with staurosporine (1oky)"></button><figcaption><span class="muted">binding ›</span> ligand sites › solid surface</figcaption></figure>
+      <figure data-tags="binding"><button data-full="img/presets/binding-site-transparent.webp" data-cap="Presets › binding › ligand sites › transparent surface — kinase with staurosporine (1oky)"><img loading="lazy" src="img/presets/binding-site-transparent.webp" width="800" height="600" alt="Presets › binding › ligand sites › transparent surface — kinase with staurosporine (1oky)"></button><figcaption><span class="muted">binding ›</span> ligand sites › transparent surface</figcaption></figure>
+      <figure data-tags="binding"><button data-full="img/presets/binding-site-mesh.webp" data-cap="Presets › binding › ligand sites › mesh surface — kinase with staurosporine (1oky)"><img loading="lazy" src="img/presets/binding-site-mesh.webp" width="800" height="600" alt="Presets › binding › ligand sites › mesh surface — kinase with staurosporine (1oky)"></button><figcaption><span class="muted">binding ›</span> ligand sites › mesh surface</figcaption></figure>
+      <figure data-tags="binding"><button data-full="img/presets/binding-site-dots.webp" data-cap="Presets › binding › ligand sites › dot surface — kinase with staurosporine (1oky)"><img loading="lazy" src="img/presets/binding-site-dots.webp" width="800" height="600" alt="Presets › binding › ligand sites › dot surface — kinase with staurosporine (1oky)"></button><figcaption><span class="muted">binding ›</span> ligand sites › dot surface</figcaption></figure>
+      <figure data-tags="binding"><button data-full="img/presets/binding-interface.webp" data-cap="Presets › binding › protein interface — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/binding-interface.webp" width="800" height="600" alt="Presets › binding › protein interface — hemoglobin (4hhb)"></button><figcaption><span class="muted">binding ›</span> protein interface</figcaption></figure>
+      <figure data-tags="binding"><button data-full="img/presets/binding-interaction.webp" data-cap="Presets › binding › protein-protein interaction — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/binding-interaction.webp" width="800" height="600" alt="Presets › binding › protein-protein interaction — hemoglobin (4hhb)"></button><figcaption><span class="muted">binding ›</span> protein-protein interaction</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-figure.webp" data-cap="Presets › light › figure on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-figure.webp" width="800" height="600" alt="Presets › light › figure on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> figure</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-soft.webp" data-cap="Presets › light › soft on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-soft.webp" width="800" height="600" alt="Presets › light › soft on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> soft</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-flat.webp" data-cap="Presets › light › flat on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-flat.webp" width="800" height="600" alt="Presets › light › flat on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> flat</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-comic.webp" data-cap="Presets › light › comic on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-comic.webp" width="800" height="600" alt="Presets › light › comic on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> comic</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-sketch.webp" data-cap="Presets › light › sketch on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-sketch.webp" width="800" height="600" alt="Presets › light › sketch on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> sketch</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-x-ray.webp" data-cap="Presets › light › x-ray on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-x-ray.webp" width="800" height="600" alt="Presets › light › x-ray on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> x-ray</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-studio.webp" data-cap="Presets › light › studio on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-studio.webp" width="800" height="600" alt="Presets › light › studio on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> studio</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-glossy.webp" data-cap="Presets › light › glossy (light only) on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-glossy.webp" width="800" height="600" alt="Presets › light › glossy (light only) on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> glossy (light only)</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-glow.webp" data-cap="Presets › light › glow on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-glow.webp" width="800" height="600" alt="Presets › light › glow on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> glow</figcaption></figure>
+      <figure data-tags="theme"><button data-full="img/presets/theme-clay.webp" data-cap="Presets › theme › clay on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/theme-clay.webp" width="800" height="600" alt="Presets › theme › clay on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">theme ›</span> clay</figcaption></figure>
+      <figure data-tags="theme"><button data-full="img/presets/theme-blue.webp" data-cap="Presets › theme › blue on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/theme-blue.webp" width="800" height="600" alt="Presets › theme › blue on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">theme ›</span> blue</figcaption></figure>
+      <figure data-tags="theme"><button data-full="img/presets/theme-sage.webp" data-cap="Presets › theme › sage on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/theme-sage.webp" width="800" height="600" alt="Presets › theme › sage on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">theme ›</span> sage</figcaption></figure>
+      <figure data-tags="theme"><button data-full="img/presets/theme-mint.webp" data-cap="Presets › theme › mint on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/theme-mint.webp" width="800" height="600" alt="Presets › theme › mint on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">theme ›</span> mint</figcaption></figure>
+      <figure data-tags="theme"><button data-full="img/presets/theme-night.webp" data-cap="Presets › theme › night on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/theme-night.webp" width="800" height="600" alt="Presets › theme › night on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">theme ›</span> night</figcaption></figure>
+      <figure data-tags="floor"><button data-full="img/presets/floor-floor.webp" data-cap="Presets › floor › floor on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/floor-floor.webp" width="800" height="600" alt="Presets › floor › floor on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">floor ›</span> floor</figcaption></figure>
+      <figure data-tags="floor"><button data-full="img/presets/floor-mirror.webp" data-cap="Presets › floor › floor with mirror image on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/floor-mirror.webp" width="800" height="600" alt="Presets › floor › floor with mirror image on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">floor ›</span> floor with mirror image</figcaption></figure>
+    </div>
+  </div>
+</section>
+
 <section id="gallery">
   <div class="wrap">
     <h2>Gallery</h2>
@@ -428,13 +493,15 @@ box.addEventListener("click", (e) => {
 });
 box.addEventListener("close", () => body.replaceChildren()); // stops a clip
 
-document.querySelector(".chips").addEventListener("click", (e) => {
-  const b = e.target.closest("button");
-  if (!b) return;
-  for (const x of b.parentNode.children) x.setAttribute("aria-pressed", x === b);
-  for (const g of document.querySelectorAll(".grid figure"))
-    g.hidden = b.dataset.f !== "all" && !g.dataset.tags.split(" ").includes(b.dataset.f);
-});
+// each row of filter buttons filters the grid right after it
+for (const chips of document.querySelectorAll(".chips"))
+  chips.addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    for (const x of chips.children) x.setAttribute("aria-pressed", x === b);
+    for (const g of chips.nextElementSibling.children)
+      g.hidden = b.dataset.f !== "all" && !g.dataset.tags.split(" ").includes(b.dataset.f);
+  });
 </script>
 </body>
 </html>

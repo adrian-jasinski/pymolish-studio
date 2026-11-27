@@ -133,6 +133,7 @@ Jekyll). It shows the pictures and clips above, and these:
 | File | What | Made with |
 | --- | --- | --- |
 | `img/gallery/*.webp` | 22 ray-traced pictures, 1200 x 900, 2.1 MB together; 20 in the gallery, the nucleosome pair also in the glow slider | `capture/gallery.py`, pymolish 4.96.1, 2026-11-27 |
+| `img/presets/*.webp` | 42 ray-traced pictures, 800 x 600, 2.1 MB together: one per row of the Presets menu, hemoglobin (4hhb) in the pastel palette on the page's dark, the binding rows on the kinase 1oky; light, theme and floor on the pretty cartoon | `capture/gallery.py` (`PRESETS`), pymolish 4.96.1, 2026-11-27, 4 minutes |
 | `img/logo-mark.png` | The ribbon of `img/logo-dark.png` alone, 192 x 192: the icon of the page | Pillow, cut from the logo |
 
 ```
@@ -140,9 +141,10 @@ PYMOLISH_CAPTURE=/an/empty/folder pymolish -ckq $PWD/docs/media/capture/gallery.
 PYMOLISH_CAPTURE=/an/empty/folder pymolish -ckq $PWD/docs/media/capture/gallery.py -- groel-clay
 ```
 
-Each picture is a row of `RECIPES` in the script: structure, preset row,
+Each picture is a row of `RECIPES` or `PRESETS` in the script: structure, preset row,
 palette, background, light, glow, theme, floor, set by the calls of their
-menu rows. Waters and ions are removed, chains get the palette with
+menu rows. A theme is set before the preset (a surface takes its colors)
+and again after it (presets color the ligands by chain). Waters and ions are removed, chains get the palette with
 `util.cbc`, and the view fits the molecule into the 4:3 frame (the two
 pocket pictures of 1oky use the view of `render.py`). The whole set took
 about 13 minutes of ray tracing here, 9.5 of them for the mirror floor
