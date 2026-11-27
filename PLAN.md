@@ -1,6 +1,11 @@
 # pymolish-studio — current roadmap
 
-Updated 2026-11-27 at **4.96.1**. Step **39a** adds source-install scripts;
+Updated 2026-11-27 at **4.97.0**. Step **5d** ships an unsigned per-user
+Windows installer (`pymolish-<version>-Windows-X64-setup.exe`, Inno Setup
+6.7.1) beside the portable ZIP; CI builds it, installs, upgrades, launches
+and uninstalls it. What is left of 5d is the clean-machine trial, order 4.
+
+Before that, step **39a** (4.96.1) added source-install scripts;
 the user's choices are recorded: Linux system packages, Pixi on Windows /
 macOS and as a Python fallback, core with a prompt for extras. The local
 build and suite passed (1257 passed, 206 skipped); clean-machine platform
@@ -17,6 +22,8 @@ the default surface. The Windows installer request adds **5d**, order 4.
 Question **137 A** is recorded: a per-user Inno Setup `.exe` plus the
 portable ZIP, **unsigned for now**; signing (question 138) is deferred
 until the user asks for it.
+The installer was planned and built on 2026-11-27 (4.97.0); see the
+note at the top of [plan 5](docs/plans/05-builds-binaries.md).
 
 Keep Qt Widgets with PySide6. Follow [AGENTS.md](AGENTS.md): smaller,
 faster, simpler, prettier.
@@ -40,12 +47,12 @@ in `AGENTS.md`; documentation alone takes no version.
 | 1 | **27c** — [UI scale on Windows and macOS](docs/plans/27-ui-scale.md) | Push the branch, read the scale-test output in CI, and try a scale change by hand on each system. WSLg already uses the next-start fallback. | Both systems restore the live window within the target of two seconds, or are added to `theme.live_scale_blocker`. |
 | 2 | **31 trial** — [Chat and agent tools](docs/plans/31-ai-agents.md) | Claude Code and ChatGPT work according to the user's 2026-11-26 report. Complete the [remaining provider, task and connector trials](docs/plans/roadmap-checks.md#completion-requirements-for-the-open-trials). | Five tasks recorded for one API-key provider and Claude Code; OpenRouter sign-in and conversation; one other system; one Codex connector call. |
 | 3 | **38 rest** — [Documentation and demos](docs/plans/38-documentation.md) | Verify MP4 playback from GitHub posters after pushing; add a finished Chat turn picture/clip after order 2; complete the checklist's manual, platform and new-reader checks. | Clips play or fallback links are documented; the Chat picture is in `docs/assistant.md`; outstanding checks are recorded. |
-| 4 | **5d** — [Windows installer and code signing](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing) | Answer 137 A: package the existing Windows bundle as an unsigned per-user Inno Setup `.exe` with installation, upgrade and uninstall, beside the ZIP, and publish it with checksums. Signing waits for question 138. | The downloaded installer installs, launches, upgrades and uninstalls on clean Windows with protections on; checksums verify. The expected "unknown publisher" SmartScreen prompt is recorded, not hidden. |
+| 4 | **5d trial** — [Windows installer](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing) | Installer built in 4.97.0; CI installs, upgrades, launches headless and uninstalls it on a runner. Try the downloaded installer by hand on a clean Windows desktop. Signing waits for question 138. | The downloaded installer installs, opens a real window, upgrades and uninstalls on clean Windows with protections on; checksums verify. The expected "unknown publisher" SmartScreen prompt is recorded, not hidden. |
 | 5 | **39 trials** — [Install after cloning](docs/plans/39-source-install.md) | Scripts implemented in 4.96.1. Try complete installations on clean Debian/Ubuntu, Fedora, Windows x64 and Apple silicon, including the Linux Pixi fallback. | Record actual system-package installation, compiler/Pixi bootstrap, core/extras, rerun and a real Qt window on each system. Command simulations and a local Linux build already pass. |
 | any time | **1b** — [Measured performance work](docs/plans/01-performance-gpu.md) | Profile surface triangulation and sticks/lines drawn as triangles on a quiet machine; driver comparisons also need Windows/macOS. | Each change has before/after measurements. |
 
-The remaining documentation, Windows installer and source-install trials
-are orders 3, 4 and 5. Answer 129 needs no code change: Solid stays the
+The remaining documentation, the Windows installer trial and the
+source-install trials are orders 3, 4 and 5. Answer 129 needs no code change: Solid stays the
 default and Solid (grid) remains optional.
 
 The Windows request reopens step 5 after its completed bundle work; 5c
@@ -60,7 +67,15 @@ Step 39 choices were answered on 2026-11-27: Linux system packages with
 Pixi on Windows/macOS and as a Python fallback; core with an extras prompt.
 Both recommended options are implemented in 4.96.1; no choice is pending.
 
-No numbered question is open.
+Two questions are open, from the browser research of
+[step 40](docs/plans/40-web-browser.md#questions) (2026-11-27):
+
+- **140 — Which route to a browser?** A: stream the desktop window from a
+  container (recommended). B: WebAssembly in the browser with a rewritten
+  interface. Or A now and a WebAssembly proof later.
+- **141 — Where does it live?** A in this repository (recommended); for B
+  the core build here and the browser interface in a new repository.
+
 [Answer 139 A](PLAN-DONE.md#decision-139) is recorded and built.
 [Answer 137 A](PLAN-DONE.md#decision-137) is recorded
 with signing skipped for now; question 138 (signing provider) is
@@ -70,12 +85,17 @@ Details are in [5d](docs/plans/05-builds-binaries.md#choices-before-implementati
 
 The following checks remain:
 
-- `feature15` is pushed through `4c366c1f` (4.96.0), verified with
-  `git ls-remote` on 2026-11-27. The source-install plan, 4.96.1 and
-  this plan update are committed locally, not pushed. CI run 45834660395
-  on `25238548` was the last green run recorded here; current CI and
-  PR #12 status were not rechecked. Try UI scale, right-button dragging
-  and FXAA on Windows and macOS by hand.
+- `feature16` is pushed through `7c04ffd5` (4.97.0). CI run
+  45978675595 on it passed every job except Windows py313, whose
+  installer check passed install, upgrade, launch and uninstall and then
+  failed in its own cleanup (a second uninstall while Inno's first was
+  finishing). The fix `cd3ee158` and this plan update are committed
+  locally, not pushed: push `feature16` and rerun CI. No PR is open for
+  `feature16`. Try UI scale, right-button dragging and FXAA on Windows
+  and macOS by hand.
+- Download the Windows installer from CI or the release, run it on a
+  clean Windows desktop (order 4): note the SmartScreen prompt, open a
+  window, install a newer build over it, uninstall from Installed apps.
 - Try the source installer on clean systems (order 5), including its
   optional extras, refusal/retry path and the printed launch command.
   Windows cmd preview was checked here, not a compiler installation;

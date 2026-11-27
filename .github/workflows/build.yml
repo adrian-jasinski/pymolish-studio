@@ -194,6 +194,24 @@ jobs:
       if: matrix.python == 'py313'
       run: Compress-Archive -Path dist\pymolish -DestinationPath dist\pymolish-${{ runner.os }}-${{ runner.arch }}.zip
 
+    - name: Build Windows installer
+      if: matrix.python == 'py313'
+      run: ./packaging/build_windows_installer.ps1
+
+    - name: Test Windows installer
+      if: matrix.python == 'py313'
+      run: |
+        $installer = (Get-ChildItem dist\pymolish-*-Windows-X64-setup.exe).FullName
+        pixi run -e ${{ matrix.python }} python testing/tests/system/windows_installer.py "$installer" build/windows-installer/InnoSetup-6.7.1/ISCC.exe
+
+    - name: Upload Windows installer
+      if: matrix.python == 'py313'
+      uses: actions/upload-artifact@v4
+      with:
+        name: pymolish-installer-${{ github.sha }}
+        path: dist/pymolish-*-Windows-X64-setup.exe
+        if-no-files-found: error
+
     - name: Upload preview artifacts
       if: matrix.python == 'py313'
       uses: actions/upload-artifact@v4
@@ -292,13 +310,15 @@ jobs:
         GH_TOKEN: ${{ github.token }}
       run: |
         tag=v$(sed -n 's/^#define _PyMOL_VERSION "\(.*\)"/\1/p' layer0/Version.h)
+        test -f "dist/pymolish-${tag#v}-Windows-X64-setup.exe"
         # wording: docs/plans/10-readme-license.md
         notes=$(printf '%s\n\n' \
           "pymolish-studio. Based on PyMOL(TM) technology." \
           "Automated build of ${{ github.sha }}. Unsigned; see docs/plans/05-builds-binaries.md." \
+          "Windows: run pymolish-<version>-Windows-X64-setup.exe to install, or unpack the portable ZIP. See docs/install.md." \
           "pymolish-studio is an independent fork. It is not a Schrodinger product and is not affiliated with or endorsed by Schrodinger, LLC." \
           "PyMOL is a trademark of Schrodinger, LLC.")
         gh release view "$tag" >/dev/null 2>&1 \
           || gh release create "$tag" --prerelease --title "pymolish-studio $tag" --notes "$notes"
-        (cd dist && sha256sum pymolish-*.tar.gz pymolish-*.zip *.whl > SHA256SUMS)
-        gh release upload "$tag" --clobber dist/pymolish-*.tar.gz dist/pymolish-*.zip dist/*.whl dist/SHA256SUMS
+        (cd dist && sha256sum pymolish-*.tar.gz pymolish-*.zip pymolish-*-Windows-X64-setup.exe *.whl > SHA256SUMS)
+        gh release upload "$tag" --clobber dist/pymolish-*.tar.gz dist/pymolish-*.zip dist/pymolish-*-Windows-X64-setup.exe dist/*.whl dist/SHA256SUMS

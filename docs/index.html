@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pymolish-studio</title>
+<meta name="description" content="A faster, modern fork of Open-Source PyMOL: ligands in 2D, sequence alignment, new looks, color palettes, a property table and an AI chat.">
+<meta property="og:title" content="pymolish-studio">
+<meta property="og:description" content="Molecular graphics, refreshed. Free for Linux, Windows and macOS.">
+<meta property="og:image" content="https://adrian-jasinski.github.io/pymolish-studio/img/gallery/nucleosome-neon-glow.webp">
+<link rel="icon" href="img/logo-mark.png">
+<style>
+:root {
+  --bg: #0a0d13; --panel: #121722; --line: #222a3a; --text: #e8ecf3;
+  --muted: #98a2b6; --blue: #4a90f0; --purple: #8b5cd6; --green: #5dbb5d;
+  --radius: 14px; --max: 1180px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+img { display: block; max-width: 100%; height: auto; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
+section { padding: 72px 0; }
+h1, h2, h3 { line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em; }
+h2 { font-size: clamp(28px, 4vw, 40px); }
+h3 { font-size: 26px; }
+.muted { color: var(--muted); }
+.grad {
+  background: linear-gradient(90deg, var(--blue), var(--purple) 50%, var(--green));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* nav */
+nav {
+  position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px);
+  background: rgb(10 13 19 / 0.8); border-bottom: 1px solid var(--line);
+}
+nav .wrap { display: flex; align-items: center; gap: 24px; height: 60px; }
+nav .brand { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 650; white-space: nowrap; }
+nav .brand img { width: 28px; height: 28px; }
+nav .links { display: flex; gap: 22px; margin-left: auto; font-size: 15px; }
+nav .links a { color: var(--muted); }
+nav .links a:hover { color: var(--text); text-decoration: none; }
+@media (max-width: 640px) { nav .links a.opt { display: none; } }
+
+/* hero */
+.hero { padding: 64px 0 24px; }
+.hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; }
+.hero .logo { width: min(420px, 100%); margin: 0 0 28px -8px; }
+.hero h1 { font-size: clamp(38px, 6vw, 64px); }
+.hero p { font-size: 20px; color: var(--muted); margin: 0 0 28px; max-width: 32em; }
+.hero .art { border-radius: 50%; overflow: hidden; aspect-ratio: 1; }
+.hero .art img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.32); }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; }
+.btn {
+  display: inline-block; padding: 12px 22px; border-radius: 999px; font-weight: 600;
+  border: 1px solid var(--line); color: var(--text); background: var(--panel);
+}
+.btn:hover { text-decoration: none; border-color: var(--blue); }
+.btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+@media (max-width: 860px) {
+  .hero .wrap { grid-template-columns: 1fr; }
+  .hero .art { max-width: 360px; margin: 0 auto; }
+}
+
+/* app window */
+.window {
+  border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+  box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.03);
+}
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 40px; }
+.stats div { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+.stats b { display: block; font-size: 34px; letter-spacing: -0.03em; }
+.stats span { color: var(--muted); font-size: 14px; }
+@media (max-width: 760px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+/* features */
+.feature {
+  display: grid; grid-template-columns: 300px 1fr; gap: 32px; align-items: center;
+  padding: 36px 0; border-top: 1px solid var(--line);
+}
+.feature p { color: var(--muted); margin: 0 0 14px; }
+.kicker { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0 0 16px; list-style: none; }
+.pills li { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: #1a2130; color: #c5cddc; }
+.strip {
+  display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory;
+  padding-bottom: 10px; scrollbar-color: #2a3346 transparent;
+}
+.strip > button {
+  flex: none; scroll-snap-align: start; position: relative; height: 300px;
+  border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: #05070a;
+}
+.strip img { height: 100%; width: auto; max-width: 600px; object-fit: contain; }
+.strip > button.wide { height: auto; align-self: center; }
+.strip > .wide img { height: auto; width: 720px; max-width: 100%; }
+.play::after {
+  content: "▶"; position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 44px; color: #fff; text-shadow: 0 2px 16px #000; background: rgb(0 0 0 / 0.25);
+}
+.swatches { display: grid; gap: 8px; padding: 18px; background: #05070a; border-radius: 10px; border: 1px solid var(--line); }
+.pal { display: grid; grid-template-columns: 92px repeat(10, 1fr); gap: 4px; align-items: center; font-size: 13px; color: var(--muted); }
+.pal b { font-weight: 500; }
+.pal i { height: 18px; border-radius: 4px; background: var(--c); }
+@media (max-width: 860px) {
+  .feature { grid-template-columns: 1fr; gap: 16px; }
+  .strip > button { height: 220px; }
+}
+
+/* gallery */
+.compare { position: relative; border-radius: var(--radius); overflow: hidden; aspect-ratio: 4 / 3; max-width: 900px; margin: 0 auto 48px; --pos: 50%; }
+.compare img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.compare .top { clip-path: inset(0 0 0 var(--pos)); }
+.compare::after { content: ""; position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; background: #fff8; pointer-events: none; }
+.compare input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+.compare .lab { position: absolute; bottom: 14px; padding: 4px 12px; border-radius: 999px; background: #000a; font-size: 14px; pointer-events: none; }
+.compare .l { left: 14px; } .compare .r { right: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; }
+.chips button { padding: 6px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font-size: 15px; }
+.chips button[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+.grid figure { margin: 0; }
+.grid button { width: 100%; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+.grid img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; transition: transform 0.3s; }
+.grid button:hover img { transform: scale(1.04); }
+.grid.small { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.grid figcaption { font-size: 14px; color: var(--muted); padding: 6px 2px 0; }
+
+/* download */
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.cards a { display: block; padding: 22px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--panel); color: var(--text); }
+.cards a:hover { border-color: var(--blue); text-decoration: none; }
+.cards b { display: block; font-size: 20px; }
+.cards span { color: var(--muted); font-size: 15px; }
+pre { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; overflow-x: auto; font-size: 15px; }
+@media (max-width: 760px) { .cards { grid-template-columns: 1fr; } }
+
+footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--muted); font-size: 14px; }
+footer .links { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 14px; }
+
+/* lightbox */
+dialog { padding: 0; border: 0; background: transparent; max-width: 96vw; max-height: 94vh; color: var(--text); }
+dialog::backdrop { background: rgb(0 0 0 / 0.88); }
+dialog img, dialog video { max-width: 96vw; max-height: 86vh; border-radius: 8px; }
+dialog figure { margin: 0; }
+dialog figcaption { text-align: center; padding: 10px; color: #cfd6e3; }
+dialog .close { position: fixed; top: 14px; right: 20px; font-size: 32px; line-height: 1; color: #fff; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="img/logo-mark.png" alt="">pymolish-studio</a>
+    <div class="links">
+      <a class="opt" href="#features">Features</a>
+      <a class="opt" href="#presets">Presets</a>
+      <a href="#gallery">Gallery</a>
+      <a class="opt" href="#download">Download</a>
+      <a class="opt" href="https://github.com/adrian-jasinski/pymolish-studio/blob/master/docs/README.md">Docs</a>
+      <a href="https://github.com/adrian-jasinski/pymolish-studio">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div>
+      <img class="logo" src="img/logo-dark.png" width="2172" height="724" alt="PyMOLish Studio">
+      <h1>Molecular graphics, <span class="grad">refreshed.</span></h1>
+      <p>A faster, modern fork of Open-Source PyMOL™. New window, new looks, same scripts. Free for Linux, Windows and macOS.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/adrian-jasinski/pymolish-studio/releases/latest">Download</a>
+        <a class="btn" href="https://github.com/adrian-jasinski/pymolish-studio">GitHub</a>
+        <a class="btn" href="https://github.com/adrian-jasinski/pymolish-studio/blob/master/docs/getting-started.md">Get started</a>
+      </div>
+    </div>
+    <div class="art"><img src="img/gallery/nucleosome-neon-glow.webp" width="1200" height="900" alt="A nucleosome as a cartoon in neon colors with glow, on black"></div>
+  </div>
+</header>
+
+<section style="padding-top: 24px">
+  <div class="wrap">
+    <img class="window" src="img/ligand-2d-pocket.png" width="1920" height="1200" alt="The pymolish-studio window: a ligand drawn in 2D beside its pocket in 3D, the Objects panel on the right">
+    <div class="stats">
+      <div><b>2.6×</b><span>faster surfaces (ribosome 4v6x)</span></div>
+      <div><b>7×</b><span>faster session loading</span></div>
+      <div><b>8 ms</b><span>per frame on the GPU (was 44)</span></div>
+      <div><b>11</b><span>color palettes built in</span></div>
+    </div>
+    <p class="muted" style="font-size: 13px; margin-top: 10px">Against PyMOL 3.2 on the same machine, 2026-11-19. <a href="https://github.com/adrian-jasinski/pymolish-studio/blob/master/docs/benchmark.md">How it was measured</a></p>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <h2>What's new</h2>
+    <p class="muted">Click any picture to enlarge it, or ▶ to watch the clip.</p>
+
+    <article class="feature">
+      <div>
+        <div class="kicker">Ligands</div>
+        <h3>Ligand 2D viewer</h3>
+        <p>Jump from ligand to ligand. See the pocket and every contact, drawn flat and in 3D.</p>
+        <ul class="pills"><li>Next ligand</li><li>H-bonds</li><li>Salt bridges</li><li>π-stacking</li><li>Click 2D → find in 3D</li></ul>
+        <a href="https://github.com/adrian-jasinski/pymolish-studio/blob/master/docs/ligands.md">Guide →</a>
+      </div>
+      <div class="strip">
+        <button data-full="img/ligand-2d-pocket.png"><img loading="lazy" src="img/ligand-2d-pocket.png" width="1920" height="1200" alt="Ligand 2D panel beside the pocket in 3D"></button>
+        <button class="play" data-video="media/ligand.mp4" data-cap="Next ligand, its 2D drawing, a click on a residue"><img loading="lazy" src="img/demo-ligand.jpg" width="1280" height="800" alt="Clip: ligand navigation and 2D"></button>
+        <button data-full="img/ligand-next.png"><img loading="lazy" src="img/ligand-next.png" width="1012" height="813" alt="The pocket after Next Ligand with Contacts"></button>
+        <button data-full="img/ligand-2d.png"><img loading="lazy" src="img/ligand-2d.png" width="572" height="618" alt="A ligand and its contacts drawn in 2D"></button>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div>
+        <div class="kicker">Sequences</div>
+        <h3>Multiple sequence alignment</h3>
+        <p>Align chains, color by identity, select in the alignment and see it in 3D. Fit the structures in one click.</p>
+        <ul class="pills"><li>MAFFT</li><li>Percent identity</li><li>Linked selection</li><li>Structure fit</li></ul>
+        <a href="https://github.com/adrian-jasinski/pymolish-studio/blob/master/docs/sequences.md">Guide →</a>
+      </div>
+      <div class="strip">
+        <button data-full="img/sequence-alignment.png"><img loading="lazy" src="img/sequence-alignment.png" width="1860" height="593" alt="The alignment window colored by percent identity"></button>
+        <button class="play" data-video="media/sequence.mp4" data-cap="Add chains, align, color by identity, fit structures"><img loading="lazy" src="img/demo-sequence.jpg" width="1280" height="800" alt="Clip: sequence alignment"></button>
+        <button data-full="img/sequence-fit.png"><img loading="lazy" src="img/sequence-fit.png" width="1920" height="1200" alt="Three structures fitted, the alignment under the viewport"></button>
+        <button data-full="img/sequence-tab.png"><img loading="lazy" src="img/sequence-tab.png" width="1920" height="1200" alt="The Sequence tab with a selected range"></button>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div>
+        <div class="kicker">Presets</div>
+        <h3>New looks in one click</h3>
+        <p>Cartoons, balls and sticks, glossy, glass, frosted and clay surfaces. Lights with outlines, glow, floors and mirrors.</p>
+        <ul class="pills"><li>Surface materials</li><li>Comic · sketch · studio</li><li>Glow</li><li>Floor &amp; mirror</li><li>Undo</li></ul>
+        <a href="https://github.com/adrian-jasinski/pymolish-studio/blob/master/docs/appearance.md">Guide →</a>
+      </div>
+      <div class="strip">
+        <button data-full="img/appearance-presets.png"><img loading="lazy" src="img/appearance-presets.png" width="1080" height="870" alt="The Presets menu with the surface looks"></button>
+        <button class="play" data-video="media/appearance.mp4" data-cap="Glossy surface, transparency, studio light, undo"><img loading="lazy" src="img/demo-appearance.jpg" width="1280" height="800" alt="Clip: presets"></button>
+        <button data-full="img/surface-looks.jpg"><img loading="lazy" src="img/surface-looks.jpg" width="1600" height="680" alt="Surface looks on white and on black"></button>
+        <button data-full="img/viewport-outline.jpg"><img loading="lazy" src="img/viewport-outline.jpg" width="1680" height="636" alt="Lights with outlines: figure, comic, sketch"></button>
+        <button data-full="img/glow-experiment.jpg"><img loading="lazy" src="img/glow-experiment.jpg" width="1440" height="1014" alt="Glow on spheres, springs and glass"></button>
+        <button data-full="img/stage.jpg"><img loading="lazy" src="img/stage.jpg" width="1800" height="338" alt="Floors with shadow and mirror image"></button>
+        <button data-full="img/themes.jpg"><img loading="lazy" src="img/themes.jpg" width="1500" height="300" alt="Five color themes"></button>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div>
+        <div class="kicker">Colors</div>
+        <h3>Color palettes</h3>
+        <p>Pick the colors new objects and chains get. Pastel, neon, colorblind-safe, editor themes, or your own.</p>
+        <ul class="pills"><li>11 palettes</li><li>Per chain or object</li><li>Your own</li></ul>
+        <a href="#gallery">See them in the gallery →</a>
+      </div>
+      <div class="swatches">
+<!-- generated from modules/pymol/palettes.py: the first ten colors of each -->
+        <div class="pal"><b>vivid</b><i style="--c:#00e676"></i><i style="--c:#40c4ff"></i><i style="--c:#ff4081"></i><i style="--c:#ffd740"></i><i style="--c:#b388ff"></i><i style="--c:#ff6e40"></i><i style="--c:#18ffff"></i><i style="--c:#69f0ae"></i><i style="--c:#e040fb"></i><i style="--c:#448aff"></i></div>
+        <div class="pal"><b>deep</b><i style="--c:#1565c0"></i><i style="--c:#c62828"></i><i style="--c:#2e7d32"></i><i style="--c:#6a1b9a"></i><i style="--c:#e65100"></i><i style="--c:#00838f"></i><i style="--c:#ad1457"></i><i style="--c:#283593"></i><i style="--c:#00695c"></i><i style="--c:#827717"></i></div>
+        <div class="pal"><b>pastel</b><i style="--c:#8fe3ef"></i><i style="--c:#a5e6a0"></i><i style="--c:#ff9e9e"></i><i style="--c:#9dbcff"></i><i style="--c:#fff09a"></i><i style="--c:#c9a8ff"></i><i style="--c:#ffc48a"></i><i style="--c:#8ff0cf"></i><i style="--c:#ffa8d8"></i><i style="--c:#d2f08c"></i></div>
+        <div class="pal"><b>soft</b><i style="--c:#6192c3"></i><i style="--c:#da6d6d"></i><i style="--c:#4e9d76"></i><i style="--c:#cd67cd"></i><i style="--c:#73994d"></i><i style="--c:#7f7fff"></i><i style="--c:#b28559"></i><i style="--c:#4d9a9a"></i><i style="--c:#d56aa0"></i><i style="--c:#4f9f4f"></i></div>
+        <div class="pal"><b>colorblind</b><i style="--c:#e69f00"></i><i style="--c:#56b4e9"></i><i style="--c:#009e73"></i><i style="--c:#f0e442"></i><i style="--c:#0072b2"></i><i style="--c:#d55e00"></i><i style="--c:#cc79a7"></i><i style="--c:#4477aa"></i><i style="--c:#228833"></i><i style="--c:#ccbb44"></i></div>
+        <div class="pal"><b>nord</b><i style="--c:#88c0d0"></i><i style="--c:#bf616a"></i><i style="--c:#a3be8c"></i><i style="--c:#ebcb8b"></i><i style="--c:#81a1c1"></i><i style="--c:#d08770"></i><i style="--c:#b48ead"></i><i style="--c:#5e81ac"></i><i style="--c:#feb2f3"></i><i style="--c:#598a7a"></i></div>
+        <div class="pal"><b>dracula</b><i style="--c:#8be9fd"></i><i style="--c:#50fa7b"></i><i style="--c:#ff79c6"></i><i style="--c:#f1fa8c"></i><i style="--c:#bd93f9"></i><i style="--c:#ffb86c"></i><i style="--c:#ff5555"></i><i style="--c:#9291d1"></i><i style="--c:#bcf005"></i><i style="--c:#faabb4"></i></div>
+        <div class="pal"><b>catppuccin</b><i style="--c:#89b4fa"></i><i style="--c:#a6e3a1"></i><i style="--c:#f38ba8"></i><i style="--c:#f9e2af"></i><i style="--c:#cba6f7"></i><i style="--c:#fab387"></i><i style="--c:#94e2d5"></i><i style="--c:#f5c2e7"></i><i style="--c:#74c7ec"></i><i style="--c:#b4befe"></i></div>
+        <div class="pal"><b>chimerax</b><i style="--c:#d2b48c"></i><i style="--c:#87ceeb"></i><i style="--c:#dda0dd"></i><i style="--c:#90ee90"></i><i style="--c:#fa8072"></i><i style="--c:#d3d3d3"></i><i style="--c:#ff1493"></i><i style="--c:#ffd700"></i><i style="--c:#1e90ff"></i><i style="--c:#800080"></i></div>
+        <div class="pal"><b>halo</b><i style="--c:#00f4d6"></i><i style="--c:#016afa"></i><i style="--c:#ff3d9a"></i><i style="--c:#00caff"></i><i style="--c:#ffd900"></i><i style="--c:#4300ff"></i><i style="--c:#9be800"></i><i style="--c:#ff4d4d"></i><i style="--c:#471396"></i><i style="--c:#1fd655"></i></div>
+        <div class="pal"><b>neon</b><i style="--c:#39ff14"></i><i style="--c:#ff10f0"></i><i style="--c:#00ffff"></i><i style="--c:#ffff33"></i><i style="--c:#ff5f1f"></i><i style="--c:#bc13fe"></i><i style="--c:#1f51ff"></i><i style="--c:#ff073a"></i><i style="--c:#ccff00"></i><i style="--c:#ff69b4"></i></div>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div>
+        <div class="kicker">AI</div>
+        <h3>Chat with your session</h3>
+        <p>Ask in plain words. The model runs reviewed commands in your session, and every turn can be undone.</p>
+        <ul class="pills"><li>Anthropic</li><li>OpenAI</li><li>OpenRouter</li><li>Claude Code</li><li>Agent connector</li></ul>
+        <a href="https://github.com/adrian-jasinski/pymolish-studio/blob/master/docs/assistant.md">Guide →</a>
+      </div>
+      <div class="strip">
+        <button class="wide" data-full="img/chat-setup.png"><img loading="lazy" src="img/chat-setup.png" width="1920" height="282" alt="The Chat tab: provider, model, prompt"></button>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div>
+        <div class="kicker">Data</div>
+        <h3>Property table</h3>
+        <p>Objects as rows, properties as columns. Import a spreadsheet, sort, rate with stars, step through in 3D.</p>
+        <ul class="pills"><li>CSV &amp; Excel</li><li>Sort</li><li>Stars</li><li>Follow</li></ul>
+        <a href="https://github.com/adrian-jasinski/pymolish-studio/blob/master/docs/properties.md">Guide →</a>
+      </div>
+      <div class="strip">
+        <button data-full="img/property-table.png"><img loading="lazy" src="img/property-table.png" width="1140" height="450" alt="The property table sorted by score, with stars"></button>
+        <button data-full="img/objects-panel.png"><img loading="lazy" src="img/objects-panel.png" width="545" height="840" alt="The Objects panel with a group and its menu"></button>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div>
+        <div class="kicker">Movies</div>
+        <h3>Scenes and timeline</h3>
+        <p>Store views, line them up, add a turn, export a video.</p>
+        <ul class="pills"><li>Scenes panel</li><li>Tours</li><li>Fades</li><li>MP4 export</li></ul>
+        <a href="https://github.com/adrian-jasinski/pymolish-studio/blob/master/docs/scenes-movies.md">Guide →</a>
+      </div>
+      <div class="strip">
+        <button data-full="img/timeline.png"><img loading="lazy" src="img/timeline.png" width="2205" height="1200" alt="The Timeline with three shots"></button>
+        <button class="play" data-video="media/movie.mp4" data-cap="Scenes, a tour, a 360° turn, play, export"><img loading="lazy" src="img/demo-movie.jpg" width="1280" height="689" alt="Clip: building a movie"></button>
+        <button data-full="img/scenes-panel.png"><img loading="lazy" src="img/scenes-panel.png" width="1650" height="840" alt="The Scenes panel with two scenes"></button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="presets">
+  <div class="wrap">
+    <h2>Presets</h2>
+    <p class="muted">One click in the Presets menu. Same molecule, same colors: only the preset changes.</p>
+
+    <div class="chips" role="group" aria-label="Filter the presets">
+      <button aria-pressed="true" data-f="all">All</button>
+      <button aria-pressed="false" data-f="cartoon">Cartoon</button>
+      <button aria-pressed="false" data-f="atoms">Atoms</button>
+      <button aria-pressed="false" data-f="surface">Surface</button>
+      <button aria-pressed="false" data-f="binding">Binding</button>
+      <button aria-pressed="false" data-f="light">Light</button>
+      <button aria-pressed="false" data-f="theme">Theme</button>
+      <button aria-pressed="false" data-f="floor">Floor</button>
+    </div>
+
+    <div class="grid small">
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-pretty.webp" data-cap="Presets › cartoon › pretty — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-pretty.webp" width="800" height="600" alt="Presets › cartoon › pretty — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> pretty</figcaption></figure>
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-publication.webp" data-cap="Presets › cartoon › publication — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-publication.webp" width="800" height="600" alt="Presets › cartoon › publication — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> publication</figcaption></figure>
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-technical.webp" data-cap="Presets › cartoon › technical — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-technical.webp" width="800" height="600" alt="Presets › cartoon › technical — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> technical</figcaption></figure>
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-b-factor-putty.webp" data-cap="Presets › cartoon › b factor putty — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-b-factor-putty.webp" width="800" height="600" alt="Presets › cartoon › b factor putty — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> b factor putty</figcaption></figure>
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-wire.webp" data-cap="Presets › cartoon › wire — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-wire.webp" width="800" height="600" alt="Presets › cartoon › wire — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> wire</figcaption></figure>
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-spring.webp" data-cap="Presets › cartoon › spring — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-spring.webp" width="800" height="600" alt="Presets › cartoon › spring — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> spring</figcaption></figure>
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-cylinders.webp" data-cap="Presets › cartoon › cylinders — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-cylinders.webp" width="800" height="600" alt="Presets › cartoon › cylinders — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> cylinders</figcaption></figure>
+      <figure data-tags="cartoon"><button data-full="img/presets/cartoon-contour.webp" data-cap="Presets › cartoon › contour cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/cartoon-contour.webp" width="800" height="600" alt="Presets › cartoon › contour cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">cartoon ›</span> contour cartoon</figcaption></figure>
+      <figure data-tags="atoms"><button data-full="img/presets/atoms-space-filling.webp" data-cap="Presets › atoms and bonds › space filling — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/atoms-space-filling.webp" width="800" height="600" alt="Presets › atoms and bonds › space filling — hemoglobin (4hhb)"></button><figcaption><span class="muted">atoms and bonds ›</span> space filling</figcaption></figure>
+      <figure data-tags="atoms"><button data-full="img/presets/atoms-illustrated.webp" data-cap="Presets › atoms and bonds › illustrated atoms — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/atoms-illustrated.webp" width="800" height="600" alt="Presets › atoms and bonds › illustrated atoms — hemoglobin (4hhb)"></button><figcaption><span class="muted">atoms and bonds ›</span> illustrated atoms</figcaption></figure>
+      <figure data-tags="atoms"><button data-full="img/presets/atoms-ball-and-stick.webp" data-cap="Presets › atoms and bonds › ball and stick — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/atoms-ball-and-stick.webp" width="800" height="600" alt="Presets › atoms and bonds › ball and stick — hemoglobin (4hhb)"></button><figcaption><span class="muted">atoms and bonds ›</span> ball and stick</figcaption></figure>
+      <figure data-tags="atoms"><button data-full="img/presets/atoms-licorice.webp" data-cap="Presets › atoms and bonds › licorice — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/atoms-licorice.webp" width="800" height="600" alt="Presets › atoms and bonds › licorice — hemoglobin (4hhb)"></button><figcaption><span class="muted">atoms and bonds ›</span> licorice</figcaption></figure>
+      <figure data-tags="surface"><button data-full="img/presets/surface-glossy.webp" data-cap="Presets › surface › glossy — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/surface-glossy.webp" width="800" height="600" alt="Presets › surface › glossy — hemoglobin (4hhb)"></button><figcaption><span class="muted">surface ›</span> glossy</figcaption></figure>
+      <figure data-tags="surface"><button data-full="img/presets/surface-candy-glass.webp" data-cap="Presets › surface › candy glass — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/surface-candy-glass.webp" width="800" height="600" alt="Presets › surface › candy glass — hemoglobin (4hhb)"></button><figcaption><span class="muted">surface ›</span> candy glass</figcaption></figure>
+      <figure data-tags="surface"><button data-full="img/presets/surface-frosted.webp" data-cap="Presets › surface › frosted — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/surface-frosted.webp" width="800" height="600" alt="Presets › surface › frosted — hemoglobin (4hhb)"></button><figcaption><span class="muted">surface ›</span> frosted</figcaption></figure>
+      <figure data-tags="surface"><button data-full="img/presets/surface-clay.webp" data-cap="Presets › surface › clay — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/surface-clay.webp" width="800" height="600" alt="Presets › surface › clay — hemoglobin (4hhb)"></button><figcaption><span class="muted">surface ›</span> clay</figcaption></figure>
+      <figure data-tags="surface"><button data-full="img/presets/surface-glass.webp" data-cap="Presets › surface › glass — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/surface-glass.webp" width="800" height="600" alt="Presets › surface › glass — hemoglobin (4hhb)"></button><figcaption><span class="muted">surface ›</span> glass</figcaption></figure>
+      <figure data-tags="surface"><button data-full="img/presets/surface-balls-in-glass.webp" data-cap="Presets › surface › balls in glass — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/surface-balls-in-glass.webp" width="800" height="600" alt="Presets › surface › balls in glass — hemoglobin (4hhb)"></button><figcaption><span class="muted">surface ›</span> balls in glass</figcaption></figure>
+      <figure data-tags="surface"><button data-full="img/presets/surface-bond-shell.webp" data-cap="Presets › surface › bond shell — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/surface-bond-shell.webp" width="800" height="600" alt="Presets › surface › bond shell — hemoglobin (4hhb)"></button><figcaption><span class="muted">surface ›</span> bond shell</figcaption></figure>
+      <figure data-tags="binding"><button data-full="img/presets/binding-ligands.webp" data-cap="Presets › binding › ligands — kinase with staurosporine (1oky)"><img loading="lazy" src="img/presets/binding-ligands.webp" width="800" height="600" alt="Presets › binding › ligands — kinase with staurosporine (1oky)"></button><figcaption><span class="muted">binding ›</span> ligands</figcaption></figure>
+      <figure data-tags="binding"><button data-full="img/presets/binding-site-solid.webp" data-cap="Presets › binding › ligand sites › solid surface — kinase with staurosporine (1oky)"><img loading="lazy" src="img/presets/binding-site-solid.webp" width="800" height="600" alt="Presets › binding › ligand sites › solid surface — kinase with staurosporine (1oky)"></button><figcaption><span class="muted">binding ›</span> ligand sites › solid surface</figcaption></figure>
+      <figure data-tags="binding"><button data-full="img/presets/binding-site-transparent.webp" data-cap="Presets › binding › ligand sites › transparent surface — kinase with staurosporine (1oky)"><img loading="lazy" src="img/presets/binding-site-transparent.webp" width="800" height="600" alt="Presets › binding › ligand sites › transparent surface — kinase with staurosporine (1oky)"></button><figcaption><span class="muted">binding ›</span> ligand sites › transparent surface</figcaption></figure>
+      <figure data-tags="binding"><button data-full="img/presets/binding-site-mesh.webp" data-cap="Presets › binding › ligand sites › mesh surface — kinase with staurosporine (1oky)"><img loading="lazy" src="img/presets/binding-site-mesh.webp" width="800" height="600" alt="Presets › binding › ligand sites › mesh surface — kinase with staurosporine (1oky)"></button><figcaption><span class="muted">binding ›</span> ligand sites › mesh surface</figcaption></figure>
+      <figure data-tags="binding"><button data-full="img/presets/binding-site-dots.webp" data-cap="Presets › binding › ligand sites › dot surface — kinase with staurosporine (1oky)"><img loading="lazy" src="img/presets/binding-site-dots.webp" width="800" height="600" alt="Presets › binding › ligand sites › dot surface — kinase with staurosporine (1oky)"></button><figcaption><span class="muted">binding ›</span> ligand sites › dot surface</figcaption></figure>
+      <figure data-tags="binding"><button data-full="img/presets/binding-interface.webp" data-cap="Presets › binding › protein interface — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/binding-interface.webp" width="800" height="600" alt="Presets › binding › protein interface — hemoglobin (4hhb)"></button><figcaption><span class="muted">binding ›</span> protein interface</figcaption></figure>
+      <figure data-tags="binding"><button data-full="img/presets/binding-interaction.webp" data-cap="Presets › binding › protein-protein interaction — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/binding-interaction.webp" width="800" height="600" alt="Presets › binding › protein-protein interaction — hemoglobin (4hhb)"></button><figcaption><span class="muted">binding ›</span> protein-protein interaction</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-figure.webp" data-cap="Presets › light › figure on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-figure.webp" width="800" height="600" alt="Presets › light › figure on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> figure</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-soft.webp" data-cap="Presets › light › soft on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-soft.webp" width="800" height="600" alt="Presets › light › soft on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> soft</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-flat.webp" data-cap="Presets › light › flat on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-flat.webp" width="800" height="600" alt="Presets › light › flat on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> flat</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-comic.webp" data-cap="Presets › light › comic on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-comic.webp" width="800" height="600" alt="Presets › light › comic on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> comic</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-sketch.webp" data-cap="Presets › light › sketch on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-sketch.webp" width="800" height="600" alt="Presets › light › sketch on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> sketch</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-x-ray.webp" data-cap="Presets › light › x-ray on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-x-ray.webp" width="800" height="600" alt="Presets › light › x-ray on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> x-ray</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-studio.webp" data-cap="Presets › light › studio on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-studio.webp" width="800" height="600" alt="Presets › light › studio on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> studio</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-glossy.webp" data-cap="Presets › light › glossy (light only) on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-glossy.webp" width="800" height="600" alt="Presets › light › glossy (light only) on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> glossy (light only)</figcaption></figure>
+      <figure data-tags="light"><button data-full="img/presets/light-glow.webp" data-cap="Presets › light › glow on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/light-glow.webp" width="800" height="600" alt="Presets › light › glow on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">light ›</span> glow</figcaption></figure>
+      <figure data-tags="theme"><button data-full="img/presets/theme-clay.webp" data-cap="Presets › theme › clay on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/theme-clay.webp" width="800" height="600" alt="Presets › theme › clay on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">theme ›</span> clay</figcaption></figure>
+      <figure data-tags="theme"><button data-full="img/presets/theme-blue.webp" data-cap="Presets › theme › blue on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/theme-blue.webp" width="800" height="600" alt="Presets › theme › blue on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">theme ›</span> blue</figcaption></figure>
+      <figure data-tags="theme"><button data-full="img/presets/theme-sage.webp" data-cap="Presets › theme › sage on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/theme-sage.webp" width="800" height="600" alt="Presets › theme › sage on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">theme ›</span> sage</figcaption></figure>
+      <figure data-tags="theme"><button data-full="img/presets/theme-mint.webp" data-cap="Presets › theme › mint on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/theme-mint.webp" width="800" height="600" alt="Presets › theme › mint on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">theme ›</span> mint</figcaption></figure>
+      <figure data-tags="theme"><button data-full="img/presets/theme-night.webp" data-cap="Presets › theme › night on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/theme-night.webp" width="800" height="600" alt="Presets › theme › night on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">theme ›</span> night</figcaption></figure>
+      <figure data-tags="floor"><button data-full="img/presets/floor-floor.webp" data-cap="Presets › floor › floor on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/floor-floor.webp" width="800" height="600" alt="Presets › floor › floor on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">floor ›</span> floor</figcaption></figure>
+      <figure data-tags="floor"><button data-full="img/presets/floor-mirror.webp" data-cap="Presets › floor › floor with mirror image on the pretty cartoon — hemoglobin (4hhb)"><img loading="lazy" src="img/presets/floor-mirror.webp" width="800" height="600" alt="Presets › floor › floor with mirror image on the pretty cartoon — hemoglobin (4hhb)"></button><figcaption><span class="muted">floor ›</span> floor with mirror image</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="gallery">
+  <div class="wrap">
+    <h2>Gallery</h2>
+    <p class="muted">Ray traced in pymolish. Each one is a preset, a palette and a light from the menus.</p>
+
+    <div class="compare">
+      <img src="img/gallery/nucleosome-neon.webp" width="1200" height="900" alt="Nucleosome, neon palette, no glow">
+      <img class="top" src="img/gallery/nucleosome-neon-glow.webp" width="1200" height="900" alt="The same with glow">
+      <input type="range" min="0" max="100" value="50" aria-label="Drag to compare without and with glow"
+             oninput="this.parentNode.style.setProperty('--pos', this.value + '%')">
+      <span class="lab l">no glow</span><span class="lab r">glow</span>
+    </div>
+
+    <div class="chips" role="group" aria-label="Filter the gallery">
+      <button aria-pressed="true" data-f="all">All</button>
+      <button aria-pressed="false" data-f="dark">Dark</button>
+      <button aria-pressed="false" data-f="light">Light</button>
+      <button aria-pressed="false" data-f="glow">Glow</button>
+      <button aria-pressed="false" data-f="neon">Neon</button>
+      <button aria-pressed="false" data-f="pastel">Pastel</button>
+      <button aria-pressed="false" data-f="cartoon">Cartoon</button>
+      <button aria-pressed="false" data-f="surface">Surface</button>
+      <button aria-pressed="false" data-f="atoms">Atoms</button>
+    </div>
+
+    <div class="grid">
+      <figure data-tags="dark glow neon atoms"><button data-full="img/gallery/groel-spheres-neon-glow.webp" data-cap="Space filling · neon · glow — GroEL–GroES (1aon)"><img loading="lazy" src="img/gallery/groel-spheres-neon-glow.webp" width="1200" height="900" alt="Space filling · neon · glow — GroEL–GroES (1aon)"></button><figcaption>Space filling · neon · glow</figcaption></figure>
+      <figure data-tags="light pastel cartoon"><button data-full="img/gallery/nucleosome-comic-pastel.webp" data-cap="Cartoon · pastel · comic light — nucleosome (1kx5)"><img loading="lazy" src="img/gallery/nucleosome-comic-pastel.webp" width="1200" height="900" alt="Cartoon · pastel · comic light — nucleosome (1kx5)"></button><figcaption>Cartoon · pastel · comic light</figcaption></figure>
+      <figure data-tags="dark glow neon surface"><button data-full="img/gallery/hemoglobin-candy-glass-glow.webp" data-cap="Candy glass · neon · glow — hemoglobin (4hhb)"><img loading="lazy" src="img/gallery/hemoglobin-candy-glass-glow.webp" width="1200" height="900" alt="Candy glass · neon · glow — hemoglobin (4hhb)"></button><figcaption>Candy glass · neon · glow</figcaption></figure>
+      <figure data-tags="dark pastel atoms"><button data-full="img/gallery/groel-illustrated-pastel.webp" data-cap="Illustrated atoms · pastel — GroEL–GroES (1aon)"><img loading="lazy" src="img/gallery/groel-illustrated-pastel.webp" width="1200" height="900" alt="Illustrated atoms · pastel — GroEL–GroES (1aon)"></button><figcaption>Illustrated atoms · pastel</figcaption></figure>
+      <figure data-tags="light cartoon"><button data-full="img/gallery/kinase-floor-sage.webp" data-cap="Publication cartoon · sage theme · floor — PDK1 kinase with staurosporine (1oky)"><img loading="lazy" src="img/gallery/kinase-floor-sage.webp" width="1200" height="900" alt="Publication cartoon · sage theme · floor — PDK1 kinase with staurosporine (1oky)"></button><figcaption>Publication cartoon · sage theme · floor</figcaption></figure>
+      <figure data-tags="dark glow neon cartoon"><button data-full="img/gallery/hemoglobin-spring-neon-glow.webp" data-cap="Spring · neon · studio light · glow — hemoglobin (4hhb)"><img loading="lazy" src="img/gallery/hemoglobin-spring-neon-glow.webp" width="1200" height="900" alt="Spring · neon · studio light · glow — hemoglobin (4hhb)"></button><figcaption>Spring · neon · studio light · glow</figcaption></figure>
+      <figure data-tags="light pastel atoms"><button data-full="img/gallery/spike-illustrated-pastel.webp" data-cap="Illustrated atoms · pastel — SARS-CoV-2 spike (6vxx)"><img loading="lazy" src="img/gallery/spike-illustrated-pastel.webp" width="1200" height="900" alt="Illustrated atoms · pastel — SARS-CoV-2 spike (6vxx)"></button><figcaption>Illustrated atoms · pastel</figcaption></figure>
+      <figure data-tags="dark glow cartoon"><button data-full="img/gallery/antibody-cylinders-catppuccin-glow.webp" data-cap="Cylinders · catppuccin · glow — IgG antibody (1hzh)"><img loading="lazy" src="img/gallery/antibody-cylinders-catppuccin-glow.webp" width="1200" height="900" alt="Cylinders · catppuccin · glow — IgG antibody (1hzh)"></button><figcaption>Cylinders · catppuccin · glow</figcaption></figure>
+      <figure data-tags="light surface"><button data-full="img/gallery/groel-clay.webp" data-cap="Clay surface · clay theme — GroEL–GroES (1aon)"><img loading="lazy" src="img/gallery/groel-clay.webp" width="1200" height="900" alt="Clay surface · clay theme — GroEL–GroES (1aon)"></button><figcaption>Clay surface · clay theme</figcaption></figure>
+      <figure data-tags="dark pastel surface cartoon"><button data-full="img/gallery/nucleosome-glass-pastel.webp" data-cap="Glass · pastel — nucleosome (1kx5)"><img loading="lazy" src="img/gallery/nucleosome-glass-pastel.webp" width="1200" height="900" alt="Glass · pastel — nucleosome (1kx5)"></button><figcaption>Glass · pastel</figcaption></figure>
+      <figure data-tags="light glow cartoon"><button data-full="img/gallery/hemoglobin-figure-colorblind-glow.webp" data-cap="Publication cartoon · colorblind · figure light · glow — hemoglobin (4hhb)"><img loading="lazy" src="img/gallery/hemoglobin-figure-colorblind-glow.webp" width="1200" height="900" alt="Publication cartoon · colorblind · figure light · glow — hemoglobin (4hhb)"></button><figcaption>Publication cartoon · colorblind · figure light · glow</figcaption></figure>
+      <figure data-tags="dark surface"><button data-full="img/gallery/spike-glossy-dracula.webp" data-cap="Glossy surface · dracula — SARS-CoV-2 spike (6vxx)"><img loading="lazy" src="img/gallery/spike-glossy-dracula.webp" width="1200" height="900" alt="Glossy surface · dracula — SARS-CoV-2 spike (6vxx)"></button><figcaption>Glossy surface · dracula</figcaption></figure>
+      <figure data-tags="light pastel cartoon"><button data-full="img/gallery/hemoglobin-contour-pastel.webp" data-cap="Contour cartoon · pastel — hemoglobin (4hhb)"><img loading="lazy" src="img/gallery/hemoglobin-contour-pastel.webp" width="1200" height="900" alt="Contour cartoon · pastel — hemoglobin (4hhb)"></button><figcaption>Contour cartoon · pastel</figcaption></figure>
+      <figure data-tags="dark glow neon cartoon"><button data-full="img/gallery/groel-xray-neon-glow.webp" data-cap="Cartoon · neon · x-ray light · glow — GroEL–GroES (1aon)"><img loading="lazy" src="img/gallery/groel-xray-neon-glow.webp" width="1200" height="900" alt="Cartoon · neon · x-ray light · glow — GroEL–GroES (1aon)"></button><figcaption>Cartoon · neon · x-ray light · glow</figcaption></figure>
+      <figure data-tags="light surface"><button data-full="img/gallery/kinase-frosted-blue.webp" data-cap="Frosted surface · blue theme — PDK1 kinase with staurosporine (1oky)"><img loading="lazy" src="img/gallery/kinase-frosted-blue.webp" width="1200" height="900" alt="Frosted surface · blue theme — PDK1 kinase with staurosporine (1oky)"></button><figcaption>Frosted surface · blue theme</figcaption></figure>
+      <figure data-tags="dark surface"><button data-full="img/gallery/antibody-frosted-nord.webp" data-cap="Frosted surface · nord — IgG antibody (1hzh)"><img loading="lazy" src="img/gallery/antibody-frosted-nord.webp" width="1200" height="900" alt="Frosted surface · nord — IgG antibody (1hzh)"></button><figcaption>Frosted surface · nord</figcaption></figure>
+      <figure data-tags="light surface"><button data-full="img/gallery/groel-mirror-chimerax.webp" data-cap="Glossy surface · chimerax · mirror floor — GroEL–GroES (1aon)"><img loading="lazy" src="img/gallery/groel-mirror-chimerax.webp" width="1200" height="900" alt="Glossy surface · chimerax · mirror floor — GroEL–GroES (1aon)"></button><figcaption>Glossy surface · chimerax · mirror floor</figcaption></figure>
+      <figure data-tags="dark surface cartoon"><button data-full="img/gallery/kinase-pocket-night.webp" data-cap="Ligand site · night theme — PDK1 kinase with staurosporine (1oky)"><img loading="lazy" src="img/gallery/kinase-pocket-night.webp" width="1200" height="900" alt="Ligand site · night theme — PDK1 kinase with staurosporine (1oky)"></button><figcaption>Ligand site · night theme</figcaption></figure>
+      <figure data-tags="light cartoon"><button data-full="img/gallery/hemoglobin-sketch.webp" data-cap="Cartoon · sketch light — hemoglobin (4hhb)"><img loading="lazy" src="img/gallery/hemoglobin-sketch.webp" width="1200" height="900" alt="Cartoon · sketch light — hemoglobin (4hhb)"></button><figcaption>Cartoon · sketch light</figcaption></figure>
+      <figure data-tags="light surface"><button data-full="img/gallery/antibody-clay-soft.webp" data-cap="Clay surface · soft — IgG antibody (1hzh)"><img loading="lazy" src="img/gallery/antibody-clay-soft.webp" width="1200" height="900" alt="Clay surface · soft — IgG antibody (1hzh)"></button><figcaption>Clay surface · soft</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="download">
+  <div class="wrap">
+    <h2>Download</h2>
+    <p class="muted">Ready to run. No Python needed.</p>
+    <div class="cards">
+      <a href="https://github.com/adrian-jasinski/pymolish-studio/releases/latest"><b>Windows</b><span>Installer or portable ZIP, x64</span></a>
+      <a href="https://github.com/adrian-jasinski/pymolish-studio/releases/latest"><b>macOS</b><span>Apple silicon</span></a>
+      <a href="https://github.com/adrian-jasinski/pymolish-studio/releases/latest"><b>Linux</b><span>x64 bundle</span></a>
+    </div>
+    <p class="muted" style="margin-top: 28px">Or build from source:</p>
+<pre>git clone https://github.com/adrian-jasinski/pymolish-studio.git
+cd pymolish-studio
+./install</pre>
+    <p class="muted" style="font-size: 14px">Preview builds, not signed yet: Windows and macOS may warn on first start.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="https://github.com/adrian-jasinski/pymolish-studio">GitHub</a>
+      <a href="https://github.com/adrian-jasinski/pymolish-studio/blob/master/docs/README.md">Documentation</a>
+      <a href="https://github.com/adrian-jasinski/pymolish-studio/blob/master/ChangeLog">ChangeLog</a>
+      <a href="https://github.com/adrian-jasinski/pymolish-studio/blob/master/docs/licenses.md">Licenses</a>
+      <a href="https://github.com/sponsors/adrian-jasinski">Sponsor</a>
+      <a href="https://adrian-jasinski.github.io/">Author</a>
+    </div>
+    <p>pymolish-studio. Based on PyMOL™ technology. An independent fork, not affiliated with or endorsed by Schrodinger, LLC. PyMOL is a trademark of Schrodinger, LLC.</p>
+  </div>
+</footer>
+
+<dialog id="lightbox" aria-label="Enlarged picture">
+  <button class="close" aria-label="Close">×</button>
+  <figure><div class="body"></div><figcaption></figcaption></figure>
+</dialog>
+
+<script>
+const box = document.getElementById("lightbox");
+const body = box.querySelector(".body"), cap = box.querySelector("figcaption");
+
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-full], [data-video]");
+  if (!t) return;
+  const video = !!t.dataset.video;
+  const el = document.createElement(video ? "video" : "img");
+  el.src = t.dataset.video || t.dataset.full;
+  if (video) Object.assign(el, { controls: true, autoplay: true, playsInline: true });
+  else el.alt = t.querySelector("img").alt;
+  body.replaceChildren(el);
+  cap.textContent = t.dataset.cap || t.querySelector("img").alt;
+  box.showModal();
+});
+box.addEventListener("click", (e) => {
+  if (e.target === box || e.target.closest(".close")) box.close();
+});
+box.addEventListener("close", () => body.replaceChildren()); // stops a clip
+
+// each row of filter buttons filters the grid right after it
+for (const chips of document.querySelectorAll(".chips"))
+  chips.addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    for (const x of chips.children) x.setAttribute("aria-pressed", x === b);
+    for (const g of chips.nextElementSibling.children)
+      g.hidden = b.dataset.f !== "all" && !g.dataset.tags.split(" ").includes(b.dataset.f);
+  });
+</script>
+</body>
+</html>

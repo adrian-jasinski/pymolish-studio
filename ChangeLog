@@ -4,6 +4,19 @@ CHANGE LOG
 
 2026-11-27 pymolish-studio
 
+	* 4.97.0
+
+	* Windows installer (5d, unsigned)
+	  - Generate an offline per-user setup.exe from the Windows bundle,
+	    with a standard wizard, Start entry, upgrades and Installed apps
+	    uninstall. Preserve user files; remove obsolete bundled files.
+	  - Pin and verify the Inno Setup build tool. Add executable version
+	    metadata, disable UPX on Windows, test installation in CI, and
+	    publish the installer with checksums alongside the portable ZIP.
+	  - Signing and clean-machine desktop/security trials remain separate.
+
+2026-11-27 pymolish-studio
+
 	* 4.96.1
 
 	* Easier source installation after cloning

@@ -18,7 +18,9 @@ as the program prints them in the log (the **Command** tab).
 
 | You see | Likely cause | Do |
 | --- | --- | --- |
-| Windows or macOS warns before the first start | The downloadable builds are previews and are not signed. | Compare the archive with `SHA256SUMS` on the Releases page, then allow the start in the dialog of your system. |
+| Windows reports an unknown publisher or SmartScreen blocks Setup | The Windows installer and app are unsigned previews. | Compare the file with `SHA256SUMS` from the same release. If blocked, record the message and report it; keep security protection enabled. [Windows installation](install.md#windows-installer). |
+| macOS warns before the first start | The downloadable builds are previews and are not signed. | Compare the archive with `SHA256SUMS` on the Releases page, then allow the start in the dialog of your system. |
+| Windows Setup says application files are in use | pymolish or a bundled library is still running. | Save your work, close pymolish and retry. Do not force-close an unsaved session. |
 | The window stays black, on WSL | The graphics driver of Windows did not start. | Start with `GALLIUM_DRIVER=llvmpipe pymolish`: it draws on the CPU. [Install](install.md#on-wsl) has the details. |
 | Turning the molecule is slow, on a laptop with two graphics cards under WSL | The slower card is used. | Start with `MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA pymolish` (a part of the card's name). `get_renderer` prints the card in use. |
 | Turning a large structure is slow anywhere | Much is drawn. | Display > Quality > Maximum Performance; hide a surface while you move; show a cartoon, not all atoms. |

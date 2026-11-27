@@ -1,21 +1,32 @@
 # PyInstaller one-folder bundle. Build from the repository root with an
 # installed (or editable) pymol in the current environment:
 #
-#     pyinstaller --noconfirm packaging/pymolish.spec
+#     pyinstaller --noconfirm packaging/pyinstaller.spec
 #
 # Output: dist/pymolish/ with the pymolish executable. Data lives at
 # pymolish/_internal/pymol/pymol_path so pymol.guess_pymol_path() finds it.
 import glob
 import os
+import re
+import sys
 from importlib.util import find_spec
+from pathlib import Path
 
-from PyInstaller.utils.hooks import (collect_data_files, collect_submodules,
-                                     copy_metadata)
+from PyInstaller.utils.hooks import (
+    collect_data_files,
+    collect_submodules,
+    copy_metadata,
+)
 
 # plugins under data/startup are loaded from pymol_path at runtime, not frozen
-hidden = (collect_submodules('pymol', filter=lambda n: not n.startswith('pymol.plugins.startup.'))
-          + collect_submodules('pmg_qt') + collect_submodules('chempy')
-          + ['PySide6.QtUiTools'])
+hidden = (
+    collect_submodules(
+        "pymol", filter=lambda n: not n.startswith("pymol.plugins.startup.")
+    )
+    + collect_submodules("pmg_qt")
+    + collect_submodules("chempy")
+    + ["PySide6.QtUiTools"]
+)
 
 # pdbfixer and openmm (extra "fix", found through pymol/computing.py).
 # openmm loads its platforms from OpenMM.libs/lib/plugins next to the package
@@ -23,50 +34,123 @@ hidden = (collect_submodules('pymol', filter=lambda n: not n.startswith('pymol.p
 # Reference and CPU platforms are shipped: the OpenCL, CUDA and HIP ones are
 # LGPL and need drivers. License texts: licenses/OpenMM.txt and the metadata.
 fix_datas, fix_binaries = [], []
-if find_spec('pdbfixer'):
-    fix_datas = (collect_data_files('openmm') + copy_metadata('pdbfixer')
-                 + collect_data_files('pdbfixer', excludes=['tests/*']))
-    libs = os.path.join(os.path.dirname(find_spec('openmm').origin), os.pardir,
-                        'OpenMM.libs', 'lib')
-    for sub in ('', 'plugins'):
+if find_spec("pdbfixer"):
+    fix_datas = (
+        collect_data_files("openmm")
+        + copy_metadata("pdbfixer")
+        + collect_data_files("pdbfixer", excludes=["tests/*"])
+    )
+    libs = os.path.join(
+        os.path.dirname(find_spec("openmm").origin), os.pardir, "OpenMM.libs", "lib"
+    )
+    for sub in ("", "plugins"):
         fix_binaries += [
-            (f, os.path.join('OpenMM.libs', 'lib', sub))
-            for f in glob.glob(os.path.join(libs, sub, '*'))
-            if os.path.isfile(f) and not any(
-                gpu in f.lower() for gpu in ('opencl', 'cuda', 'hip'))]
+            (f, os.path.join("OpenMM.libs", "lib", sub))
+            for f in glob.glob(os.path.join(libs, sub, "*"))
+            if os.path.isfile(f)
+            and not any(gpu in f.lower() for gpu in ("opencl", "cuda", "hip"))
+        ]
 
 a = Analysis(
-    ['launcher.py'],
-    datas=[('../data', 'pymol/pymol_path/data'),
-           ('../LICENSE', 'pymol/pymol_path'),
-           ('../LICENSE-MIT', 'pymol/pymol_path'),
-           # Qt is LGPL: a bundle that ships it must ship the text
-           ('licenses', 'pymol/pymol_path/licenses')]
-          + collect_data_files('pmg_qt') + collect_data_files('pymol')
-          # rdkit (extra "chem", found through the import in pymol/smiles.py)
-          # and the Pillow it pulls in are BSD-style: ship their license texts
-          + (copy_metadata('rdkit') + copy_metadata('pillow')
-             if find_spec('rdkit') else [])
-          + fix_datas,
+    ["launcher.py"],
+    datas=[
+        ("../data", "pymol/pymol_path/data"),
+        ("../LICENSE", "pymol/pymol_path"),
+        ("../LICENSE-MIT", "pymol/pymol_path"),
+        # Qt is LGPL: a bundle that ships it must ship the text
+        ("licenses", "pymol/pymol_path/licenses"),
+    ]
+    + collect_data_files("pmg_qt")
+    + collect_data_files("pymol")
+    # rdkit (extra "chem", found through the import in pymol/smiles.py)
+    # and the Pillow it pulls in are BSD-style: ship their license texts
+    + (copy_metadata("rdkit") + copy_metadata("pillow") if find_spec("rdkit") else [])
+    + fix_datas,
     binaries=fix_binaries,
     hiddenimports=hidden,
-    excludes=['tkinter', 'PySide6.QtWebEngineCore', 'PySide6.QtQml',
-              'PySide6.QtQuick', 'PySide6.Qt3DCore', 'PySide6.QtMultimedia',
-              'PySide6.QtCharts', 'PySide6.QtPdf', 'PySide6.QtDesigner'],
+    excludes=[
+        "tkinter",
+        "PySide6.QtWebEngineCore",
+        "PySide6.QtQml",
+        "PySide6.QtQuick",
+        "PySide6.Qt3DCore",
+        "PySide6.QtMultimedia",
+        "PySide6.QtCharts",
+        "PySide6.QtPdf",
+        "PySide6.QtDesigner",
+    ],
 )
 # Qt pieces PyMOL never loads; PySide6 hooks still collect them
 # (DBus stays: the Linux xcb platform plugin links it)
-PRUNE = ('Qt6Quick', 'Qt6Qml', 'Qt6Pdf', 'Qt6VirtualKeyboard', 'Qt6Network',
-         'Qt6Designer', 'qml' + os.sep, 'translations' + os.sep, 'QtNetwork')
+PRUNE = (
+    "Qt6Quick",
+    "Qt6Qml",
+    "Qt6Pdf",
+    "Qt6VirtualKeyboard",
+    "Qt6Network",
+    "Qt6Designer",
+    "qml" + os.sep,
+    "translations" + os.sep,
+    "QtNetwork",
+)
 a.binaries = [b for b in a.binaries if not any(k in b[0] for k in PRUNE)]
 a.datas = [d for d in a.datas if not any(k in d[0] for k in PRUNE)]
 # the PySide6 hook only warns when it cannot import QtCore, and then collects
 # no plugin: such a bundle builds, passes headless and cannot open a window
-assert any(os.path.join('plugins', 'platforms') in b[0] for b in a.binaries), \
-    'no Qt platform plugin collected: see the PySide6 hook warnings above'
+assert any(os.path.join("plugins", "platforms") in b[0] for b in a.binaries), (
+    "no Qt platform plugin collected: see the PySide6 hook warnings above"
+)
+
+version_info = None
+if sys.platform == "win32":
+    from PyInstaller.utils.win32.versioninfo import (
+        FixedFileInfo,
+        StringFileInfo,
+        StringStruct,
+        StringTable,
+        VarFileInfo,
+        VarStruct,
+        VSVersionInfo,
+    )
+
+    version = re.search(
+        r'^#define _PyMOL_VERSION "(\d+\.\d+\.\d+)"',
+        (Path(SPECPATH).parent / "layer0/Version.h").read_text(),
+        re.M,
+    )[1]
+    number = tuple(map(int, version.split("."))) + (0,)
+    version_info = VSVersionInfo(
+        ffi=FixedFileInfo(filevers=number, prodvers=number, fileType=1),
+        kids=[
+            StringFileInfo(
+                [
+                    StringTable(
+                        "040904b0",
+                        [
+                            StringStruct("CompanyName", "pymolish-studio contributors"),
+                            StringStruct("FileDescription", "pymolish-studio"),
+                            StringStruct("FileVersion", version),
+                            StringStruct("ProductName", "pymolish-studio"),
+                            StringStruct("ProductVersion", version),
+                            StringStruct("OriginalFilename", "pymolish.exe"),
+                        ],
+                    )
+                ]
+            ),
+            VarFileInfo([VarStruct("Translation", [0x0409, 1200])]),
+        ],
+    )
 
 pyz = PYZ(a.pure)
-exe = EXE(pyz, a.scripts, exclude_binaries=True, name='pymolish', console=True,
-          # PyInstaller converts the PNG with Pillow (dev extra)
-          icon='../data/pymol/icons/pymolish.png')
-coll = COLLECT(exe, a.binaries, a.datas, name='pymolish')
+exe = EXE(
+    pyz,
+    a.scripts,
+    exclude_binaries=True,
+    name="pymolish",
+    console=True,
+    version=version_info,
+    upx=sys.platform != "win32",
+    # PyInstaller converts the PNG with Pillow (dev extra)
+    icon="../data/pymol/icons/pymolish.png",
+)
+coll = COLLECT(exe, a.binaries, a.datas, name="pymolish", upx=sys.platform != "win32")

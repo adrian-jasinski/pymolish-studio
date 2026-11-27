@@ -49,7 +49,14 @@ new window, less old code and faster heavy operations.
    [Releases page](https://github.com/adrian-jasinski/pymolish-studio/releases).
    There is one for Linux, Windows and macOS (Apple silicon). You do not need
    Python.
-2. Unpack it and start `pymolish` (`pymolish.exe` on Windows).
+2. On Windows x64, download `pymolish-<version>-Windows-X64-setup.exe`,
+   run the installation wizard, then open **pymolish-studio** from Start.
+   For the portable ZIP or other systems, unpack the bundle and start
+   `pymolish` (`pymolish.exe` on Windows).
+
+The Windows installer needs no administrator, Python or compiler. Run a
+newer installer to update; remove it through **Settings > Apps > Installed
+apps**. [Installation details](docs/install.md#windows-installer).
 3. Choose File > Get PDB..., type `1oky`, press Download, and drag with the
    mouse.
 
