@@ -17,6 +17,9 @@ the default surface. The Windows installer request adds **5d**, order 4.
 Question **137 A** is recorded: a per-user Inno Setup `.exe` plus the
 portable ZIP, **unsigned for now**; signing (question 138) is deferred
 until the user asks for it.
+On 2026-11-27 the user requested the plan and implementation of this
+installer next. The concrete implementation sequence is now recorded at
+the top of [plan 5](docs/plans/05-builds-binaries.md); work proceeds on 5d.
 
 Keep Qt Widgets with PySide6. Follow [AGENTS.md](AGENTS.md): smaller,
 faster, simpler, prettier.

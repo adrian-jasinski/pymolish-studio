@@ -2,6 +2,45 @@
 
 [Roadmap](../../PLAN.md) · 5a/5b complete; 5c shelved; 5d planned (unsigned installer)
 
+## Implementation plan recorded 2026-11-27
+
+Starting at **4.96.1**, implement the already accepted answer **137 A**:
+an offline, unsigned, per-user Windows x64 installer alongside the ZIP.
+The alternative (137 B, Store/MSIX) and signing remain deferred. No new
+decision is needed. The installer is a new user-facing delivery feature,
+so this slice takes **4.97.0**.
+
+1. Add `packaging/windows.iss` and `packaging/build_windows_installer.ps1`.
+   Reuse `dist/pymolish`; derive the version from `layer0/Version.h` and
+   produce `dist/pymolish-<version>-Windows-X64-setup.exe`. Pin Inno Setup
+   **6.7.1**, download its official release and check SHA-256 before using
+   it. It is an approved build tool, not a Python/runtime dependency.
+2. Use the standard wizard, a stable AppId, the user's local Programs
+   directory, a Start-menu entry and Windows' Installed apps uninstaller.
+   Include all bundled libraries, resources and unchanged notices. Preserve
+   the install directory on upgrade. Use Restart Manager for in-use files;
+   never force-close an unsaved session. An installed file manifest removes
+   only obsolete payload paths during upgrade, leaving added user files.
+3. Add Windows executable version/product metadata from the same header;
+   disable UPX for Windows. Keep the existing console/CLI behavior and ZIP.
+4. Build and smoke-test the installer after the existing Windows bundle
+   step. Require it in artifact delivery, release upload and `SHA256SUMS`.
+   Keep both Python test jobs and the ICU workaround.
+5. Leave runnable checks under `testing/tests/system/` for install into a
+   path with spaces/non-ASCII characters, installed headless startup outside
+   the checkout with Python environment variables cleared, upgrade,
+   uninstall, registry/shortcut state and user-file preservation. Check
+   compiler/download failures and version metadata where possible.
+6. Document download, install, update, removal, portable use and local
+   generation. Commit implementation and measured results separately from
+   this plan; reconcile all roadmap files. Native desktop/clean-machine
+   checks remain explicit if this environment cannot run them.
+
+No size or timing result is claimed before building. No signing, MSI,
+file associations, PATH edits, desktop shortcut or auto-updater in this slice.
+The existing completion checklist below still applies to desktop trials;
+signature checks wait for question 138.
+
 **Shorten the edit/build/test loop, then provide applications testers can launch
 without Python.** An installable wheel and a standalone application are separate
 deliverables. Build speed, launch speed and download size also need separate data.
