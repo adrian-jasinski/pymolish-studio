@@ -125,11 +125,8 @@ else:
         unmet = {
             'shaders': not use_shaders,
             'gui': options.no_gui,
-            'incentive': not options.incentive_product,
-            'properties': not options.incentive_product,
             'no_edu': PYMOL_EDU,
             'network': cliargs.offline,
-            'undo': cliargs.no_undo,
             'no_run_all': run_all,
             'multicore': max_threads <= 1,
             'no_win64bit': is_win64bit,

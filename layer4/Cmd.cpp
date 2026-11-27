@@ -310,9 +310,6 @@ static PyObject* APIFailure(PyMOLGlobals* G, const pymol::Error& error)
   case pymol::Error::MEMORY:
     exc_type = PyExc_MemoryError;
     break;
-  case pymol::Error::INCENTIVE_ONLY:
-    exc_type = P_IncentiveOnlyException;
-    break;
   default:
     exc_type = P_CmdException;
   }
@@ -1643,6 +1640,8 @@ static PyObject* CmdGetCapabilities(PyObject*, PyObject*)
 #endif
     // object and atom level properties
     PySet_Add(caps, PConvToPyObject("properties"));
+    // undo of more than coordinates (pymol/snapshots.py)
+    PySet_Add(caps, PConvToPyObject("multi_undo"));
   }
 
   Py_INCREF(caps);
@@ -2489,8 +2488,9 @@ static PyObject *CmdUndo(PyObject * self, PyObject * args)
     API_HANDLE_ERROR;
   }
   if(ok && (ok = APIEnterNotModal(G))) {
-    ExecutiveUndo(G, int1);     /* TODO STATUS */
+    int saves = ExecutiveUndo(G, int1);
     APIExit(G);
+    return PyLong_FromLong(saves);
   }
   return APIResultOk(ok);
 }
@@ -6339,16 +6339,6 @@ ok_except1:
   return APIAutoNone(nullptr);
 }
 
-static PyObject* CmdM2ioFirstBlockProperties(PyObject* self, PyObject* args)
-{
-  const char* contents = nullptr;
-  Py_ssize_t length;
-  if (!PyArg_ParseTuple(args, "s#", &contents, &length))
-    return nullptr;
-  PyErr_SetNone(P_IncentiveOnlyException);
-  return nullptr;
-}
-
 static PyObject* CmdLookAt(PyObject* self, PyObject* args)
 {
   PyMOLGlobals* G = nullptr;
@@ -6474,7 +6464,6 @@ static PyMethodDef Cmd_methods[] = {
   {"get_group_members", CmdGetGroupMembers, METH_VARARGS},
   {"get_idtf", CmdGetIdtf, METH_VARARGS},
   {"get_legal_name", CmdGetLegalName, METH_VARARGS},
-  {"get_m2io_first_block_properties", CmdM2ioFirstBlockProperties, METH_VARARGS},
 //  {"get_matrix", CmdGetMatrix, METH_VARARGS},
   {"get_min_max", CmdGetMinMax, METH_VARARGS},
   {"get_mtl_obj", CmdGetMtlObj, METH_VARARGS},

@@ -23,7 +23,10 @@ class ScenePanel(QtWidgets.QDockWidget):
         view.setDragDropMode(QtWidgets.QAbstractItemView.DragDropMode.InternalMove)
         view.setToolTip("Click or Enter recalls a scene; a right click only picks it")
         # a click recalls, so it must not also start a rename
-        view.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.EditKeyPressed)
+        view.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        rename = QtGui.QShortcut(Qt.Key.Key_F2, view)
+        rename.setContext(Qt.ShortcutContext.WidgetShortcut)
+        rename.activated.connect(self._rename)
         # Not itemActivated: a double click, and on some desktops a single
         # one, activates too, and the scene would be recalled twice.
         view.itemClicked.connect(self._recall)  # left button, not after a drag

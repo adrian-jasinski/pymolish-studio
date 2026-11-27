@@ -2330,27 +2330,6 @@ int OrthoDrag(PyMOLGlobals* G, int x, int y, int mod)
 void OrthoSplash(PyMOLGlobals* G)
 {
 
-/* BEGIN PROPRIETARY CODE SEGMENT (see disclaimer in "os_proprietary.h") */
-  if (G->Option->incentive_product) {
-#ifdef AXPYMOL_EVAL
-    PRINTF
-    " AxPyMOL(TM) Evaluation Product - Copyright (c) Schrodinger, LLC.\n "
-    "\n" ENDF(G);
-    PRINTF
-    " This Executable Build integrates and extends Open-Source PyMOL " ENDF(G);
-    PRINTF _PyMOL_VERSION ENDF(G);
-    PRINTF ".\n" ENDF(G);
-#else
-    PRINTF " PyMOL(TM) Incentive Product - Copyright (c) Schrodinger, LLC.\n "
-           "\n" ENDF(G);
-    PRINTF
-    " This Executable Build integrates and extends Open-Source PyMOL " ENDF(G);
-    PRINTF _PyMOL_VERSION ENDF(G);
-    PRINTF ".\n" ENDF(G);
-#endif
-  } else
-
-  /* END PROPRIETARY CODE SEGMENT */
   {
     /* Splash message for unrestricted access open-source versions... */
     PRINTF " pymolish-studio, an independent fork.\n" ENDF(G);

@@ -865,7 +865,7 @@ inline PyObject* ExecutiveGetPropertyList(PyMOLGlobals* G,
   return ExecutiveGetPropertyForObject(G, nullptr, objname, state, quiet);
 }
 
-void ExecutiveUndo(PyMOLGlobals* G, int dir);
+int ExecutiveUndo(PyMOLGlobals* G, int dir);
 int ExecutiveSaveUndo(PyMOLGlobals* G, const char* s1, int state);
 
 pymol::Result<> ExecutiveRebond(

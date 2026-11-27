@@ -3,15 +3,72 @@
 Steps of the [roadmap](PLAN.md) whose last milestone has shipped. Open work
 stays in `PLAN.md`; the detailed plans stay in `docs/plans/`. Step numbers and
 order numbers in the finished-work table are historical. “Open, order N”
-references below follow the current roadmap (updated 2026-11-26).
+references below follow the current roadmap (updated 2026-11-27).
+
+Step 5 is reopened by the Windows installer and signing request of
+2026-11-26: **5d, order 4** is planned. Question 137 is answered A with
+signing skipped for now; 138 is deferred. Its earlier build and bundle
+milestones remain complete; 5c stays shelved.
+
+## Source-install choices (step 39)
+
+Answered by the user on **2026-11-27**, both recommended options:
+
+| Choice | State |
+| --- | --- |
+| System packages on Linux; existing Pixi on Windows/macOS and when Linux lacks suitable Python. | Implemented in 4.96.1. |
+| Core by default, with a prompt for chemistry, structure repair and Chat extras. | Implemented in 4.96.1; explicit extras flags also supported. |
+
+The plan was committed before implementation (`27a8ab62`), followed by
+the installer (`2574f54c`). Native clean-machine trials remain open,
+order 5; these are separate from the Windows bundle installer in 5d.
+
+## Decision 139
+
+Answered by the user on **2026-11-26** by asking to implement "15q, 15r —
+Glow in saved pictures" as planned: **A**, both slices.
+
+| No. | Decision | State |
+| --- | --- | --- |
+| 139 | Both: the post-process for pictures of any size (15q), then the halo in ray-traced pictures (15r). B (15q only) and C (15r only) were not selected. | 4.92.0 and 4.93.0. |
+
+## Decision 137
+
+Answered by the user on **2026-11-26**: "A, recommended ... Skip Signing
+for now - we add that later". A planning update at 4.90.0; nothing built,
+nothing measured.
+
+| No. | Decision | State |
+| --- | --- | --- |
+| 137 | Per-user Inno Setup `.exe` plus the portable ZIP. Inno Setup is agreed as a pinned CI build tool. Signing is skipped for now; MSIX through the Store (B) was not selected. | Open, order 4 ([5d](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing)). |
+| 138 | Signing provider. | Deferred until the user asks for signing; not an open question. |
+
+## Decisions 128 and 129
+
+Answered by the user on **2026-11-26**, both with **A, recommended**.
+This is a planning update at 4.90.0; no feature shipped and no new
+measurement was made. [Review history and background](docs/plans/roadmap-background.md)
+and [detailed user checks](docs/plans/roadmap-checks.md) now live outside
+the main roadmap.
+
+| No. | Decision | State |
+| --- | --- | --- |
+| 128 | Keep the existing glow setting and add "glow" / "no glow" to the light menu, as for fog, for the viewport only. Leaving it setting-only, extending it to ray/sized images, and removing it were not selected. | The setting shipped in 4.88.0; the [menu follow-up](docs/plans/15-presets.md#question-128-a-glow-menu-follow-up) in 4.91.0. |
+| 129 | "Solid" stays the default after the surface worker; "Solid (grid)" stays optional. Neither a size-dependent default nor grid everywhere was selected. | Decision complete; existing behavior retained, no code change or version. [Plan 1](docs/plans/01-performance-gpu.md). |
+
+## Earlier decisions and implementation record
 
 **Built 2026-11-26, 4.83.0 to 4.89.0:** orders 3 to 9 of the planning
 update below, in that order: 15m, 34d with 15n, 15o, 32c, 15b, 15p and the
 surface worker of 1b. Steps 32 and 34 are finished again; step 15 has every
-slice built and waits for question 128 (what becomes of the glow
-experiment); step 1 keeps its two measured items. The open orders are now:
-27c 1, the trial of 31 2, general undo 3, the rest of the documentation
-(step 38, planned and written the same day by other sessions) 4. The rows are under "Finished
+original slice built; answer 128 A added the glow menu follow-up in 4.91.0.
+Step 1 keeps its two measured items. The current open orders are:
+27c 1, the trial of 31 2, glow in saved pictures (15q, 15r) 3, general
+undo 4, the rest of the documentation (step 38) 5, Windows installer,
+unsigned for now (5d) 6; the glow menu shipped in 4.91.0. Since
+2026-11-27 (4.94.1) the open orders are 27c 1, the trial of 31 2, step 38
+3 and 5d 4.
+The rows are under "Finished
 milestones of open steps"; the decisions and choices follow here.
 
 Decided by the user on 2026-11-26, in the request that started the run
@@ -23,7 +80,7 @@ Decided by the user on 2026-11-26, in the request that started the run
 | 124 | A: transparency for whole objects, one value for the balls and bonds of ball and stick. B was atoms and residues with half bonds. | 4.84.0. `ball_and_stick_transparency` (setting 801, object and state level); `preset.transparency`; `menu.transparency`. |
 | 125 | A: the groups cartoon, atoms and bonds, surface, binding, then transparency; light, theme and floor under a caption. B was two groups only. | 4.85.0. `menu.presets`. |
 | 126 | A: the documentation is Markdown in this repository, with a docs home and task and command indexes. B was a separate website with full-text search. Answered in the run that built step 38. | Built 2026-11-26 at 4.90.0, no version. `docs/README.md` and the pages it links. |
-| 127 | A: short videos opened from static posters. B was inline GIF loops. Answered in the same run. | Built 2026-11-26. Four MP4 files in `docs/media/`, posters `docs/img/demo-*.jpg`; how GitHub plays them is open, order 4. |
+| 127 | A: short videos opened from static posters. B was inline GIF loops. Answered in the same run. | Built 2026-11-26. Four MP4 files in `docs/media/`, posters `docs/img/demo-*.jpg`; how GitHub plays them is open, order 3. |
 
 Reported by the user in the same message, not checked here: the drag with
 the right button of 4.70.0 works; the Chat tab works with Claude Code and
@@ -61,7 +118,7 @@ Decided by the user during this planning update, and built later that day:
 | No. | Decision | State |
 | --- | --- | --- |
 | 121 | Larger icons with Viewing, SEQ, Chat, Wizard and Cmd labels beside them; two rows when narrow. Larger icons without the extra labels, and a wider single-row panel, were not selected. | [32c](docs/plans/32-footer-icons-movie-button.md), built in 4.86.0. |
-| 122 | Existing rendering recipes first, then a measured experiment for true neon/glow. A settings-only endpoint was not selected. | [15m and 15p](docs/plans/15-presets.md), built in 4.83.0 and 4.88.0; what becomes of the experiment is question 128. |
+| 122 | Existing rendering recipes first, then a measured experiment for true neon/glow. A settings-only endpoint was not selected. | [15m and 15p](docs/plans/15-presets.md), built in 4.83.0 and 4.88.0; answer 128 A added the viewport-only menu entry in 4.91.0. |
 
 **Planning update 2026-11-23 at 4.43.0:** no milestone shipped. Step 11 is
 reopened for CPK (11c); its existing palette releases remain recorded below.
@@ -196,7 +253,7 @@ Decided by the user on 2026-11-25, after the grid surface experiment
 
 | Question | Decision | State |
 | --- | --- | --- |
-| 105 — Does the grid surface stay, and for what? | Option A, recommended: keep it beside today's surface, which remains the default; add "Solid (grid)" in Setting > Surface and support carving and cavities. Use the grid with a probe of about 3 A for the rounded clay surface. Reconsider the default after the surface worker. | Grid surface available as `surface_type 7` since 4.76.0. Menu row, cavities and the solvent surface in 4.81.0 (carving worked already); clay and two more looks on it in 4.82.0. The worker is built (4.89.0); the default is question 129. B (default above a size) and C (remove it) were not selected. |
+| 105 — Does the grid surface stay, and for what? | Option A, recommended: keep it beside today's surface, which remains the default; add "Solid (grid)" in Setting > Surface and support carving and cavities. Use the grid with a probe of about 3 A for the rounded clay surface. Reconsider the default after the surface worker. | Grid surface available as `surface_type 7` since 4.76.0. Menu row, cavities and the solvent surface in 4.81.0 (carving worked already); clay and two more looks on it in 4.82.0. The worker is built (4.89.0); answer 129 A keeps Solid as the default. B (default above a size) and C (remove it) were not selected. |
 
 Decided by the user on 2026-11-25, choices 91–97 from the GUI request of
 2026-11-24, and built the same day.
@@ -264,7 +321,7 @@ recommendation and still waited for a word:
 | 37 | The contact area of "protein-protein interaction" is orange. | Step 30, 4.36.0 to 4.40.0. |
 | 38 | "remove crystallization additives" is one row, sugars and NAD(P) included. | Step 30, 4.36.0 to 4.40.0. |
 | 39 | No preset leaves the preset menu. | Step 30, 4.36.0 to 4.40.0. |
-| 40 | Undo of a preset takes back everything done after it, until 21g builds one stack. | 4.40.0; 21g open, order 3. |
+| 40 | Undo of a preset takes back everything done after it, until 21g builds one stack. | 4.40.0; replaced by the stack of 21g in 4.94.0. |
 | 41 | Shared tools, then the chat, then the connector. | 4.58.0 and 4.61.0. |
 | 43 | Reviewed operations; a concrete confirmation for destructive, file and network actions; a separate trusted Python mode. | 4.58.0; the connector uses the same executor (4.61.0). |
 | 44 | A Chat tab in the command area. | 4.58.0. |
@@ -319,6 +376,7 @@ on 2026-11-24 (table above):
 
 | Step | Detailed plan | Recommendation |
 | --- | --- | --- |
+| 21 | [Features of the commercial build](docs/plans/21-commercial-features.md) | Requested 2026-11-19. Removals in 4.19.18 to 4.19.26; 21a to 21e rebuilt in 4.19.33 to 4.19.37; 21f in 4.63.1 to 4.65.0; 21g, undo of every step, in 4.94.0 (a first piece, the preset rows, in 4.40.0); `-n`, `IncentiveOnlyException` and the last `incentive` marks removed in 4.94.1. |
 | 25 | [Studio effects: floor, lights, surface looks](docs/plans/25-studio-effects.md) | Requested 2026-11-20. 25a-1, 4.34.0: the command `stage` (a floor that takes the ray-traced shadow, a mirror image) and the lights studio, top light and soft shadow. 25b-2, 4.35.0: five color themes. 25b-3, 4.81.0: the grid surface of 1b (4.76.0) as "Solid (grid)" in Setting > Surface, with cavity culling, the cavity modes and the solvent surface. 25b-1, 4.82.0: Presets > surface look with glossy, candy glass, frosted and clay, the last three on the grid surface with a probe of 3 A. Not built, and only if asked for: a shadow in the viewport (25a-2), the "wrap" light of clay in the shaders, the Gaussian blob of the trial. |
 | 8 | [Modern C++ in the core](docs/plans/08-cpp-modernization.md) | Closed 2026-11-25 at 4.76.14 by the user's answer to question 106, "finish here"; not finished as planned. Done: the sanitizer job (8a), bounded strings (8b, 408 of 475 calls), Catch2 under the sanitizers (8h), the dead `#ifdef` branches (8i), the `malloc` half of 8c (230 of 297 allocation sites), the mechanical part of 8d (215 of 829 macro calls). Not done and no longer planned: raw `new` / `delete` (181 / 109, with 64 `DeleteP`), 611 VLA macro calls on raw pointers, the error chains of 8e (`ok_assert` 197, `goto` 24, `CHECKOK` 198), 8f, `ov/` (8g, 72 users, never measured), 60 string calls through a pointer. The macro layer of `MemoryDebug.h` and the directory `ov/` stay. Never checked for 4.76.1 to 4.76.14: MSVC, Apple Clang, GCC 11, `compare.py`, a window. |
 | 37 | [GUI follow-ups of 2026-11-24](docs/plans/37-gui-followups.md) | Requested 2026-11-24, answered and built 2026-11-25, 4.68.1 to 4.75.0, seven slices: the old plugin no longer takes the names of the fetch commands (37a); Delete in the Objects list (37b); thirty colors a palette, ten in the preview (37c); colors dragged in the palette dialog (37d); a compact mouse mode button (37e); Mode, Labels and Gaps lists and the alignment button in the Sequence tab (37f); A−, A+ and Reset beside the tabs (37g). |
@@ -338,7 +396,6 @@ on 2026-11-24 (table above):
 | 26 | [Action toolbar: Bg, Open, quick select, layout](docs/plans/26-toolbar-buttons.md) | "Bg" with a paint roller; an Open button with the rows of File that bring something in; chips P, L, S, a menu with chains and more, All and "nothing", with Shift to add and Ctrl to take away; one row, 1154 px at 150 %, with a text only on Residues, Presets, Bg, Draw and the scale. 4.20.0, 4.21.0, 4.30.0. |
 | 2 | [Code and dependencies](docs/plans/02-cleanup-dependencies.md) | One feature removal per PR; trace dependencies before deleting. |
 | 4 | [Features and external libraries](docs/plans/04-extensibility.md) | Preserve `cmd` and the existing loader; document small integration patterns. |
-| 5 | [Builds and test binaries](docs/plans/05-builds-binaries.md) | Improve incremental builds and deliver test artifacts before large changes. |
 | 6 | [States panel](docs/plans/06-states-panel.md) | First, previous, play/stop, next, last, jump and speed in the Objects dock; replaces the state label and the toolbar's movie buttons. |
 | 7 | [Toolbar icons and UI scale](docs/plans/07-toolbar-icons-scale.md) | Line icons on every action toolbar button, Undo and Redo icon-only, 150 % default scale, scale button in the toolbar; replaces Display > UI Scale. |
 | 9 | [Own icon and logo](docs/plans/09-icons-logo.md) | Allowed and asked for by the license. One master PNG; window title and About box stop saying PyMOL. New art (blue, green and violet ribbon) in 4.19.27. |
@@ -355,6 +412,8 @@ on 2026-11-24 (table above):
 
 | Step | Completed scope | New work |
 | --- | --- | --- |
+| 5 | [Builds and test binaries](docs/plans/05-builds-binaries.md): 5a build iteration and 5b downloadable bundles; archives published since 4.5.1. | [5d — Windows installer and code signing](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing), open, order 4. Requested 2026-11-26; installer and provider choices are pending. 5c stays shelved. |
+| 15 | [Presets and looks](docs/plans/15-presets.md): 15a to 15p (4.14.0 to 4.88.0) and the glow row of the light menu (answer 128 A, 4.91.0). | [15q and 15r — glow in saved pictures](docs/plans/15-presets.md#request-2026-11-26-evening-glow-in-saved-pictures-15q-15r): done 2026-11-26 in 4.92.0 and 4.93.0 (answer 139 A). The step is finished again. |
 | 34 | [Independent ball-and-stick](docs/plans/34-ball-and-stick.md), 34a–34c in 4.48.0/4.49.0: representation 21, its own visibility and three settings, native bond orders, ligand defaults without changing sphere/stick settings, and compatible storage of fork-specific atom settings. | 34d, transparency: done 2026-11-26 in 4.84.0. The step is finished again. |
 | 32 | [Footer icons and Movie button](docs/plans/32-footer-icons-movie-button.md), 32a/32b in 4.42.0/4.43.0: mouse mode/SEQ with text, Wizard/Command as icons, Movie opens/closes Timeline. In 4.67.0 AI moved after SEQ and SEQ opens its tab; 4.73.0 shortened the mouse-mode label. | 32c, larger icons and short labels with a second row when narrow: done 2026-11-26 in 4.86.0. The step is finished again. |
 
@@ -421,7 +480,7 @@ where the decision shipped, "open" with its order where it has not.
 | 15 | As recommended: blue hover in every menu; Orient acts only on what is visible. | Step 20. Done in 4.23.0. |
 | 16 | As recommended: FXAA for smooth edges; `sphere_mode` capped at 9, its test and two reference images deleted; the background image stored in the session file. | 21f. Done in 4.63.1 (sphere modes), 4.64.0 (background picture) and 4.65.0 (FXAA, off by default: choice 73). |
 | 18 | As recommended: idle OpenMP threads sleep at once. | 1b. Done in 4.23.1. |
-| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f). The rest open, order 3. |
+| 17 | As recommended: undo by snapshots for edits, the coordinate ring for moves (option C). | 21g. A first piece in 4.40.0: a row of the preset menu (30f); the stack in 4.94.0. |
 | 19 | Yes: the grid surface is tried as an experiment, then judged on numbers and pictures. | 1b. Built as an experiment in 4.76.0 (`surface_type 7`); kept as an option by answer 105 A. Moved up by the answer to question 25. |
 
 14 was answered by "release 17" (4.19.42).
@@ -484,10 +543,12 @@ ones, the new ones win.
 
 ## Finished milestones of open steps
 
-Steps 1, 8, 15, 21, 27 and 31 stay in the roadmap (15 for question 128 alone).
-These parts of them have shipped. The rows of steps 3, 11, 17, 18, 19, 20, 22, 26,
+Steps 1, 5, 27, 31, 38 and 39 stay in the roadmap.
+These parts of them have shipped. The rows of steps 3, 11, 15, 17, 18, 19, 20, 21, 22, 26,
 23, 24, 25, 28, 30, 32, 34, 35, 36 and 37, which are finished, are kept here as the record of
-their milestones. The rows are not in order of time: the newest, the
+their milestones. The rows are not in order of time: the source installer
+(39a, 4.96.1), one-row footer (4.96.0) and neon palette (4.95.0) precede
+21g and its removal (4.94.0, 4.94.1), 15r and 15q (4.93.0, 4.92.0), the glow menu (4.91.0), the
 alignment window without the line of characters (4.90.0), the
 seven rows of 2026-11-26 (4.83.0 to 4.89.0, the last built first), the
 surface looks (4.82.0) and the grid surface as a menu row (4.81.0), the
@@ -508,10 +569,17 @@ the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
-| 38 | 38a to 38d — current documentation and real demos | Done 2026-11-26 at 4.90.0, no version (docs only): [docs/plans/38-documentation.md](docs/plans/38-documentation.md). Answers 126 A (Markdown in the repository) and 127 A (MP4 behind a poster). `docs/README.md` (home), nine task guides (`structures`, `appearance`, `ligands`, `sequences`, `properties`, `scenes-movies`, `editing-analysis`, `saving`, `assistant`), `reference.md`, `troubleshooting.md`; `commands.md` by task with an index of all 350 registered commands; README, Getting started and the overview rewritten; package metadata points at the docs home. 14 pictures of the real window, 3 sheets of rendered pictures, 4 clips of 19 to 31 s (401 to 996 KB) with posters; recipes and capture scripts in `docs/media/`. `license_docs.py` also checks anchors (207 links), the way from the home to every page, and that every command has an entry. Differs from the plan: nine guides were written by five helper sessions from the code, with every printed command run headless, and reviewed here; the window steps were done by Qt mouse events in capture scripts, not by hand; WSLg cannot grab the screen, so menus are laid on the window picture and the clips have 3.7 to 6.7 real pictures per second; two pictures are over 500 KB (530 and 567 KB); no picture of the Builder, a measurement or the two surface types; the Chat picture is the set-up row only; playback on GitHub, Windows, macOS and a reader new to the window are open (order 4). Faults found in the program on the way are listed in the plan and were not repaired. |
+| 39 | 39a — install from a clone | Done 2026-11-27 (4.96.1): `./install` and `install.cmd`; system detection, apt/dnf, existing Pixi fallback, compiler/bootstrap instructions, optional extras, preview, local environments, checks and launch commands. Standalone checks: 11 passed, 1 Windows-only case skipped on Linux. Full suite: 1257 passed, 206 skipped, 17 subtests passed, 1 existing Biopython warning. Real Linux build with JSON and msgpack C++ enabled, pip check and headless/Qt checks passed; Windows cmd preview also ran. Difference from the plan: Windows extras use `--extras "chem,fix,ai"` because cmd splits equals and commas. Clean-machine installations and GUI launch on target systems remain open, order 5. |
+| 32 | One-row footer follow-up | Shipped 2026-11-27 (4.96.0), recorded during the source-install run: mouse mode, Chat, Wizard and Cmd use icons; SEQ keeps text; one row with equal gaps. No new UI measurements in this run. |
+| 11 | Neon palette follow-up | Shipped 2026-11-27 (4.95.0), recorded during the source-install run: twelve neon tones extended to thirty named colors. No new palette measurements in this run. |
+| 21 | 21g — undo of every step, and the removal of the commercial leftovers | Done 2026-11-27 (4.94.0, 4.94.1): [docs/plans/21-commercial-features.md](docs/plans/21-commercial-features.md). `modules/pymol/snapshots.py` keeps one stack of session snapshots and moves of the core's coordinate ring, in the order done; `ExecutiveUndo(0)` reports the ring saves. A step is a parser line (a script is one), a menu row, a command of the list CHANGE outside a step, or the builder's `undocontext`; set/unset count only inside a step, names starting with "_" never. Toolbar Undo/Redo greyed out without a step, tooltip "Undo color". `undo_enable`, `undo_disable`, `UndoPauseCM`, `suspend_undo` working, capability `multi_undo`; startup steps (pymolrc, files) cleared. Found on the way: an alignment set from a session was no selection until the next redraw (fixed in `ExecutiveSetSession`). Measured: a step 3 ms on 1oky (2,475 atoms), 0.14 s on 1aon (59,192); undo on 1aon 0.39 s. 20 steps instead of the 5 of 30f. Against the plan: moves keep the core ring, so a move that came before a step is lost when that step is undone or redone; `set` from Python outside a step and `suspend_undo_atom_count` are not used. 4.94.1 removed `-n`, `IncentiveOnlyException`, `Error::INCENTIVE_ONLY`, a stub that only raised it, the test flags `incentive`, `properties`, `undo`. Checked: the 26 cases of `testing/tests/undo/api` (28 with parameters), `jira/PYMOL-1276.py` and `PYMOL-1697.py` (with `-n --with-undo` before the marks came off, plainly after), four new cases in `snapshots.py`, a script in the real window under WSLg. Suite 1227 passed, 224 skipped. Not done: a real mouse drag, Windows and macOS. |
+| 15 | 15r — glow in ray-traced pictures | Done 2026-11-26 (4.93.0): [docs/plans/15-presets.md](docs/plans/15-presets.md#request-2026-11-26-evening-glow-in-saved-pictures-15q-15r). At the end of `RayRender`, before the oversampled image is shrunk: cover-weighted colors in a grid 176 rows high, the bell curve of `glow.fs` along x and y, laid on the pixels no ray hit with the formula of `fxaa.fs`; built before the outline pass so outline looks keep their colors. Into the alpha on a transparent background. Measured (red tryptophan on black): halo 12.96 % of a ray-traced picture at 1435 x 702 against 13.42 % of the window, within the planned 20 %; 17 ms for 2000 x 1500, 68 ms with antialias 2 (4004 x 3004 inside), on one thread, so the planned threads were left out. Suite 1192 passed. |
+| 15 | 15q — glow, outline and smoothing in pictures of any size | Done 2026-11-26 (4.92.0). `SceneRender` now runs the post-process for a sized picture, which is always one tile of the scene's extent. The halo buffer is 176 rows high at any size (before, a quarter of the picture with taps a fixed 1.5 texels apart made the halo thinner in bigger pictures); a window of another height than 702 px now gets the same share of its height. Measured: halo 13.42 % of the window (1435 x 702), 13.44 % of a png 2870 x 1403, within the planned 10 %; the window's own halo 135,188 pixels against 136,066 before. Not done: the planned message for pictures over the GPU's largest texture (they are clamped to it, never tiled); memory not measured. Suite 1191 passed. |
+| 15 | 15p follow-up — glow in the light menu | Done 2026-11-26 (4.91.0): [docs/plans/15-presets.md](docs/plans/15-presets.md#question-128-a-glow-menu-follow-up). Answer 128 A: Presets > light ends with "no fog"/"fog" and "no glow"/"glow"; the row reads the setting `glow` and calls `preset.glow(on)` (also a tool of the agent, like `depth_fog`). Each row keeps one Undo snapshot, as every leaf of the menu. A scene keeps `glow` like `depth_cue` (`cSceneSettings` in `layer3/MovieScene.cpp`; `scene_style.py` found it through `preset.py`). Checked: Undo, Redo, scene recall, session save and load (headless script); the window test of 4.88.0 now switches the halo through `preset.glow` (passes on the integrated AMD GPU under WSLg). Suite 1191 passed, 254 skipped. As planned, viewport only: no halo in ray-traced pictures, sized images or stereo. Not done: no new picture; not tried by hand in the window or on Windows/macOS. |
+| 38 | 38a to 38d — current documentation and real demos | Done 2026-11-26 at 4.90.0, no version (docs only): [docs/plans/38-documentation.md](docs/plans/38-documentation.md). Answers 126 A (Markdown in the repository) and 127 A (MP4 behind a poster). `docs/README.md` (home), nine task guides (`structures`, `appearance`, `ligands`, `sequences`, `properties`, `scenes-movies`, `editing-analysis`, `saving`, `assistant`), `reference.md`, `troubleshooting.md`; `commands.md` by task with an index of all 350 registered commands; README, Getting started and the overview rewritten; package metadata points at the docs home. 14 pictures of the real window, 3 sheets of rendered pictures, 4 clips of 19 to 31 s (401 to 996 KB) with posters; recipes and capture scripts in `docs/media/`. `license_docs.py` also checks anchors (207 links), the way from the home to every page, and that every command has an entry. Differs from the plan: nine guides were written by five helper sessions from the code, with every printed command run headless, and reviewed here; the window steps were done by Qt mouse events in capture scripts, not by hand; WSLg cannot grab the screen, so menus are laid on the window picture and the clips have 3.7 to 6.7 real pictures per second; two pictures are over 500 KB (530 and 567 KB); no picture of the Builder, a measurement or the two surface types; the Chat picture is the set-up row only; playback on GitHub, Windows, macOS and a reader new to the window are open (order 3). Faults found in the program on the way are listed in the plan and were not repaired. |
 | 33 | The secondary structure only as the drawn track (a request, not a plan slice) | Done 2026-11-26 (4.90.0): [docs/plans/33-sequence-window.md](docs/plans/33-sequence-window.md). In the Sequence alignment window the line of characters above every residue (helix, sheet, coil, unassigned, no coordinates) and its legend are gone; the consensus track at the bottom, drawn since 4.60.0, is the one place that shows secondary structure, and the check box "Secondary structure" switches that track. A row is one line high: measured offscreen with the four chains of 4hhb, 18 px for a sequence row and 35 px for the track (two lines before; that height was not measured). The tooltip of a residue still names its own secondary structure. Against the plan: plan 33 had "graphical symbols on the structure rows" as not done; the request goes the other way and takes the characters out. A residue without coordinates has no mark in the table any more, only its tooltip. Not tried in the real window on WSLg, on Windows or macOS. Suite 1185 passed, 254 skipped. |
-| 1 | 1b — the surface worker | Done 2026-11-26 (4.89.0): [docs/plans/01-performance-gpu.md](docs/plans/01-performance-gpu.md). A surface of 5000 atoms or more that the window asks for is built on a thread of its own (`async_surface`, on); the result is taken on the main thread from the idle loop and from every window frame; every other scene update, sized images and movie frames wait for running builds. Against the plan: The plan named a status line: it is two lines in the log. Measured in the real window on 1aon: the GUI thread blocked 1.2 s at most (4.9 and 5.5 s before); grid surface 0.9 s (1.7 s). 4v6x not run (10 of 17 GB). A crash found by the window test and fixed before the commit: the progress report of the triangulation called Python from the worker thread. Suite 1185 passed, 254 skipped; ASan and UBSan clean on the worker, grid, preset and ball-and-stick tests and on the two window tests. Whether the grid becomes the default is question 129. |
-| 15 | 15p — the glow experiment | Done 2026-11-26 (4.88.0): [docs/plans/15-presets.md](docs/plans/15-presets.md). `set glow, 1`: what is drawn, masked by the depth, blurred at a quarter of the size in three stages (`glow.fs`) and laid on the background in `fxaa.fs`. No menu row, no preset. Against the plan: An experiment, as planned; the shipping scope is question 128. Measured: about 2.5 ms a frame at 1436 x 702 (4hhb spheres 4.2 to 6.7 ms, 1aon spheres 6.0 to 8.5 ms). GPU memory computed from sizes, not measured. Not in ray-traced pictures, sized images or stereo; one driver. Found on the way: the helper that reads the viewport in the window tests returned freed memory. |
+| 1 | 1b — the surface worker | Done 2026-11-26 (4.89.0): [docs/plans/01-performance-gpu.md](docs/plans/01-performance-gpu.md). A surface of 5000 atoms or more that the window asks for is built on a thread of its own (`async_surface`, on); the result is taken on the main thread from the idle loop and from every window frame; every other scene update, sized images and movie frames wait for running builds. Against the plan: The plan named a status line: it is two lines in the log. Measured in the real window on 1aon: the GUI thread blocked 1.2 s at most (4.9 and 5.5 s before); grid surface 0.9 s (1.7 s). 4v6x not run (10 of 17 GB). A crash found by the window test and fixed before the commit: the progress report of the triangulation called Python from the worker thread. Suite 1185 passed, 254 skipped; ASan and UBSan clean on the worker, grid, preset and ball-and-stick tests and on the two window tests. Answer 129 A keeps Solid as the default; the grid stays optional. |
+| 15 | 15p — the glow experiment | Done 2026-11-26 (4.88.0): [docs/plans/15-presets.md](docs/plans/15-presets.md). `set glow, 1`: what is drawn, masked by the depth, blurred at a quarter of the size in three stages (`glow.fs`) and laid on the background in `fxaa.fs`. No menu row, no preset. Against the plan: An experiment, as planned; answer 128 A keeps it viewport-only; its menu entry shipped in 4.91.0. Measured: about 2.5 ms a frame at 1436 x 702 (4hhb spheres 4.2 to 6.7 ms, 1aon spheres 6.0 to 8.5 ms). GPU memory computed from sizes, not measured. Not in ray-traced pictures, sized images or stereo; one driver. Found on the way: the helper that reads the viewport in the window tests returned freed memory. |
 | 15 | 15b — the outline in the viewport | Done 2026-11-26 (4.87.0): [docs/plans/15-presets.md](docs/plans/15-presets.md). With `ray_trace_mode` 1 to 3 the pass that smooths edges draws lines found in the depth; two copies of the depth a frame, so that the cartoon inside a see-through surface has its line; the setting `viewport_outline` (on) and a row in Setting > Rendering. Against the plan: The plan of 2026-11-20 named a pass of its own: it is one more step of the FXAA pass. Measured at 1436 x 702: 2 to 3 ms a frame (1oky spheres 2.8 to 5.7 ms, 1aon spheres 5.2 to 8.2 ms, 1aon cartoon 11.1 to 13.1 ms). Pictures on white and black in `docs/img/viewport-outline.jpg`. Not in stereo or sized images; in grid mode the inner line is right only in the last cell; one driver. |
 | 32 | 32c — larger buttons under the object list | Done 2026-11-26 (4.86.0): [docs/plans/32-footer-icons-movie-button.md](docs/plans/32-footer-icons-movie-button.md). Five buttons with an icon of 20 px and a short text, 32 px high; two rows when one does not fit. Against the plan: As answer 121. Measured in the real window, dark and light theme, 100, 150 and 200 %: one row needs 390 px, two rows 222 px; the footer is 32 or 66 px high; at the default width of 300 px it is two rows and the list is 34 px shorter. Windows and macOS not seen. |
 | 15 | 15o — the Presets menu in groups | Done 2026-11-26 (4.85.0): [docs/plans/15-presets.md](docs/plans/15-presets.md). cartoon, atoms and bonds, surface, binding; transparency and solvent; light, theme and floor under "Scene appearance". Against the plan: As answer 125 A. 69 leaves, each with one Undo snapshot; the set of presets is the one of the flat menu. The toolbar menu was walked with the arrow keys in the real window, three levels deep. The menus the viewport draws itself take no keys, as before. |
@@ -608,7 +676,7 @@ the one from "25b-2" to "17f".
 ## Validation of the original draft, closed rows
 
 As written on 2026-11-08. The steps these rows belong to are finished; the rows
-that still steer open work are in the roadmap.
+that still steer open work are in the [roadmap background](docs/plans/roadmap-background.md#validation-of-the-original-draft).
 
 | Original idea or claim | Verdict and correction |
 | --- | --- |

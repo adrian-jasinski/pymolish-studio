@@ -311,6 +311,8 @@ def get_command_keywords(self_cmd=cmd):
         'unbond'        : [ self_cmd.unbond            , 0 , 0 , ''  , parsing.STRICT ],
         'unpick'        : [ self_cmd.unpick            , 0 , 0 , ''  , parsing.STRICT ],
         'undo'          : [ self_cmd.undo              , 0 , 0 , ''  , parsing.STRICT ],
+        'undo_enable'   : [ self_cmd.undo_enable       , 0 , 0 , ''  , parsing.STRICT ],
+        'undo_disable'  : [ self_cmd.undo_disable      , 0 , 0 , ''  , parsing.STRICT ],
         'ungroup'       : [ self_cmd.ungroup           , 0 , 0 , ''  , parsing.STRICT ],
         'uniquify'      : [ self_cmd.uniquify          , 0 , 0 , ''  , parsing.STRICT ],
         'unmask'        : [ self_cmd.unmask            , 0 , 0 , ''  , parsing.STRICT ],

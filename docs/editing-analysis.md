@@ -500,8 +500,9 @@ the [Reference](reference.md) has a longer table.
 ## Limits and common problems
 
 - **A removed atom is gone.** The clean rows, `remove`, the Builder and the
-  mutagenesis wizard change the object itself. Duplicate it or save a
-  session before; do not count on Undo to bring atoms back.
+  mutagenesis wizard change the object itself. Undo brings the atoms
+  back (up to 20 steps, 600,000 atoms); for more, duplicate the object or
+  save a session before.
 - **`fix_structure` and `minimize` never change the original.** They make
   a new object, with default colors. Delete it if you do not like it.
 - **"More than one atom found"** from `get_angle` or `get_dihedral`: a

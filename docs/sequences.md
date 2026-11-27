@@ -286,11 +286,9 @@ one object that has started is finished first; the objects after it are not
 fitted. What was already moved stays moved.
 
 **Undo** brings back the session as it was before the last **Fit
-structures** or **Assign SS**. It restores the whole session, so it also
-takes back everything you did after that step: colors, new objects, views.
-A preset chosen after the fit is a step of its own: the first Undo then
-goes back to before that preset. Edit > Undo and the command `undo` do the
-same. Opening a session clears the kept steps. Aligning sequences changes
+structures** or **Assign SS**. What you did after it (a preset, a color,
+a new object) is a step of its own and is undone first. Edit > Undo and
+the command `undo` do the same. Opening a session clears the kept steps. Aligning sequences changes
 no structure and is not a step of Undo.
 
 ## Export the alignment and the identities

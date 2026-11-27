@@ -98,9 +98,9 @@ picture, `ray=1`.
 | `img/appearance-floor.jpg` | Appearance | 1280 x 480, 111 KB |
 
 Older pictures that are still used: `img/viewport-outline.jpg` (viewport
-pictures of version 4.87.0, in Appearance) and the ten palette strips
+pictures of version 4.87.0, in Appearance) and the eleven palette strips
 `img/palette-*.png`; the colors of the strips were compared with the
-palettes of 4.90.0 and are the same.
+palettes of 4.90.0 and are the same (`palette-neon.png` came with 4.95.0).
 
 ## Clips
 

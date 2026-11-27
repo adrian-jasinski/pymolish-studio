@@ -38,7 +38,7 @@ Decorators
 
 *   `@testing.requires(keyword)`: Takes one or more keywords and skips the
     test, if the requirement is not met. Valid keywords include: gui,
-    incentive, network, `no_run_all`, multicore. For every test of a file:
+    network, `no_run_all`, multicore, `multi_undo`. For every test of a file:
     `pytestmark = testing.requires(keyword)`.
 *   `@pytest.mark.parametrize("a,b", [(1, 2), (3, 4)])`: runs a test once
     per set of arguments.

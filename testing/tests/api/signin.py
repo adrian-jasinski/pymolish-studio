@@ -372,7 +372,7 @@ if sys.argv[2:] == ["auth", "status", "--json"]:
     print(json.dumps({"loggedIn": os.path.exists(state), "email": "a@example.org",
                       "subscriptionType": "max"}))
     sys.exit(0 if os.path.exists(state) else 1)
-assert sys.argv[2:] == ["auth", "login"] and not sys.stdin.isatty()
+assert sys.argv[2:] == ["auth", "login"] and sys.stdin.read() == ""
 print("If the browser did not open, visit: https://claude.ai/oauth/authorize?x=1", flush=True)
 if os.path.exists(state + ".slow"):
     time.sleep(60)

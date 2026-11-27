@@ -177,62 +177,27 @@ _row_click = _RowClick()
 
 
 class Footer(QtWidgets.QWidget):
-    """The buttons under the object list, each as wide as its content, in
-    one row. In a panel too narrow for that the buttons after the second
-    go into a second row; the panel can be as narrow as the wider row."""
+    """The buttons under the object list in one row, spread evenly over
+    its whole width: equal gaps, the first at the left edge, the last at
+    the right."""
 
     ICON = 20  # logical pixels, as in the action toolbar
     HEIGHT = 32
 
     def __init__(self):
         super().__init__()
-        box = QtWidgets.QVBoxLayout(self)
-        box.setContentsMargins(0, 0, 0, 0)
-        box.setSpacing(2)
-        self.rows = [QtWidgets.QHBoxLayout(), QtWidgets.QHBoxLayout()]
-        for row in self.rows:
-            row.setSpacing(2)
-            row.setAlignment(Qt.AlignmentFlag.AlignLeft)
-            box.addLayout(row)
+        self.row = QtWidgets.QHBoxLayout(self)
+        self.row.setContentsMargins(0, 0, 0, 0)
+        self.row.setSpacing(2)
         self.buttons = []
-        self.two_rows = None
 
     def addWidget(self, button):
         button.setIconSize(QtCore.QSize(self.ICON, self.ICON))
         button.setMinimumHeight(self.HEIGHT)
+        if self.buttons:
+            self.row.addStretch()
         self.buttons.append(button)
-        self.arrange(force=True)
-
-    def _width(self, buttons):
-        hints = [button.sizeHint().width() for button in buttons]
-        return sum(hints) + self.rows[0].spacing() * max(len(hints) - 1, 0)
-
-    def arrange(self, force=False):
-        two_rows = self._width(self.buttons) > self.width()
-        if two_rows == self.two_rows and not force:
-            return
-        self.two_rows = two_rows
-        for i, button in enumerate(self.buttons):
-            for row in self.rows:
-                row.removeWidget(button)
-            self.rows[two_rows and i >= 2].addWidget(button)
-        self.updateGeometry()
-
-    def minimumSizeHint(self):
-        # of two rows, whatever is shown: else one row could never be left
-        size = super().minimumSizeHint()
-        width = max(self._width(self.buttons[:2]), self._width(self.buttons[2:]))
-        return QtCore.QSize(min(size.width(), width), size.height())
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self.arrange()
-
-    def event(self, event):
-        # a button changed its size: another mouse mode, another UI scale
-        if event.type() == QtCore.QEvent.Type.LayoutRequest:
-            self.arrange()
-        return super().event(event)
+        self.row.addWidget(button)
 
 
 def fill_menu(menu, entries, cmd):

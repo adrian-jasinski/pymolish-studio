@@ -514,11 +514,15 @@ SEE ALSO
         '''
 DESCRIPTION
 
-    "undo" takes back the last row picked from the preset menu: colors,
-    representations, settings, light, background and view are as they
-    were before it, and so is everything done since. Without such a row
-    it restores the previous conformation of the object currently being
-    edited.
+    "undo" takes back the last step: a line of the command line or of a
+    script, a menu row, a command that adds, removes or edits (load,
+    create, delete, remove, color, show, select, alter, fit, clean ...),
+    or a move of atoms with the mouse or a tool. Objects, colors,
+    representations, settings and the view are as they were before it.
+
+    Up to 20 steps are kept while the setting suspend_undo is off; a
+    scene of more than 600,000 atoms keeps none. Opening a session file
+    and "reinitialize" start again with no step.
 
 USAGE
 
@@ -526,20 +530,12 @@ USAGE
 
 SEE ALSO
 
-    redo, push_undo
+    redo, undo_enable, undo_disable, push_undo
     '''
         from . import snapshots
-        if snapshots.step(True, _self=_self):
-            print(" Undo: back to before the last preset.")
-            return
-        r = DEFAULT_ERROR
-        try:
-            _self.lock(_self)
-            r = _cmd.undo(_self._COb,-1)
-        finally:
-            _self.unlock(r,_self)
-        if _self._raising(r,_self): raise pymol.CmdException
-        return r
+        label = snapshots.step(True, _self=_self)
+        if label:
+            print(" Undo: %s" % label)
 
     def push_undo(selection, just_coordinates=1, finish_undo=0, add_objects=0, delete_objects=0, state=0, _self=cmd):
         '''
@@ -574,8 +570,8 @@ SEE ALSO
         '''
 DESCRIPTION
 
-    "redo" takes back the last "undo": of a row of the preset menu, or
-    else of a conformational change of the object currently being edited.
+    "redo" takes back the last "undo". A new step forgets what could be
+    redone.
 
 USAGE
 
@@ -583,20 +579,51 @@ USAGE
 
 SEE ALSO
 
-    undo, push_undo
+    undo
     '''
         from . import snapshots
-        if snapshots.step(False, _self=_self):
-            print(" Redo: back to before the last undo.")
-            return
-        r = DEFAULT_ERROR
-        try:
-            _self.lock(_self)
-            r = _cmd.undo(_self._COb,1)
-        finally:
-            _self.unlock(r,_self)
-        if _self._raising(r,_self): raise pymol.CmdException
-        return r
+        label = snapshots.step(False, _self=_self)
+        if label:
+            print(" Redo: %s" % label)
+
+    def undo_enable(_self=cmd):
+        '''
+DESCRIPTION
+
+    "undo_enable" keeps a step of undo before every change again (the
+    setting suspend_undo off, the default).
+
+SEE ALSO
+
+    undo, undo_disable
+    '''
+        _self.set('suspend_undo', 0, quiet=1)
+
+    def undo_disable(_self=cmd):
+        '''
+DESCRIPTION
+
+    "undo_disable" stops keeping steps of undo (the setting suspend_undo
+    on): faster for long scripts on large structures. Moves of atoms with
+    the mouse can still be undone.
+
+SEE ALSO
+
+    undo, undo_enable
+    '''
+        _self.set('suspend_undo', 1, quiet=1)
+
+    def UndoPauseCM(_self=cmd):
+        '''
+DESCRIPTION
+
+    API only. A context manager: what runs inside keeps no step of undo.
+
+    with cmd.UndoPauseCM():
+        ...
+    '''
+        from . import snapshots
+        return snapshots.paused()
 
     order_dict = {
     # simulation

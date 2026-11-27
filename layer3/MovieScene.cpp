@@ -178,6 +178,7 @@ static const int cSceneSettings[] = {
     cSetting_light4, cSetting_light5, cSetting_light6, cSetting_light7,
     cSetting_light8, cSetting_light9, cSetting_two_sided_lighting,
     cSetting_ambient_occlusion_mode, cSetting_ambient_occlusion_scale,
+    cSetting_glow,
     // themes and stage: background and fog
     cSetting_bg_rgb, cSetting_bg_rgb_top, cSetting_bg_rgb_bottom,
     cSetting_bg_gradient, cSetting_fog, cSetting_fog_start,

@@ -1,5 +1,20 @@
 # 15 — Presets and looks
 
+**Planned 2026-11-26 at 4.91.0: glow in saved pictures, [15q and 15r](#request-2026-11-26-evening-glow-in-saved-pictures-15q-15r).** A request after 4.91.0; question 139 is open. Step 15 is open again. Nothing built or versioned; the halo counts below that section's table were measured at 4.91.0.
+
+**Built 2026-11-26, 4.91.0: the glow menu (answer 128 A).** Presets >
+light ends with "no fog"/"fog" and "no glow"/"glow"; the row calls
+`preset.glow(on)` and keeps one Undo snapshot; scenes keep `glow` like
+`depth_cue`. Checked headless: Undo, Redo, scene recall, session save and
+load; in the window, the 4.88.0 halo test through `preset.glow` (integrated
+AMD GPU, WSLg). Nothing new measured: no frame times, no picture. Left
+out, as decided then: ray-traced pictures, sized images, stereo (now
+planned as 15q and 15r).
+
+**Decision 2026-11-26, question 128: A, recommended.** Keep the glow
+setting and add "glow" / "no glow" to the light menu, for the viewport
+only. The measurements below are from the 4.88.0 experiment.
+
 **Built 2026-11-26, 4.83.0 to 4.88.0: 15m, 15n, 15o, 15b and 15p.** The
 section "Request 2026-11-26" below is the plan as it was written that
 morning; questions 123 to 125 were answered with their recommended options.
@@ -10,7 +25,7 @@ morning; questions 123 to 125 were answered with their recommended options.
 | 15n (with [34d](34-ball-and-stick.md)) | 4.84.0 | Presets > transparency: cartoon, spheres, surface, ball and stick; opaque, 25, 50, 75 %; whole objects. | A row clears the value on the atoms of the object and sets it on the object; a preset now unsets all four on its objects. |
 | 15o | 4.85.0 | The groups cartoon, atoms and bonds, surface, binding; transparency, solvent; "Scene appearance" with light, theme (colors and background) and floor. | 69 leaves, one Undo snapshot each. Arrow keys tried in the toolbar menu, three levels. Labels stay in small letters. |
 | 15b | 4.87.0 | The outline in the viewport: `fxaa.fs` draws a line where the picture lies behind its neighbors, from two copies of the depth; follows `ray_trace_mode`, switch `viewport_outline`. | [viewport-outline.jpg](../img/viewport-outline.jpg). At 1436 x 702 on the integrated GPU (Mesa d3d12): 1oky spheres 2.8 to 5.7 ms a frame, 1aon spheres 5.2 to 8.2 ms, 1aon cartoon 11.1 to 13.1 ms. Not in stereo or in images of another size; grid mode: the line inside a see-through surface only in the last cell; no other driver tried. |
-| 15p | 4.88.0 | `set glow, 1`: a halo around what is drawn (`glow.fs`, composed in `fxaa.fs`). A setting only. | [glow-experiment.jpg](../img/glow-experiment.jpg), with the bright-edge baseline (spring under "x-ray"). 4hhb spheres 4.2 to 6.7 ms a frame, 1aon spheres 6.0 to 8.5 ms, 1aon cartoon 4.6 to 9.1 ms. Memory computed, not measured: 8.1 MB for the picture offscreen, 8.1 MB for two copies of its depth, 1.0 MB for the halo. No halo in ray-traced pictures, in images of another size, in stereo. The background is no source of the glow (the mask is the depth); labels are no source but are covered by it. **What to ship is question 128 in [PLAN.md](../../PLAN.md).** |
+| 15p | 4.88.0 | `set glow, 1`: a halo around what is drawn (`glow.fs`, composed in `fxaa.fs`). A setting only. | [glow-experiment.jpg](../img/glow-experiment.jpg), with the bright-edge baseline (spring under "x-ray"). 4hhb spheres 4.2 to 6.7 ms a frame, 1aon spheres 6.0 to 8.5 ms, 1aon cartoon 4.6 to 9.1 ms. Memory computed, not measured: 8.1 MB for the picture offscreen, 8.1 MB for two copies of its depth, 1.0 MB for the halo. No halo in ray-traced pictures, in images of another size, in stereo. The background is no source of the glow (the mask is the depth); labels are no source but are covered by it. **Answer 128 A keeps this scope and adds a menu entry; the [follow-up](#question-128-a-glow-menu-follow-up) shipped in 4.91.0.** |
 
 Not as planned: the labels were not capitalized; "illustrated atoms" got no
 recipe values of its own (it is space filling plus an existing light); the
@@ -196,6 +211,21 @@ off by default, survives scene/session/Undo, and preset switching clears
 only effects selected by the preset. Background state stays unchanged;
 an intentional halo may cover pixels around the molecule.
 
+### Question 128 A: glow menu follow-up
+
+Approved 2026-11-26; built in 4.91.0. Add one toggling row to
+Presets > light, beside fog: "glow" when off, "no glow" when on. Reuse
+the existing `glow` setting and the light menu's snapshot/Undo path in
+`modules/pymol/menu.py` and `modules/pymol/preset.py`; no new renderer,
+setting or dependency. It stays off by default and affects the viewport
+only. Ray-traced pictures, differently sized images and stereo remain
+outside this follow-up.
+
+Check both labels and actions, keyboard access, Undo/Redo, scene/session
+round trips and a real viewport toggle. Update the appearance guide to
+make the viewport-only scope clear. The menu is a visible feature slice
+and takes a new `X` version when implemented, not in this planning edit.
+
 ### Delivery and acceptance
 
 | Slice | Deliverable | Required check |
@@ -216,6 +246,104 @@ Skipped: a gallery/editor, palettes per image, copied artwork or watermark
 removal, synthetic molecular arrangements, physical material/refraction
 frameworks, and background changes hidden inside recipes. Glow remains a
 planned experiment, not a skipped request.
+
+## Request 2026-11-26, evening: glow in saved pictures (15q, 15r)
+
+**Built 2026-11-26, after answer 139 A: 15q in 4.92.0, 15r in 4.93.0.**
+Measured (red tryptophan on black, glow 1, halo = pixels dark in the
+glow-0 picture and lit in the glow-1 picture, a count other than the one
+in the table below): halo 13.42 % of the window at 1435 x 702, 13.44 % of
+a `png` 2870 x 1403, 12.96 % of a ray-traced picture of the window size.
+The halo buffer became 176 rows high at any size: before, the sized row
+reached only half its share. 15r costs 17 ms for 2000 x 1500 and 68 ms
+with antialias 2, on one thread. Left out: threads for 15r, the message
+for pictures over the largest texture (they are clamped, never tiled),
+a memory measurement, stereo, Windows and macOS.
+
+The user asked, after 4.91.0, to plan the glow for saved pictures as well
+("plan to add this"). This reverses the scope of answer 128 A for pictures;
+the viewport row of 4.91.0 stays as it is. Planning only: no code, no
+version. **Question 139** decides which of the two slices are built.
+
+What was measured at 4.91.0 (red tryptophan, black background, glow 1,
+integrated AMD GPU under WSLg; halo pixels counted in the saved PNG):
+
+| Saved with | Size | Halo pixels |
+| --- | --- | --- |
+| `png`, no ray, glow 0 | the window, 1435 x 702 | 0 |
+| `png`, no ray, glow 1 | the window | 15871 |
+| `png`, no ray, 2000 x 1500, glow 1 | another size | 0 |
+| `png`, `ray=1`, glow 1 | the window | 0 |
+
+Why, from the code:
+
+- **Another size** (Draw (fast), `png` with a width or height, `draw`):
+  `SceneMakeSizedImage` (`layer1/Scene.cpp`) renders with a
+  `viewportOverride`, and `SceneRender` skips the post-process texture
+  whenever there is one (`render_to_texture_for_pp` in
+  `layer1/SceneRender.cpp`). So `SceneRenderAA` never runs: no glow, no
+  viewport outline (15b), no FXAA in these pictures.
+- **Ray tracing**: `RayRender` (`layer1/Ray.cpp`) makes its own picture
+  on the CPU; the shaders never see it. It already keeps a depth per pixel
+  when `ray_trace_mode` is on or for oversampling, the same kind of mask
+  that `glow.fs` uses.
+
+### 15q — glow in pictures of any size, without ray tracing
+
+Run the post-process stack for a sized image too: draw the tile into an
+offscreen texture of the image size, then `SceneRenderAA` into the
+offscreen framebuffer that `SceneMakeSizedImage` reads. The glow buffers
+(`glow_rt`) and the depth copies take the size of the image instead of the
+window. The reach of the halo is a share of the picture's size, so a
+2000 x 1500 picture looks like the window, only sharper.
+
+- Comes with it, by the same fix: the viewport outline of a look (15b) and
+  FXAA smoothing in Draw (fast) pictures, which today differ from the
+  window. That changes Draw (fast) output for looks with an outline; it is
+  the picture the window shows, so no setting for the old one.
+- Limits kept: stereo; pictures larger than the GPU's largest texture stay
+  tiled and get no post-process (`SceneGLGetMaxDimensions`), with a
+  message once.
+- Memory, computed, not measured: a 4000 x 3000 picture needs about 48 MB
+  for the picture offscreen, 96 MB for two depth copies (float), 3 MB for
+  the halo, while the picture is made.
+- Check: the table above with the sized row non-zero and the halo share of
+  the picture within 10 % of the window's; Draw (fast) from the panel; the
+  outline row of 15b in a sized picture; `antialias` 0 and 2 (the
+  oversampled image is post-processed before it is shrunk); the suite and
+  `viewport_outline.py`.
+
+### 15r — glow in ray-traced pictures
+
+A step at the end of `RayRender`, on the CPU: keep the depth buffer when
+`glow` is above 0; build the cover (1 where a ray hit something) and the
+color times the cover at a quarter of the size; blur along x and then y
+with the 13-point bell curve of `glow.fs`; lay it over the background
+pixels only, with the same formula as `fxaa.fs`. Threads as the rest of
+`RayRender`. Transparent background (`opaque_background` 0): the halo goes
+into the alpha too, so it shows on a slide.
+
+- No new dependency, no new setting: `glow` switches both.
+- Cost, an estimate: under 50 ms for a 2000 x 1500 picture, small against
+  the seconds of the trace. Measured in the slice.
+- Limits kept: what POV-Ray, glTF and the other exports write has no halo
+  (they are no pictures). Labels are covered, as in the viewport.
+- Check: a ray-traced PNG with and without glow, opaque and transparent
+  background; the halo share of a ray picture against the Draw (fast)
+  picture of the same view within 20 %; the ray tests in the suite pass
+  unchanged with glow 0 (byte for byte where they compare pictures).
+
+### Question 139: which pictures get the glow
+
+| Option | What | Versions |
+| --- | --- | --- |
+| **A, recommended** | Both: 15q first, then 15r. Every saved picture matches the window. | Two `X` steps. |
+| B | 15q only: Draw (fast) and `png` without ray, any size. Ray-traced pictures keep no halo. | One `X` step. |
+| C | 15r only: ray-traced pictures. Draw (fast) pictures of another size keep no halo (and no outline). | One `X` step. |
+
+A is recommended because 15q also repairs the outline and smoothing of
+Draw (fast) pictures, and 15r makes the glow a choice for figures, which
+are mostly ray traced.
 
 ## Earlier releases and decisions
 

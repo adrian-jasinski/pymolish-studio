@@ -350,7 +350,6 @@ PyObject *P_models = nullptr;      /* okay as global */
 PyObject *P_setting = nullptr;     /* okay as global -- just used for names */
 PyObject *P_CmdException = nullptr;
 PyObject *P_QuietException = nullptr;
-PyObject *P_IncentiveOnlyException = nullptr;
 
 static PyMappingMethods wrapperMappingMethods, settingMappingMethods;
 static PyTypeObject Wrapper_Type = {
@@ -1771,8 +1770,6 @@ void PConvertOptions(CPyMOLOptions * rec, PyObject * options)
   rec->keep_thread_alive =
     PyInt_AsLong(PyObject_GetAttrString(options, "keep_thread_alive"));
   rec->quiet = PyInt_AsLong(PyObject_GetAttrString(options, "quiet"));
-  rec->incentive_product =
-    PyInt_AsLong(PyObject_GetAttrString(options, "incentive_product"));
   rec->multisample = PyInt_AsLong(PyObject_GetAttrString(options, "multisample"));
   rec->window_visible = PyInt_AsLong(PyObject_GetAttrString(options, "window_visible"));
   rec->read_stdin = PyInt_AsLong(PyObject_GetAttrString(options, "read_stdin"));
@@ -1986,7 +1983,6 @@ void PInit(PyMOLGlobals * G, int global_instance)
     P_models = PImportModuleOrFatal("chempy.models");
     P_CmdException = PGetAttrOrFatal(P_pymol, "CmdException");
     P_QuietException = PGetAttrOrFatal(P_cmd, "QuietException");
-    P_IncentiveOnlyException = PGetAttrOrFatal(P_pymol, "IncentiveOnlyException");
 
     /* backwards compatibility */
 

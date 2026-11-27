@@ -329,7 +329,7 @@ say(type="result", is_error=False, result="Done.", session_id="s-1",
 def claude_code(chat, monkeypatch, tmp_path):
     """A conversation through the stand-in; .mode chooses what it does."""
     log, script = tmp_path / "log", tmp_path / "claude.py"
-    script.write_text(CLAUDE)
+    script.write_text(CLAUDE, encoding="utf-8")
     monkeypatch.setattr(
         signin, "claude", lambda: [sys.executable, str(script), str(log)]
     )

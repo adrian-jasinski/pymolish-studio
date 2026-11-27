@@ -17,8 +17,10 @@ progress bar (the status is two lines in the log), stopping a build nobody
 waits for, meshes and cartoons. Found by the window test and fixed before
 the commit: the progress report of the triangulation called Python from
 the worker thread. ASan and UBSan clean, headless and in the real window.
-Whether "Solid (grid)" becomes the default is question 129 in
-[PLAN.md](../../PLAN.md).
+**Question 129 answered 2026-11-26: A, recommended.** "Solid" stays the
+default after the worker; "Solid (grid)" remains optional. No code or
+version change follows from this decision; the timings above are the
+measurements from 4.89.0. See [the decision](../../PLAN-DONE.md#decisions-128-and-129).
 
 [Roadmap](../../PLAN.md) · 1a done, 1b in progress; timings are in the Status sections and the ChangeLog; comparison with upstream PyMOL 3 in [docs/benchmark.md](../benchmark.md)
 
@@ -74,8 +76,8 @@ Two distance grids and two runs of the marching cubes that were already
 in the code; every step is a loop over grid planes, one plane a thread.
 
 **Decision 2026-11-25, question 105: A, recommended.** Keep it as an
-optional surface beside today's default. Reconsider the default after
-the surface worker (order 4).
+optional surface beside today's default. Reconsidered after the worker
+(4.89.0): answer 129 A on 2026-11-26 keeps Solid as the default.
 
 **Built 2026-11-25 in 4.81.0 (25b-3):** the row "Solid (grid)" in
 Setting > Surface, and in `SurfaceJobRunGrid` the settings the experiment
@@ -224,7 +226,7 @@ at two smoothness values next to its times.
 | --- | --- | --- |
 | A large surface freezes the window | **A, build it on a worker thread.** | The next large item of 1b. `SurfaceJob` leaves the GUI thread; the status line says "building surface"; the surface appears when it is ready. To settle while building: what happens when the atoms change during a job (drop the result and start again), and the headless path, which must still wait. Checks: 1aon and 4v6x in the real window, the suite, the sanitizer job. |
 | Idle OpenMP threads (row 4 above) | **Yes.** | `OMP_WAIT_POLICY=passive` at start, before the core loads, unless the user set the variable or `GOMP_SPINCOUNT`. One line next to the place that picks the GPU on WSL. Numbers again after the change. **Done 2026-11-20 in 4.23.1**, in `pymol/__init__.py` just before the core is imported (the GUI start is too late, and a headless run gains too). 1aon, three surface builds, three interleaved runs each: CPU 99, 101 and 93 s with the old spinning (`GOMP_SPINCOUNT=300000`, what libgomp does when nothing is set), 65, 66 and 68 s with the policy; wall time per build 5.1 to 6.1 s in both. The ray tracer has no OpenMP loop and is not touched; its times drifted from 4 to 16 s in both settings as the laptop heated up during the runs, so they are not reported. Not the same thing: `OMP_WAIT_POLICY=active` spins without end and made the builds 3 to 5 times slower here. |
-| Grid surface (row 3 above) | **Yes, as an experiment; kept as an option by answer 105 A on 2026-11-25.** | Built in 4.76.0 as `surface_type 7`, with measurements and pictures above. Today's default stays; the menu row and the cavity and solvent settings shipped in 4.81.0, clay and two more looks on it in 4.82.0. Reconsider the default after the worker, order 4. Written from the description of the method, not from EDTSurf's code. |
+| Grid surface (row 3 above) | **Yes, as an experiment; kept as an option by answer 105 A on 2026-11-25.** | Built in 4.76.0 as `surface_type 7`, with measurements and pictures above. Today's default stays; the menu row and the cavity and solvent settings shipped in 4.81.0, clay and two more looks on it in 4.82.0. Answer 129 A, after the worker in 4.89.0, keeps Solid as the default. Written from the description of the method, not from EDTSurf's code. |
 
 Order: the one-line change first, the worker thread next, the experiment
 last. With a worker thread the build time matters less; the experiment

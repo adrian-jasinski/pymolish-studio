@@ -119,6 +119,16 @@ PALETTES = {
         " 8413d1 7a0105 b764b6 297513 1790db a51a85 20ce9f 6a0e5b fc86ad 00378b"
         " 7e9503 876df7 b90522 cb95f9 ca6c12 5554b4 c1b52b dc2ec0",
     ),
+    # The usual web values of neon sign colors: green, pink, cyan, yellow,
+    # orange, purple, blue, red, lime, hot pink, mint and fuchsia
+    "neon": (
+        "dark",
+        "39ff14 ff10f0 00ffff ffff33 ff5f1f bc13fe 1f51ff ff073a ccff00 ff69b4"
+        " 00ff9f fe4164"
+        # added, see above
+        " 8fff40 7d26ff ffd900 5940ff 40ffcf ff00aa 40d6ff ff007b 0dc2ff ff40cf"
+        " ffb640 4069ff ff8c00 9c40ff 40acff d940ff 0084ff 4096ff",
+    ),
 }
 PALETTES = {name: (bg, colors.split()) for name, (bg, colors) in PALETTES.items()}
 BUILTIN = tuple(PALETTES)  # define() adds the palettes of the user
@@ -201,7 +211,7 @@ def palette(name="", recolor=0, quiet=1, *, _self=cmd):
     ARGUMENTS
 
         name = default, vivid, deep, pastel, soft, colorblind, nord, dracula,
-        catppuccin, chimerax or halo. "default" is the PyMOL order (green, cyan,
+        catppuccin, chimerax, halo or neon. "default" is the PyMOL order (green, cyan,
         light magenta, ...).
 
         recolor = 0/1: also color the carbons of the loaded objects, from the

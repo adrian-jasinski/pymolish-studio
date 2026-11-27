@@ -5494,6 +5494,109 @@ float *rayDepthPixels = nullptr;
 int rayVolume = 0, rayWidth = 0, rayHeight = 0;
 
 /*========================================================================*/
+/**
+ * The halo of "glow" in a ray-traced picture (15r), as glow.fs and fxaa.fs
+ * make it in the window: the colors of what a ray hit, blurred in a grid
+ * 176 rows high, laid on the pixels where no ray hit anything.
+ */
+struct RayHalo {
+  int width = 0, height = 0; // of the grid
+  std::vector<float> rgba;   // color times cover, and the cover
+  std::vector<unsigned char> hit; // per pixel of the picture
+};
+
+// before the outline of ray_trace_mode changes colors and depths
+static RayHalo RayHaloMake(const unsigned int* image, const float* depth,
+    int width, int height)
+{
+  RayHalo h;
+  h.height = 176;
+  h.width = std::max(2, int(width * 176.f / height + .5f));
+  h.rgba.assign(4 * h.width * h.height, 0.f);
+  h.hit.resize(width * height);
+  std::vector<int> count(h.width * h.height), column(width);
+  for (int x = 0; x < width; ++x)
+    column[x] = x * h.width / width;
+  auto bytes = reinterpret_cast<const unsigned char*>(image); // RGBA
+  for (int y = 0; y < height; ++y) {
+    int row = y * h.height / height * h.width;
+    for (int x = 0; x < width; ++x) {
+      int i = y * width + x, cell = row + column[x];
+      ++count[cell];
+      if (!(h.hit[i] = fabs(depth[i]) > R_SMALL4))
+        continue;
+      for (int c = 0; c < 3; ++c)
+        h.rgba[4 * cell + c] += bytes[4 * i + c];
+      h.rgba[4 * cell + 3] += 255.f;
+    }
+  }
+  for (int cell = 0; cell < h.width * h.height; ++cell)
+    for (int c = 0; c < 4; ++c)
+      h.rgba[4 * cell + c] /= std::max(count[cell], 1);
+  // the bell curve of glow.fs, 13 points 1.5 apart: along x, then y
+  float weight[19], total = 0.f;
+  for (int d = -9; d <= 9; ++d)
+    total += weight[d + 9] = expf(-d * d / 40.5f);
+  std::vector<float> from(h.rgba.size());
+  for (int pass = 0; pass < 2; ++pass) {
+    from.swap(h.rgba);
+    for (int y = 0; y < h.height; ++y)
+      for (int x = 0; x < h.width; ++x)
+        for (int c = 0; c < 4; ++c) {
+          float sum = 0.f;
+          for (int d = -9; d <= 9; ++d) {
+            int u = pass ? x : std::clamp(x + d, 0, h.width - 1);
+            int v = pass ? std::clamp(y + d, 0, h.height - 1) : y;
+            sum += weight[d + 9] * from[4 * (v * h.width + u) + c];
+          }
+          h.rgba[4 * (y * h.width + x) + c] = sum / total;
+        }
+  }
+  return h;
+}
+
+// on the background, with the formula of fxaa.fs; into the alpha too
+static void RayHaloLay(const RayHalo& h, unsigned int* image, int width,
+    int height, float glow)
+{
+  auto bytes = reinterpret_cast<unsigned char*>(image); // RGBA
+  std::vector<float> line(4 * h.width); // the grid at this row, by y
+  std::vector<int> x0(width);
+  std::vector<float> fx(width);
+  for (int x = 0; x < width; ++x) {
+    float f = std::clamp((x + .5f) * h.width / width - .5f, 0.f,
+        h.width - 1.f);
+    x0[x] = std::min(int(f), h.width - 2);
+    fx[x] = f - x0[x];
+  }
+  for (int y = 0; y < height; ++y) {
+    float f = std::clamp((y + .5f) * h.height / height - .5f, 0.f,
+        h.height - 1.f);
+    int y0 = std::min(int(f), h.height - 2);
+    const float *a = &h.rgba[4 * y0 * h.width], *b = a + 4 * h.width;
+    for (int i = 0; i < 4 * h.width; ++i)
+      line[i] = a[i] + (f - y0) * (b[i] - a[i]);
+    for (int x = 0; x < width; ++x) {
+      if (h.hit[y * width + x])
+        continue;
+      const float *l = &line[4 * x0[x]], *r = l + 4;
+      float halo[4];
+      halo[3] = l[3] + fx[x] * (r[3] - l[3]);
+      float much = glow * std::min(1.f, 2.f * halo[3] / 255.f);
+      if (much <= 0.f)
+        continue;
+      for (int c = 0; c < 3; ++c)
+        halo[c] = l[c] + fx[x] * (r[c] - l[c]);
+      unsigned char* p = bytes + 4 * (y * width + x);
+      for (int c = 0; c < 3; ++c) {
+        float color = 255.f * halo[c] / std::max(halo[3], 1.f);
+        p[c] = (unsigned char) (p[c] + (color - p[c]) * much + .5f);
+      }
+      p[3] = std::max<int>(p[3], int(255.f * much + .5f));
+    }
+  }
+}
+
 void RayRender(CRay * I, unsigned int *image, double timing,
                float angle, int antialias, unsigned int *return_bg)
 {
@@ -5594,9 +5697,8 @@ void RayRender(CRay * I, unsigned int *image, double timing,
   } else {
     buffer_size = width * height;
   }
-  if(ray_trace_mode) {
-    depth = pymol::calloc<float>(width * height);
-  } else if(oversample_cutoff) {
+  float glow = std::clamp(SettingGetGlobal_f(I->G, cSetting_glow), 0.f, 1.f);
+  if (ray_trace_mode || oversample_cutoff || glow > 0.f) {
     depth = pymol::calloc<float>(width * height);
   }
   ambient = SettingGetGlobal_f(I->G, cSetting_ambient);
@@ -6095,6 +6197,11 @@ void RayRender(CRay * I, unsigned int *image, double timing,
     }
   }
 
+  RayHalo halo;
+  if (ok && glow > 0.f) {
+    halo = RayHaloMake(image, depth, width, height);
+  }
+
   if(ok && depth && ray_trace_mode) {
     std::vector<float> delta(3 * width * height);
     int x, y;
@@ -6453,6 +6560,10 @@ void RayRender(CRay * I, unsigned int *image, double timing,
         }
       }
     }
+  }
+
+  if (ok && glow > 0.f) {
+    RayHaloLay(halo, image, width, height, glow);
   }
 
   if(ok && antialias > 1) {

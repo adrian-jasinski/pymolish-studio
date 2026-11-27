@@ -2,6 +2,134 @@
 CHANGE LOG
 =========================================================================
 
+2026-11-27 pymolish-studio
+
+	* 4.96.1
+
+	* Easier source installation after cloning
+	  - ./install on Linux/macOS; install.cmd on Windows. Detects the
+	    system, offers missing dependencies and optional Python extras,
+	    installs in a local environment, checks the result and prints
+	    the launch command. --dry-run previews without changes.
+	  - apt on Debian/Ubuntu, dnf on Fedora; the existing Pixi setup on
+	    Windows x64, Apple silicon and Linux x64 without suitable Python.
+	    Compiler setup that needs user interaction stops with rerun
+	    instructions. No global pip installation or new runtime dependency.
+
+2026-11-27 pymolish-studio
+
+	* 4.96.0
+
+	* Buttons under the object list in one row
+	  - The mouse mode, Chat, Wizard and Cmd buttons show only their
+	    icon (the tooltip and the screen reader still name them); SEQ
+	    keeps its text. The five buttons are spread over the whole
+	    width of the panel with equal gaps, in every panel width; the
+	    second row of narrow panels is gone.
+
+2026-11-27 pymolish-studio
+
+	* 4.95.0
+
+	* Palette neon
+	  - A palette for a dark background: twelve neon sign colors
+	    (green, pink, cyan, yellow, orange, purple, blue, red, lime,
+	    hot pink, mint, fuchsia), filled up to 30 with colors of the
+	    same tone. In the Palette button and as "palette neon"; the
+	    colors are named neon_01 to neon_30.
+
+2026-11-27 pymolish-studio
+
+	* 4.94.1
+
+	* Removed: what only stood for the commercial PyMOL (21g)
+	  - The option -n (incentive_product), the exception
+	    pymol.IncentiveOnlyException and its error code, the stub
+	    get_m2io_first_block_properties that only raised it, and the
+	    splash text of the commercial build. A missing file reader now
+	    raises a plain CmdException with the same message.
+	  - The test marks incentive and properties. The last two tests
+	    that carried one (jira/PYMOL-1276, PYMOL-1697) run in every
+	    suite run since 4.94.0 made them pass.
+
+2026-11-27 pymolish-studio
+
+	* 4.94.0
+
+	* Undo of more than coordinates (21g)
+	  - Undo and redo take back the last step: a line of the command
+	    line or a script (one step with all its commands), a menu row,
+	    a command that adds, removes or edits (load, create, delete,
+	    remove, color, show, select, alter, fit, clean and more), or a
+	    move of atoms with the mouse or a tool. A session snapshot is
+	    kept before such a step, the coordinate ring of the core keeps
+	    the moves, and both are taken back in the order they were done.
+	  - The Undo and Redo buttons are greyed out without a step, and
+	    their tooltip names it ("Undo color").
+	  - New commands undo_enable and undo_disable switch the setting
+	    suspend_undo, which now works; cmd.UndoPauseCM() for scripts.
+	    The capability multi_undo is reported.
+	  - 20 steps, at most 600,000 atoms over all of them. Measured: a
+	    step costs 3 ms on 2,475 atoms (1oky) and 0.14 s on 59,192
+	    (1aon); undo on 1aon takes 0.39 s.
+	  - A line that only looks or turns the view is no step; settings
+	    the program changes by itself are not either. What started the
+	    program (pymolrc, files on the command line) is no step.
+	  - Limit: a mouse move that came before a step is lost when that
+	    step is undone or redone (the snapshot makes new objects).
+	  - Fixed: an alignment object restored from a session was not a
+	    selection ("m1 & aln") until the next redraw.
+
+2026-11-26 pymolish-studio
+
+	* 4.93.0
+
+	* Ray-traced pictures (15r)
+	  - glow lays its halo on ray-traced pictures too, made on the CPU
+	    from the ray tracer's depth: the colors of what a ray hit,
+	    blurred like in the window, on the pixels where no ray hit. On
+	    a transparent background the halo goes into the alpha.
+	  - Measured, red tryptophan on black at 1435 x 702: the halo is
+	    12.96 % of the ray-traced picture and 13.42 % of the window.
+	    It adds 17 ms to a 2000 x 1500 picture, 68 ms with antialias 2.
+	  - With glow 0 nothing changes. POV-Ray, glTF and the other
+	    exports have no halo.
+
+2026-11-26 pymolish-studio
+
+	* 4.92.0
+
+	* Pictures without ray tracing (15q)
+	  - Draw (fast) and png at another size than the window get the
+	    post-process of the window: the halo of glow, the outline of a
+	    look and the smoothing of antialias_shader. Before, these
+	    pictures had none of the three.
+	  - The halo is the same share of the picture at any size: 13.4 %
+	    of the window (1435 x 702) and of a picture twice that size,
+	    red tryptophan on black. Its buffer is 176 rows high at any
+	    size; a window of another height than 702 px now gets a halo
+	    of the same share of its height instead of the same pixels.
+
+2026-11-26 pymolish-studio
+
+	* 4.91.0
+
+	* Presets > light
+	  - A row "glow" / "no glow" beside fog switches the setting
+	    glow: a halo in the colors of what is drawn, in the viewport
+	    only. A scene keeps it, like the fog.
+
+2026-11-26 pymolish-studio
+
+	* 4.90.1
+
+	* Cross-platform fixes
+	  - F2 renames a scene on macOS as well as Windows and Linux.
+	  - Tab font buttons use the requested point size and preserve
+	    fractional size offsets when settings are saved and restored.
+	  - Loading SDF properties handles Windows and Unix line endings
+	    alike, without inserting extra blank lines on Windows.
+
 2026-11-26 pymolish-studio
 
 	* 4.90.0

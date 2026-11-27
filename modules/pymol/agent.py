@@ -25,7 +25,7 @@ CONFIRM = set("delete remove set_name create copy align super cealign dss load s
 # changes of the structure, new molecules, files
 CONFIRM |= set("h_add h_fill h_fix remove_picked bond unbond valence fuse attach replace invert torsion set_dihedral set_geometry cycle_valence fix_chemistry rename sort rebond set_symmetry symmetry_copy translate rotate transform_selection transform_object matrix_copy matrix_reset set_object_ttt extract fragment fab fnab symexp split_chains split_states split_types extract_chain join_states copy_group morph map_new map_double map_halve map_trim fit intra_fit usalign update smooth mse2met delete_states read_pdbstr read_molstr read_sdfstr clean assign_stereo set_property set_atom_property png multisave multifilesave export_objects load_traj load_files".split())
 REVIEWED = {name: getattr(api, name) for name in QUERIES | VISUAL | CONFIRM}
-PRESETS = {name: getattr(preset, name) for name in "default classified technical ball_and_stick space_filling illustrated_atoms licorice bond_shell b_factor_putty pretty_solv pub_solv glass balls_in_glass cylinders wire spring illustration ligands ligand_sites ligand_sites_hq ligand_sites_trans ligand_sites_trans_hq ligand_sites_mesh ligand_sites_dots interface interaction antibody pretty pretty_no_solv publication pub_no_solv publication_green simple simple_no_solv ligand_cartoon cartoon_style cartoon_transparency transparency depth_fog show_solvent".split()}
+PRESETS = {name: getattr(preset, name) for name in "default classified technical ball_and_stick space_filling illustrated_atoms licorice bond_shell b_factor_putty pretty_solv pub_solv glass balls_in_glass cylinders wire spring illustration ligands ligand_sites ligand_sites_hq ligand_sites_trans ligand_sites_trans_hq ligand_sites_mesh ligand_sites_dots interface interaction antibody pretty pretty_no_solv publication pub_no_solv publication_green simple simple_no_solv ligand_cartoon cartoon_style cartoon_transparency transparency depth_fog glow show_solvent".split()}
 REVIEWED.update({"preset." + name: fn for name, fn in PRESETS.items()})
 REVIEWED.update({"preset.look": preset.look, "preset.theme": preset.theme})
 REVIEWED.update({"util." + name: getattr(util, name) for name in "cbc cbag cbac cbam cbak cbao cbap cbas cbaw cbay cbab cnc chainbow rainbow".split()})
@@ -253,7 +253,8 @@ class Executor:
             self._keep()
         if "_self" in inspect.signature(function).parameters:
             arguments["_self"] = self.cmd
-        value = function(**arguments)
+        with snapshots.paused():  # the turn's snapshot is its one step
+            value = function(**arguments)
         if arguments.get("async_"):
             value = "Runs in the background; this turn does not see its result. Use state to follow it."
         # Older APIs sometimes report failure as -1 rather than raising.
@@ -289,7 +290,8 @@ class Executor:
                             raise CmdException("Trusted Python is off or the user declined")
                         self._check()
                         self._keep()
-                        exec(compile(code, "<reviewed assistant Python>", "exec"), {"cmd": self.cmd})
+                        with snapshots.paused():
+                            exec(compile(code, "<reviewed assistant Python>", "exec"), {"cmd": self.cmd})
                         value = {"undo_snapshot": True, "external_effects_undoable": False}
                     elif operation == "look":
                         if not self.images:

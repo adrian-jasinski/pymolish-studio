@@ -436,7 +436,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.action_toolbar)
         self.action_toolbar.setVisible(bool(options.external_gui))
 
-        # toggle bar under the object list: an icon and a short text each;
+        # toggle bar under the object list: icons only, SEQ with its text;
         # the whole name is the tooltip and the name for a screen reader
         mouse = QtWidgets.QToolButton()
         mouse.setMenu(self.menudict['Mouse'])
@@ -485,7 +485,9 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
             # the SEQ button itself opens the tab
             button.setPopupMode(
                 Popup.MenuButtonPopup if button is seq else Popup.InstantPopup)
-            button.setToolButtonStyle(Style.ToolButtonTextBesideIcon)
+            button.setToolButtonStyle(
+                Style.ToolButtonTextBesideIcon if button is seq
+                else Style.ToolButtonIconOnly)
             self.object_panel.footer.addWidget(button)
         self._footer_icons = (
             (mouse, 'mouse mode'), (seq, 'seq'), (ai, 'ai assistant'),
@@ -1193,6 +1195,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.ligand_panel.poll()
         self.sequence_panel.poll()
         self.sequence_tab.poll()
+        self.action_toolbar.show_undo()
         # the 2D button is for objects with a ligand; judged again when the
         # objects that are switched on change
         key = tuple(self.cmd.get_names('public', enabled_only=1))
@@ -1325,16 +1328,22 @@ class TabFontButtons(QtWidgets.QWidget):
         self.settings = QtCore.QSettings("pymolish", "pymolish-studio")
         # what the widgets start with: Reset goes back to it
         self.defaults = {
-            title: [QtGui.QFontInfo(w.font()).pointSizeF() for w in widgets]
+            title: [
+                w.font().pointSizeF()
+                if w.font().pointSizeF() > 0
+                else QtGui.QFontInfo(w.font()).pointSizeF()
+                for w in widgets
+            ]
             for title, widgets in targets.items()
         }
         row = QtWidgets.QHBoxLayout(self)
         row.setContentsMargins(0, 0, 2, 0)
         row.setSpacing(2)
         for text, tip, step in (
-                ("A\u2212", "Smaller text in this tab", -1),
-                ("A+", "Larger text in this tab", 1),
-                ("Reset", "The text size this tab starts with", 0)):
+            ("A\u2212", "Smaller text in this tab", -1),
+            ("A+", "Larger text in this tab", 1),
+            ("Reset", "The text size this tab starts with", 0),
+        ):
             button = QtWidgets.QToolButton()
             button.setText(text)
             button.setToolTip(tip)
@@ -1348,7 +1357,7 @@ class TabFontButtons(QtWidgets.QWidget):
     def step(self, title):
         """Points added to the text of that tab."""
         try:
-            return int(self.settings.value("fonts/" + title, 0))
+            return float(self.settings.value("fonts/" + title, 0))
         except (TypeError, ValueError):
             return 0
 
@@ -1368,7 +1377,7 @@ class TabFontButtons(QtWidgets.QWidget):
         new = self.step(title) + step if step else 0
         new = max(self.SMALLEST - min(sizes), min(self.LARGEST - max(sizes), new))
         if new:
-            self.settings.setValue("fonts/" + title, int(new))
+            self.settings.setValue("fonts/" + title, new)
         else:
             self.settings.remove("fonts/" + title)
         self._apply(title, new)

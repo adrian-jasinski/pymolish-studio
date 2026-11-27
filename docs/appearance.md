@@ -345,10 +345,10 @@ one.
 
 The carbons of the loaded objects are recolored from the first palette
 color on, and new objects follow the palette. The choice is remembered for
-the next start. The list has eleven rows: PyMOL default, then Vivid, Deep,
-Pastel, Soft, Colorblind, Nord, Dracula, Catppuccin, Chimerax and Halo,
-each with the background it is made for. Every one of these ten has 30
-colors; the menu shows the first ten.
+the next start. The list has twelve rows: PyMOL default, then Vivid, Deep,
+Pastel, Soft, Colorblind, Nord, Dracula, Catppuccin, Chimerax, Halo and
+Neon, each with the background it is made for. Every one of these eleven
+has 30 colors; the menu shows the first ten.
 
 ```
 palette
@@ -376,6 +376,7 @@ pymolrc to have it at every start. The colors have names (`soft_01`,
 | `catppuccin` | dark background | ![catppuccin](img/palette-catppuccin.png) |
 | `chimerax` | any background | ![chimerax](img/palette-chimerax.png) |
 | `halo` | any background | ![halo](img/palette-halo.png) |
+| `neon` | dark background | ![neon](img/palette-neon.png) |
 
 The pictures show the colors a palette was made with; the colors after
 them, up to 30, were computed in the same tone and belong to no published
@@ -388,6 +389,8 @@ of those names (Nord frost and aurora, Dracula, Catppuccin Mocha).
 `chimerax` is the ten colors UCSF ChimeraX gives to models 1 to 10 (tan, sky
 blue, plum, light green, salmon, light gray, deep pink, gold, dodger blue,
 purple), for those who move between the two programs.
+`neon` starts with the usual web values of neon sign colors (green, pink,
+cyan, yellow, orange, purple, blue, red, lime, hot pink, mint, fuchsia).
 `halo` is five colors of a brand book (turquoise, blue, cyan, indigo, deep
 purple) with seven strong colors between them for the other hues. The indigo
 and the purple are dark on a black background.
@@ -422,8 +425,14 @@ never changes the background, representations or colors.
 | soft shadow | The same with a soft edge of the shadow; slower to ray trace | no |
 | glossy (light only) | The highlight of the glossy surface on whatever is shown | no |
 
-The last row of the menu reads no fog or fog: it switches the fading of
-what is far away. The rows with an outline switch fog off.
+The last two rows of the menu read no fog or fog, and no glow or glow.
+Fog switches the fading of what is far away; the rows with an outline
+switch fog off. Glow lays a soft halo in the colors of what is drawn
+around it, on top of any light. It is off at the start. It shows in the
+viewport and in every saved picture, drawn or ray traced, at any size, as
+the same share of the picture; on a transparent background the halo is
+part of the picture's alpha. Stereo and the 3D exports (POV-Ray, glTF)
+have no halo.
 
 **The outline** is a line around every shape, black on a light background
 and white on a dark one. A ray-traced picture has it, and so has the
@@ -519,17 +528,25 @@ set opaque_background, 0
 ## Undo a preset and start over
 
 **Undo.** Every row of the Presets menu is one step: a preset, a
-transparency, the solvent row, a light, a theme, a floor. Click the Undo
-button in the toolbar, press Ctrl-Z (Edit > Undo) or type `undo`. Redo is
-the button beside it, Ctrl-Y or `redo`.
+transparency, the solvent row, a light, a theme, a floor. So is every
+line typed at the command line (a script run with `@` is one line), any
+other menu row that changes something, and a move of atoms with the
+mouse. Click the Undo button in the toolbar, press Ctrl-Z (Edit > Undo)
+or type `undo`. Redo is the button beside it, Ctrl-Y or `redo`. The
+tooltip of each button names the step ("Undo color"); with nothing to
+take back the button is greyed out.
 
-- Undo puts the whole session back as it was before the row: colors,
+- Undo puts the session back as it was before the step: objects, colors,
   representations, settings, light, background, view and the contacts a
-  preset measured.
-- It also takes back **everything you did after that row**, including
-  objects loaded or deleted since. Redo brings it back.
-- Five steps are kept, and at most 600,000 atoms over all of them. Above
-  that the row runs without a step and the log says so.
+  preset measured. Steps done after it stay steps of their own.
+- A line that only looks (zoom, turn, a query) is no step. Settings
+  that the program changes by itself are not either.
+- Twenty steps are kept, and at most 600,000 atoms over all of them.
+  Above that a change runs without a step and the log says so once.
+  `undo_disable` stops keeping steps (faster scripts on large
+  structures), `undo_enable` starts again.
+- A move of atoms with the mouse that came before a step is lost when
+  that step is undone or redone; the steps of commands are not.
 - The steps are dropped by File > Reinitialize > Everything and when a
   session file is opened.
 - The Palette and Background buttons and the S, H and C menus are not

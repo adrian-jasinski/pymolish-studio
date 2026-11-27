@@ -2,15 +2,34 @@
 
 [Back to the roadmap](PLAN.md).
 
-**Shipped state, checked 2026-11-26: 4.90.0.** Seven versions were built
+**Shipped state, checked 2026-11-27: 4.96.1.** Source-install scripts now
+detect the system, offer required dependencies and optional extras,
+build locally and print the launch command. Linux build, dependency and
+headless/Qt checks passed; suite: 1257 passed, 206 skipped. Windows cmd
+preview passed; complete clean-machine installations remain open in
+[step 39](docs/plans/39-source-install.md). The existing 4.95.0 neon
+palette and 4.96.0 footer changes are recorded below.
+
+On 2026-11-26/27, after
+answer 139 A: 4.92.0 (15q), 4.93.0 (15r), 4.94.0 (21g) and 4.94.1 (the
+commercial-build leftovers removed); steps 15 and 21 are finished. Before
+that, at 4.91.0: Seven versions were built
 that day from the planning update of the morning (15m to 15p, 32c, 34d and
 the surface worker of 1b): 4.83.0 to 4.89.0; an eighth, 4.90.0, from a
 request of the same day (the alignment window shows the secondary
-structure only as the drawn track). Questions 121 to 125 are
-answered and built; 128 and 129 are open in [PLAN.md](PLAN.md). The
+structure only as the drawn track); 4.90.1 repaired three faults found
+by CI on Windows and macOS. Questions 121 to 125 are answered and built;
+128 and 129 were answered **A** on 2026-11-26. The glow menu entry of
+answer 128 A shipped in 4.91.0; the glow in saved pictures (15q, 15r,
+answer 139 A) followed in 4.92.0 and 4.93.0, which finished step 15. Solid
+stays the default, with no code change. See [the decisions](PLAN-DONE.md#decisions-128-and-129)
+and [current work](PLAN.md). The
 documentation (step 38a to 38d, answers 126 A and 127 A) was written and
 captured on 2026-11-26 at 4.90.0: it changed no program code and has no
-version. Built since
+version. The Windows workflow still produces an unsigned portable ZIP;
+an unsigned per-user Inno Setup installer is planned in **5d, order 4**
+(answer 137 A, 2026-11-26); signing (138) is deferred. No Windows bundle
+installer was built or tested in this run. Built since
 4.19.43, with the tests and GUI checks recorded in
 [PLAN-DONE.md](PLAN-DONE.md):
 
@@ -70,17 +89,26 @@ version. Built since
 | 4.85.0 | The Presets menu in groups: cartoon, atoms and bonds, surface, binding; then transparency and solvent; light, theme and floor under "Scene appearance" (15o). |
 | 4.86.0 | The five buttons under the object list are larger and have a short text each: mouse mode, SEQ, Chat, Wizard, Cmd; two rows in a narrow panel (32c). |
 | 4.87.0 | The outline of a look in the viewport: figure, soft, flat, comic, sketch, illustrated atoms and contour cartoon; the setting `viewport_outline` (15b). |
-| 4.88.0 | An experiment: `set glow, 1` lays a halo in the colors of what is drawn around it, in the viewport. No menu row (15p, question 128). |
+| 4.88.0 | An experiment: `set glow, 1` lays a halo in the colors of what is drawn around it, in the viewport. No menu row in this release (15p; answer 128 A schedules it). |
 | 4.89.0 | A large surface is built in the background: the window stays in use and the surface appears when it is ready; pictures and exports wait for it; the setting `async_surface` (1b). |
 | 4.90.0 | The Sequence alignment window shows the secondary structure only as the drawn track at the bottom; the line of characters above every residue and its legend are gone, a row is one line high (a request, step 33). |
+| 4.90.1 | No feature: F2 renames a scene on macOS too; the font buttons of a tab keep the requested size; SDF properties read the same with Windows and Unix line endings (found by CI). |
+| 4.91.0 | Presets > light has a row "glow" / "no glow" beside fog: the halo of 4.88.0 from the menu, with Undo; a scene keeps it like the fog. Viewport only (answer 128 A). |
+| 4.92.0 | Draw (fast) and `png` at another size get the post-process of the window: glow, the outline of a look, FXAA. The halo is the same share of the picture at any size (15q). |
+| 4.93.0 | Ray-traced pictures get the glow halo, made on the CPU from the ray depth; into the alpha on a transparent background (15r). |
+| 4.94.0 | Undo and Redo of every step: a typed line or script, a menu row, a command that adds, removes or edits, a move of atoms; the toolbar buttons name the step; `undo_enable`, `undo_disable`, capability `multi_undo` (21g). |
+| 4.94.1 | No feature: `-n`, `IncentiveOnlyException` and the test marks `incentive`/`properties` removed (21g). |
+| 4.95.0 | Palette `neon`, already present before the source-install work; twelve neon tones extended to thirty colors. |
+| 4.96.0 | Buttons under the object list in one row, icons except SEQ, with equal gaps; already present before the source-install work. |
+| 4.96.1 | Build tooling: `./install` and `install.cmd`, apt/dnf or existing Pixi, local environments, optional extras, preview, checks and launch instructions (39a). |
 
 Of the ten features requested on 2026-11-20, all ten have a working
 version: the tenth, the surface looks, shipped in 4.82.0 on the grid
 surface of 1b (4.76.0, a menu row with its cavity settings since
-4.81.0; today's surface stays the default, answer 105 A). Steps 19, 20,
+4.81.0; today's surface stays the default, answers 105 A and 129 A). Steps 19, 20,
 25, 26 and 29 are finished, and so are steps 32 and 34 with 32c (4.86.0)
-and 34d (4.84.0). Of step 15 all slices are built; its glow experiment
-waits for question 128. Of the
+and 34d (4.84.0). Of step 15 the glow menu of answer 128 A shipped in
+4.91.0, and the glow in saved pictures (15q, 15r) in 4.92.0 and 4.93.0. Of the
 eleven drafts of 2026-11-23, all eleven have a working version;
 the chat (31a, 31c) shipped in 4.58.0, its external connector 31b in 4.61.0,
 the sign-in in the browser 31d in 4.66.0 (its ChatGPT half sits in the

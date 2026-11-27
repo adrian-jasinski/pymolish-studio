@@ -385,7 +385,7 @@ Commands marked **new** are the ones pymolish-studio adds.
 | `ray` | Draws the view with the ray tracer: shadows and smooth edges. | [Saving](saving.md) |
 | `rebond` | Throws the bonds away and finds them again by distance. | |
 | `rebuild`, `refresh`, `recolor`, `recolour` | Builds the geometry, the picture or the colors again. | [Troubleshooting](troubleshooting.md) |
-| `redo`, `undo` | Takes back a row of the Presets menu, and goes forward again. | [Appearance](appearance.md) |
+| `redo`, `undo`, `undo_disable`, `undo_enable` | Takes back the last step (a line, a menu row, a command that changes something, a move of atoms) and goes forward again; switches the keeping of steps off and on. | [Appearance](appearance.md) |
 | `reference` | Stores or recalls reference coordinates. No help text. | |
 | `refresh_wizard`, `replace_wizard` | Internal commands of the wizards. | |
 | `reinitialize` | Removes everything and restores the settings. | [Reference](reference.md) |

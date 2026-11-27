@@ -32,8 +32,12 @@ def own_settings(tmp_path_factory):
 
 
 @pytest.fixture(autouse=True)
-def clean_session(request):
-    """Every test starts with a clean session, in the directory of its file."""
+def clean_session(request, monkeypatch):
+    """Every test starts with a clean session, in the directory of its file,
+    outside the undo step of the line that runs the tests."""
+    from pymol import snapshots
+
+    monkeypatch.setattr(snapshots, "_step", None)
     oldcwd = os.getcwd()
     cmd.reinitialize()
     cmd.viewport(640, 480)

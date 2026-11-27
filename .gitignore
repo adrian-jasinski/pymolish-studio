@@ -9,5 +9,6 @@ testing/timings.tab
 dist/
 *.spec.bak
 .pixi/
+.venv-install/
 pixi.lock
 plan_images/

@@ -58,6 +58,7 @@ def test_data(subtests):
             "catppuccin",
             "chimerax",
             "halo",
+            "neon",
         ]
     # 37c: thirty each. What a palette began with keeps its value and place:
     # (how many it had, its first color, the last of those)
@@ -72,6 +73,7 @@ def test_data(subtests):
         "catppuccin": (11, "89b4fa", "f5e0dc"),
         "chimerax": (10, "d2b48c", "800080"),
         "halo": (12, "00f4d6", "ff8a00"),
+        "neon": (12, "39ff14", "fe4164"),
     }
     assert palettes.BUILTIN == tuple(began)
     for name, (background, colors) in palettes.PALETTES.items():

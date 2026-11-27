@@ -35,18 +35,10 @@ def _chain_sel(chain: str) -> str:
 
 # routines to assist in molecular editing
 
-class undocontext:
-    def __init__(self, cmd, sele):
-        # not implemented in open-source
-        pass
-
-    def __enter__(self):
-        # not implemented in open-source
-        pass
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        # not implemented in open-source
-        pass
+def undocontext(cmd, sele):
+    '''One step of undo for an edit of the builder (pymol/snapshots.py).'''
+    from . import snapshots
+    return snapshots.undoable("edit", cmd)
 
 def attach_fragment(selection,fragment,hydrogen,anchor,*,_self=cmd):
     '''

@@ -223,6 +223,9 @@ from .editing import \
       rebond,             \
       reference,          \
       redo,               \
+      undo_enable,        \
+      undo_disable,       \
+      UndoPauseCM,        \
       remove,             \
       remove_picked,      \
       rename,             \
@@ -521,6 +524,10 @@ from .grouping import \
 from . import util
 from . import movie
 from . import gui
+
+# undo steps for what adds, removes or edits (before agent.py below)
+from . import snapshots
+snapshots.install(globals())
 
 # last: agent.py captures the API functions above at import time
 from .assistant import ask

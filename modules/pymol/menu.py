@@ -809,7 +809,7 @@ def _undoable(rows):
     # every row of the preset menu is one step of "undo"
     for row in rows:
         if row[0] == 1 and isinstance(row[2], str):
-            row[2] = 'pymol.snapshots.keep(_self=cmd);' + row[2]
+            row[2] = 'pymol.snapshots.keep(cmd,"preset");' + row[2]
         elif row[0] == 1:
             _undoable(row[2])
     return rows
@@ -866,7 +866,10 @@ def presets(self_cmd, sele):
                   [ 0, '', '' ],
                   [ 1, 'no fog' if self_cmd.get_setting_int('depth_cue') else 'fog',
                     'preset.depth_fog(%d,_self=cmd)'
-                    % (not self_cmd.get_setting_int('depth_cue')) ]]],
+                    % (not self_cmd.get_setting_int('depth_cue')) ],
+                  [ 1, 'no glow' if self_cmd.get_setting_float('glow') else 'glow',
+                    'preset.glow(%d,_self=cmd)'
+                    % (not self_cmd.get_setting_float('glow')) ]]],
               # colors of protein and ligand, and the background: the only
               # rows that color a cartoon or a surface
               [ 1, 'theme (colors and background)', [[ 2, 'Theme:', '' ]] + [

@@ -111,11 +111,100 @@ def test_glow_in_the_viewport(request):
 
     red, halo, corner = count(_pixels())
     assert red > 2000 and halo < red / 20 and corner == 0
-    cmd.set("glow", 1)
+    preset.glow(1)  # the row of Presets > light
     red_glow, halo, corner = count(_pixels())
     assert red_glow == pytest.approx(red, rel=0.06)  # the atoms as they were
     assert halo > red / 2 and corner == 0  # around them, not everywhere
     cmd.set("glow", 0.5)
     assert red / 8 < count(_pixels())[1] < halo
-    cmd.set("glow", 0)
+    preset.glow(0)
     assert count(_pixels())[1] < red / 20
+
+
+def _png_pixels(path, **kwargs):
+    from pymol.Qt import QtGui
+    import numpy
+
+    cmd.png(str(path), ray=0, quiet=1, **kwargs)
+    image = QtGui.QImage(str(path)).convertToFormat(QtGui.QImage.Format.Format_RGB888)
+    rows = numpy.frombuffer(image.constBits(), numpy.uint8)
+    rows = rows.reshape(image.height(), image.bytesPerLine())[:, : image.width() * 3]
+    return rows.reshape(image.height(), image.width(), 3).astype(int)
+
+
+@testing.requires("gui")
+def test_glow_and_outline_in_sized_pictures(request, tmp_path):
+    """15q: a picture of another size (Draw (fast), png with a width) gets
+    the post-process of the window: the halo, as the same share of the
+    picture, and the outline of a look."""
+    request.addfinalizer(cmd.reinitialize)
+    cmd.set("use_shaders", 1)
+    cmd.set("opaque_background", 1)
+    cmd.fragment("trp", "m")
+    cmd.color("red")
+    cmd.bg_color("black")
+    preset.space_filling("m")
+    cmd.orient()
+    cmd.zoom("m", 12)
+    preset.look("flat")
+    cmd.set("viewport_outline", 0)
+
+    def halo_share(image):
+        r, g, b = image.transpose(2, 0, 1)
+        return ((r > 40) & (r <= 240) & (g < 30) & (b < 30)).mean()
+
+    window = _pixels()
+    height, width = window.shape[:2]
+    for antialias in (0, 2):
+        cmd.set("antialias", antialias)
+        sized = _png_pixels(tmp_path / "plain.png", width=2 * width)
+        assert sized.shape[:2] == (2 * height, 2 * width)
+        assert halo_share(sized) < 0.002
+        preset.glow(1)
+        share = halo_share(_pixels())
+        sized = _png_pixels(tmp_path / "glow.png", width=2 * width)
+        assert share > 0.01
+        assert halo_share(sized) == pytest.approx(share, rel=0.1), antialias
+        preset.glow(0)
+
+    # the outline of a look, white on black
+    cmd.set("viewport_outline", 1)
+    sized = _png_pixels(tmp_path / "outline.png", width=2 * width)
+    white = (sized.min(axis=2) > 200).sum()
+    assert white > 2000, "no outline in a sized picture"
+
+
+def test_glow_in_ray_traced_pictures():
+    """15r: the ray tracer lays the same halo on the background, from its
+    own depth; on a transparent background the halo goes into the alpha."""
+    cmd.fragment("trp", "m")
+    cmd.color("red")
+    cmd.bg_color("black")
+    cmd.orient()
+    cmd.zoom("m", 12)
+    cmd.set("antialias", 0)
+    cmd.set("ray_opaque_background", 1)
+
+    def ray():
+        return testing.get_imagearray(width=320, height=240, ray=1).astype(int)
+
+    def halo(img):
+        r, g, b = img[..., 0], img[..., 1], img[..., 2]
+        return (r > 40) & (r <= 240) & (g < 30) & (b < 30)
+
+    plain = ray()
+    molecule = plain[..., :3].max(axis=2) > 8
+    cmd.set("glow", 1)
+    glow = ray()
+    assert (glow[molecule] == plain[molecule]).all()  # the atoms as they were
+    share = (halo(glow) & ~molecule).mean()
+    assert 0.01 < share < 0.4, share
+    assert glow[:8, :8, :3].max() == 0  # not everywhere
+
+    cmd.set("ray_opaque_background", 0)
+    clear = ray()
+    alpha = clear[..., 3]
+    assert alpha[:8, :8].max() == 0
+    assert ((alpha > 0) & (alpha < 255) & ~molecule).mean() > share / 2
+    cmd.set("glow", 0)
+    assert (ray()[..., 3][~molecule] == 0).all()

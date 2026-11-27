@@ -153,8 +153,7 @@ def get_version_message(v=None):
         v = _cmd.get_version()
 
     p = "PyMOL %s " % v[0]
-    p += "Incentive Product" if invocation.options.incentive_product else \
-         "Open-Source"
+    p += "Open-Source"
 
     if v[4]:
         p += ' (' + v[4][:10] + ')'
@@ -248,6 +247,9 @@ def exec_deferred(self):
                     cmd.do(a[4:])
                 else:
                     cmd.load(a, quiet=0)
+            # what started the program (pymolrc, files) is no step of undo;
+            # queued, so that it comes after the queued lines above
+            cmd.do("/pymol.snapshots.clear()", log=0, echo=0)
     except CmdException as e:
         colorprinting.error(str(e))
         colorprinting.error(
@@ -454,23 +456,6 @@ class CmdException(Exception):
             self.label = label
     def __str__(self):
         return " %s: %s" % (self.label, self.message)
-
-class IncentiveOnlyException(CmdException):
-    '''
-    Exception type for features that are not available in Open-Source PyMOL
-    '''
-    label = "Incentive-Only-Error"
-    def __init__(self, message=''):
-        if not message:
-            try:
-                funcname = sys._getframe(1).f_code.co_name
-                message = '"%s" is not available in Open-Source PyMOL' % (funcname,)
-            except:
-                message = 'Not available in Open-Source PyMOL'
-        message += '\n\n' \
-                    '    Please visit http://pymol.org if you are interested in the\n' \
-                    '    full featured "Incentive PyMOL" version.\n'
-        super(IncentiveOnlyException, self).__init__(message)
 
 class Scratch_Storage:
     '''
