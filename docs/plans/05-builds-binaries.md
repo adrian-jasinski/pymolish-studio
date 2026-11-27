@@ -1,6 +1,15 @@
 # 5 — Fast builds and downloadable test binaries
 
-[Roadmap](../../PLAN.md) · 5a/5b complete; 5c shelved; 5d planned (unsigned installer)
+[Roadmap](../../PLAN.md) · 5a/5b complete; 5c shelved; 5d installer shipped (4.97.0), desktop trial open
+
+> **2026-11-27, 4.97.0:** steps 1 to 6 below are built. Measured in CI run
+> 45978675595 (Windows py313): Inno Setup compile 59.0 s; install into a
+> path with spaces and non-ASCII characters, upgrade from a 0.0.1 build,
+> headless launch with file-format round trips and uninstall took about
+> 14 s and passed every assertion. The check's own cleanup then raced
+> Inno's temporary uninstaller; fixed in `cd3ee158`, rerun pending.
+> Left out: installer size (not logged), a real window and SmartScreen on
+> a clean desktop (roadmap order 4), signing (question 138).
 
 ## Implementation plan recorded 2026-11-27
 

@@ -2,7 +2,15 @@
 
 [Back to the roadmap](PLAN.md).
 
-**Shipped state, checked 2026-11-27: 4.96.1.** Source-install scripts now
+**Shipped state, checked 2026-11-27: 4.97.0.** Windows gets an unsigned
+per-user installer, `pymolish-<version>-Windows-X64-setup.exe`, built with
+Inno Setup 6.7.1 (pinned, SHA-256 checked) from the same bundle as the
+ZIP: wizard, Start entry, upgrade in place that keeps user files and
+removes obsolete bundled files, uninstall from Installed apps. CI compiled
+it in 59.0 s and installed, upgraded, launched headless and uninstalled it
+on a runner; the hand trial on a clean desktop is open (5d, order 4).
+
+At 4.96.1, source-install scripts
 detect the system, offer required dependencies and optional extras,
 build locally and print the launch command. Linux build, dependency and
 headless/Qt checks passed; suite: 1257 passed, 206 skipped. Windows cmd
@@ -26,10 +34,9 @@ stays the default, with no code change. See [the decisions](PLAN-DONE.md#decisio
 and [current work](PLAN.md). The
 documentation (step 38a to 38d, answers 126 A and 127 A) was written and
 captured on 2026-11-26 at 4.90.0: it changed no program code and has no
-version. The Windows workflow still produces an unsigned portable ZIP;
-an unsigned per-user Inno Setup installer is planned in **5d, order 4**
-(answer 137 A, 2026-11-26); signing (138) is deferred. No Windows bundle
-installer was built or tested in this run. Built since
+version. The Windows workflow produces the unsigned portable ZIP and,
+since 4.97.0, the unsigned per-user installer (answer 137 A); signing
+(138) is deferred. Built since
 4.19.43, with the tests and GUI checks recorded in
 [PLAN-DONE.md](PLAN-DONE.md):
 
@@ -101,6 +108,7 @@ installer was built or tested in this run. Built since
 | 4.95.0 | Palette `neon`, already present before the source-install work; twelve neon tones extended to thirty colors. |
 | 4.96.0 | Buttons under the object list in one row, icons except SEQ, with equal gaps; already present before the source-install work. |
 | 4.96.1 | Build tooling: `./install` and `install.cmd`, apt/dnf or existing Pixi, local environments, optional extras, preview, checks and launch instructions (39a). |
+| 4.97.0 | Windows installer (5d): an unsigned per-user Inno Setup `setup.exe` beside the ZIP, with upgrade, uninstall and executable version metadata; built, tested and checksummed in CI. |
 
 Of the ten features requested on 2026-11-20, all ten have a working
 version: the tenth, the surface looks, shipped in 4.82.0 on the grid

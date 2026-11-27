@@ -6,8 +6,8 @@ order numbers in the finished-work table are historical. “Open, order N”
 references below follow the current roadmap (updated 2026-11-27).
 
 Step 5 is reopened by the Windows installer and signing request of
-2026-11-26: **5d, order 4** is planned. Question 137 is answered A with
-signing skipped for now; 138 is deferred. Its earlier build and bundle
+2026-11-26. The installer of **5d** shipped in 4.97.0 (answer 137 A); its
+clean-desktop trial is open, order 4; signing (138) is deferred. Its earlier build and bundle
 milestones remain complete; 5c stays shelved.
 
 ## Source-install choices (step 39)
@@ -21,7 +21,8 @@ Answered by the user on **2026-11-27**, both recommended options:
 
 The plan was committed before implementation (`27a8ab62`), followed by
 the installer (`2574f54c`). Native clean-machine trials remain open,
-order 5; these are separate from the Windows bundle installer in 5d.
+order 5; these are separate from the Windows bundle installer of 5d
+(4.97.0).
 
 ## Decision 139
 
@@ -40,7 +41,7 @@ nothing measured.
 
 | No. | Decision | State |
 | --- | --- | --- |
-| 137 | Per-user Inno Setup `.exe` plus the portable ZIP. Inno Setup is agreed as a pinned CI build tool. Signing is skipped for now; MSIX through the Store (B) was not selected. | Open, order 4 ([5d](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing)). |
+| 137 | Per-user Inno Setup `.exe` plus the portable ZIP. Inno Setup is agreed as a pinned CI build tool. Signing is skipped for now; MSIX through the Store (B) was not selected. | 4.97.0; clean-desktop trial open, order 4 ([5d](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing)). |
 | 138 | Signing provider. | Deferred until the user asks for signing; not an open question. |
 
 ## Decisions 128 and 129
@@ -412,7 +413,7 @@ on 2026-11-24 (table above):
 
 | Step | Completed scope | New work |
 | --- | --- | --- |
-| 5 | [Builds and test binaries](docs/plans/05-builds-binaries.md): 5a build iteration and 5b downloadable bundles; archives published since 4.5.1. | [5d — Windows installer and code signing](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing), open, order 4. Requested 2026-11-26; installer and provider choices are pending. 5c stays shelved. |
+| 5 | [Builds and test binaries](docs/plans/05-builds-binaries.md): 5a build iteration and 5b downloadable bundles; archives published since 4.5.1. | [5d — Windows installer and code signing](docs/plans/05-builds-binaries.md#5d--windows-installer-and-code-signing), installer shipped 2026-11-27 in 4.97.0 (answer 137 A); clean-desktop trial open, order 4; signing provider (138) deferred. 5c stays shelved. |
 | 15 | [Presets and looks](docs/plans/15-presets.md): 15a to 15p (4.14.0 to 4.88.0) and the glow row of the light menu (answer 128 A, 4.91.0). | [15q and 15r — glow in saved pictures](docs/plans/15-presets.md#request-2026-11-26-evening-glow-in-saved-pictures-15q-15r): done 2026-11-26 in 4.92.0 and 4.93.0 (answer 139 A). The step is finished again. |
 | 34 | [Independent ball-and-stick](docs/plans/34-ball-and-stick.md), 34a–34c in 4.48.0/4.49.0: representation 21, its own visibility and three settings, native bond orders, ligand defaults without changing sphere/stick settings, and compatible storage of fork-specific atom settings. | 34d, transparency: done 2026-11-26 in 4.84.0. The step is finished again. |
 | 32 | [Footer icons and Movie button](docs/plans/32-footer-icons-movie-button.md), 32a/32b in 4.42.0/4.43.0: mouse mode/SEQ with text, Wizard/Command as icons, Movie opens/closes Timeline. In 4.67.0 AI moved after SEQ and SEQ opens its tab; 4.73.0 shortened the mouse-mode label. | 32c, larger icons and short labels with a second row when narrow: done 2026-11-26 in 4.86.0. The step is finished again. |
@@ -546,8 +547,8 @@ ones, the new ones win.
 Steps 1, 5, 27, 31, 38 and 39 stay in the roadmap.
 These parts of them have shipped. The rows of steps 3, 11, 15, 17, 18, 19, 20, 21, 22, 26,
 23, 24, 25, 28, 30, 32, 34, 35, 36 and 37, which are finished, are kept here as the record of
-their milestones. The rows are not in order of time: the source installer
-(39a, 4.96.1), one-row footer (4.96.0) and neon palette (4.95.0) precede
+their milestones. The rows are not in order of time: the Windows
+installer (5d, 4.97.0), the source installer (39a, 4.96.1), one-row footer (4.96.0) and neon palette (4.95.0) precede
 21g and its removal (4.94.0, 4.94.1), 15r and 15q (4.93.0, 4.92.0), the glow menu (4.91.0), the
 alignment window without the line of characters (4.90.0), the
 seven rows of 2026-11-26 (4.83.0 to 4.89.0, the last built first), the
@@ -569,6 +570,7 @@ the one from "25b-2" to "17f".
 
 | Step | Milestone | Result |
 | --- | --- | --- |
+| 5 | 5d — Windows installer | Done 2026-11-27 (4.97.0): `packaging/windows.iss` and `packaging/build_windows_installer.ps1` turn `dist/pymolish` into `pymolish-<version>-Windows-X64-setup.exe` with Inno Setup 6.7.1, downloaded and SHA-256 checked. Per-user install under `%LOCALAPPDATA%\Programs`, Start entry, Installed apps uninstall, Restart Manager for files in use, a payload manifest that removes only obsolete bundled files on upgrade (never outside the app folder), executable version metadata, no UPX on Windows. CI builds, tests and uploads it with the ZIP and `SHA256SUMS`. Measured in CI run 45978675595: compile 59.0 s; install into a path with spaces and `żółć`, upgrade from a 0.0.1 build, headless launch with PDB/mmCIF/SDF/PSE/PNG round trips and the optional chemistry modules, uninstall: about 14 s, all asserts passed; the check then failed in its own cleanup (a second uninstall racing Inno's temporary uninstaller), fixed in `cd3ee158`, CI not yet rerun. Installer size not recorded. Difference from the plan: none in scope; the clean-desktop trial with SmartScreen and a real window is open, order 4. |
 | 39 | 39a — install from a clone | Done 2026-11-27 (4.96.1): `./install` and `install.cmd`; system detection, apt/dnf, existing Pixi fallback, compiler/bootstrap instructions, optional extras, preview, local environments, checks and launch commands. Standalone checks: 11 passed, 1 Windows-only case skipped on Linux. Full suite: 1257 passed, 206 skipped, 17 subtests passed, 1 existing Biopython warning. Real Linux build with JSON and msgpack C++ enabled, pip check and headless/Qt checks passed; Windows cmd preview also ran. Difference from the plan: Windows extras use `--extras "chem,fix,ai"` because cmd splits equals and commas. Clean-machine installations and GUI launch on target systems remain open, order 5. |
 | 32 | One-row footer follow-up | Shipped 2026-11-27 (4.96.0), recorded during the source-install run: mouse mode, Chat, Wizard and Cmd use icons; SEQ keeps text; one row with equal gaps. No new UI measurements in this run. |
 | 11 | Neon palette follow-up | Shipped 2026-11-27 (4.95.0), recorded during the source-install run: twelve neon tones extended to thirty named colors. No new palette measurements in this run. |
