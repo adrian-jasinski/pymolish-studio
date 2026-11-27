@@ -59,6 +59,19 @@ These are preview builds and they are not signed, so Windows and macOS may
 warn before the first start. `SHA256SUMS` on the Releases page lists the
 checksums.
 
+To build your own copy after cloning:
+
+```sh
+git clone https://github.com/adrian-jasinski/pymolish-studio.git
+cd pymolish-studio
+./install
+```
+
+On Windows, use `.\install.cmd` for the last line. The script detects your
+system, offers to install missing dependencies, builds in a local Python
+environment, and prints the launch command. Add `--dry-run` to preview.
+[Source installation and supported systems](docs/install.md).
+
 ## Documentation
 
 The [documentation home](docs/README.md) links every page.

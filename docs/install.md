@@ -8,6 +8,81 @@ or need a system the bundles do not cover.
 The build compiles the C++ core with CMake and installs the Python package
 with `pip`. It takes a few minutes the first time.
 
+## One command after cloning
+
+```sh
+git clone https://github.com/adrian-jasinski/pymolish-studio.git
+cd pymolish-studio
+./install
+```
+
+On Windows, the last command is `.\install.cmd` in PowerShell or
+`install.cmd` in cmd. No Python installation is needed beforehand there.
+
+The script lists missing system packages and asks before installing them.
+Run it as your normal user: only Linux system-package commands use `sudo`.
+It then offers the existing chemistry, structure-repair and Chat libraries,
+installs the app, checks dependencies and the headless core and Qt imports,
+and prints the launch command. It does not open a window during setup.
+
+| System | How it installs |
+| --- | --- |
+| Debian / Ubuntu | apt for the compiler, native libraries and Qt runtime libraries. Python 3.13+ with headers, `venv` and `ensurepip` uses `.venv-install`; otherwise Pixi supplies Python and native libraries on x64. |
+| Fedora | The same flow, with dnf package names. |
+| macOS, Apple silicon | Pixi supplies Python and native libraries. If Apple Command Line Tools are missing, the script offers to open `xcode-select --install`; finish that installer and rerun. |
+| Windows x64 | Pixi supplies Python and native libraries. Missing Pixi or Visual Studio C++ Build Tools can be installed with winget. Finish prerequisite setup, open a new terminal when instructed, and rerun. Existing Visual Studio without C++ needs its **Desktop development with C++** workload added in Visual Studio Installer. |
+
+Pixi is already used by this project's builds. On Unix, if it is missing,
+the script offers to run the [official Pixi installer](https://pixi.prefix.dev/latest/installation/)
+into `~/.pixi/bin`, without editing shell profiles. If a dependency cannot
+be installed automatically, the script stops with instructions. Intel Macs,
+Windows ARM and other Linux distributions use the manual instructions
+below; the current Pixi manifest does not cover those architectures.
+
+The Linux command routes and failure handling have automated checks.
+Windows command preview has also run in cmd.exe; complete clean-machine
+installation on Windows/macOS and native Fedora trials remain to be done.
+
+Preview makes no changes or downloads:
+
+```sh
+./install --dry-run
+```
+
+For unattended required setup and explicitly chosen extras:
+
+```sh
+./install --yes --extras=chem,fix,ai
+./install --yes --extras=          # core only
+```
+
+Windows uses a quoted extras argument because cmd splits commas and equals:
+
+```powershell
+.\install.cmd --dry-run
+.\install.cmd --yes --extras "chem,fix,ai"
+.\install.cmd --yes --extras ""
+```
+
+`--yes` accepts required setup; it does not select optional libraries.
+`chem` adds SMILES and ligand cleaning, `fix` adds structure repair and
+relaxation, and `ai` adds Chat provider libraries. Nothing installs a provider
+CLI, signs you in or configures an account. MAFFT remains separate below.
+
+Rerun the same command after a failed setup or a `git pull`. Existing local
+environments are reused. A failure never counts as a successful install;
+fix the reported error before retrying. A Linux/macOS build running out of
+memory can use `JOBS=2 ./install`. Network access and free disk space for
+the compiler, environment and build are required; sizes vary by system.
+
+Launch with the exact command printed at the end. Typically, from this
+folder it is `.venv-install/bin/pymolish` on the Linux virtualenv route,
+or `pixi run -e py313 pymolish` on the Pixi route (use `~/.pixi/bin/pixi`
+if the bootstrap installed Pixi outside PATH). Keep the checkout in place:
+these environments belong to it. No desktop shortcuts are created.
+
+## Manual installation
+
 ## What you need
 
 | Needed | For |
@@ -34,10 +109,15 @@ have no compiler.
 sudo apt-get install libfreetype6-dev libglew-dev libglm-dev libpng-dev \
     libmsgpack-dev libnetcdf-dev nlohmann-json3-dev catch2
 
-python3 -m venv .venv && . .venv/bin/activate
+python3.13 -m venv .venv && . .venv/bin/activate
 pip install --config-settings json=True .
 pymolish
 ```
+
+Install Python 3.13 or newer, with its development headers and venv support,
+first. The default `python3` on an older distribution may be too old.
+The automatic installer also supplies the Qt/X11 runtime libraries needed
+on minimal desktops; the script's package list names them.
 
 ### On WSL
 

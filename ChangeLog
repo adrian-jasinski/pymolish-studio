@@ -4,6 +4,20 @@ CHANGE LOG
 
 2026-11-27 pymolish-studio
 
+	* 4.96.1
+
+	* Easier source installation after cloning
+	  - ./install on Linux/macOS; install.cmd on Windows. Detects the
+	    system, offers missing dependencies and optional Python extras,
+	    installs in a local environment, checks the result and prints
+	    the launch command. --dry-run previews without changes.
+	  - apt on Debian/Ubuntu, dnf on Fedora; the existing Pixi setup on
+	    Windows x64, Apple silicon and Linux x64 without suitable Python.
+	    Compiler setup that needs user interaction stops with rerun
+	    instructions. No global pip installation or new runtime dependency.
+
+2026-11-27 pymolish-studio
+
 	* 4.96.0
 
 	* Buttons under the object list in one row

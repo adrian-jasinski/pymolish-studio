@@ -1,0 +1,183 @@
+#!/usr/bin/env bash
+# Install from a clone; Python packages stay in this repository.
+set -Eeuo pipefail
+trap 'status=$?; echo "Installation stopped (exit $status). Fix the error above and rerun ./install." >&2; exit "$status"' ERR
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
+
+dry_run=false
+yes=false
+extras_set=false
+extras=
+for arg in "$@"; do
+    case "$arg" in
+        --dry-run) dry_run=true ;;
+        --yes) yes=true ;;
+        --extras=*) extras=${arg#*=}; extras_set=true ;;
+        --help|-h)
+            echo 'Usage: ./install [--dry-run] [--yes] [--extras=chem,fix,ai]'
+            echo 'Core only: --extras= ; --yes accepts required setup, not optional extras.'
+            exit 0 ;;
+        *) echo "Unknown option: $arg (see --help)" >&2; exit 2 ;;
+    esac
+done
+if [[ ! "$extras" =~ ^((chem|fix|ai)(,(chem|fix|ai))*)?$ ]]; then
+    echo 'Extras must be chem,fix,ai or empty.' >&2; exit 2
+fi
+
+run() {
+    printf '+ '; printf '%q ' "$@"; printf '\n'
+    if ! "$dry_run"; then "$@"; fi
+}
+confirm() {
+    if "$dry_run" || "$yes"; then return 0; fi
+    local reply
+    read -r -p "$1 [y/N] " reply || return 1
+    [[ "$reply" == y || "$reply" == Y || "$reply" == yes ]]
+}
+stop() { echo "$*" >&2; exit 1; }
+
+if (( EUID == 0 )) && ! "$dry_run"; then
+    stop 'Run ./install as your normal user. Only system package commands use sudo.'
+fi
+
+os=$(uname -s)
+arch=$(uname -m)
+echo "Installing pymolish from source on $os ($arch)."
+python=
+manager=
+packages=()
+case "$os" in
+    Linux)
+        # ponytail: apt and Fedora only; add other distributions after native trials.
+        ID= ID_LIKE=
+        if [[ -r /etc/os-release ]]; then . /etc/os-release; fi
+        case " $ID $ID_LIKE " in
+            *' debian '*|*' ubuntu '*)
+                manager=apt-get
+                packages=(build-essential libgl1-mesa-dev libegl1 libopengl0
+                    libdbus-1-3 libfontconfig1 libx11-xcb1 libxkbcommon-x11-0
+                    libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1
+                    libxcb-render-util0 libxcb-shape0 libxcb-xinerama0)
+                if apt-cache show libglib2.0-0t64 >/dev/null 2>&1; then
+                    packages+=(libglib2.0-0t64)
+                else
+                    packages+=(libglib2.0-0)
+                fi ;;
+            *' fedora '*)
+                manager=dnf
+                packages=(gcc gcc-c++ make mesa-libGL-devel mesa-libEGL
+                    libglvnd-opengl dbus-libs fontconfig libX11-xcb
+                    libxkbcommon-x11 xcb-util-cursor xcb-util-wm xcb-util-image
+                    xcb-util-keysyms xcb-util-renderutil glib2) ;;
+            *) stop "No automatic package setup for ${PRETTY_NAME:-this distribution}. See docs/install.md for manual installation." ;;
+        esac
+        for candidate in python3.13 python3.14 python3; do
+            if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c \
+                'import sys, sysconfig, pathlib, venv, ensurepip; sys.exit(not (sys.version_info >= (3, 13) and pathlib.Path(sysconfig.get_path("include"), "Python.h").is_file()))' 2>/dev/null; then
+                python=$(command -v "$candidate")
+                break
+            fi
+        done
+        if [[ -n "$python" ]]; then
+            echo "Using $python and .venv-install."
+            if [[ "$manager" == apt-get ]]; then
+                packages+=(libfreetype-dev libglew-dev libglm-dev libpng-dev
+                    libnetcdf-dev nlohmann-json3-dev)
+                if apt-cache show libmsgpack-cxx-dev >/dev/null 2>&1; then
+                    packages+=(libmsgpack-cxx-dev)
+                else
+                    packages+=(libmsgpack-dev)
+                fi
+            else
+                packages+=(freetype-devel glew-devel glm-devel libpng-devel
+                    msgpack-devel netcdf-devel json-devel)
+            fi
+        else
+            echo 'Python 3.13+ with headers and venv is unavailable; using Pixi py313.'
+            [[ "$arch" == x86_64 ]] || stop 'The Pixi manifest supports Linux x64. Install Python 3.13+ with development headers and venv, then rerun.'
+        fi
+        missing=()
+        for package in "${packages[@]}"; do
+            if [[ "$manager" == apt-get ]]; then
+                installed=$(dpkg-query -W '-f=${Status}' "$package" 2>/dev/null || true)
+                [[ "$installed" == 'install ok installed' ]] || missing+=("$package")
+            else
+                rpm -q "$package" >/dev/null 2>&1 || missing+=("$package")
+            fi
+        done
+        if (( ${#missing[@]} )); then
+            echo "Missing system packages: ${missing[*]}"
+            confirm 'Install these system packages?' || stop 'No packages installed. Install the listed packages yourself, then rerun.'
+            elevate=()
+            if (( EUID != 0 )); then
+                command -v sudo >/dev/null || stop "sudo is unavailable. Ask an administrator to install: ${missing[*]}"
+                elevate=(sudo)
+            fi
+            if [[ "$manager" == apt-get ]]; then
+                run "${elevate[@]}" apt-get update
+                run "${elevate[@]}" apt-get install -y --no-install-recommends "${missing[@]}"
+            else
+                run "${elevate[@]}" dnf install -y "${missing[@]}"
+            fi
+        fi ;;
+    Darwin)
+        [[ "$arch" == arm64 ]] || stop 'The Pixi manifest supports Apple silicon. Intel Macs need the manual route in docs/install.md.'
+        if ! xcrun --find clang++ >/dev/null 2>&1; then
+            echo 'Apple Command Line Tools are required: xcode-select --install'
+            confirm 'Open the Apple installer?' || stop 'Install Command Line Tools, then rerun ./install.'
+            run xcode-select --install
+            if ! "$dry_run"; then stop 'Finish the Apple installer, then rerun ./install.'; fi
+        fi ;;
+    *) stop 'Use install.cmd on Windows. Other systems: see docs/install.md.' ;;
+esac
+
+if [[ -n "$python" ]]; then
+    if [[ -e .venv-install && ! -f .venv-install/pyvenv.cfg ]]; then
+        stop '.venv-install exists but is not a virtualenv. Move it aside yourself before retrying.'
+    fi
+    if [[ -f .venv-install/pyvenv.cfg ]]; then
+        .venv-install/bin/python -c 'import sys; assert sys.version_info >= (3, 13)' || \
+            stop 'The existing .venv-install has an old or broken Python. Move it aside and rerun.'
+    else
+        run "$python" -m venv .venv-install
+    fi
+    runner=("$PWD/.venv-install/bin/python")
+    launch=("$PWD/.venv-install/bin/pymolish")
+else
+    pixi=$(command -v pixi || true)
+    if [[ -z "$pixi" && -x "$HOME/.pixi/bin/pixi" ]]; then pixi="$HOME/.pixi/bin/pixi"; fi
+    if [[ -z "$pixi" ]]; then
+        echo 'Pixi supplies Python and native libraries in .pixi/envs/py313.'
+        echo 'Bootstrap: https://pixi.sh/install.sh (installs ~/.pixi/bin/pixi, no shell-profile edits).'
+        confirm 'Download and run the official Pixi installer?' || stop 'Install Pixi from https://pixi.sh, then rerun ./install.'
+        if "$dry_run"; then
+            echo '+ download https://pixi.sh/install.sh; run with PIXI_NO_PATH_UPDATE=1'
+        else
+            command -v curl >/dev/null || stop 'Install curl with your system package manager, or install Pixi manually from https://pixi.sh; then rerun.'
+            installer=$(mktemp)
+            trap 'rm -f "$installer"' EXIT
+            curl --fail --location --proto '=https' --tlsv1.2 https://pixi.sh/install.sh -o "$installer"
+            PIXI_HOME="$HOME/.pixi" PIXI_BIN_DIR="$HOME/.pixi/bin" PIXI_NO_PATH_UPDATE=1 bash "$installer"
+        fi
+        pixi="$HOME/.pixi/bin/pixi"
+    fi
+    runner=("$pixi" run --manifest-path "$PWD/pixi.toml" -e py313 python)
+    launch=("$pixi" run --manifest-path "$PWD/pixi.toml" -e py313 pymolish)
+fi
+
+if ! "$extras_set" && ! "$yes" && ! "$dry_run"; then
+    if confirm 'Include chemistry, structure repair and Chat libraries (chem,fix,ai)?'; then
+        extras=chem,fix,ai
+    fi
+fi
+target=.
+if [[ -n "$extras" ]]; then target=".[$extras]"; fi
+run "${runner[@]}" -m pip install --config-settings json=True --config-settings use-msgpackc=c++11 "$target"
+run "${runner[@]}" -m pip check
+run "${runner[@]}" -c "import pymol2; from pymol.Qt import QtWidgets; p = pymol2.PyMOL(); p.start(); p.cmd.fragment('gly'); assert p.cmd.count_atoms() > 0; p.stop()"
+if "$dry_run"; then
+    echo 'Preview only; nothing installed. After installation, launch with:'
+else
+    echo 'Installed and checked (headless core and Qt imports). Launch with:'
+fi
+printf '%q ' "${launch[@]}"; printf '\n'
