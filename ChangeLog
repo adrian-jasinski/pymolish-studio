@@ -4,6 +4,17 @@ CHANGE LOG
 
 2026-11-27 pymolish-studio
 
+	* 4.96.0
+
+	* Buttons under the object list in one row
+	  - The mouse mode, Chat, Wizard and Cmd buttons show only their
+	    icon (the tooltip and the screen reader still name them); SEQ
+	    keeps its text. The five buttons are spread over the whole
+	    width of the panel with equal gaps, in every panel width; the
+	    second row of narrow panels is gone.
+
+2026-11-27 pymolish-studio
+
 	* 4.94.1
 
 	* Removed: what only stood for the commercial PyMOL (21g)

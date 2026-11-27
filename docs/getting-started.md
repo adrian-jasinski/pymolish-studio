@@ -45,7 +45,7 @@ a whole folder, by UniProt accession, predicted structures.
 | Toolbar | under the menu bar | The common actions as buttons; the name of a button shows under the mouse. |
 | Viewport | middle | The molecule. The mouse turns and selects here. |
 | Objects panel | right | One row per object and per selection, with the buttons A, S, H, L and C. Click a row to hide or show it; double-click to zoom on it. |
-| Buttons under the Objects panel | right, below the list | Viewing (mouse mode), SEQ (sequence), Chat, Wizard, Cmd. |
+| Buttons under the Objects panel | right, below the list | One row, spread over the width: icons for the mouse mode, Chat, Wizard and Cmd, and SEQ (sequence) with its name. The tooltip names each icon. |
 | Tabs Command, Sequence, Chat | bottom | Command shows the log: what the program answers. |
 | Command line | last line, after `PyMOL>` | Type a command and press Enter. |
 

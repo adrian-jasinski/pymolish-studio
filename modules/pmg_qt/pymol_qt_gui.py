@@ -436,7 +436,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.action_toolbar)
         self.action_toolbar.setVisible(bool(options.external_gui))
 
-        # toggle bar under the object list: an icon and a short text each;
+        # toggle bar under the object list: icons only, SEQ with its text;
         # the whole name is the tooltip and the name for a screen reader
         mouse = QtWidgets.QToolButton()
         mouse.setMenu(self.menudict['Mouse'])
@@ -485,7 +485,9 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
             # the SEQ button itself opens the tab
             button.setPopupMode(
                 Popup.MenuButtonPopup if button is seq else Popup.InstantPopup)
-            button.setToolButtonStyle(Style.ToolButtonTextBesideIcon)
+            button.setToolButtonStyle(
+                Style.ToolButtonTextBesideIcon if button is seq
+                else Style.ToolButtonIconOnly)
             self.object_panel.footer.addWidget(button)
         self._footer_icons = (
             (mouse, 'mouse mode'), (seq, 'seq'), (ai, 'ai assistant'),

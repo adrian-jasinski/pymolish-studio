@@ -69,7 +69,6 @@ need one stop with a message.
 | "The new scale applies the next time pymolish starts." | Under WSL the size cannot change in a running window. | Close the program and start it again. |
 | Only the text of the log, the sequence or the chat is too small | Each tab has its own text size. | **A−**, **A+** and **Reset** at the right of the tabs. |
 | A panel or the toolbar is gone | It was closed. | Display > Panels lists them; Display > Panels > Reset Layout puts everything back. |
-| The Objects panel has no room for the buttons | The panel is narrow. | Drag its left edge; the buttons under the list go into two rows by themselves. |
 | The window is light, or dark, and you want the other | The theme. | Display > Dark Theme. |
 
 ## Network
