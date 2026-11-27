@@ -809,7 +809,7 @@ def _undoable(rows):
     # every row of the preset menu is one step of "undo"
     for row in rows:
         if row[0] == 1 and isinstance(row[2], str):
-            row[2] = 'pymol.snapshots.keep(_self=cmd);' + row[2]
+            row[2] = 'pymol.snapshots.keep(cmd,"preset");' + row[2]
         elif row[0] == 1:
             _undoable(row[2])
     return rows

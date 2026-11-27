@@ -1643,6 +1643,8 @@ static PyObject* CmdGetCapabilities(PyObject*, PyObject*)
 #endif
     // object and atom level properties
     PySet_Add(caps, PConvToPyObject("properties"));
+    // undo of more than coordinates (pymol/snapshots.py)
+    PySet_Add(caps, PConvToPyObject("multi_undo"));
   }
 
   Py_INCREF(caps);
@@ -2489,8 +2491,9 @@ static PyObject *CmdUndo(PyObject * self, PyObject * args)
     API_HANDLE_ERROR;
   }
   if(ok && (ok = APIEnterNotModal(G))) {
-    ExecutiveUndo(G, int1);     /* TODO STATUS */
+    int saves = ExecutiveUndo(G, int1);
     APIExit(G);
+    return PyLong_FromLong(saves);
   }
   return APIResultOk(ok);
 }

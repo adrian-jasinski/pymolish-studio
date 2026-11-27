@@ -6,6 +6,7 @@ forward again. Without a kept step both restore coordinates as before.
 
 import pytest
 
+import pymol
 from pymol import cmd, menu, preset, snapshots, stage, testing
 
 
@@ -159,3 +160,95 @@ def test_emptied_and_coordinates(tmp_path):
     assert abs(cmd.get_coords("m") - before).max() < 1e-4
     cmd.redo()
     assert abs(cmd.get_coords("m") - before).max() > 4
+
+
+@pytest.fixture
+def undo():
+    cmd.undo_enable()  # the suite runs with suspend_undo on
+    yield
+    cmd.undo_disable()
+
+
+def test_one_order_for_commands_and_moves(undo):
+    """21g: commands keep a snapshot, moves of the coordinate ring keep
+    coordinates; undo takes them back in the order they were done."""
+    cmd.fragment("ala", "m")
+    cmd.color("red", "m")
+    start = cmd.get_coords("m").copy()
+    cmd.push_undo("m")  # what a drag with the mouse does, then it moves
+    with cmd.UndoPauseCM():
+        cmd.translate([5, 0, 0], "m", camera=0)
+    assert snapshots.peek() == ("move", None)
+    cmd.undo()
+    assert abs(cmd.get_coords("m") - start).max() < 1e-4
+    assert cmd.count_atoms("m & color red") == 10
+    assert snapshots.peek() == ("color", "move")
+    cmd.undo()
+    assert cmd.count_atoms("m & color red") == 0
+    cmd.undo()
+    assert cmd.get_names() == []
+    cmd.redo()
+    cmd.redo()
+    assert cmd.count_atoms("m & color red") == 10
+    # the limit: a restored snapshot makes new objects, whose rings are empty
+    assert snapshots.peek() == ("color", None)
+
+
+def test_a_line_is_one_step(undo, tmp_path):
+    cmd.do("fragment gly, m; color blue; show sticks")
+    assert len(snapshots._undo) == 1 and snapshots.peek()[0] == "fragment"
+    script = tmp_path / "s.pml"
+    script.write_text("color red\nshow spheres\nset sphere_scale, 0.5\n")
+    cmd.do("@" + str(script))
+    assert len(snapshots._undo) == 2
+    cmd.undo()  # the whole script
+    assert cmd.count_atoms("color blue") == 7
+    assert cmd.get_setting_float("sphere_scale") == 1
+    # a line that only looks keeps nothing, a setting in a line does
+    cmd.do("count_atoms; zoom")
+    assert len(snapshots._undo) == 1
+    cmd.do("set sphere_scale, 0.3")
+    assert snapshots.peek()[0] == "set"
+    cmd.undo()
+    assert cmd.get_setting_float("sphere_scale") == 1
+
+
+def test_what_keeps_no_step(undo):
+    cmd.fragment("gly", "m")
+    steps = len(snapshots._undo)
+    cmd.set("sphere_scale", 0.4)  # the program sets settings itself
+    cmd.select("_tmp", "m")  # and makes its own temporary names
+    cmd.delete("_tmp")
+    with pytest.raises(pymol.CmdException):
+        cmd.color("red", "nothing_named_so")
+    assert len(snapshots._undo) == steps
+    cmd.undo_disable()
+    cmd.color("red")
+    assert len(snapshots._undo) == steps
+    with cmd.UndoPauseCM():
+        cmd.undo_enable()
+        cmd.color("blue")
+    assert len(snapshots._undo) == steps
+
+
+def test_toolbar_names_the_step(undo):
+    import os
+
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    from collections import defaultdict
+
+    from pymol.Qt import QtWidgets
+    from pmg_qt.action_toolbar import ActionToolbar
+
+    QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+    bar = ActionToolbar(cmd, defaultdict(list), panels=[], more=[], files=[])
+    back, forward = bar._undo
+    bar.show_undo()
+    assert not back.isEnabled() and back.toolTip() == "Undo (nothing)"
+    cmd.fragment("ala")
+    bar.show_undo()
+    assert back.isEnabled() and back.toolTip() == "Undo fragment"
+    assert not forward.isEnabled()
+    cmd.undo()
+    bar.show_undo()
+    assert forward.toolTip() == "Redo fragment" and not back.isEnabled()

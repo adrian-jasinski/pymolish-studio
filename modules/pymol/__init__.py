@@ -248,6 +248,9 @@ def exec_deferred(self):
                     cmd.do(a[4:])
                 else:
                     cmd.load(a, quiet=0)
+            # what started the program (pymolrc, files) is no step of undo;
+            # queued, so that it comes after the queued lines above
+            cmd.do("/pymol.snapshots.clear()", log=0, echo=0)
     except CmdException as e:
         colorprinting.error(str(e))
         colorprinting.error(

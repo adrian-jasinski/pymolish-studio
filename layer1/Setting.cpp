@@ -2869,7 +2869,6 @@ void SettingGenerateSideEffects(PyMOLGlobals * G, int index, const char *sele, i
     break;
   case cSetting_atom_type_format:
   case cSetting_colored_feedback:
-  case cSetting_suspend_undo:
   case cSetting_volume_mode:
     PRINTFB(G, FB_Setting, FB_Warnings)
       " Setting-Warning: %s is not supported in Open-Source version of PyMOL\n",

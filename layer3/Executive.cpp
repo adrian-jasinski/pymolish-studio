@@ -5644,6 +5644,11 @@ int ExecutiveSetSession(
       if (ok)
         ok = ExecutiveSetNamedEntries(
             G, tmp, version, partial_restore, partial_session);
+      // an alignment is a selection ("m1 & aln") after its first update
+      SpecRec* rec = nullptr;
+      while (ListIterate(G->Executive->Spec, rec, next))
+        if (rec->type == cExecObject && rec->obj->type == cObjectAlignment)
+          rec->obj->update();
       if (!(partial_restore || partial_session)) {
         if (ok)
           ok = ExecutiveSetSelectionsFromPyList(G, tmp);
@@ -7789,6 +7794,7 @@ void ExecutiveSetLastObjectEdited(PyMOLGlobals* G, pymol::CObject* o)
 {
   CExecutive* I = G->Executive;
   I->LastEdited = o;
+  ++I->RingSaves; // called for every coordinate set kept on a ring
 }
 
 /*========================================================================*/
@@ -8873,11 +8879,19 @@ void ExecutiveRebuildAllObjectDist(PyMOLGlobals* G)
 }
 
 /*========================================================================*/
-void ExecutiveUndo(PyMOLGlobals* G, int dir)
+/**
+ * Undo (dir -1) or redo (1) on the coordinate ring of the object edited
+ * last. Returns how many coordinate sets were ever kept on the rings, so
+ * that "undo" in Python can put them in order with its snapshots; dir 0
+ * only returns that number.
+ */
+int ExecutiveUndo(PyMOLGlobals* G, int dir)
 {
   CExecutive* I = G->Executive;
   ObjectMolecule *obj = nullptr, *compObj;
   SpecRec* rec = nullptr;
+  if (!dir)
+    return I->RingSaves;
 
   auto o = ExecutiveGetLastObjectEdited(G);
   PRINTFB(G, FB_Executive, FB_Debugging)
@@ -8898,6 +8912,7 @@ void ExecutiveUndo(PyMOLGlobals* G, int dir)
         }
     }
   }
+  return I->RingSaves;
 }
 
 /*========================================================================*/

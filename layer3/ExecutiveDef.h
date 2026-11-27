@@ -25,6 +25,7 @@ struct CExecutive : public Block {
   SpecRec *Spec {};
   CTracker *Tracker {};
   pymol::CObject *LastEdited { nullptr };
+  int RingSaves {}; // coordinate sets kept on the undo rings, ever
   int all_names_list_id {}, all_obj_list_id {}, all_sel_list_id {};
   OVLexicon *Lex {};
   std::unordered_map<ov_word, int> Key;

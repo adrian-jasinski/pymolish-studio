@@ -271,7 +271,7 @@ def testPresets(request):
             elif row[0] == 1:
                 walk(row[2])
     walk(m)
-    assert all(c.count('pymol.snapshots.keep(_self=cmd);') == 1 for c in leaves)
+    assert all(c.count('pymol.snapshots.keep(cmd,"preset");') == 1 for c in leaves)
     import re
     assert set(re.findall(r'from_menu\("(\w+)"', ' '.join(leaves))) == {
         'default', 'classified', 'technical', 'ball_and_stick', 'space_filling',

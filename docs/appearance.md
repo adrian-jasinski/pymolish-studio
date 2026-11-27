@@ -525,17 +525,25 @@ set opaque_background, 0
 ## Undo a preset and start over
 
 **Undo.** Every row of the Presets menu is one step: a preset, a
-transparency, the solvent row, a light, a theme, a floor. Click the Undo
-button in the toolbar, press Ctrl-Z (Edit > Undo) or type `undo`. Redo is
-the button beside it, Ctrl-Y or `redo`.
+transparency, the solvent row, a light, a theme, a floor. So is every
+line typed at the command line (a script run with `@` is one line), any
+other menu row that changes something, and a move of atoms with the
+mouse. Click the Undo button in the toolbar, press Ctrl-Z (Edit > Undo)
+or type `undo`. Redo is the button beside it, Ctrl-Y or `redo`. The
+tooltip of each button names the step ("Undo color"); with nothing to
+take back the button is greyed out.
 
-- Undo puts the whole session back as it was before the row: colors,
+- Undo puts the session back as it was before the step: objects, colors,
   representations, settings, light, background, view and the contacts a
-  preset measured.
-- It also takes back **everything you did after that row**, including
-  objects loaded or deleted since. Redo brings it back.
-- Five steps are kept, and at most 600,000 atoms over all of them. Above
-  that the row runs without a step and the log says so.
+  preset measured. Steps done after it stay steps of their own.
+- A line that only looks (zoom, turn, a query) is no step. Settings
+  that the program changes by itself are not either.
+- Twenty steps are kept, and at most 600,000 atoms over all of them.
+  Above that a change runs without a step and the log says so once.
+  `undo_disable` stops keeping steps (faster scripts on large
+  structures), `undo_enable` starts again.
+- A move of atoms with the mouse that came before a step is lost when
+  that step is undone or redone; the steps of commands are not.
 - The steps are dropped by File > Reinitialize > Everything and when a
   session file is opened.
 - The Palette and Background buttons and the S, H and C menus are not

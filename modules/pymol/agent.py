@@ -253,7 +253,8 @@ class Executor:
             self._keep()
         if "_self" in inspect.signature(function).parameters:
             arguments["_self"] = self.cmd
-        value = function(**arguments)
+        with snapshots.paused():  # the turn's snapshot is its one step
+            value = function(**arguments)
         if arguments.get("async_"):
             value = "Runs in the background; this turn does not see its result. Use state to follow it."
         # Older APIs sometimes report failure as -1 rather than raising.
@@ -289,7 +290,8 @@ class Executor:
                             raise CmdException("Trusted Python is off or the user declined")
                         self._check()
                         self._keep()
-                        exec(compile(code, "<reviewed assistant Python>", "exec"), {"cmd": self.cmd})
+                        with snapshots.paused():
+                            exec(compile(code, "<reviewed assistant Python>", "exec"), {"cmd": self.cmd})
                         value = {"undo_snapshot": True, "external_effects_undoable": False}
                     elif operation == "look":
                         if not self.images:

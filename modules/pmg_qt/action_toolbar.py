@@ -213,9 +213,11 @@ class ActionToolbar(QtWidgets.QToolBar):
         self.addWidget(chips)
 
         self.addSeparator()
+        self._undo = []
         for text, run in (("Undo", cmd.undo), ("Redo", cmd.redo)):
-            # the name stays the tooltip and the accessible name
-            button = self.widgetForAction(self._action(text, run))
+            # the name stays the accessible name; the tooltip names the step
+            self._undo.append(self._action(text, run))
+            button = self.widgetForAction(self._undo[-1])
             button.setToolButtonStyle(Style.ToolButtonIconOnly)
         self.addSeparator()
 
@@ -399,6 +401,15 @@ class ActionToolbar(QtWidgets.QToolBar):
         for button in self.findChildren(QtWidgets.QToolButton):
             button.setFocusPolicy(Qt.FocusPolicy.TabFocus)
         self._set_icons()
+
+    def show_undo(self):
+        """Undo and Redo: usable only with a step, which the tooltip names
+        (polled by the main window)."""
+        from pymol import snapshots
+
+        for action, label in zip(self._undo, snapshots.peek(self.cmd)):
+            action.setEnabled(label is not None)
+            action.setToolTip("%s %s" % (action.text(), label or "(nothing)"))
 
     def _action(self, text, run):
         action = self.addAction(text, run)

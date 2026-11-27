@@ -173,11 +173,15 @@ if True:
             :param secure: If true, then Python code and nested "embed" are not
             allowed and will raise an exception.
             """
-            try:
-                self.nest += 1
-                return self._parse(s, secure)
-            finally:
-                self.nest -= 1
+            from . import snapshots
+            word = re.match(r"\s*([^\s,(;]*)", s).group(1)
+            # a line, with its scripts and commands after ";": one undo step
+            with snapshots.undoable(word or "line", self.cmd):
+                try:
+                    self.nest += 1
+                    return self._parse(s, secure)
+                finally:
+                    self.nest -= 1
 
         def _parse(self, s, secure):
             layer = self.layer[self.nest]

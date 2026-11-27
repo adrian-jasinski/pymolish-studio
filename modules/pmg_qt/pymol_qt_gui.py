@@ -1193,6 +1193,7 @@ PyMOL> color ye<TAB>    (will autocomplete "yellow")
         self.ligand_panel.poll()
         self.sequence_panel.poll()
         self.sequence_tab.poll()
+        self.action_toolbar.show_undo()
         # the 2D button is for objects with a ligand; judged again when the
         # objects that are switched on change
         key = tuple(self.cmd.get_names('public', enabled_only=1))
