@@ -9,6 +9,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -54,7 +55,10 @@ def check_installer(installer, compiler):
         "/RESTARTEXITCODE=42",
     )
 
-    with tempfile.TemporaryDirectory(prefix="pymolish installer ") as temporary:
+    # The uninstaller's second phase may still hold uninstall.log briefly.
+    with tempfile.TemporaryDirectory(
+        prefix="pymolish installer ", ignore_cleanup_errors=True
+    ) as temporary:
         work = Path(temporary)
         app = work / "Installed żółć" / "pymolish-studio"
         old_bundle = work / "old bundle"
@@ -141,6 +145,13 @@ def check_installer(installer, compiler):
                 assert (notices / name).is_file()
 
             run(str(uninstaller), *flags, f"/LOG={work / 'uninstall.log'}")
+            # A temporary copy finishes removal and deletes unins000.exe after
+            # the first process returns.
+            for _ in range(120):
+                if not uninstaller.exists():
+                    break
+                time.sleep(0.5)
+            assert not uninstaller.exists()
             assert installed_version() is None
             assert not shortcut.exists()
             assert not (app / "pymolish.exe").exists()
@@ -160,7 +171,7 @@ def check_installer(installer, compiler):
                 )
             raise
         finally:
-            if uninstaller.exists():
+            if installed_version() is not None and uninstaller.exists():
                 run(str(uninstaller), *flags)
     print("Windows installer: install, upgrade, launch and uninstall passed.")
 
