@@ -67,7 +67,15 @@ Step 39 choices were answered on 2026-11-27: Linux system packages with
 Pixi on Windows/macOS and as a Python fallback; core with an extras prompt.
 Both recommended options are implemented in 4.96.1; no choice is pending.
 
-No numbered question is open.
+Two questions are open, from the browser research of
+[step 40](docs/plans/40-web-browser.md#questions) (2026-11-27):
+
+- **140 — Which route to a browser?** A: stream the desktop window from a
+  container (recommended). B: WebAssembly in the browser with a rewritten
+  interface. Or A now and a WebAssembly proof later.
+- **141 — Where does it live?** A in this repository (recommended); for B
+  the core build here and the browser interface in a new repository.
+
 [Answer 139 A](PLAN-DONE.md#decision-139) is recorded and built.
 [Answer 137 A](PLAN-DONE.md#decision-137) is recorded
 with signing skipped for now; question 138 (signing provider) is
