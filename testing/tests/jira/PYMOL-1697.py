@@ -6,8 +6,6 @@ pytestmark = testing.requires('no_edu')
 
 
 @pytest.mark.parametrize("discr", [1, 0])
-@testing.requires('incentive')
-@testing.requires('undo')
 def testUndoAfterRemoveAtomOnDiscrete(discr):
     cmd.set('suspend_undo', 0)
     cmd.load(testing.datafile('ligs3d.sdf'), discrete=discr)

@@ -1511,7 +1511,6 @@ static const CPyMOLOptions Defaults = {
   false,                        /* auto reinitialize */
   false,                        /* keep thread alive */
   false,                        /* quiet */
-  false,                        /* incentive product */
   "",                           /* after_load_script */
   0,                            /* multisample */
   1,                            /* window_visible */

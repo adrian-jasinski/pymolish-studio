@@ -62,7 +62,6 @@ Options
   -L file   load file after everything else (only if something was loaded before)
   -m        INTERNAL - do not use (mac external GUI)
   -M        force mono
-  -n        INTERNAL - do not use (incentive_product=1)
   -N name   UNSUPPORTED - external gui type (pmg_qt) (same as -w)
   -o        disable security protections
   -O N      sphere_mode=N
@@ -147,7 +146,6 @@ if True:
     options.after_load_script = ""
     options.quiet = 0
     options.multisample = 0
-    options.incentive_product = 0
     options.window_visible = 1
     options.presentation = 0
     options.defer_builds_mode = 0
@@ -361,8 +359,6 @@ if True:
                     options.gui = av.pop()
                 if "x" in a:
                     options.external_gui = 0
-                if "n" in a:
-                    options.incentive_product = 1
                 if "t" in a: # type of stereo to use
                     options.stereo_mode = int(av.pop())
                 if "T" in a: # what skin to use?

@@ -31,7 +31,7 @@ struct CPyMOLOptions {
     winPY,
     external_gui,
     siginthand,
-    reuse_helper, auto_reinitialize, keep_thread_alive, quiet, incentive_product;
+    reuse_helper, auto_reinitialize, keep_thread_alive, quiet;
 
   char after_load_script[PYMOL_MAX_OPT_STR];
 

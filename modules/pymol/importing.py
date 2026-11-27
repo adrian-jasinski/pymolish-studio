@@ -28,8 +28,8 @@ if True:
     from .constants import _loadable
     from pymol.creating import unquote
 
-    def incentive_format_not_available_func(format=''):
-        raise pymol.IncentiveOnlyException(
+    def format_not_available_func(format=''):
+        raise pymol.CmdException(
                 "'%s' format not supported by this PyMOL build" % format)
 
     from chempy import io
@@ -529,7 +529,7 @@ SEE ALSO
             m = __import__(func.split(':')[0])
         except ImportError as e:
             print(' Warning: ' + str(e))
-            return incentive_format_not_available_func
+            return format_not_available_func
 
         return eval(func.replace(':', '.'), {m.__name__: m}, {})
 

@@ -4,6 +4,20 @@ CHANGE LOG
 
 2026-11-27 pymolish-studio
 
+	* 4.94.1
+
+	* Removed: what only stood for the commercial PyMOL (21g)
+	  - The option -n (incentive_product), the exception
+	    pymol.IncentiveOnlyException and its error code, the stub
+	    get_m2io_first_block_properties that only raised it, and the
+	    splash text of the commercial build. A missing file reader now
+	    raises a plain CmdException with the same message.
+	  - The test marks incentive and properties. The last two tests
+	    that carried one (jira/PYMOL-1276, PYMOL-1697) run in every
+	    suite run since 4.94.0 made them pass.
+
+2026-11-27 pymolish-studio
+
 	* 4.94.0
 
 	* Undo of more than coordinates (21g)

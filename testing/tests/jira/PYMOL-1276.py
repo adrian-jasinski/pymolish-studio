@@ -2,15 +2,13 @@
 undo atom type change
 '''
 
-import pytest
-from pymol import cmd, testing, stored
+from pymol import cmd, testing
 
-pytestmark = [testing.requires('incentive'), testing.requires('no_edu')]
+pytestmark = testing.requires('no_edu')
 
 
 def test():
-    if cmd.get_setting_int('suspend_undo'):
-        pytest.skip("need suspend_undo=0")
+    cmd.undo_enable()
 
     cmd.fragment('gly', 'm1')
     cmd.create('m2', 'm1')
