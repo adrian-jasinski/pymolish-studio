@@ -15,6 +15,17 @@ CHANGE LOG
 
 2026-11-27 pymolish-studio
 
+	* 4.95.0
+
+	* Palette neon
+	  - A palette for a dark background: twelve neon sign colors
+	    (green, pink, cyan, yellow, orange, purple, blue, red, lime,
+	    hot pink, mint, fuchsia), filled up to 30 with colors of the
+	    same tone. In the Palette button and as "palette neon"; the
+	    colors are named neon_01 to neon_30.
+
+2026-11-27 pymolish-studio
+
 	* 4.94.1
 
 	* Removed: what only stood for the commercial PyMOL (21g)

@@ -26,7 +26,7 @@ features are removed. The history, version by version, is in the
 | Objects panel | Objects, selections and groups as rows with the A, S, H, L and C menus. Rows are filtered, renamed (F2), deleted (Delete) and moved (right-button drag, or Alt with the arrow keys). | [Structures](structures.md) |
 | Selecting | A toolbar button for what a click selects, and buttons that select the protein, the ligands, the water and more. | [Structures](structures.md) |
 | Presets | A toolbar menu in groups: cartoon, atoms and bonds, surface, binding; transparency; light, theme and floor for the whole scene. Presets keep the colors. Undo takes a preset back. | [Appearance](appearance.md) |
-| Palettes and background | Toolbar buttons for the colors of objects and chains (ten palettes and your own) and for the background. | [Appearance](appearance.md) |
+| Palettes and background | Toolbar buttons for the colors of objects and chains (eleven palettes and your own) and for the background. | [Appearance](appearance.md) |
 | Menus | Right-click menus open at the pointer as normal menus. The A menu is shorter; less used rows are under "more". | |
 | States | A strip under the object list (first, previous, play, next, last, jump, speed) when there is more than one state or movie frame. | [Scenes and movies](scenes-movies.md) |
 

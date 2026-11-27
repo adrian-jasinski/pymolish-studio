@@ -345,10 +345,10 @@ one.
 
 The carbons of the loaded objects are recolored from the first palette
 color on, and new objects follow the palette. The choice is remembered for
-the next start. The list has eleven rows: PyMOL default, then Vivid, Deep,
-Pastel, Soft, Colorblind, Nord, Dracula, Catppuccin, Chimerax and Halo,
-each with the background it is made for. Every one of these ten has 30
-colors; the menu shows the first ten.
+the next start. The list has twelve rows: PyMOL default, then Vivid, Deep,
+Pastel, Soft, Colorblind, Nord, Dracula, Catppuccin, Chimerax, Halo and
+Neon, each with the background it is made for. Every one of these eleven
+has 30 colors; the menu shows the first ten.
 
 ```
 palette
@@ -376,6 +376,7 @@ pymolrc to have it at every start. The colors have names (`soft_01`,
 | `catppuccin` | dark background | ![catppuccin](img/palette-catppuccin.png) |
 | `chimerax` | any background | ![chimerax](img/palette-chimerax.png) |
 | `halo` | any background | ![halo](img/palette-halo.png) |
+| `neon` | dark background | ![neon](img/palette-neon.png) |
 
 The pictures show the colors a palette was made with; the colors after
 them, up to 30, were computed in the same tone and belong to no published
@@ -388,6 +389,8 @@ of those names (Nord frost and aurora, Dracula, Catppuccin Mocha).
 `chimerax` is the ten colors UCSF ChimeraX gives to models 1 to 10 (tan, sky
 blue, plum, light green, salmon, light gray, deep pink, gold, dodger blue,
 purple), for those who move between the two programs.
+`neon` starts with the usual web values of neon sign colors (green, pink,
+cyan, yellow, orange, purple, blue, red, lime, hot pink, mint, fuchsia).
 `halo` is five colors of a brand book (turquoise, blue, cyan, indigo, deep
 purple) with seven strong colors between them for the other hues. The indigo
 and the purple are dark on a black background.
