@@ -1,5 +1,19 @@
 # 21 — Features of the commercial build: removed, kept, to rebuild
 
+**Built 2026-11-27, 4.94.0 and 4.94.1: 21g; the step is finished.** One
+stack in `modules/pymol/snapshots.py`: session snapshots for steps that
+add, remove or edit (a parser line, a menu row, a command of CHANGE, the
+builder's `undocontext`), moves of the core's coordinate ring counted
+through `ExecutiveUndo(0)`, in the order done. Toolbar Undo/Redo greyed
+out without a step and named in the tooltip; `undo_enable`,
+`undo_disable`, `UndoPauseCM`, capability `multi_undo`. Measured: a step
+3 ms on 1oky (2,475 atoms), 0.14 s on 1aon (59,192); undo on 1aon 0.39 s.
+The 28 cases of `testing/tests/undo/api` and the two jira files pass;
+4.94.1 removed `-n`, `IncentiveOnlyException` and the marks. Left out:
+a move before a step is lost when that step is undone (the ring of the
+new objects is empty), `set` from Python outside a step, the setting
+`suspend_undo_atom_count`, a real mouse drag in the check.
+
 **Built 2026-11-24, 4.63.1 to 4.65.0: 21f, all three items.** 4.63.1:
 `sphere_mode` stops at 9; the test and its two images are deleted. 4.64.0:
 on save the picture of `bg_image_filename` goes into the session as "data:"

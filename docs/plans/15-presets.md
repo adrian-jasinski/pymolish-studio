@@ -249,6 +249,17 @@ planned experiment, not a skipped request.
 
 ## Request 2026-11-26, evening: glow in saved pictures (15q, 15r)
 
+**Built 2026-11-26, after answer 139 A: 15q in 4.92.0, 15r in 4.93.0.**
+Measured (red tryptophan on black, glow 1, halo = pixels dark in the
+glow-0 picture and lit in the glow-1 picture, a count other than the one
+in the table below): halo 13.42 % of the window at 1435 x 702, 13.44 % of
+a `png` 2870 x 1403, 12.96 % of a ray-traced picture of the window size.
+The halo buffer became 176 rows high at any size: before, the sized row
+reached only half its share. 15r costs 17 ms for 2000 x 1500 and 68 ms
+with antialias 2, on one thread. Left out: threads for 15r, the message
+for pictures over the largest texture (they are clamped, never tiled),
+a memory measurement, stereo, Windows and macOS.
+
 The user asked, after 4.91.0, to plan the glow for saved pictures as well
 ("plan to add this"). This reverses the scope of answer 128 A for pictures;
 the viewport row of 4.91.0 stays as it is. Planning only: no code, no
