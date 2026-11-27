@@ -39,7 +39,7 @@ $manifest = Join-Path $build 'payload-files.txt'
 $paths = Get-ChildItem $bundle -File -Recurse | ForEach-Object {
     $_.FullName.Substring($bundle.Length + 1)
 }
-$paths | Sort-Object | Set-Content $manifest -Encoding UTF8
+[System.IO.File]::WriteAllLines($manifest, [string[]]($paths | Sort-Object), [System.Text.UTF8Encoding]::new($true))
 $installer = Join-Path $output "pymolish-$version-Windows-X64-setup.exe"
 & $compiler "/DAppVersion=$version" "/DBundleDir=$bundle" "/DOutputDir=$output" "/DPayloadManifest=$manifest" (Join-Path $PSScriptRoot 'windows.iss')
 if ($LASTEXITCODE -ne 0) { throw "Installer compilation failed: $LASTEXITCODE" }

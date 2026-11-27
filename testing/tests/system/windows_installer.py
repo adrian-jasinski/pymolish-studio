@@ -133,7 +133,7 @@ def check_installer(installer, compiler):
             ):
                 env.pop(key, None)
             # Do not let the build environment's DLLs rescue a broken bundle.
-            env["PATH"] = os.path.join(env["SystemRoot"], "System32")
+            env["PATH"] = os.path.join(os.environ["SystemRoot"], "System32")
             run(str(app / "pymolish.exe"), "-ckqy", str(script), cwd=work, env=env)
             assert (work / "launch-ok").read_text() == "ok"
             notices = app / "_internal/pymol/pymol_path"
